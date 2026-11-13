@@ -97,6 +97,29 @@ const BREAKS_DOC: JSONContent = {
   content: [...LINE_BREAK_DOC.content, textDoc('three').content[0]],
 };
 
+const PARAGRAPHS_DOC: JSONContent = {
+  type: 'doc',
+  content: [textDoc('one').content[0], textDoc('two').content[0]],
+};
+
+const LITERAL_TEXT = '\n<tag>\n\nlast\n';
+const LITERAL_DOC: JSONContent = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        { type: 'hardBreak' },
+        { type: 'text', text: '<tag>' },
+        { type: 'hardBreak' },
+        { type: 'hardBreak' },
+        { type: 'text', text: 'last' },
+        { type: 'hardBreak' },
+      ],
+    },
+  ],
+};
+
 async function updateContent(
   instance: ChatInstance,
   updater: (previous: JSONContent) => JSONContent
@@ -167,20 +190,24 @@ describe('state.input', () => {
     expect(Object.isFrozen(instance.state.get().input.content)).toBe(true);
   });
 
-  it('keeps a typed newline in the plain field, as a line break', async () => {
+  // MAIN-NOTES M71 (2.0.0): plain and rich editors retain distinct projections.
+  it('keeps a typed newline in the plain field, as a paragraph boundary', async () => {
     const { instance } = await openChat();
     await typeText('one\ntwo');
     expect(instance.state.get().input.rawValue).toBe('one\ntwo');
-    expect(instance.state.get().input.content).toEqual(LINE_BREAK_DOC);
+    expect(instance.state.get().input.content).toEqual(PARAGRAPHS_DOC);
   });
 
-  it('reads a paragraph break as two newlines and a line break as one in the plain field', async () => {
+  it('reads paragraph and hard breaks as one newline each in the plain field', async () => {
     const { instance } = await openChat();
     await updateContent(instance, () => BREAKS_DOC);
-    expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
-    expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
-    expect(inputField().value).toBe('one\ntwo\n\nthree');
-    expect(await previousRawValue(instance)).toBe('one\ntwo\n\nthree');
+    expect(instance.state.get().input.rawValue).toBe('one\ntwo\nthree');
+    expect(instance.state.get().input.content).toEqual({
+      type: 'doc',
+      content: [...PARAGRAPHS_DOC.content, textDoc('three').content[0]],
+    });
+    expect(inputField().value).toBe('one\ntwo\nthree');
+    expect(await previousRawValue(instance)).toBe('one\ntwo\nthree');
   });
 
   it('reads a paragraph break as two newlines and a line break as one in the rich editor', async () => {
@@ -191,10 +218,10 @@ describe('state.input', () => {
     await updateContent(instance, () => BREAKS_DOC);
     expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
     expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
-    expect(await previousRawValue(instance)).toBe('one\ntwo\n\nthree');
+    expect(await previousRawValue(instance)).toBe('one\ntwo\nthree');
   });
 
-  it('reads plain text pasted into the rich editor with a blank line as a paragraph break and a newline as a line break', async () => {
+  it('pastes one paragraph per line while the rich text projection separates paragraphs with two newlines', async () => {
     const { instance } = await openChat();
     const editor = await act(async () => instance.input.getEditor());
     // jsdom has no clipboard, so this stands in for a user's paste.
@@ -208,8 +235,15 @@ describe('state.input', () => {
     await act(async () => {
       editor.view.dom.dispatchEvent(paste);
     });
-    expect(instance.state.get().input.rawValue).toBe('one\ntwo\n\nthree');
-    expect(instance.state.get().input.content).toEqual(BREAKS_DOC);
+    expect(instance.state.get().input.rawValue).toBe('one\n\ntwo\n\n\n\nthree');
+    expect(instance.state.get().input.content).toEqual({
+      type: 'doc',
+      content: [
+        ...PARAGRAPHS_DOC.content,
+        { type: 'paragraph' },
+        textDoc('three').content[0],
+      ],
+    });
   });
 });
 
@@ -401,11 +435,11 @@ describe('input.updateRawValue', () => {
     expect(inputField().value).toBe('hello');
   });
 
-  it('keeps a newline in the plain field, as a line break', async () => {
+  it('keeps a newline in the plain field, as a paragraph boundary', async () => {
     const { instance } = await openChat();
     await updateRawValue(instance, () => 'one\ntwo');
     expect(instance.state.get().input.rawValue).toBe('one\ntwo');
-    expect(instance.state.get().input.content).toEqual(LINE_BREAK_DOC);
+    expect(instance.state.get().input.content).toEqual(PARAGRAPHS_DOC);
   });
 
   it('gives the updater the current text', async () => {
@@ -462,33 +496,53 @@ describe('input.updateRawValue', () => {
     expect(instance.state.get().input.content).toEqual(LINE_BREAK_DOC);
   });
 
-  // @covers config.input.tiptap
-  it('seeds a multi-line draft from onBeforeRender, which the rich editor shows and a send uses', async () => {
-    const sent: string[] = [];
-    const { instance } = await contractChat({
-      ...CHIP_CONFIG,
-      messaging: {
-        skipWelcome: true,
-        customSendMessage: async (request) => {
-          sent.push(request.input.text);
-        },
-      },
-      onBeforeRender: (handed) => {
-        handed.input.updateRawValue(() => 'one\ntwo');
-      },
-    });
-    await changeView(instance, ViewType.MAIN_WINDOW);
-    let editor: Awaited<ReturnType<ChatInstance['input']['getEditor']>>;
-    await act(async () => {
-      editor = await instance.input.getEditor();
-    });
-    await waitFor(() => expect(editor.getJSON()).toEqual(LINE_BREAK_DOC));
-    expect(instance.state.get().input.rawValue).toBe('one\ntwo');
-    await act(async () => {
-      getByTestId(PageObjectId.INPUT_SEND).click();
-    });
-    await waitFor(() => expect(sent).toEqual(['one\ntwo']));
+  it('keeps HTML-looking text and leading, repeated, and trailing newlines literal in a rich write', async () => {
+    const { instance } = await openChat();
+    const editor = await act(async () => instance.input.getEditor());
+    await updateRawValue(instance, () => LITERAL_TEXT);
+    expect(instance.state.get().input.rawValue).toBe(LITERAL_TEXT);
+    expect(instance.state.get().input.content).toEqual(LITERAL_DOC);
+    expect(editor.getText()).toBe(LITERAL_TEXT);
   });
+
+  // @covers config.input.tiptap
+  it.each([
+    { name: 'a multi-line draft', text: 'one\ntwo', content: LINE_BREAK_DOC },
+    {
+      name: 'literal text with leading, repeated, and trailing newlines',
+      text: LITERAL_TEXT,
+      content: LITERAL_DOC,
+    },
+  ])(
+    'seeds $name from onBeforeRender, which the rich editor shows and a send uses',
+    async ({ text, content }) => {
+      const sent: string[] = [];
+      const { instance } = await contractChat({
+        ...CHIP_CONFIG,
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: async (request) => {
+            sent.push(request.input.text);
+          },
+        },
+        onBeforeRender: (handed) => {
+          handed.input.updateRawValue(() => text);
+        },
+      });
+      await changeView(instance, ViewType.MAIN_WINDOW);
+      let editor: Awaited<ReturnType<ChatInstance['input']['getEditor']>>;
+      await act(async () => {
+        editor = await instance.input.getEditor();
+      });
+      await waitFor(() => expect(editor.getJSON()).toEqual(content));
+      expect(instance.state.get().input.rawValue).toBe(text);
+      expect(editor.getText()).toBe(text);
+      await act(async () => {
+        getByTestId(PageObjectId.INPUT_SEND).click();
+      });
+      await waitFor(() => expect(sent).toEqual([text.trim()]));
+    }
+  );
 
   // @covers config.input.tiptap
   it('throws without calling the updater while the doc has a non-text node', async () => {

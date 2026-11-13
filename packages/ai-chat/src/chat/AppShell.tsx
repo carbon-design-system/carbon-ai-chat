@@ -147,8 +147,6 @@ const selectPublicConfig = (state: AppState) => state.config.public;
 const selectPersistedToBrowserStorage = (state: AppState) =>
   state.persistedToBrowserStorage;
 const selectIsHydrated = (state: AppState) => state.isHydrated;
-const selectInitialViewChangeComplete = (state: AppState) =>
-  state.initialViewChangeComplete;
 const selectAssistantMessageState = (state: AppState) =>
   state.assistantMessageState;
 const selectIsHydratingCounter = (state: PublicChatState) =>
@@ -209,9 +207,6 @@ function AppShell({
     selectPersistedToBrowserStorage
   );
   const isHydrated = useSelector(selectIsHydrated);
-  const initialViewChangeComplete = useSelector(
-    selectInitialViewChangeComplete
-  );
   const assistantMessageState = useSelector(selectAssistantMessageState);
   const isHydratingCounter = useStateAccessSelector(
     serviceManager.instance.state,
@@ -374,14 +369,12 @@ function AppShell({
     viewStateMainWindow: viewState.mainWindow,
     isHydrated,
     useCustomHostElement,
-    shouldTakeFocusIfOpensAutomatically:
-      publicConfig.shouldTakeFocusIfOpensAutomatically ?? true,
-    initialViewChangeComplete,
     requestFocus: requestFocusCallback,
   });
 
   // Focus manager - provides requestFocus function
   const requestFocus = useFocusManager({
+    shouldAutoFocus: publicConfig.shouldTakeFocusIfOpensAutomatically ?? true,
     showDisclaimer,
     iFramePanelIsOpen: iFramePanelState.isOpen,
     viewSourcePanelIsOpen: viewSourcePanelState.isOpen,

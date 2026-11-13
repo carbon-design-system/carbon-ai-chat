@@ -275,8 +275,9 @@ export enum ViewChangeReason {
 
   /**
    * Indicates the user clicked the built-in minimize button in the chat header, which closed the main window.
+   * In 1.x, the button emits `main_window_minimized`; this enum retains `mainWindowMinimized`.
    */
-  MAIN_WINDOW_MINIMIZED = 'main_window_minimized',
+  MAIN_WINDOW_MINIMIZED = 'mainWindowMinimized',
 
   /**
    * Indicates the view was changed by a call to {@link ChatInstance.changeView}.
