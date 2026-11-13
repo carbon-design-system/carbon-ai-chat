@@ -147,7 +147,6 @@ describe('upload: the attach button', () => {
   ])(
     'is absent when isOn is %s, even with onFileUpload set, and logs an error',
     async (_label, isOn) => {
-      // UploadConfig's JSDoc names only the reverse case; `main` logs this one too.
       const { instance } = await contractChat({
         strings: STRINGS,
         messaging: { skipWelcome: true },

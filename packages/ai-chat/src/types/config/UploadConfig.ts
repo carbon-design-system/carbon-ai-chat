@@ -19,8 +19,8 @@ export interface UploadConfig {
    * Whether file upload is enabled. When `true`, the chat renders a file attachment button
    * in the input area. Defaults to `false`.
    *
-   * If `isOn` is `true` but `onFileUpload` is not provided, an error is logged and
-   * file upload is disabled.
+   * Set both `isOn` and `onFileUpload`. If you set only one of them, the chat logs
+   * an error and hides the attachment button.
    */
   isOn?: boolean;
 
@@ -43,7 +43,8 @@ export interface UploadConfig {
   maxFiles?: number;
 
   /**
-   * Called once per file when the user selects it.
+   * Called once per file when the user selects it. Without `isOn: true`, the chat
+   * logs an error and hides the attachment button, so this is never called.
    *
    * Return a {@link StructuredData} object representing this file's contribution to the
    * pending message. The widget merges the returned `StructuredData` into
