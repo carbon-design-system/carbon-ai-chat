@@ -75,10 +75,8 @@ interface ChatAppEntryProps {
    */
   isCustomRequestFooterEnabled?: () => boolean;
   renderWriteableElements?: RenderWriteableElementResponse;
-  /** The page-level element whose light DOM holds portal hosts for extension content. */
+  /** The container whose light DOM holds portal hosts for extension content. */
   chatWrapper?: HTMLElement;
-  /** Where user_defined response hosts go, when not in `chatWrapper`. */
-  userDefinedResponseWrapper?: HTMLElement;
 }
 
 /**
@@ -113,7 +111,6 @@ function ChatAppEntry({
   isCustomRequestFooterEnabled,
   renderWriteableElements,
   chatWrapper,
-  userDefinedResponseWrapper = chatWrapper,
 }: ChatAppEntryProps) {
   const [userDefinedResponseEventsBySlot, setUserDefinedResponseEventsBySlot] =
     useState<Record<string, RenderUserDefinedState>>({});
@@ -204,7 +201,7 @@ function ChatAppEntry({
           renderUserDefinedResponse={renderUserDefinedResponse}
           removeEmptyHost={removeEmptyUserDefinedResponseHost}
           userDefinedResponseEventsBySlot={userDefinedResponseEventsBySlot}
-          chatWrapper={userDefinedResponseWrapper}
+          chatWrapper={chatWrapper}
         />
       )}
 

@@ -720,7 +720,8 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   renderCustomRequestFooter?: RenderCustomRequestFooter;
 
   /**
-   * This is the function that this component will call when a user defined response should be rendered.
+   * Renders a user-defined response in page DOM, where page CSS reaches it. Both React hosts use this placement.
+   * The standalone custom element keeps this callback's output inside its shadow root.
    */
   renderUserDefinedResponse?: RenderUserDefinedResponse;
 
@@ -737,7 +738,8 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
   /**
-   * This is the render function this component will call when it needs to render a writeable element.
+   * Renders a writeable element in page DOM. Both React hosts use this placement. The standalone custom element
+   * keeps its instance's writeable elements inside its shadow root.
    */
   renderWriteableElements?: RenderWriteableElementResponse;
 

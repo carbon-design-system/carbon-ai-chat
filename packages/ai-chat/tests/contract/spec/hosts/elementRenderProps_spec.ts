@@ -29,6 +29,7 @@ import {
   RenderCustomRequestFooterState,
   RenderUserDefinedInputNodeState,
   RenderUserDefinedState,
+  WriteableElementName,
 } from '../../../../src/aiChatEntry';
 import {
   ELEMENT_TAGS,
@@ -38,6 +39,7 @@ import {
   finalChunk,
   getByTestId,
   isShownWithin,
+  isInFlatTree,
   mainPanelText,
   openElement,
   partialUserDefined,
@@ -86,6 +88,7 @@ describe.each(ELEMENT_TAGS)('renderUserDefinedResponse on %s', (tag) => {
     await waitFor(() => expect(shownInMainPanel(out)).toBe(true));
     const [state, handed] = render.mock.calls[0] as unknown as [
       RenderUserDefinedState,
+      WriteableElementName,
       ChatInstance,
     ];
     expect(state).toMatchObject({
@@ -171,6 +174,25 @@ describe.each(ELEMENT_TAGS)('user_defined slots on %s', (tag) => {
     });
     await addResponse(instance, 'r1', [WIDGET]);
     await waitFor(() => expect(shownInMainPanel(out)).toBe(true));
+    expect(out.getRootNode()).toBe(document);
+  });
+});
+
+// @covers instance.writeableElements
+// @covers element.cds-aichat-container.renderUserDefinedResponse element.cds-aichat-custom-element.renderUserDefinedResponse
+describe.each(ELEMENT_TAGS)('manual writeable slots on %s', (tag) => {
+  contractSetup();
+
+  it('keeps a manually slotted footer in page DOM', async () => {
+    const { element } = await openElement(tag);
+    const out = span('Manual footer');
+    out.slot = WriteableElementName.FOOTER_ELEMENT;
+    await act(async () => {
+      element.appendChild(out);
+    });
+    await waitFor(() => expect(isInFlatTree(out)).toBe(true));
+    expect(out.getRootNode()).toBe(document);
+    expect(element.contains(out)).toBe(true);
   });
 });
 

@@ -107,13 +107,12 @@ describe('cds-aichat-custom-element visibility', () => {
   });
 });
 
-// Like `cds-aichat-container` (`containerElement_spec.ts`), this element
-// keeps host content in the page's DOM, where page CSS reaches it.
+// MAIN-NOTES M108 (2.0.0): callback output and writeables stay in the shadow root; manual slots stay in page DOM.
 // @covers element.cds-aichat-custom-element.renderUserDefinedResponse instance.writeableElements
 describe('cds-aichat-custom-element host content', () => {
   contractSetup();
 
-  it('puts renderUserDefinedResponse output in the page’s DOM', async () => {
+  it('keeps renderUserDefinedResponse output inside its shadow root', async () => {
     const out = document.createElement('span');
     const { instance, element } = await mount({
       openChatByDefault: true,
@@ -130,18 +129,20 @@ describe('cds-aichat-custom-element host content', () => {
       )
     );
     await waitFor(() => expect(out.isConnected).toBe(true));
-    expect(out.getRootNode()).toBe(document);
-    expect(element.contains(out)).toBe(true);
+    expect(out.getRootNode()).toBe(element.shadowRoot);
+    expect(element.shadowRoot.contains(out)).toBe(true);
     expect(isShownWithin(out, getByTestId(PageObjectId.MAIN_PANEL))).toBe(true);
   });
 
-  it('puts its writeable elements in the page’s DOM', async () => {
+  it('keeps its writeable elements inside its shadow root', async () => {
     const { instance, element } = await mount({ openChatByDefault: true });
     const writeable = Object.values(instance.writeableElements);
     expect(writeable.length).toBeGreaterThan(0);
     expect(
       writeable.filter(
-        (node) => node.getRootNode() !== document || !element.contains(node)
+        (node) =>
+          node.getRootNode() !== element.shadowRoot ||
+          !element.shadowRoot.contains(node)
       )
     ).toEqual([]);
     expect(isInFlatTree(instance.writeableElements.footerElement)).toBe(true);
