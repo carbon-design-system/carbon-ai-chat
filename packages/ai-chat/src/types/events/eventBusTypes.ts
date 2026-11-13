@@ -159,15 +159,15 @@ export enum BusEventType {
   WORKSPACE_OPEN = 'workspace:open',
 
   /**
-   * Fired before a workspace closes, including when `restartConversation` closes an open workspace. The chat waits
-   * for its handlers, but a handler can't stop the close: a restart closes the workspace even if a handler throws.
-   * Closing a workspace that's already closed fires nothing.
+   * Fired before a workspace closes, including when `restartConversation` or `clearConversation` closes an open
+   * workspace. The chat waits for its handlers, but a handler can't stop the close: a restart or clear closes the
+   * workspace even if a handler throws. Closing a workspace that's already closed fires nothing.
    */
   WORKSPACE_PRE_CLOSE = 'workspace:pre:close',
 
   /**
-   * Fired after a workspace closes, including when `restartConversation` closes an open workspace. Closing a
-   * workspace that's already closed fires nothing.
+   * Fired after a workspace closes, including when `restartConversation` or `clearConversation` closes an open
+   * workspace. Closing a workspace that's already closed fires nothing.
    */
   WORKSPACE_CLOSE = 'workspace:close',
 

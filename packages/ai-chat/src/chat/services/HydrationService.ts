@@ -381,16 +381,16 @@ class HydrationService {
       // it visible for.
       resetStopStreamingButton(store);
 
-      // The restart below would close an open workspace with no events, so close it through its panel first. A
-      // failing close handler can't stop the restart, which closes the workspace either way.
-      if (fireEvents && store.getState().workspacePanelState.isOpen) {
+      // The restart below would close an open workspace with no events, so close it through its panel first, for a
+      // clear too. A failing close handler can't stop the restart, which closes the workspace either way.
+      if (store.getState().workspacePanelState.isOpen) {
         try {
           await serviceManager.customPanelManager
             .getPanel(PanelType.WORKSPACE)
             .close();
         } catch (error) {
           consoleError(
-            'A workspace close handler failed during a restart. The restart closes the workspace anyway.',
+            'A workspace close handler failed while the conversation was cleared. The workspace closes anyway.',
             error
           );
         }
