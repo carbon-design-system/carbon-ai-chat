@@ -136,4 +136,27 @@ describe('restart and clear on a mounted chat', () => {
     expect(sources()).toEqual([WELCOME]);
     expect(ready.count()).toBe(1);
   });
+
+  it('loads history once for a send before the first open, after a clear', async () => {
+    let loads = 0;
+    const { instance, backend, ready } = await closedChat(
+      {},
+      {
+        customLoadHistory: async (): Promise<HistoryItem[]> => {
+          loads += 1;
+          return [];
+        },
+      }
+    );
+    await act(() => instance.messaging.clearConversation());
+    await act(() => instance.send('hello'));
+    await waitFor(() => expect(ready.count()).toBe(1));
+    expect(loads).toBe(1);
+    expect(backend.texts()).toContain('hello');
+
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await pause();
+    expect(loads).toBe(1);
+    expect(ready.count()).toBe(1);
+  });
 });
