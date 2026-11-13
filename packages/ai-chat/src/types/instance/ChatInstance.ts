@@ -245,8 +245,8 @@ interface ChatActions {
    * (markdown supported) to be displayed in the Catastrophic Error Panel. The call fires no event, and the panel's
    * state isn't part of {@link ChatInstance.state}.
    *
-   * Each call replaces the panel's state from the call before. A call without a title or body text shows the
-   * default text from {@link PublicConfig.strings}, and a call without `hideRetryButton` shows the retry button.
+   * Each call merges its fields into the panel's state. Omitted title, body text, and `hideRetryButton` fields retain
+   * their prior values. Until you set them, the panel uses {@link PublicConfig.strings} and shows the retry button.
    * Restarting the conversation closes the panel and clears what earlier calls set.
    *
    * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
