@@ -83,7 +83,8 @@ describe('launcher', () => {
     expect(byTestId(PageObjectId.LAUNCHER)).not.toBeNull();
   });
 
-  it('comes back from the header close button, with the reason ViewChangeReason.MAIN_WINDOW_MINIMIZED', async () => {
+  // MAIN-NOTES M26 (2.0.0): the emitted literal differs from the enum value.
+  it('comes back from the header close button, with the snake_case reason', async () => {
     const backend = fakeBackend({ autoResolve: true });
     const { instance } = await contractChat({
       openChatByDefault: true,
@@ -102,8 +103,9 @@ describe('launcher', () => {
       BusEventType.VIEW_CHANGE,
     ]);
     for (const event of events.events as BusEventViewChange[]) {
-      expect(event.reason).toBe(ViewChangeReason.MAIN_WINDOW_MINIMIZED);
-      // A host that compares with the string, not the enum, still matches.
+      expect(ViewChangeReason.MAIN_WINDOW_MINIMIZED).toBe(
+        'mainWindowMinimized'
+      );
       expect(event.reason).toBe('main_window_minimized');
       expect(event.oldViewState).toEqual({ launcher: false, mainWindow: true });
     }
