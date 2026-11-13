@@ -366,9 +366,8 @@ describe('input.actions', () => {
     await openChat(actionsConfig(jest.fn()));
     expect(allByRole('menuitem', 'Contract action')).toHaveLength(0);
     await click(byRole('button', STRINGS.input_actionsMenuLabel));
-    expect(byRole('menuitem', 'Contract action')).toBe(
-      byTestId('contract-action')
-    );
+    const item = await waitFor(() => byRole('menuitem', 'Contract action'));
+    expect(item).toBe(byTestId('contract-action'));
     expect(
       byRole('menuitem', 'Contract disabled action').getAttribute(
         'aria-disabled'
@@ -380,7 +379,7 @@ describe('input.actions', () => {
     const onClick = jest.fn();
     await openChat(actionsConfig(onClick));
     await click(byRole('button', STRINGS.input_actionsMenuLabel));
-    await click(byRole('menuitem', 'Contract action'));
+    await click(await waitFor(() => byRole('menuitem', 'Contract action')));
     expect(onClick.mock.calls).toEqual([['enabled']]);
     await waitFor(() =>
       expect(allByRole('menuitem', 'Contract action')).toHaveLength(0)
@@ -399,7 +398,9 @@ describe('input.actions', () => {
       input: { actions: [{ text: 'Contract text action', onClick }] },
     });
     await click(byRole('button', STRINGS.input_actionsMenuLabel));
-    await click(byRole('menuitem', 'Contract text action'));
+    await click(
+      await waitFor(() => byRole('menuitem', 'Contract text action'))
+    );
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
