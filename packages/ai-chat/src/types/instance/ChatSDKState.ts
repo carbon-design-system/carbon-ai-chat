@@ -67,13 +67,15 @@ export interface ChatSDKState {
 
   /**
    * The failure behind a `status` of `error`, or `null` when there is none. It's set and cleared
-   * together with `status`. A send that fails or times out, a failed history load, or a streamed
-   * response the chat can't process sets it. The next send, a restart, or a history load clears it,
-   * and so does a human agent's send that the service desk confirms late.
+   * together with `status`. A send that fails or times out, a failed history load, a streamed
+   * response the chat can't process, or {@link ChatSDKInstanceMessaging.failTurn} sets it. The next
+   * send, a restart, a history load, or {@link ChatSDKInstanceMessaging.clearError} clears it, and
+   * so does a human agent's send that the service desk confirms late.
    *
    * It has the same fields as the object {@link PublicConfig.onError} gets for that failure,
    * with `messageID` naming the failed request when the error belongs to a turn. A failure the
-   * chat doesn't report to `onError`, such as a human agent's send timing out, still sets it.
+   * chat doesn't report to `onError`, such as a human agent's send timing out or a turn you fail
+   * with `failTurn`, still sets it.
    * The object is frozen, but `otherData` keeps its reference, so it can be a live `Error`.
    *
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.

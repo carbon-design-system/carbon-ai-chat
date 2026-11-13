@@ -20,6 +20,30 @@ import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
 import type { StreamResponseMeta } from './state/StreamState';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
+import type { ChatSDKErrorData } from '../../../types/config/ChatSDKErrorData';
+import type { FailTurnOptions } from '../../../types/config/ChatSDKInstanceMessaging';
+import { MessageErrorState } from '../../../types/messaging/LocalMessageItem';
+import {
+  isAgentMessage,
+  lastTurnRequestID,
+  turnHasResponse,
+  turnRequestID,
+} from './state/turnTarget';
+
+/** What `state.error.message` says when `failTurn` gets no message. */
+const DEFAULT_TURN_FAILED_MESSAGE = 'The turn was marked failed.';
+
+/** The turn `failTurn` fails. */
+interface FailTarget {
+  /** The request's ID in the store and in conversation state. */
+  key: string;
+  /** Its send runs or a response streams, so its signal aborts. */
+  isActive: boolean;
+  /** The current queue request, when it's this turn's. */
+  pending: PendingMessageRequest | undefined;
+  /** Streams no request owns, settled with the last turn. */
+  ownerless: string[];
+}
 
 /** The turn a stop was started for: the current request, if any, in its chat generation. */
 interface StopTarget {
@@ -41,6 +65,261 @@ class TerminationWorkflow {
       return Promise.resolve();
     }
     return this.stopTurn(this.chatShowsStopButton(), false);
+  }
+
+  /**
+   * `messaging.failTurn()` (#2354): fails the active turn, else the last one, with the display and
+   * announcement of a failure the chat finds, but without `onError`. A running turn ends the way a
+   * timed-out one does, not the way Stop ends it: no `STOP_STREAMING`, no "Request canceled" note.
+   */
+  async failTurn(options: FailTurnOptions = {}): Promise<void> {
+    const { messageCoordinator } = this.serviceManager;
+    // A removed chat's leftover instance does nothing.
+    if (this.serviceManager.isShutdown) {
+      return;
+    }
+    const target = this.failTurnTarget(options.messageID);
+    const error: ChatSDKErrorData = {
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: options.error?.message ?? DEFAULT_TURN_FAILED_MESSAGE,
+      otherData: options.error?.otherData,
+      // The ID the host's customSendMessage got, which onError reports for a failed send.
+      messageID: messageCoordinator.hostRequestID(target.key),
+    };
+    const generation = messageCoordinator.currentGeneration;
+    // A failed turn takes the new error. It already shows and announced its failure, but a send
+    // the chat failed can still be waiting on the host.
+    if (messageCoordinator.hasFailureForRequest(target.key)) {
+      messageCoordinator.fail(error, generation, target.key);
+      if (target.pending && !target.pending.isProcessed) {
+        this.abortTurn(target);
+        this.settleFailedRequest(target.pending, error.message);
+      }
+      return;
+    }
+    if (target.isActive) {
+      this.abortTurn(target);
+      // An abort listener can restart the chat, which settles the turn itself.
+      if (!messageCoordinator.isCurrent(generation)) {
+        return;
+      }
+    }
+    // Only the current request's loading indicator is this turn's to end.
+    const current = messageCoordinator.getCurrentRequest();
+    const ownsLoading = !current || current === target.pending;
+    messageCoordinator.fail(error, generation, target.key);
+    // Stopping the request also drops chunks that arrive for it later.
+    const streamingIDs = [
+      ...messageCoordinator.requestStopped(target.key, generation),
+      ...target.ownerless.filter((responseID) =>
+        messageCoordinator.responseStopped(responseID, generation)
+      ),
+    ];
+    this.showTurnFailure(target.key, streamingIDs, generation);
+    if (ownsLoading) {
+      messageCoordinator.messageLoadingManager.end();
+    }
+    this.settleFailedRequest(target.pending, error.message);
+    this.hideStopStreamingButtonIfIdle();
+    messageCoordinator.announceSendFailure();
+  }
+
+  /**
+   * The turn `failTurn` targets. Its `key` is the request's ID in the store and in conversation
+   * state; a `pre:send` handler may have given the host a different one. Throws for an unknown ID,
+   * an agent turn, a turn that's neither active nor last, or a conversation with no turn.
+   */
+  private failTurnTarget(messageID: string | undefined): FailTarget {
+    const { messageCoordinator } = this.serviceManager;
+    const { currentKey, activeKeys, lastKey } = this.turnKeys();
+    const key =
+      messageID === undefined
+        ? (currentKey ?? [...activeKeys][0] ?? lastKey)
+        : this.turnKeyOf(messageID, activeKeys, lastKey);
+    this.assertCanFail(key, messageID, activeKeys, lastKey);
+    // A stream with no owner belongs to the last turn; stop() settles it the same way.
+    const ownerless =
+      key === lastKey ? messageCoordinator.ownerlessActiveResponses() : [];
+    const current = messageCoordinator.getCurrentRequest();
+    return {
+      key,
+      isActive: activeKeys.has(key) || ownerless.length > 0,
+      pending:
+        current && messageCoordinator.requestKey(current.message.id) === key
+          ? current
+          : undefined,
+      ownerless,
+    };
+  }
+
+  /**
+   * The current request's key while it sends or streams; every turn with a response still
+   * streaming; and the last turn, by its request's key.
+   */
+  private turnKeys() {
+    const { messageCoordinator } = this.serviceManager;
+    const current = messageCoordinator.getCurrentRequest();
+    const currentKey =
+      current && (!current.isProcessed || current.isStreaming)
+        ? messageCoordinator.requestKey(current.message.id)
+        : undefined;
+    const activeKeys = messageCoordinator.activeResponseOwners();
+    if (currentKey) {
+      activeKeys.add(currentKey);
+    }
+    const lastID = lastTurnRequestID(
+      this.turnMessages(),
+      messageCoordinator.waitingRequestIDs()
+    );
+    const lastKey = lastID && messageCoordinator.requestKey(lastID);
+    return { currentKey, activeKeys, lastKey };
+  }
+
+  private assertCanFail(
+    key: string | undefined,
+    messageID: string | undefined,
+    activeKeys: ReadonlySet<string>,
+    lastKey: string | undefined
+  ) {
+    if (!key) {
+      throw new Error(
+        'The conversation has no turn to fail. Call failTurn after a message is sent.'
+      );
+    }
+    if (isAgentMessage(key, this.turnMessages())) {
+      throw new Error(
+        'The turn is with a human agent, so failTurn failed nothing. It fails assistant turns only.'
+      );
+    }
+    if (!activeKeys.has(key) && key !== lastKey) {
+      throw new Error(
+        `The message "${messageID}" isn't in the active or last turn, so failTurn failed nothing. Pass an ID from that turn, or leave messageID out.`
+      );
+    }
+  }
+
+  /** The key of the request whose turn `messageID` names, by any of its IDs. */
+  private turnKeyOf(
+    messageID: string,
+    activeKeys: ReadonlySet<string>,
+    lastKey: string | undefined
+  ) {
+    const { messageCoordinator } = this.serviceManager;
+    const turnMessages = this.turnMessages();
+    if (isAgentMessage(messageID, turnMessages)) {
+      throw new Error(
+        `The message "${messageID}" is from a human agent chat, so failTurn failed nothing. It fails assistant turns only.`
+      );
+    }
+    const key = messageCoordinator.requestKey(messageID);
+    if (activeKeys.has(key) || key === lastKey) {
+      return key;
+    }
+    const owner =
+      turnRequestID(
+        messageID,
+        turnMessages,
+        messageCoordinator.responseRequestID(messageID)
+      ) ?? messageCoordinator.responseRequestID(messageID);
+    if (!owner) {
+      throw new Error(
+        `No message has the ID "${messageID}", so failTurn failed nothing.`
+      );
+    }
+    return messageCoordinator.requestKey(owner);
+  }
+
+  private turnMessages() {
+    const state = this.serviceManager.store.getState();
+    return {
+      messageIDs: state.assistantMessageState.messageIDs,
+      messagesByID: state.allMessagesByID,
+    };
+  }
+
+  /** Aborts every controller the turn's send and streams listen to. They're usually one. */
+  private abortTurn({ key, pending, ownerless }: FailTarget) {
+    const { messageCoordinator } = this.serviceManager;
+    const controllers = new Set<AbortController>();
+    const add = (controller: AbortController | undefined) => {
+      if (controller && !controller.signal.aborted) {
+        controllers.add(controller);
+      }
+    };
+    add(pending?.sendMessageController);
+    add(this.messageAbortControllers.get(key));
+    for (const responseID of [
+      ...messageCoordinator.activeResponsesOf(key),
+      ...ownerless,
+    ]) {
+      add(this.messageAbortControllers.get(responseID));
+      add(
+        this.inboundStreaming.getController(
+          this.inboundStreaming.getStreamingMeta(responseID)?.controllerToken
+        )
+      );
+    }
+    for (const controller of controllers) {
+      controller.abort(CancellationReason.TURN_FAILED);
+    }
+  }
+
+  /**
+   * Ends the turn's streams and marks what failed: each response still streaming shows the inline
+   * error; a turn with no response marks its request failed, as a failed send does.
+   */
+  private showTurnFailure(
+    key: string,
+    streamingIDs: string[],
+    generation: number
+  ) {
+    const { messageCoordinator, store } = this.serviceManager;
+    for (const responseID of streamingIDs) {
+      this.inboundStreaming.clearStreamingResponse(responseID);
+      this.clearStreamingCancellation(responseID);
+      messageCoordinator.endIncomingStreamingMessage(responseID, generation);
+      messageCoordinator.markResponseFailedWhileStreaming(responseID);
+      store.dispatch(
+        actions.setMessageErrorState(
+          responseID,
+          MessageErrorState.FAILED_WHILE_STREAMING
+        )
+      );
+    }
+    const request = store.getState().allMessagesByID[key];
+    if (
+      !turnHasResponse(key, this.turnMessages()) &&
+      request?.history?.error_state !== MessageErrorState.FAILED
+    ) {
+      store.dispatch(
+        actions.setMessageErrorState(key, MessageErrorState.FAILED)
+      );
+    }
+  }
+
+  /**
+   * Settles the turn's request if it's still in the queue: a send not yet settled rejects with
+   * `message`, and the queue moves on. A late resolve from the host is ignored.
+   */
+  private settleFailedRequest(
+    pending: PendingMessageRequest | undefined,
+    message: string
+  ) {
+    if (!pending) {
+      return;
+    }
+    if (!pending.isProcessed) {
+      // showTurnFailure marked the request, if the turn marks it.
+      this.serviceManager.messageCoordinator.rejectFinalErrorOnMessage(
+        pending,
+        message,
+        false
+      );
+    } else if (pending.isStreaming) {
+      // The send resolved, but its chunk stream kept the queue waiting for a final response.
+      pending.isStreaming = false;
+      this.moveToNextQueueItem();
+    }
   }
 
   async requestStopFromInput(markPending: () => void): Promise<void> {

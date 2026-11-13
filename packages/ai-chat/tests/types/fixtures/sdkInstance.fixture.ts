@@ -151,6 +151,8 @@ export const sdkMessagingMembers: Record<keyof ChatSDKInstanceMessaging, true> =
   {
     send: true,
     stop: true,
+    failTurn: true,
+    clearError: true,
     upsertMessage: true,
     removeMessages: true,
     clearConversation: true,
@@ -178,6 +180,16 @@ sdk.messaging.send();
 
 // Stop takes nothing and never needs a result (#1816 O3).
 export const stopped: Promise<void> = sdk.messaging.stop();
+
+// Failing a turn needs no options; clearing returns nothing (#2354).
+export const failed: Promise<void> = sdk.messaging.failTurn();
+export const failedWith: Promise<void> = chat.messaging.failTurn({
+  messageID: 'request-1',
+  error: { message: 'The stream closed.', otherData: new Error('closed') },
+});
+export const cleared: void = sdk.messaging.clearError();
+// @ts-expect-error The error's type is always MESSAGE_COMMUNICATION.
+sdk.messaging.failTurn({ error: { errorType: 'other' } });
 
 // Prebuilt-chat callers keep both older message methods.
 chat.messaging.addMessage(message);
