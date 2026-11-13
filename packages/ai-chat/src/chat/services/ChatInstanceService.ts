@@ -395,6 +395,10 @@ interface RestartConversationOptions {
    * Indicates if the "pre:restartConversation" and "restartConversation" events should be fired. This defaults to true.
    */
   fireEvents?: boolean;
+  /**
+   * Indicates if file uploads still in progress should be canceled. This defaults to true.
+   */
+  cancelUploads?: boolean;
 }
 
 export { ChatInstanceService };
