@@ -14,7 +14,7 @@ import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyH
 import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { getURLHostName } from '../../../utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
-import { InlineError } from '../../../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
 interface ClickableImageProps {
@@ -119,7 +119,7 @@ function Image(props: ImageProps) {
   const Icon = renderIcon;
 
   if (isError) {
-    return <InlineError text={imageError} />;
+    return <InlineError>{imageError}</InlineError>;
   }
 
   if (inline) {

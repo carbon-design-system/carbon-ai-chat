@@ -57,7 +57,6 @@ import {
   GenericItem,
   Message,
   MessageResponse,
-  MessageResponseTypes,
 } from '../../types/messaging/Messages';
 import ObjectMap from '../../types/utilities/ObjectMap';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
@@ -509,24 +508,14 @@ function resolvePreviousLocalItem(
 function canReuseLocalItem(
   matchedPrev: LocalMessageItem | undefined,
   item: GenericItem,
-  isStreaming: boolean,
-  message: MessageResponse
+  isStreaming: boolean
 ): boolean {
   if (!matchedPrev) {
     return false;
   }
   const { streamingState } = matchedPrev.ui_state;
   const prevIsStreaming = Boolean(streamingState && !streamingState.isDone);
-  if (prevIsStreaming !== isStreaming || !isEqual(matchedPrev.item, item)) {
-    return false;
-  }
-  return (
-    (item.response_type as string) !== MessageResponseTypes.SYSTEM ||
-    isEqual(
-      matchedPrev.ui_state.cannotDraw?.missing ?? [],
-      findDrawIssues(item, message)
-    )
-  );
+  return prevIsStreaming === isStreaming && isEqual(matchedPrev.item, item);
 }
 
 /**
@@ -611,7 +600,7 @@ function buildUpsertedLocalItem(
   localItem.ui_state.id = localID;
   localItem.fullMessageID = message.id;
   applyUpsertUIState(localItem, matchedPrev, isStreaming);
-  const missing = findDrawIssues(item, message);
+  const missing = findDrawIssues(item);
   if (missing.length) {
     localItem.ui_state.cannotDraw = { missing };
     return localItem;
@@ -725,7 +714,7 @@ function rebuildLocalItemsForUpsert(
 
   shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
-    let localItem = canReuseLocalItem(matchedPrev, item, isStreaming, message)
+    let localItem = canReuseLocalItem(matchedPrev, item, isStreaming)
       ? matchedPrev
       : buildUpsertedLocalItem(
           item,

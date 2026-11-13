@@ -13,7 +13,7 @@ import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItemStreamingState } from '../../../../types/messaging/LocalMessageItem';
-import { InlineError } from '../../responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { MarkdownWithDefaults } from '../MarkdownWithDefaults/MarkdownWithDefaults';
 import { deriveStreamingItemText } from '../../../utils/streamingUtils';
 import { TextItem } from '../../../../types/messaging/Messages';
@@ -68,9 +68,9 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
         highlight={true}
       />
       {isStreamingError && (
-        <InlineError
-          text={languagePack.conversationalSearch_streamingIncomplete}
-        />
+        <InlineError>
+          {languagePack.conversationalSearch_streamingIncomplete}
+        </InlineError>
       )}
     </>
   );

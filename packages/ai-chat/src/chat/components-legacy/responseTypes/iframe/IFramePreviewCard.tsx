@@ -66,6 +66,7 @@ function IFramePreviewCardComponent({
         source={image_url}
         displayURL={source}
         altText={iframe_ariaImageAltText}
+        imageError={formatMessage({ id: 'errors_generalContent' })}
         renderIcon={ArrowRight}
         onClick={handleCardClick}
         preventInlineError

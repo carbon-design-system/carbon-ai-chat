@@ -18,6 +18,11 @@ $block-class: #{$prefix}-system-message;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+// Standalone lines sit between messages and carry their own outer spacing.
+// Non-standalone lines sit inside a message bubble, which owns the spacing.
+:host(#{$block-class}[standalone]) {
   margin-block: layout.$spacing-07 0;
   margin-inline: layout.$spacing-05;
 }

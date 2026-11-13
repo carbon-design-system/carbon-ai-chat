@@ -296,7 +296,7 @@ test.describe('every demo response draws', () => {
       );
 
       const responses = page.locator(
-        '.cds-aichat--message--response, .cds-aichat--system-message-standalone'
+        '.cds-aichat--message--response, cds-aichat-system-message:not(.cds-aichat--message--response *)'
       );
       await expect(responses).toHaveCount(expected.items);
       // Slotted custom responses live in the container's light DOM, outside the message wrappers.

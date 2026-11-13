@@ -53,6 +53,30 @@ describe(blockClass, () => {
     });
   });
 
+  describe('standalone', () => {
+    it('defaults to true and adds outer spacing', async () => {
+      const el = await fixture<CDSAIChatSystemMessage>(
+        html`<cds-aichat-system-message>Between</cds-aichat-system-message>`
+      );
+      expect(el.standalone).to.equal(true);
+      expect(el.hasAttribute('standalone')).to.be.true;
+      expect(getComputedStyle(el).marginBlockStart).to.not.equal('0px');
+      expect(getComputedStyle(el).marginInlineStart).to.not.equal('0px');
+    });
+
+    it('adds no outer spacing when standalone is false', async () => {
+      const el = await fixture<CDSAIChatSystemMessage>(
+        html`<cds-aichat-system-message .standalone=${false}
+          >Inside</cds-aichat-system-message
+        >`
+      );
+      expect(el.hasAttribute('standalone')).to.be.false;
+      const style = getComputedStyle(el);
+      expect(style.marginBlockStart).to.equal('0px');
+      expect(style.marginInlineStart).to.equal('0px');
+    });
+  });
+
   describe('divider', () => {
     it('defaults to false with no divider line', async () => {
       const el = await fixture<CDSAIChatSystemMessage>(

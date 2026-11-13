@@ -17,7 +17,7 @@ import type { OnErrorData } from '../../../types/config/ErrorConfig';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { focusOnFirstFocusableElement } from '../../utils/domUtils';
 import { createDidCatchErrorData } from '../../utils/miscUtils';
-import { InlineError } from '../responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 
 interface PanelWithFocusProps {
   header?: ReactNode;
@@ -126,7 +126,7 @@ export class PanelContentErrorBoundary extends React.Component<
     if (!this.state.didError) {
       return this.props.children;
     }
-    const error = <InlineError text={this.props.errorText} />;
+    const error = <InlineError>{this.props.errorText}</InlineError>;
     if (!this.props.isBody) {
       return error;
     }

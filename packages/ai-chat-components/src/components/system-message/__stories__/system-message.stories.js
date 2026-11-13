@@ -21,6 +21,11 @@ const argTypes = {
     control: 'text',
     description: 'Story-only. The text slotted into the default slot.',
   },
+  standalone: {
+    control: 'boolean',
+    description:
+      'If true (the default), the message adds its own outer spacing. Set to false inside a message bubble.',
+  },
   divider: {
     control: 'boolean',
     description: 'If true, draws a divider line above the message.',
@@ -39,6 +44,7 @@ const argTypes = {
 
 const defaultArgs = {
   text: 'The agent joined the conversation',
+  standalone: true,
   divider: false,
   responseStopped: false,
   showIcon: false,
@@ -49,6 +55,7 @@ export const Default = {
   args: defaultArgs,
   render: (args) => html`
     <cds-aichat-system-message
+      .standalone=${args.standalone}
       ?divider=${args.divider}
       ?response-stopped=${args.responseStopped}
       .icon=${args.showIcon ? Headset16 : undefined}>

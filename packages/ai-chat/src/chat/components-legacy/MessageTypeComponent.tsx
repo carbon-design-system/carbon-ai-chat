@@ -29,6 +29,7 @@ import Feedback, {
   type FeedbackSubmitDetails,
 } from '@carbon/ai-chat-components/es/react/feedback.js';
 import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
+import SystemMessageElement from '@carbon/ai-chat-components/es/react/system-message.js';
 import { SystemMessage } from '../components/responseTypes/message/SystemMessage';
 import { ConnectToHumanAgent } from './responseTypes/humanAgent/ConnectToHumanAgent';
 import { AudioComponent } from '../components/responseTypes/media/AudioComponent';
@@ -40,7 +41,7 @@ import { ConversationalSearch } from '../components/responseTypes/conversational
 import UserDefinedResponse from '../components/responseTypes/userDefined/UserDefinedResponse';
 import MessageCustomFooterSlot from './MessageCustomFooterSlot';
 import { DatePickerComponent } from '../components/responseTypes/datePicker/DatePickerComponent';
-import { InlineError } from '../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
 import { IFrameMessage } from './responseTypes/iframe/IFrameMessage';
 import { Image } from './responseTypes/image/Image';
@@ -369,8 +370,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
         );
       case MessageResponseTypes.SYSTEM:
         return renderSystemMessage(
-          localMessageItem as LocalMessageItem<SystemMessageItem>,
-          message as MessageResponse
+          localMessageItem as LocalMessageItem<SystemMessageItem>
         );
       default:
         return renderUserDefinedResponse(
@@ -460,7 +460,11 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   function renderInlineError(message: LocalMessageItem<TextItem>) {
-    return <InlineError text={message.item.text} />;
+    return (
+      <InlineError>
+        {message.item.text || formatMessage({ id: 'errors_generalContent' })}
+      </InlineError>
+    );
   }
 
   function renderIFrameMessage(message: LocalMessageItem<IFrameItem>) {
@@ -644,11 +648,14 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   }
 
   function renderSystemMessage(
-    _localMessageItem: LocalMessageItem<SystemMessageItem>,
-    message: MessageResponse
+    localMessageItem: LocalMessageItem<SystemMessageItem>
   ) {
     // Render inline system message (within message bubble)
-    return <SystemMessage message={message} standalone={false} />;
+    return (
+      <SystemMessageElement standalone={false}>
+        {localMessageItem.item.title}
+      </SystemMessageElement>
+    );
   }
 
   function scrollChainOfThought(open: boolean, element: HTMLElement) {

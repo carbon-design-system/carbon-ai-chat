@@ -30,7 +30,7 @@ import { deriveStreamingItemText } from '../../../utils/streamingUtils';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { ConversationalSearchItem } from '../../../../types/messaging/Messages';
-import { InlineError } from '../error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { MarkdownWithDefaults } from '../../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { CitationsErrorBoundary } from './CitationsErrorBoundary';
 
@@ -59,6 +59,7 @@ function ConversationalSearch({
   const citationsOpenRef = useRef(false);
   const languagePack = useSelector(
     (state: AppState) => ({
+      errors_generalContent: state.languagePack.errors_generalContent,
       conversationalSearch_citationsLabel:
         state.languagePack.conversationalSearch_citationsLabel,
       conversationalSearch_toggleCitations:
@@ -136,14 +137,15 @@ function ConversationalSearch({
       />
       {isStreamingError && (
         <div slot="answer-error">
-          <InlineError
-            text={languagePack.conversationalSearch_streamingIncomplete}
-          />
+          <InlineError>
+            {languagePack.conversationalSearch_streamingIncomplete}
+          </InlineError>
         </div>
       )}
       <div slot="citations" ref={citationsContainerRef}>
         {citationsOpen && (
-          <CitationsErrorBoundary>
+          <CitationsErrorBoundary
+            errorText={languagePack.errors_generalContent}>
             <Suspense
               fallback={
                 <SkeletonPlaceholder className="cds-aichat--conversational-search__skeleton" />

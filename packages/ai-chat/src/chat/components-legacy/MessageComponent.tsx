@@ -22,7 +22,7 @@ import React, { KeyboardEvent, PureComponent } from 'react';
 
 import { nodeToText } from '../utils/domUtils';
 import { Avatar } from './Avatar';
-import { InlineError } from '../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import VisuallyHidden from '../components/helpers/VisuallyHidden/VisuallyHidden';
 
 // Inline helper components (previously in util/IconHolder.tsx and util/ImageWithFallback.tsx)
@@ -579,9 +579,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           <div className="cds-aichat--assistant-message">
             <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
             <div className="cds-aichat--received cds-aichat--message-vertical-padding cds-aichat--received--text">
-              <InlineError
-                text={this.props.languagePack.errors_singleMessage}
-              />
+              <InlineError>
+                {this.props.languagePack.errors_singleMessage}
+              </InlineError>
             </div>
           </div>
         </div>
@@ -769,7 +769,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const fileStatus = message.history?.file_upload_status;
 
     if (errorState === MessageErrorState.FAILED) {
-      element = <InlineError text={languagePack.errors_singleMessage} />;
+      element = <InlineError>{languagePack.errors_singleMessage}</InlineError>;
       className = 'cds-aichat--message-error-failed';
       showBelowMessage = true;
     } else if (fileStatus === FileStatusValue.UPLOADING) {

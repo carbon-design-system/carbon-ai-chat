@@ -17,7 +17,7 @@ import {
 } from '../../../utils/cspStyleUtils';
 import { getMediaDimensions } from '../../../utils/messageUtils';
 import { getResponsiveElementPaddingValue } from '../../../utils/miscUtils';
-import { InlineError } from '../../../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { IFrameComponent } from './IFrameComponent';
 import { IFrameItem } from '../../../../types/messaging/Messages';
 import { AppState } from '../../../../types/state/AppState';
@@ -66,7 +66,7 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
   }, [ariaAnnouncer, errors_iframeSource]);
 
   if (isError) {
-    return <InlineError text={errors_iframeSource} />;
+    return <InlineError>{errors_iframeSource}</InlineError>;
   }
 
   return (

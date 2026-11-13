@@ -20,7 +20,7 @@ import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
-import { InlineError } from '../error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 
 interface UserDefinedResponseProps extends HasServiceManager {
   /**
@@ -56,9 +56,9 @@ function UserDefinedResponse(props: UserDefinedResponseProps) {
       data-floating-menu-container>
       <slot name={userDefinedRegistryItem.slotName} />
       {isStreamingError && (
-        <InlineError
-          text={languagePack.conversationalSearch_streamingIncomplete}
-        />
+        <InlineError>
+          {languagePack.conversationalSearch_streamingIncomplete}
+        </InlineError>
       )}
     </div>
   );
