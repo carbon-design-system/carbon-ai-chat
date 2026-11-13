@@ -212,6 +212,10 @@ function InputActionsInline({
               disabled={opt.disabled}
               data-testid={opt.testId}
               onClick={() => {
+                // A disabled menu item still gets mouse clicks.
+                if (opt.disabled) {
+                  return;
+                }
                 setOpen(false);
                 runAction(opt);
               }}>

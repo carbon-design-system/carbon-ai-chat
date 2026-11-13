@@ -386,6 +386,44 @@ describe('input.actions', () => {
     );
   });
 
+  /** One disabled action, which records each run of its onClick. */
+  function disabledActionConfig(onClick: jest.Mock): Partial<PublicConfig> {
+    return {
+      strings: STRINGS,
+      input: {
+        actions: [
+          {
+            text: 'Contract disabled action',
+            icon: Add16,
+            disabled: true,
+            onClick,
+          },
+        ],
+      },
+    };
+  }
+
+  it('does not run a disabled action by click or by Enter', async () => {
+    const onClick = jest.fn();
+    await openChat(disabledActionConfig(onClick));
+    await click(byRole('button', STRINGS.input_actionsMenuLabel));
+    const item = await waitFor(() =>
+      byRole('menuitem', 'Contract disabled action')
+    );
+    await click(item);
+    await act(async () => {
+      item.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Enter',
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+    });
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
   it('shows no actions button without actions', async () => {
     await openChat({ strings: STRINGS });
     expect(allByRole('button', STRINGS.input_actionsMenuLabel)).toHaveLength(0);

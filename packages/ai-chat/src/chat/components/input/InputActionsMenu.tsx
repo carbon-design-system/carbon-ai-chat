@@ -84,6 +84,10 @@ function InputActionsMenu({
               disabled={opt.disabled}
               data-testid={opt.testId}
               onClick={() => {
+                // A disabled menu item still gets mouse clicks.
+                if (opt.disabled) {
+                  return;
+                }
                 setOpen(false);
                 if (opt.href) {
                   window.open(opt.href, opt.target || '_self');
