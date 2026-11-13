@@ -435,17 +435,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.cancelHumanAgentJoinedTimer();
     this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
 
-    try {
-      await resolveOrTimeout(
-        this.serviceDesk.endChat({ endedByHumanAgent, preEndChatPayload }),
-        END_CHAT_TIMEOUT_MS
-      );
-    } catch (error) {
-      consoleError(
-        '[doEndChat] An error with the service desk occurred.',
-        error
-      );
-    }
+    await this.endServiceDeskChat(endedByHumanAgent, preEndChatPayload);
 
     if (isConnected && showHumanAgentLeftMessage) {
       const { responseUserProfile } = this.persistedHumanAgentState();
@@ -469,6 +459,27 @@ class HumanAgentServiceImpl implements HumanAgentService {
         BOT_RETURN_DELAY,
         wasSuspended,
         this.serviceManager
+      );
+    }
+  }
+
+  /**
+   * Tells the service desk the chat has ended, waiting at most {@link END_CHAT_TIMEOUT_MS}. An error is logged, not
+   * thrown.
+   */
+  private async endServiceDeskChat(
+    endedByHumanAgent: boolean,
+    preEndChatPayload: unknown
+  ) {
+    try {
+      await resolveOrTimeout(
+        this.serviceDesk.endChat({ endedByHumanAgent, preEndChatPayload }),
+        END_CHAT_TIMEOUT_MS
+      );
+    } catch (error) {
+      consoleError(
+        '[doEndChat] An error with the service desk occurred.',
+        error
       );
     }
   }
@@ -994,10 +1005,15 @@ class HumanAgentServiceImpl implements HumanAgentService {
       setTimeout(this.serviceManager?.appWindow?.requestFocus);
 
       if (!didReconnect) {
-        // If we didn't reconnected, then just end the chat.
+        // The chat can't go on, so a pre:endChat handler's cancel is ignored here.
+        const event = await this.firePreEndChat(false);
+        if (this.serviceDesk) {
+          await this.endServiceDeskChat(false, event.preEndChatPayload);
+        }
         this.chatStarted = false;
         const wasSuspended = this.isSuspended();
         store.dispatch(endChat());
+        await this.fireEndChat(false, false);
 
         if (allowEndChatMessages) {
           // If we didn't reconnect, then show the "end chat" messages to the user.

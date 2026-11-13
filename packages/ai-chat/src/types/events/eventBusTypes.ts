@@ -196,8 +196,9 @@ export enum BusEventType {
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
-   * confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
-   * request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
+   * confirmation modal but it can also be fired if the chat is ended by the agent, or when a page reload can't resume
+   * the chat. Note that this is not fired if a request for an agent is cancelled. The human_agent:endChat event
+   * however is fired in that case.
    */
   HUMAN_AGENT_PRE_END_CHAT = 'human_agent:pre:endChat',
 
@@ -947,7 +948,9 @@ export interface BusEventHumanAgentPreEndChat<
   preEndChatPayload: TPayloadType;
 
   /**
-   * This value may be set by a listener to indicate that the process of ending the chat should be cancelled.
+   * This value may be set by a listener to indicate that the process of ending the chat should be cancelled. It is
+   * ignored when a page reload can't resume the chat, since the chat can't go on; see
+   * {@link ServiceDeskPublicConfig.allowReconnect}.
    */
   cancelEndChat: boolean;
 }

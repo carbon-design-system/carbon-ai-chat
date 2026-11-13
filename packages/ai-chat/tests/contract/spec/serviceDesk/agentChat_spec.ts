@@ -10,6 +10,7 @@
 import { act, waitFor } from '@testing-library/react';
 
 import {
+  BusEventHumanAgentPreEndChat,
   BusEventHumanAgentPreSend,
   BusEventType,
   ChatInstance,
@@ -247,7 +248,46 @@ describe('reloading during an agent chat', () => {
     expect(humanAgent(instance).isConnected).toBe(true);
   });
 
-  it('ends the chat quietly when the desk cannot reconnect', async () => {
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('fires no end events and makes no desk endChat call when the desk reconnects', async () => {
+    await joinThenUnmount();
+    const { desk, instance, reconnect } = await remount(() =>
+      Promise.resolve(true)
+    );
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+    await act(() => instance.send('again'));
+    await waitFor(() => expect(reconnect).toHaveBeenCalledTimes(1));
+    // A short wait proves no end follows.
+    await pause();
+    expect(events.types()).toEqual([]);
+    expect(desk.desk.endChat).not.toHaveBeenCalled();
+  });
+
+  /** The end events and desk call a reload that can't resume the chat makes. */
+  function expectEnded(
+    events: ReturnType<typeof recordEvents>,
+    desk: FakeDesk,
+    preEndChatPayload: unknown = null
+  ): void {
+    expect(events.types()).toEqual([
+      BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      BusEventType.HUMAN_AGENT_END_CHAT,
+    ]);
+    expect(events.of(BusEventType.HUMAN_AGENT_PRE_END_CHAT)[0]).toEqual(
+      expect.objectContaining({ endedByHumanAgent: false })
+    );
+    expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)[0]).toEqual({
+      type: BusEventType.HUMAN_AGENT_END_CHAT,
+      endedByHumanAgent: false,
+      requestCancelled: false,
+    });
+    expect(desk.desk.endChat.mock.calls).toEqual([
+      [{ endedByHumanAgent: false, preEndChatPayload }],
+    ]);
+  }
+
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('ends the chat with the end events and the desk endChat when the desk cannot reconnect', async () => {
     await joinThenUnmount();
     const { desk, instance, reconnect } = await remount(() =>
       Promise.resolve(false)
@@ -255,12 +295,15 @@ describe('reloading during an agent chat', () => {
     const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     await act(() => instance.send('again'));
     await waitFor(() => expect(reconnect).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
-    expect(events.types()).toEqual([]);
-    expect(desk.desk.endChat).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expectEnded(events, desk);
   });
 
-  it('does not try to reconnect when allowReconnect is false, and ends the chat', async () => {
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('does not try to reconnect when allowReconnect is false, and ends the chat with the end events', async () => {
     await joinThenUnmount();
     const { desk, instance, reconnect } = await remount(
       () => Promise.resolve(true),
@@ -268,10 +311,32 @@ describe('reloading during an agent chat', () => {
     );
     const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
     await act(() => instance.send('again'));
-    await waitFor(() => expect(humanAgent(instance).isConnected).toBe(false));
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
     expect(reconnect).not.toHaveBeenCalled();
-    expect(events.types()).toEqual([]);
-    expect(desk.desk.endChat).not.toHaveBeenCalled();
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expectEnded(events, desk);
+  });
+
+  // @covers event.human_agent:pre:endChat event.human_agent:endChat
+  it('ends the chat even when a pre:endChat handler cancels, passing its payload to the desk', async () => {
+    await joinThenUnmount();
+    const { desk, instance } = await remount(() => Promise.resolve(false));
+    instance.on({
+      type: BusEventType.HUMAN_AGENT_PRE_END_CHAT,
+      handler: (event: BusEventHumanAgentPreEndChat) => {
+        event.cancelEndChat = true;
+        event.preEndChatPayload = { reason: 'reload' };
+      },
+    });
+    const events = recordEvents(instance, HUMAN_AGENT_EVENTS);
+    await act(() => instance.send('again'));
+    await waitFor(() =>
+      expect(events.of(BusEventType.HUMAN_AGENT_END_CHAT)).toHaveLength(1)
+    );
+    expect(humanAgent(instance).isConnected).toBe(false);
+    expectEnded(events, desk, { reason: 'reload' });
   });
 });
 
