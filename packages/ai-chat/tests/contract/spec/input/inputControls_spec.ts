@@ -391,4 +391,28 @@ describe('input.actions', () => {
     await openChat({ strings: STRINGS });
     expect(allByRole('button', STRINGS.input_actionsMenuLabel)).toHaveLength(0);
   });
+
+  it('lists an action without an icon by its text, and runs it', async () => {
+    const onClick = jest.fn();
+    await openChat({
+      strings: STRINGS,
+      input: { actions: [{ text: 'Contract text action', onClick }] },
+    });
+    await click(byRole('button', STRINGS.input_actionsMenuLabel));
+    await click(byRole('menuitem', 'Contract text action'));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  // @covers config.input.expanded
+  it('shows an action without an icon as a button named by its text in the expanded layout', async () => {
+    const onClick = jest.fn();
+    await openChat({
+      input: {
+        expanded: true,
+        actions: [{ text: 'Contract text action', onClick }],
+      },
+    });
+    await click(byRole('button', 'Contract text action'));
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
 });

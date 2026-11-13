@@ -22,6 +22,9 @@ import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 const AddIcon = carbonIconToReact(Add16);
 
 function renderMenuItemIcon(icon: ToolbarAction['icon']) {
+  if (!icon) {
+    return null;
+  }
   const carbonIcon = transformReactIconToCarbonIcon(icon, 16);
   const IconComp = carbonIconToReact(
     carbonIcon as Parameters<typeof carbonIconToReact>[0]
