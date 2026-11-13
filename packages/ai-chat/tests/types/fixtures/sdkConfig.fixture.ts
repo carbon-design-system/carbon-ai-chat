@@ -15,6 +15,7 @@
 
 import {
   OnErrorType,
+  ScreenShareState,
   ViewType,
   type ChatInstance,
   type ChatSDKConfig,
@@ -61,6 +62,24 @@ export const sdkServiceDeskFields: Record<
   availabilityTimeoutSeconds: true,
   agentJoinTimeoutSeconds: true,
   allowReconnect: true,
+  onScreenShareRequest: true,
+};
+
+// The screen-share hook gets a signal; a hook written without it still fits.
+export const screenShareHookWithSignal: ChatSDKServiceDeskConfig = {
+  onScreenShareRequest: ({ signal }) =>
+    new Promise((resolve) => {
+      signal.addEventListener('abort', () =>
+        resolve(ScreenShareState.CANCELLED)
+      );
+    }),
+};
+export const screenShareHookWithoutOptions: ChatSDKServiceDeskConfig = {
+  onScreenShareRequest: async () => ScreenShareState.DECLINED,
+};
+export const prebuiltScreenShareHook: ServiceDeskPublicConfig = {
+  skipConnectHumanAgentCard: true,
+  onScreenShareRequest: async () => ScreenShareState.ACCEPTED,
 };
 export const sdkErrorFields: Record<keyof ChatSDKErrorData, true> = {
   errorType: true,

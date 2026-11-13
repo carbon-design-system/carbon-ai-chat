@@ -66,6 +66,17 @@ export type PublicChatHumanAgentState = Readonly<
   PersistedHumanAgentState & {
     /** Indicates if Carbon AI Chat is attempting to connect to an agent. */
     isConnecting: boolean;
+
+    /**
+     * `true` from the moment the user accepts a service desk's request to share their screen until
+     * the share ends: the service desk ends it, the user clicks the prebuilt chat's "stop sharing"
+     * button, you call {@link ChatInstanceServiceDeskActions.stopScreenShare}, or the conversation
+     * with the agent ends. It's never saved, so a reload starts it as `false`. A chat that was
+     * removed keeps its last state, so it can still read `true`.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isScreenSharing?: boolean;
   }
 >;
 

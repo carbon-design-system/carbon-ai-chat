@@ -166,11 +166,13 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
     sources: (state) => [
       state.persistedToBrowserStorage.humanAgentState,
       state.humanAgentState.isConnecting,
+      state.humanAgentState.isScreenSharing,
     ],
-    project: ([persisted, isConnecting]) =>
+    project: ([persisted, isConnecting, isScreenSharing]) =>
       freezeClone({
         ...(persisted as object),
         isConnecting,
+        isScreenSharing,
       }),
   },
   {

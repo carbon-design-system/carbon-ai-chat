@@ -75,6 +75,27 @@ export interface ChatInstanceServiceDeskActions {
   }) => Promise<void>;
 
   /**
+   * Stops a screen share the user accepted, from your own control. The chat tells your service desk
+   * through {@link ServiceDesk.screenShareStop} and adds the "sharing ended" status to the
+   * conversation, as the prebuilt chat's "stop sharing" button does. It does nothing when no share is
+   * running. Read `state.get().humanAgent.isScreenSharing` to know whether one is.
+   *
+   * @example Stop sharing from your own button
+   * ```ts
+   * instance.state.select(
+   *   (state) => state.humanAgent.isScreenSharing,
+   *   (isScreenSharing) => {
+   *     stopSharingButton.hidden = !isScreenSharing;
+   *   },
+   * );
+   * stopSharingButton.addEventListener("click", () => {
+   *   instance.serviceDesk.stopScreenShare();
+   * });
+   * ```
+   */
+  stopScreenShare: () => Promise<void>;
+
+  /**
    * Ends the conversation with a human agent. This does not request confirmation from the user first. If the user
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function
