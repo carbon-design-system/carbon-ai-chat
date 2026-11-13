@@ -289,7 +289,8 @@ export class AutocompleteController {
 
   /**
    * Apply a user selection. Routes by trigger type:
-   * - starter → insert text + (if not send-disabled) fire onStarterSelected
+   * - starter → insert text + (unless send is disabled or the starters set
+   *   `disableDirectSend`) fire onStarterSelected
    * - mention / command → insert chip node at trigger range
    * - autocomplete → insert plain text at trigger range
    */
@@ -309,7 +310,7 @@ export class AutocompleteController {
       const text = item.value ?? item.label;
       editor.commands.insertContent(text);
       this.dismiss();
-      if (!this._isSendDisabled) {
+      if (!this._isSendDisabled && !this._starters?.disableDirectSend) {
         this._onStarterSelected?.(projectRawValue(editor));
       }
       return;

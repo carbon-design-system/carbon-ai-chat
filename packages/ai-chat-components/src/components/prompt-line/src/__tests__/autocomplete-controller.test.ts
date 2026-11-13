@@ -431,6 +431,29 @@ describe('AutocompleteController', () => {
     expect(starterFired).to.equal(false);
   });
 
+  it('disableDirectSend on starters inserts the starter without firing onStarterSelected', async () => {
+    const { editor, promptLine } = makeEditorStub();
+    let starterFired = false;
+    const controller = new AutocompleteController({
+      starters: { ...STARTERS, disableDirectSend: true },
+      isSendDisabled: false,
+      onStarterSelected: () => {
+        starterFired = true;
+      },
+      onChange: () => {},
+    });
+    controller.setPromptLine(promptLine);
+    controller.handleTriggerChange({
+      type: 'starter',
+      query: '',
+      triggerOffset: 0,
+    });
+    await flush();
+    controller.select(STARTERS.items[0]);
+    expect(editor.rawValue).to.equal('Say hello');
+    expect(starterFired).to.equal(false);
+  });
+
   it('setConfigs() updates configs and re-resolves the active trigger', async () => {
     let last: SuggestionItem[] = [];
     const controller = new AutocompleteController({

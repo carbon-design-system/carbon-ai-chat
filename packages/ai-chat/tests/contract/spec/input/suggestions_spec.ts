@@ -307,14 +307,14 @@ describe('input.starters', () => {
     expect(instance.state.get().input.rawValue).toBe('');
   });
 
-  it('still sends with disableDirectSend', async () => {
-    const { backend } = await openEditor({
+  it('inserts a clicked starter instead of sending it with disableDirectSend', async () => {
+    const { instance, backend } = await openEditor({
       input: { starters: { disableDirectSend: true, items: [STARTER] } },
     });
     await choose('Contract starter');
-    // src/types/config/InputConfig.ts:31 says `disableDirectSend` "inserts a
-    // clicked item into the editor instead of sending it", and
-    // `StartersConfig` takes the field; on `main` starters ignore it.
-    await waitFor(() => expect(backend.texts()).toEqual(['starter value']));
+    // A short wait proves no send follows.
+    await pause();
+    expect(backend.requests).toHaveLength(0);
+    expect(instance.state.get().input.rawValue).toBe('starter value');
   });
 });
