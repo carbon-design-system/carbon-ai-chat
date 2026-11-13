@@ -432,19 +432,20 @@ class HydrationService {
 
     this.serviceManager.messageUpsertCoordinator.clearAll();
 
-    // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
-    // below flows to its onStateChange callback like any other change.
-    const { persistedState } = store.getState().config.public;
-    if (!persistedState?.initialState && !persistedState?.onStateChange) {
-      this.serviceManager.userSessionStorageService.clearSession();
-    }
-
     this.serviceManager.store.dispatch(
       actions.setAppStateValue(
         'persistedToBrowserStorage',
         newPersistedToBrowserStorage
       )
     );
+
+    // The store subscription saves the reset synchronously, so the record is cleared after the
+    // dispatch; it's saved again at the next change. When the host owns persistence there is no
+    // sessionStorage to clear, and the reset flows to its onStateChange callback like any other change.
+    const { persistedState } = store.getState().config.public;
+    if (!persistedState?.initialState && !persistedState?.onStateChange) {
+      this.serviceManager.userSessionStorageService.clearSession();
+    }
   }
 
   /**
