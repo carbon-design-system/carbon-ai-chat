@@ -108,6 +108,11 @@ function createConversationInstance<Self>(
     },
   };
   const serviceDesk: ChatInstanceServiceDeskActions = {
+    startConversation: (options) => {
+      debugLog('Called instance.serviceDesk.startConversation', options);
+      return serviceManager.actions.agentStartConversation(options);
+    },
+
     endConversation: () => {
       debugLog('Called instance.serviceDesk.endConversation');
       return serviceManager.actions.agentEndConversation(false);

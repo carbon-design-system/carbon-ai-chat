@@ -15,6 +15,66 @@
  */
 export interface ChatInstanceServiceDeskActions {
   /**
+   * Starts a conversation with a human agent from your own code, such as a help button. It starts
+   * the same conversation the prebuilt chat's "connect to agent" card starts when its button is
+   * clicked.
+   *
+   * With no options, the chat starts one on its own behalf, so your assistant doesn't have to send a
+   * `connect_to_agent` response first. Your service desk's {@link ServiceDesk.startChat} then gets a
+   * message holding one `connect_to_agent` item with no transfer details, which the chat doesn't add
+   * to the conversation. The prebuilt chat closes its home screen if it's open and shows its
+   * connecting state without a card.
+   *
+   * With `messageID`, the start doesn't check what that response's card shows. A response whose
+   * check found no agents online, or an older response, still starts a conversation.
+   *
+   * The {@link BusEventType.HUMAN_AGENT_PRE_START_CHAT} event fires first, and a handler can cancel
+   * the start. Then the promise resolves and nothing starts.
+   *
+   * If the chat hasn't loaded its history yet, it loads it first. It sends no welcome message then,
+   * since the agent conversation takes the welcome's place. The promise resolves when your service
+   * desk's `startChat` resolves, which doesn't mean an agent has joined. Read
+   * `state.get().humanAgent` to follow the connection.
+   *
+   * Rejects when no service desk is configured, when `messageID` names no response with a
+   * `connect_to_agent` item, or when a conversation with an agent is connecting, connected, or
+   * suspended. Call {@link ChatInstanceServiceDeskActions.endConversation} first to replace one. It
+   * also rejects when the history fails to load, when the conversation restarts while it loads,
+   * when your service desk's `startChat` throws, or after the chat was removed.
+   *
+   * @param options Optional. Leave it out to start a conversation without a response.
+   * @param options.messageID The ID of a response in the conversation that holds a `connect_to_agent`
+   * item. Your service desk gets that response, as when the user clicks its card.
+   * @param options.payload Data of your own for your service desk. It arrives as
+   * {@link StartChatOptions.preStartChatPayload}, unless a
+   * {@link BusEventType.HUMAN_AGENT_PRE_START_CHAT} handler replaces it.
+   *
+   * @example Start a conversation from your own help button
+   * ```ts
+   * helpButton.addEventListener("click", async () => {
+   *   try {
+   *     await instance.serviceDesk.startConversation();
+   *   } catch (error) {
+   *     showError(error.message);
+   *   }
+   * });
+   * ```
+   *
+   * @example Start from a response in the conversation, with data for your service desk
+   * ```ts
+   * await instance.serviceDesk.startConversation({
+   *   messageID: "response-with-connect-item",
+   *   payload: { topic: "billing" },
+   * });
+   * // Your service desk's startChat receives { preStartChatPayload: { topic: "billing" } }.
+   * ```
+   */
+  startConversation: (options?: {
+    messageID?: string;
+    payload?: unknown;
+  }) => Promise<void>;
+
+  /**
    * Ends the conversation with a human agent. This does not request confirmation from the user first. If the user
    * is not connected or connecting to a human agent, this function has no effect. You can determine if the user is
    * connected or connecting by calling {@link ChatInstance.getState}. Note that this function

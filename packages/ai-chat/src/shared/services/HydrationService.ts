@@ -95,12 +95,15 @@ class HydrationService {
    * enabled and it was always append this message to the end of any session history that is
    * retrieved.
    * @param alternateOptions The send to send along with the alternate welcome request.
+   * @param skipWelcome Sends no welcome request if this call starts the load. An agent
+   * conversation started from code takes the welcome's place, as a saved one does.
    * @returns The failure, if loading failed. It was already reported through `onError`;
    * `createChatSDK` also rejects with it.
    */
   async hydrateChat(
     alternateWelcomeRequest?: MessageRequest,
-    alternateOptions?: SendOptions
+    alternateOptions?: SendOptions,
+    skipWelcome = false
   ): Promise<HydrationFailure | undefined> {
     // Make sure we only fire this event once after the thread that actually does the hydration is finished.
     let fireReady = false;
@@ -113,7 +116,8 @@ class HydrationService {
         this.hydrationPromise = this.doHydrateChat(
           alternateWelcomeRequest,
           alternateOptions,
-          generation
+          generation,
+          skipWelcome
         )
           .catch((error) => {
             this.hydrationFailure = { error };
@@ -163,7 +167,8 @@ class HydrationService {
   private async doHydrateChat(
     alternateWelcomeRequest?: MessageRequest,
     alternateOptions?: SendOptions,
-    generation = this.serviceManager.messageCoordinator.currentGeneration
+    generation = this.serviceManager.messageCoordinator.currentGeneration,
+    skipWelcome = false
   ) {
     debugLog(
       'Hydrating Carbon AI Chat',
@@ -180,7 +185,7 @@ class HydrationService {
     const { config } = serviceManager.store.getState();
 
     if (!history) {
-      await this.applyEmptyHistory(alternateWelcomeRequest);
+      await this.applyEmptyHistory(alternateWelcomeRequest, skipWelcome);
     } else {
       await this.applyLoadedHistory(history);
     }
@@ -217,7 +222,8 @@ class HydrationService {
   }
 
   private async applyEmptyHistory(
-    alternateWelcomeRequest?: MessageRequest
+    alternateWelcomeRequest?: MessageRequest,
+    skipWelcome = false
   ): Promise<void> {
     if (alternateWelcomeRequest) {
       return;
@@ -230,6 +236,7 @@ class HydrationService {
       return;
     }
     if (
+      skipWelcome ||
       state.config.public.messaging?.skipWelcome ||
       this.shouldSkipWelcomeForAgentSession(state)
     ) {

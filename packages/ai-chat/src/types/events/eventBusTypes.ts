@@ -954,6 +954,8 @@ export interface BusEventHumanAgentPreStartChat<
 
   /**
    * Some arbitrary payload of data that will be passed to the service desk when a chat is started.
+   * When {@link ChatInstanceServiceDeskActions.startConversation} passes a `payload`, the event
+   * arrives with it set, and a listener can replace it.
    */
   preStartChatPayload?: TPayloadType;
 }

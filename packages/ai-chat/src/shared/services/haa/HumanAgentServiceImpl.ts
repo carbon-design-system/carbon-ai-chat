@@ -45,8 +45,11 @@ import {
   addDefaultsToMessage,
   createMessageRequestForFileUpload,
   createMessageRequestForText,
+  createMessageResponseForItem,
   createMessageResponseForText,
   hasServiceDesk,
+  isConnectToHumanAgent,
+  isResponse,
 } from '../../utils/messageUtils';
 import { assertType, consoleError, debugLog } from '../../utils/miscUtils';
 import {
@@ -58,6 +61,7 @@ import {
   HumanAgentsOnlineStatus,
   CreateHumanAgentServiceFunction,
   HumanAgentService,
+  StartConversationOptions,
 } from './HumanAgentService';
 import {
   addHumanAgentEndChatMessage,
@@ -73,6 +77,7 @@ import {
   ConnectToHumanAgentItem,
   Message,
   MessageResponse,
+  MessageResponseTypes,
   TextItem,
 } from '../../../types/messaging/Messages';
 import type { ConversationAppConfig } from '../../../types/state/ConversationState';
@@ -294,10 +299,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * contain specific information to send to the service desk as part of the connection. This can include things
    * like a message to display to a human agent.
    * @param originalMessage The full original message that this Connect to Agent item belongs to.
+   * @param options `payload` seeds the pre-start event's `preStartChatPayload`.
    */
   public async startChat(
-    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
-    originalMessage: Message
+    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem> | null,
+    originalMessage: Message,
+    options?: Pick<StartConversationOptions, 'payload'>
   ): Promise<void> {
     if (!this.serviceDesk) {
       // No service desk connected.
@@ -321,6 +328,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     const { serviceManager } = this;
+    // A throw while this is set came from a host's handler, not the desk.
+    let inPreStartHandlers = false;
 
     try {
       this.chatStarted = true;
@@ -331,11 +340,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
 
       // Fire off the pre-start event.
-      const event: BusEventHumanAgentPreStartChat = {
-        type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
-        message: originalMessage as MessageResponse,
-      };
+      const event = createPreStartChatEvent(originalMessage, options);
+      inPreStartHandlers = true;
       await serviceManager.fire(event);
+      inPreStartHandlers = false;
 
       if (event.cancelStartChat) {
         // Abort the connecting.
@@ -357,32 +365,88 @@ class HumanAgentServiceImpl implements HumanAgentService {
         );
       }
 
+      // A start from code has no card; the connecting state shows without one.
       serviceManager.store.dispatch(
-        setIsConnecting(true, localConnectMessage.ui_state.id)
+        setIsConnecting(true, localConnectMessage?.ui_state.id ?? null)
       );
 
       await this.serviceDesk.startChat(originalMessage as MessageResponse, {
         preStartChatPayload: event.preStartChatPayload,
       });
     } catch (error) {
-      consoleError(
-        '[startChat] An error with the service desk occurred.',
-        error
-      );
-      // If it failed to start, then stop connecting and clear the service desk.
-      if (this.serviceDeskCallback) {
-        await this.serviceDeskCallback.setErrorStatus({
-          type: ErrorType.CONNECTING,
-          logInfo: error,
-        });
-      }
-
-      serviceManager.store.dispatch(setIsConnecting(false, null));
-      this.chatStarted = false;
-      this.cancelHumanAgentJoinedTimer();
-
+      await this.abandonFailedStart(error, inPreStartHandlers);
       throw error;
     }
+  }
+
+  /**
+   * Backs out of a start that threw: shows the connecting error and stops
+   * connecting. `fromHandler` says a `pre:startChat` handler threw, not the desk.
+   */
+  private async abandonFailedStart(error: unknown, fromHandler: boolean) {
+    consoleError(
+      fromHandler
+        ? 'A human_agent:pre:startChat handler threw, so the chat did not start the conversation with an agent and showed its connecting error.'
+        : '[startChat] An error with the service desk occurred.',
+      error
+    );
+    // If it failed to start, then stop connecting and clear the service desk.
+    if (this.serviceDeskCallback) {
+      await this.serviceDeskCallback.setErrorStatus({
+        type: ErrorType.CONNECTING,
+        // A handler's throw is logged once, above; the desk didn't fail.
+        ...(!fromHandler && { logInfo: error }),
+      });
+    }
+
+    this.serviceManager.store.dispatch(setIsConnecting(false, null));
+    this.chatStarted = false;
+    this.cancelHumanAgentJoinedTimer();
+  }
+
+  /**
+   * `serviceDesk.startConversation()`. With `messageID`, starts the chat that
+   * response's first `connect_to_agent` card would. With none, starts one from
+   * a code-made response holding a bare `connect_to_agent` item. That response
+   * isn't added to the conversation, so no card shows. Unlike the card, it
+   * never ends a suspended conversation: that's for the host to do.
+   */
+  public async startConversation(
+    options: StartConversationOptions = {}
+  ): Promise<void> {
+    if (this.chatStarted) {
+      throw new Error(
+        'A conversation with a human agent is already connecting, connected, or suspended, so startConversation started nothing. Call serviceDesk.endConversation() first.'
+      );
+    }
+    const { messageID } = options;
+    let localItem: LocalMessageItem<ConnectToHumanAgentItem> | null = null;
+    let message: Message;
+    if (messageID === undefined) {
+      message = createMessageResponseForItem<ConnectToHumanAgentItem>({
+        response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+      });
+    } else {
+      const state = this.serviceManager.store.getState();
+      message = state.allMessagesByID[messageID];
+      localItem = isResponse(message)
+        ? state.assistantMessageState.localMessageIDs
+            .map((id) => state.allMessageItemsByID[id])
+            .find(
+              (item): item is LocalMessageItem<ConnectToHumanAgentItem> =>
+                item?.fullMessageID === messageID &&
+                isConnectToHumanAgent(item.item)
+            )
+        : undefined;
+      if (!localItem) {
+        throw new Error(
+          `No response with a connect_to_agent item has the ID "${messageID}", so startConversation started nothing.`
+        );
+      }
+    }
+    // The connecting state shows in the conversation, not on the home screen.
+    this.serviceManager.view?.current?.messaging.closeHomeScreenIfOpen?.();
+    return this.startChat(localItem, message, options);
   }
 
   /**
@@ -1738,6 +1802,24 @@ class ServiceDeskCallbackImpl<
     }
     store.dispatch(setPersistedServiceDeskState(deepFreeze(newState)));
   }
+}
+
+/**
+ * The `pre:startChat` event for a start. A `payload` from
+ * `startConversation` seeds `preStartChatPayload`; without one the event has
+ * no such key, as before.
+ */
+function createPreStartChatEvent(
+  originalMessage: Message,
+  options?: Pick<StartConversationOptions, 'payload'>
+): BusEventHumanAgentPreStartChat {
+  return {
+    type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+    message: originalMessage as MessageResponse,
+    ...(options && 'payload' in options
+      ? { preStartChatPayload: options.payload }
+      : {}),
+  };
 }
 
 /**
