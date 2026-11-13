@@ -1423,6 +1423,37 @@ describe('AutocompleteController', () => {
       expect(selected).to.deep.equal([USERS[0]]);
     });
 
+    it('logs a throw from onSelect for an item reported as sent, and returns', async () => {
+      const { promptLine } = makeEditorStub();
+      const failure = new Error('host onSelect failed');
+      const controller = new AutocompleteController({
+        autocomplete: {
+          items: USERS,
+          onSelect: () => {
+            throw failure;
+          },
+        },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'autocomplete',
+        query: 'al',
+        triggerOffset: 0,
+      });
+      await flush();
+      const logged: unknown[][] = [];
+      const originalError = console.error;
+      console.error = (...args: unknown[]) => logged.push(args);
+      try {
+        expect(() => controller.reportSent(USERS[0])).not.to.throw();
+      } finally {
+        console.error = originalError;
+      }
+      expect(logged).to.have.length(1);
+      expect(logged[0][1]).to.equal(failure);
+    });
+
     it('does not fire onSelect for a starter reported as sent', async () => {
       const { promptLine } = makeEditorStub();
       const selected: SuggestionItem[] = [];

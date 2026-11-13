@@ -224,6 +224,35 @@ describe('input.autocomplete', () => {
     expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'hello' });
   });
 
+  it('sends a chosen item and logs the error when onSelect throws', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    try {
+      const sent = await openEditor({
+        input: {
+          autocomplete: {
+            items: [HELLO],
+            onSelect: () => {
+              throw new Error('host onSelect failed');
+            },
+          },
+        },
+      });
+      await insert(sent.editor, 'hel');
+      await choose('hello world');
+      await waitFor(() =>
+        expect(sent.backend.texts()).toEqual(['hello world'])
+      );
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ message: 'host onSelect failed' })
+      );
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
   it('calls onSelect for an item inserted with disableDirectSend', async () => {
     const onSelect = jest.fn();
     const { editor } = await openEditor({

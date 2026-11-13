@@ -295,9 +295,8 @@ class FileUploadItemElement extends LitElement {
       return;
     }
 
-    // Carbon draws the invalid icon in its own update, after ours; a failed upload
-    // usually also moves `state` from "uploading" to "edit", which swaps the whole
-    // status area. Wait for that render before looking for the icon.
+    // Carbon draws the invalid icon in its own update, after ours. Wait for that
+    // render before looking for the icon.
     await inner.updateComplete;
 
     const innerRoot = inner.shadowRoot;

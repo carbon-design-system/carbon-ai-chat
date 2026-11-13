@@ -369,8 +369,17 @@ export class AutocompleteController {
    * Call it before `dismiss()`, which clears the trigger.
    */
   reportSent(item: SuggestionItem): void {
-    if (!this._destroyed && this._trigger?.type === 'autocomplete') {
+    if (this._destroyed || this._trigger?.type !== 'autocomplete') {
+      return;
+    }
+    // The send follows this call, so a host's throw must not stop it.
+    try {
       this._autocomplete?.onSelect?.(item);
+    } catch (error) {
+      console.error(
+        'The autocomplete onSelect handler threw, and the item is sent anyway:',
+        error
+      );
     }
   }
 
