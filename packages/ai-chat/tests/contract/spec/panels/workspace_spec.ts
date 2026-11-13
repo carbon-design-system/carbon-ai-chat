@@ -158,10 +158,13 @@ describe('workspace state', () => {
   });
 
   // @covers event.workspace:pre:close instance.messaging.restartConversation
-  it('finishes a close whose pre:close handler awaits restartConversation, closing the workspace', async () => {
+  it('finishes at once a close whose pre:close handler awaits restartConversation, closing the workspace', async () => {
     const { instance } = await mountOpen();
     await openWorkspace(instance, OPTIONS);
-    const events = recordEvents(instance, [BusEventType.RESTART_CONVERSATION]);
+    const events = recordEvents(instance, [
+      ...WORKSPACE_EVENTS,
+      BusEventType.RESTART_CONVERSATION,
+    ]);
     let restarted = false;
     instance.once({
       type: BusEventType.WORKSPACE_PRE_CLOSE,
@@ -170,7 +173,6 @@ describe('workspace state', () => {
         restarted = true;
       },
     });
-    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.useFakeTimers();
     let closed = false;
     await act(async () => {
@@ -180,17 +182,16 @@ describe('workspace state', () => {
           closed = true;
         });
     });
-    try {
-      // The restart closes the workspace too, and that close's pre:close waits behind the running one until the
-      // chat gives up on it after 10 seconds.
-      await advance(10_000);
-    } finally {
-      error.mockRestore();
-    }
+    // No timer runs, so the close can't be waiting on one.
+    await advance(0);
     expect(closed).toBe(true);
     expect(restarted).toBe(true);
     expect(instance.state.get().workspace).toEqual(CLOSED);
-    expect(events.types()).toEqual([BusEventType.RESTART_CONVERSATION]);
+    expect(events.types()).toEqual([
+      BusEventType.WORKSPACE_PRE_CLOSE,
+      BusEventType.RESTART_CONVERSATION,
+      BusEventType.WORKSPACE_CLOSE,
+    ]);
   });
 
   it('opens at the end with no ID or data when open gets no options', async () => {

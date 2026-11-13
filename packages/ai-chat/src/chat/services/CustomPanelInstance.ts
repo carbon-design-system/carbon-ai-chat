@@ -70,6 +70,10 @@ function createCustomPanelInstance(
   // that fired the event can't finish until the handler does.
   let workspaceHandlersRunning = 0;
 
+  // Whether a workspace close is running. A close called from one of its handlers returns at once, since the running
+  // close finishes closing the workspace.
+  let workspaceClosing = false;
+
   function captureWorkspaceEvent() {
     const { store } = serviceManager;
     const { workspaceID, localMessageItem, fullMessage, additionalData } =
@@ -312,28 +316,38 @@ function createCustomPanelInstance(
     async close() {
       const { store } = serviceManager;
 
-      // For workspace panel, capture state BEFORE closing to preserve data for events. A closed workspace fires no
-      // close events.
-      let workspaceEventData;
-      if (
-        panelType === PanelType.WORKSPACE &&
-        store.getState().workspacePanelState.isOpen
-      ) {
-        workspaceEventData = captureWorkspaceEvent();
-        await fireWorkspaceEvent(
-          BusEventType.WORKSPACE_PRE_CLOSE,
-          workspaceEventData
-        );
+      if (panelType !== PanelType.WORKSPACE) {
+        store.dispatch(setOpen(false));
+        return;
+      }
+      if (workspaceClosing) {
+        // A handler of the running close called this. That close finishes closing the workspace.
+        return;
       }
 
-      store.dispatch(setOpen(false));
+      workspaceClosing = true;
+      try {
+        // Capture state BEFORE closing to preserve data for events. A closed workspace fires no close events.
+        let workspaceEventData;
+        if (store.getState().workspacePanelState.isOpen) {
+          workspaceEventData = captureWorkspaceEvent();
+          await fireWorkspaceEvent(
+            BusEventType.WORKSPACE_PRE_CLOSE,
+            workspaceEventData
+          );
+        }
 
-      // Fire close event for workspace panel using captured data
-      if (panelType === PanelType.WORKSPACE && workspaceEventData) {
-        await fireWorkspaceEvent(
-          BusEventType.WORKSPACE_CLOSE,
-          workspaceEventData
-        );
+        store.dispatch(setOpen(false));
+
+        // Fire close event for workspace panel using captured data
+        if (workspaceEventData) {
+          await fireWorkspaceEvent(
+            BusEventType.WORKSPACE_CLOSE,
+            workspaceEventData
+          );
+        }
+      } finally {
+        workspaceClosing = false;
       }
     },
   };
