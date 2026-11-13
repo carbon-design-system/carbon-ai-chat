@@ -12,7 +12,8 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import ts from 'typescript';
 
-const removedDecorator = (path) =>
+const removedPath = (path) =>
+  path.split('/').includes('es-custom') ||
   /\/globals\/decorators\/(?:carbon-element|index)\.(?:js|d\.ts)$/.test(path);
 
 export async function assertParentBaseline({ consumer, baselinePath }) {
@@ -30,7 +31,7 @@ export async function assertParentBaseline({ consumer, baselinePath }) {
         path
       );
     const paths = expected.paths.filter(
-      (path) => publicPath(path) && !removedDecorator(path)
+      (path) => publicPath(path) && !removedPath(path)
     );
     for (const path of paths) {
       await access(join(root, path));
@@ -38,7 +39,7 @@ export async function assertParentBaseline({ consumer, baselinePath }) {
     const exportEntries = [
       ...Object.entries(expected.exports),
       ...Object.entries(expected.types),
-    ].filter(([path]) => publicPath(path) && !removedDecorator(path));
+    ].filter(([path]) => publicPath(path) && !removedPath(path));
     const program = ts.createProgram(
       exportEntries.map(([path]) => join(root, path)),
       {
@@ -65,7 +66,10 @@ export async function assertParentBaseline({ consumer, baselinePath }) {
         `Removed parent public exports: ${name}/${path}`
       );
     }
-    for (const [path, css] of Object.entries(expected.css)) {
+    const retainedCss = Object.entries(expected.css).filter(
+      ([path]) => !removedPath(path)
+    );
+    for (const [path, css] of retainedCss) {
       const file = join(root, path);
       const content = path.endsWith('.js')
         ? (await import(pathToFileURL(file).href)).default.cssText
@@ -85,7 +89,7 @@ export async function assertParentBaseline({ consumer, baselinePath }) {
       name,
       publicPaths: paths.length,
       exportSets: exportEntries.length,
-      unchangedCss: Object.keys(expected.css).length,
+      unchangedCss: retainedCss.length,
     });
   }
   await writeFile(

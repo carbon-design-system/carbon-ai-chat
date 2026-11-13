@@ -50,7 +50,7 @@ const USAGE = [
 ].join('\n');
 
 const EXCLUDE =
-  /node_modules|dist\/|\/es\/|es-custom\/|storybook-static\/|__tests__|\.test\.|_spec\.|\.spec\.|__stories__|\.stories\.|storybook|\/tests\/|\.scss$/;
+  /node_modules|dist\/|\/es\/|es-custom\/|demo\/\.generated\/carbon-registration\/|storybook-static\/|__tests__|\.test\.|_spec\.|\.spec\.|__stories__|\.stories\.|storybook|\/tests\/|\.scss$/;
 const BARREL = /\/(aiChatEntry\.tsx|index\.(ts|tsx|js|jsx))$/;
 
 const inTree = (file) =>
