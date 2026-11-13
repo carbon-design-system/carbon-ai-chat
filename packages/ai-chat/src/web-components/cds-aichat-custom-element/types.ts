@@ -27,8 +27,9 @@ import type {
  * config properties as top-level properties for TypeScript IntelliSense.
  *
  * An object field also takes JSON through its HTML attribute. If the JSON
- * doesn't parse, the chat logs a warning that names the attribute and uses the
- * field's value from `config`, or its default.
+ * doesn't parse, the chat logs a warning that names the attribute and leaves
+ * the field as it was: a value set earlier through the property or a valid
+ * attribute stays, and otherwise the field comes from `config`, or its default.
  *
  * A Boolean field also takes an HTML attribute, which turns it on whatever its
  * value, `"false"` included. Removing the attribute sets the field to `false`,

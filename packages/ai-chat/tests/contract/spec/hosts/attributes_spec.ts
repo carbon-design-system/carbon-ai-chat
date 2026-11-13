@@ -676,6 +676,42 @@ describe.each(ELEMENT_TAGS)('invalid JSON attributes on %s', (tag) => {
       { config: { serviceDesk: { skipConnectHumanAgentCard: true } } }
     );
   });
+
+  // @covers attribute.header
+  it('keeps a header set from script when a later header attribute is invalid JSON', async () => {
+    const { element } = await mountOpen(
+      tag,
+      {},
+      {
+        header: { title: 'From the property' },
+      }
+    );
+    const warnings = await warningsDuring(async () => {
+      await act(async () => {
+        element.setAttribute('header', INVALID_JSON);
+      });
+      await pause();
+    });
+    expect(warnings.filter((text) => text.includes('header'))).toHaveLength(1);
+    expect(element.header).toEqual({ title: 'From the property' });
+    expect(headerTitle()).toBe('From the property');
+  });
+
+  // @covers attribute.header
+  it('keeps a valid header attribute when a later one is invalid JSON', async () => {
+    const { element } = await mountOpen(tag, {
+      header: '{"title":"From the attribute"}',
+    });
+    const warnings = await warningsDuring(async () => {
+      await act(async () => {
+        element.setAttribute('header', INVALID_JSON);
+      });
+      await pause();
+    });
+    expect(warnings.filter((text) => text.includes('header'))).toHaveLength(1);
+    expect(element.header).toEqual({ title: 'From the attribute' });
+    expect(headerTitle()).toBe('From the attribute');
+  });
 });
 
 describe.each(ELEMENT_TAGS)('attribute precedence on %s', (tag) => {

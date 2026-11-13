@@ -21,9 +21,9 @@ import { LitElement } from 'lit';
 import type { PropertyDeclaration, PropertyDeclarations } from 'lit';
 
 import { PublicConfig } from '../../types/config/PublicConfig';
+import { consoleWarn } from '../../chat/utils/miscUtils';
 import {
   FLATTENED_PUBLIC_CONFIG_FIELDS,
-  objectAttributeConverter,
   resolveFlattenedConfig,
 } from './flattenedPublicConfig';
 
@@ -38,6 +38,30 @@ function configInputs(source: FlattenedConfigElement): unknown[] {
   ];
 }
 
+/** The attributes that take JSON, by attribute name. */
+const JSON_ATTRIBUTES = new Set(
+  FLATTENED_PUBLIC_CONFIG_FIELDS.flatMap((field) => {
+    const options: PropertyDeclaration = field.options;
+    if (options.type !== Object || options.attribute === false) {
+      return [];
+    }
+    return [
+      typeof options.attribute === 'string'
+        ? options.attribute
+        : field.name.toLowerCase(),
+    ];
+  })
+);
+
+function isJSON(value: string): boolean {
+  try {
+    JSON.parse(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Builds the Lit `static properties` object from the shared field table plus
  * the synthetic `config` (base config object) and `aiDisabled` (opt-out)
@@ -49,18 +73,7 @@ function buildFlattenedProperties(): PropertyDeclarations {
     aiDisabled: { type: Boolean, attribute: 'ai-disabled' },
   };
   for (const field of FLATTENED_PUBLIC_CONFIG_FIELDS) {
-    const options: PropertyDeclaration = field.options;
-    properties[field.name] =
-      options.type === Object && options.attribute !== false
-        ? {
-            ...options,
-            converter: objectAttributeConverter(
-              typeof options.attribute === 'string'
-                ? options.attribute
-                : field.name.toLowerCase()
-            ),
-          }
-        : options;
+    properties[field.name] = field.options;
   }
   return properties;
 }
@@ -126,6 +139,25 @@ abstract class FlattenedConfigElement extends LitElement {
   aiDisabled?: boolean;
 
   private resolvedConfigCache?: { inputs: unknown[]; config: PublicConfig };
+
+  /**
+   * Skips a JSON attribute whose value doesn't parse, so its property keeps
+   * whatever it held. Lit would read it as `null`, which replaces the field
+   * even over `config`. A removed attribute still reads as `null`.
+   */
+  attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    value: string | null
+  ): void {
+    if (value !== null && JSON_ATTRIBUTES.has(name) && !isJSON(value)) {
+      consoleWarn(
+        `The "${name}" attribute is not valid JSON, so the chat ignored it and kept the field's current value.`
+      );
+      return;
+    }
+    super.attributeChangedCallback(name, oldValue, value);
+  }
 
   /**
    * The {@link PublicConfig} reconstructed from `config` plus every defined
