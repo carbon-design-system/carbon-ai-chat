@@ -238,8 +238,13 @@ describe.each(REACT_HOSTS)('onBeforeRender through %s', (_name, Host) => {
     const gate = deferred();
     const onBeforeRender = jest.fn(() => gate.promise);
     const onAfterRender = jest.fn();
+    const late = <button type="button">Late pending content</button>;
     const tree = await renderTree(
-      <Host {...OPEN} {...{ onBeforeRender, onAfterRender }} />
+      <Host
+        {...OPEN}
+        {...{ onBeforeRender, onAfterRender }}
+        renderWriteableElements={{ footerElement: late }}
+      />
     );
     await calledTimes(onBeforeRender);
     await tree.unmount();
@@ -248,6 +253,7 @@ describe.each(REACT_HOSTS)('onBeforeRender through %s', (_name, Host) => {
     await pause(100);
     expect(onAfterRender).not.toHaveBeenCalled();
     expect(inputShown()).toBe(false);
+    expect(allByRole('button', 'Late pending content')).toHaveLength(0);
   });
 });
 
@@ -262,7 +268,11 @@ describe.each(REACT_HOSTS)('onAfterRender through %s', (_name, Host) => {
       order.push('before');
       return gate.promise;
     });
-    const onAfterRender = jest.fn(() => {
+    let viewAtCall: ReturnType<ChatInstance['getState']>['viewState'];
+    let inputAtCall: Element | null;
+    const onAfterRender = jest.fn((instance: ChatInstance) => {
+      viewAtCall = instance.getState().viewState;
+      inputAtCall = byTestId(PageObjectId.INPUT);
       order.push(inputShown() ? 'after:rendered' : 'after:not rendered');
     });
     await renderTree(<Host {...OPEN} {...{ onBeforeRender, onAfterRender }} />);
@@ -273,6 +283,8 @@ describe.each(REACT_HOSTS)('onAfterRender through %s', (_name, Host) => {
     await pause();
     expect(onAfterRender).toHaveBeenCalledTimes(1);
     expect(order).toEqual(['before', 'after:rendered']);
+    expect(viewAtCall.mainWindow).toBe(true);
+    expect(inputAtCall).not.toBeNull();
   });
 
   it('runs without waiting for history to load', async () => {
@@ -292,15 +304,41 @@ describe.each(REACT_HOSTS)('onAfterRender through %s', (_name, Host) => {
   });
 
   it('leaves the chat working when its promise never settles', async () => {
-    const onBeforeRender = jest.fn();
+    const ready = countChatReady();
+    const onBeforeRender = jest.fn(ready.onBeforeRender);
     const onAfterRender = jest.fn(() => new Promise<void>(() => undefined));
-    await renderTree(<Host {...OPEN} {...{ onBeforeRender, onAfterRender }} />);
+    const backend = fakeBackend({ autoResolve: true });
+    await renderTree(
+      <Host
+        {...OPEN}
+        messaging={{
+          skipWelcome: true,
+          customSendMessage: backend.customSendMessage,
+        }}
+        {...{ onBeforeRender, onAfterRender }}
+      />
+    );
     await calledTimes(onAfterRender);
     const instance = instanceFrom(onBeforeRender);
     await act(() =>
       instance.messaging.addMessage(textResponse('Still working', 'r1'))
     );
     await waitFor(() => expect(mainPanelText()).toContain('Still working'));
+    await waitFor(() => expect(ready.count()).toBe(1));
+    await changeView(instance, ViewType.LAUNCHER);
+    expect(instance.getState().viewState.mainWindow).toBe(false);
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await act(async () => {
+      instance.input.updateRawValue(() => 'Send while callback waits');
+    });
+    expect(instance.state.get().input.rawValue).toBe(
+      'Send while callback waits'
+    );
+    await click(byTestId(PageObjectId.INPUT_SEND));
+    await waitFor(() =>
+      expect(backend.texts()).toEqual(['Send while callback waits'])
+    );
+    expect(onAfterRender).toHaveBeenCalledTimes(1);
   });
 
   it('calls the onAfterRender the host passed last before the first render finished', async () => {
@@ -1045,7 +1083,7 @@ describe.each(REACT_HOSTS)(
     it('runs nothing again on a rerender with the same props', async () => {
       const { ready, onBeforeRender, onAfterRender } = kit();
       const nodes = { footerElement: <Counter label="Kept" /> };
-      const element = (
+      const element = () => (
         <Host
           {...OPEN}
           onBeforeRender={onBeforeRender}
@@ -1053,15 +1091,17 @@ describe.each(REACT_HOSTS)(
           renderWriteableElements={nodes}
         />
       );
-      const tree = await renderTree(element);
+      const tree = await renderTree(element());
       await calledTimes(onAfterRender);
       await waitFor(() => expect(ready.count()).toBe(1));
+      await click(byRole('button', 'Kept 0'));
       const events = recordEvents(instanceFrom(onBeforeRender));
-      await tree.rerender(element);
-      await tree.rerender(element);
+      await tree.rerender(element());
+      await tree.rerender(element());
       // A short wait to show nothing runs again.
       await pause();
       expect(events.types()).toEqual([]);
+      expect(byRole('button', 'Kept 1')).not.toBeNull();
       expect(onBeforeRender).toHaveBeenCalledTimes(1);
       expect(onAfterRender).toHaveBeenCalledTimes(1);
       expect(ready.count()).toBe(1);
@@ -1108,15 +1148,20 @@ describe.each(REACT_HOSTS)(
           {...OPEN}
           onBeforeRender={onBeforeRender}
           onAfterRender={onAfterRender}
+          renderWriteableElements={{ footerElement: <Counter label="Keyed" /> }}
         />
       );
       const tree = await renderTree(chat('one'));
       await calledTimes(onAfterRender);
       const first = instanceFrom(onBeforeRender);
+      await click(byRole('button', 'Keyed 0'));
+      expect(byRole('button', 'Keyed 1')).not.toBeNull();
 
       await tree.rerender(chat('two'));
       await calledTimes(onAfterRender, 2);
       expect(instanceFrom(onBeforeRender, 1)).not.toBe(first);
+      expect(byRole('button', 'Keyed 0')).not.toBeNull();
+      expect(allByRole('button', 'Keyed 1')).toHaveLength(0);
     });
 
     it('takes the chat off the page on unmount, and unmounts render-prop content', async () => {
@@ -1136,8 +1181,14 @@ describe.each(REACT_HOSTS)(
       );
       await calledTimes(onAfterRender);
       expect(inputShown()).toBe(true);
+      const footer =
+        instanceFrom(onBeforeRender).writeableElements.footerElement;
+      expect(footer.isConnected).toBe(true);
+      expect(footer.textContent).toBe('Content');
       await tree.unmount();
       expect(cleanedUp).toHaveBeenCalledTimes(1);
+      expect(footer.isConnected).toBe(false);
+      expect(footer.textContent).toBe('');
       expect(inputShown()).toBe(false);
       expect(byTestId(PageObjectId.MAIN_PANEL)).toBeNull();
     });

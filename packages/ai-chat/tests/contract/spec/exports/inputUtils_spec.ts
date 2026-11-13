@@ -119,11 +119,25 @@ describe.each(ENTRIES)('%s plain-text projection', (_, utils) => {
 // @covers export.aiChatEntry.mapNodes export.serverEntry.mapNodes
 // @covers export.aiChatEntry.findNodesByType export.serverEntry.findNodesByType
 describe.each(ENTRIES)('%s JSONContent walkers', (_, utils) => {
-  const BOLD = [{ type: 'bold' }];
-  const SOURCE = doc(
-    paragraph(text('a', BOLD), ALICE, text('b')),
-    paragraph(SUMMARIZE, ALICE)
-  );
+  const BOLD = [{ type: 'bold', attrs: { style: { weight: 700 } } }];
+  let SOURCE: JSONContent;
+  beforeEach(() => {
+    SOURCE = JSON.parse(
+      JSON.stringify(
+        doc(
+          paragraph(
+            text('a', BOLD),
+            {
+              ...ALICE,
+              attrs: { ...ALICE.attrs, data: { profile: { team: 'alpha' } } },
+            },
+            text('b')
+          ),
+          paragraph(SUMMARIZE, ALICE)
+        )
+      )
+    );
+  });
 
   it('removes every node of the given types and keeps text marks', () => {
     expect(utils.removeNodesByType(SOURCE, 'mention', 'command')).toEqual(
@@ -137,7 +151,13 @@ describe.each(ENTRIES)('%s JSONContent walkers', (_, utils) => {
 
   it('returns a new tree and leaves its input unchanged', () => {
     const before = JSON.parse(JSON.stringify(SOURCE));
-    utils.removeNodesByType(SOURCE, 'mention');
+    const removed = utils.removeNodesByType(SOURCE, 'mention');
+    expect(removed).not.toBe(SOURCE);
+    expect(SOURCE).toEqual(before);
+    const mapped = utils.mapNodes(SOURCE, (node) =>
+      node.type === 'text' ? { ...node, text: 'changed' } : node
+    );
+    expect(mapped).not.toBe(SOURCE);
     expect(SOURCE).toEqual(before);
   });
 

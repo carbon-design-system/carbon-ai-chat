@@ -521,6 +521,15 @@ const JSON_ATTRIBUTES = [
 
 const INVALID_JSON = '{not json';
 
+const RETAINED_JSON_PROPERTIES: Record<string, object> = {
+  disclaimer: { isOn: false, disclaimerHTML: 'Retained disclaimer' },
+  history: { isOn: true },
+  messaging: { skipWelcome: true },
+  homescreen: { isOn: false, greeting: 'Retained greeting' },
+  input: { maxInputCharacters: 73 },
+  strings: { input_placeholder: 'Retained input text' },
+};
+
 describe.each(ELEMENT_TAGS)('invalid JSON attributes on %s', (tag) => {
   contractSetup();
 
@@ -531,15 +540,40 @@ describe.each(ELEMENT_TAGS)('invalid JSON attributes on %s', (tag) => {
       const onError = jest.fn();
       // The attribute sets the same field as the `messaging` property, so the
       // welcome request is skipped through config instead.
-      const warnings = await warningsDuring(() =>
-        mountOpen(
-          tag,
-          { [attribute]: INVALID_JSON },
-          { onError, config: { messaging: { skipWelcome: true } } }
-        )
-      );
+      const retained = RETAINED_JSON_PROPERTIES[attribute];
+      let element: Awaited<ReturnType<typeof mountOpen>>['element'];
+      const warnings = await warningsDuring(async () => {
+        if (retained) {
+          ({ element } = await mountOpen(
+            tag,
+            {},
+            {
+              [attribute]: retained,
+              onError,
+              config: { messaging: { skipWelcome: true } },
+            }
+          ));
+          expect(element[attribute]).toEqual(retained);
+          await act(async () => {
+            element.setAttribute(attribute, INVALID_JSON);
+          });
+          await pause();
+        } else {
+          ({ element } = await mountOpen(
+            tag,
+            { [attribute]: INVALID_JSON },
+            {
+              onError,
+              config: { messaging: { skipWelcome: true } },
+            }
+          ));
+        }
+      });
       expect(getByTestId(PageObjectId.MAIN_PANEL)).not.toBeNull();
       expect(onError).not.toHaveBeenCalled();
+      if (retained) {
+        expect(element[attribute]).toEqual(retained);
+      }
       expect(warnings.filter((text) => text.includes(attribute))).toHaveLength(
         1
       );
