@@ -26,14 +26,16 @@ import type {
  * Extends {@link PublicConfig} with component-specific props, flattening all
  * config properties as top-level properties for TypeScript IntelliSense.
  *
- * An object field also takes JSON through its HTML attribute. If the JSON
- * doesn't parse, the chat logs a warning that names the attribute and leaves
- * the field as it was: a value set earlier through the property or a valid
- * attribute stays, and otherwise the field comes from `config`, or its default.
+ * Object attributes, such as `header`, take JSON. If the JSON doesn't parse,
+ * the chat logs a warning that names the attribute and leaves the field as it
+ * was: a value set earlier through the property or a valid attribute stays,
+ * and otherwise the field comes from `config`, or its default.
  *
  * A Boolean field also takes an HTML attribute, which turns it on whatever its
  * value, `"false"` included. Removing the attribute sets the field to `false`,
- * which overrides `config`.
+ * which overrides `config`. The exception is `ai-enabled`: `"false"`, `"0"`,
+ * `"off"`, and `"no"` turn it off, and removing it leaves the field to
+ * `config`, or its default.
  *
  * @category Web component
  */
@@ -110,12 +112,18 @@ interface CdsAiChatCustomElementAttributes extends Omit<
 
   /**
    * Called when a footer below a user message should be rendered. Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */

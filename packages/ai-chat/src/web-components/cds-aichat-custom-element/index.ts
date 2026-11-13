@@ -185,6 +185,9 @@ class ChatCustomElement extends FlattenedConfigElement {
   /**
    * Optional callback to render a footer below each user message. When provided, the inner cds-aichat-container
    * manages all event listening, slot tracking, and element lifecycle.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   @property({ attribute: false })
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
@@ -192,6 +195,9 @@ class ChatCustomElement extends FlattenedConfigElement {
   /**
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content). Forwarded to the inner cds-aichat-container.
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */
