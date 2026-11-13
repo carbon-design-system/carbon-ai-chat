@@ -52,10 +52,12 @@ interface ChatSDKBootOptions {
    * Builds the instance that callbacks and events receive from the
    * conversation's members. The prebuilt chat adds its view members here.
    */
-  createInstance?: (
-    conversation: ChatSDKInstance,
-    serviceManager: ServiceManager
-  ) => ChatInstance;
+  createInstance?: (serviceManager: ServiceManager) => ChatInstance;
+  /**
+   * Runs once the chat's services exist, before the agent service and the
+   * instance. The prebuilt chat attaches its view partition here.
+   */
+  onServicesCreated?: (serviceManager: ServiceManager) => void;
 }
 
 /** Builds the config the store holds for a chat with no view. */
@@ -89,6 +91,7 @@ async function createChatSDK(
     serviceManager = createServiceManager(appConfig, {
       sessionStorage: options.sessionStorage ?? false,
     });
+    options.onServicesCreated?.(serviceManager);
     serviceManager.humanAgentService = createHumanAgentService(serviceManager);
 
     const conversation: ChatSDKInstance = createConversationInstance(
@@ -96,7 +99,7 @@ async function createChatSDK(
       () => conversation
     );
     serviceManager.instance =
-      options.createInstance?.(conversation, serviceManager) ??
+      options.createInstance?.(serviceManager) ??
       (conversation as ChatInstance);
     serviceManager.messageCoordinator.onInstanceReady();
 

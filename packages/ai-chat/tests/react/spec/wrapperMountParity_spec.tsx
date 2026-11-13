@@ -26,6 +26,7 @@ import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+import * as sdkBoot from '../../../src/sdk/createChatSDK';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { setIntl } from '../../../src/shared/utils/intlUtils';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
@@ -258,11 +259,40 @@ describe('how each host mounts the chat', () => {
       },
     ],
   ])('%s renders through the container element', async (_name, mount) => {
+    const boot = jest.spyOn(sdkBoot, 'createChatSDK');
     const onAfterRender = jest.fn();
-    const mounted = mount(onAfterRender);
-    await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
-      timeout: 5000,
-    });
+    let mounted: ReturnType<typeof mount>;
+    try {
+      mounted = mount(onAfterRender);
+      await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+        timeout: 5000,
+      });
+      // Every shell boots through the SDK (#1732 O13), and its callbacks still
+      // get the full ChatInstance (O14).
+      expect(boot).toHaveBeenCalledTimes(1);
+      expect(boot.mock.calls[0][1]).toEqual(
+        expect.objectContaining({ sessionStorage: true, loadHistory: false })
+      );
+      const [instance] = onAfterRender.mock.calls[0] as [ChatInstance];
+      const handle = await boot.mock.results[0].value;
+      expect(instance).not.toBe(handle);
+      expect('release' in instance).toBe(false);
+      for (const member of [
+        'changeView',
+        'customPanels',
+        'writeableElements',
+        'send',
+        'input',
+        'requestFocus',
+        'destroySession',
+      ]) {
+        expect(instance).toHaveProperty(member);
+      }
+      expect(instance.messaging).toHaveProperty('addMessage');
+      expect(instance.messaging).toHaveProperty('upsertMessage');
+    } finally {
+      boot.mockRestore();
+    }
     const container =
       typeof mounted === 'function' ? mounted() : (mounted as Element);
 

@@ -11,13 +11,13 @@ import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import { attachMountView } from '../../../src/chat/utils/attachMountView';
 import {
-  initServiceManagerAndInstance,
+  bootPrebuiltChat,
   mergePublicConfig,
 } from '../../../src/chat/utils/chatBoot';
 import { createBaseTestProps } from '../../test_helpers';
 
 async function bootChat() {
-  return initServiceManagerAndInstance({
+  return bootPrebuiltChat({
     publicConfig: mergePublicConfig(createBaseTestProps()),
   });
 }
