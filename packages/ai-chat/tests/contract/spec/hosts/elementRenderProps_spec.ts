@@ -29,41 +29,22 @@ import {
   RenderCustomRequestFooterState,
   RenderUserDefinedInputNodeState,
   RenderUserDefinedState,
-  ViewType,
 } from '../../../../src/aiChatEntry';
 import {
-  ContractElementTag,
+  ELEMENT_TAGS,
   addChunk,
-  changeView,
-  contractElement,
   contractSetup,
   fakeBackend,
   finalChunk,
   getByTestId,
   isShownWithin,
   mainPanelText,
+  openElement,
   partialUserDefined,
   responseOf,
   textItem,
   userDefinedItem,
 } from '../../helpers';
-
-const TAGS: ContractElementTag[] = [
-  'cds-aichat-container',
-  'cds-aichat-custom-element',
-];
-
-/** Connects an open element with these properties and no welcome request. */
-async function openElement(
-  tag: ContractElementTag,
-  properties: Record<string, unknown> = {}
-) {
-  const mounted = await contractElement(tag, {
-    properties: { messaging: { skipWelcome: true }, ...properties },
-  });
-  await changeView(mounted.instance, ViewType.MAIN_WINDOW);
-  return mounted;
-}
 
 /** A span with this text, standing in for what a host renders. */
 function span(text: string): HTMLElement {
@@ -92,7 +73,7 @@ async function addResponse(
 }
 
 // @covers element.cds-aichat-container.renderUserDefinedResponse element.cds-aichat-custom-element.renderUserDefinedResponse
-describe.each(TAGS)('renderUserDefinedResponse on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('renderUserDefinedResponse on %s', (tag) => {
   contractSetup();
 
   it('is called with the item, its message, its state, and the instance, and what it returns shows', async () => {
@@ -175,7 +156,7 @@ describe.each(TAGS)('renderUserDefinedResponse on %s', (tag) => {
 // With no `renderUserDefinedResponse`, the host listens for the event and
 // writes its own content into the element under the event's slot name.
 // @covers element.cds-aichat-container.renderUserDefinedResponse element.cds-aichat-custom-element.renderUserDefinedResponse
-describe.each(TAGS)('user_defined slots on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('user_defined slots on %s', (tag) => {
   contractSetup();
 
   it('shows what the host slots into the element under the event’s slot', async () => {
@@ -207,7 +188,7 @@ function footerItem(slotName: string): GenericItem {
 }
 
 // @covers element.cds-aichat-container.renderCustomMessageFooter element.cds-aichat-custom-element.renderCustomMessageFooter
-describe.each(TAGS)('renderCustomMessageFooter on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('renderCustomMessageFooter on %s', (tag) => {
   contractSetup();
 
   it('is called with the slot, message, item, and data, plus the instance, and what it returns shows', async () => {
@@ -243,7 +224,7 @@ describe.each(TAGS)('renderCustomMessageFooter on %s', (tag) => {
 });
 
 // @covers element.cds-aichat-container.renderCustomRequestFooter element.cds-aichat-custom-element.renderCustomRequestFooter
-describe.each(TAGS)('renderCustomRequestFooter on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('renderCustomRequestFooter on %s', (tag) => {
   contractSetup();
 
   it('is called for a sent message with its slot and the message, plus the instance, and what it returns shows', async () => {
@@ -271,7 +252,7 @@ describe.each(TAGS)('renderCustomRequestFooter on %s', (tag) => {
 });
 
 // @covers element.cds-aichat-container.renderUserDefinedInputNode element.cds-aichat-custom-element.renderUserDefinedInputNode
-describe.each(TAGS)('renderUserDefinedInputNode on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('renderUserDefinedInputNode on %s', (tag) => {
   contractSetup();
 
   it('is called for a custom node in a sent message, and what it returns shows in page DOM', async () => {
@@ -311,7 +292,7 @@ describe.each(TAGS)('renderUserDefinedInputNode on %s', (tag) => {
 });
 
 // @covers element.cds-aichat-container.markdown element.cds-aichat-custom-element.markdown
-describe.each(TAGS)('markdown.customRenderers on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('markdown.customRenderers on %s', (tag) => {
   contractSetup();
 
   it('shows the element codeBlock returns in place of the code block, in the element’s own light DOM', async () => {

@@ -25,19 +25,15 @@ import {
 } from '../../../../src/aiChatEntry';
 import {
   ContractElementTag,
+  ELEMENT_TAGS,
   byTestId,
   changeView,
   contractElement,
   contractSetup,
   deferred,
+  headerTitle,
   pause,
-  shownText,
 } from '../../helpers';
-
-const TAGS: ContractElementTag[] = [
-  'cds-aichat-container',
-  'cds-aichat-custom-element',
-];
 
 type Element = HTMLElement & Record<string, unknown>;
 
@@ -58,16 +54,10 @@ async function connect(element: Element): Promise<void> {
   });
 }
 
-/** The header title the chat shows, or `null` when it shows none. */
-function headerTitle(): string | null {
-  const title = byTestId(PageObjectId.HEADER_TITLE);
-  return title ? shownText(title) : null;
-}
-
 const CLOSED = { launcher: true, mainWindow: false };
 const OPEN = { launcher: false, mainWindow: true };
 
-describe.each(TAGS)('onBeforeRender and onAfterRender on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('onBeforeRender and onAfterRender on %s', (tag) => {
   contractSetup();
 
   // @covers element.cds-aichat-container.onBeforeRender element.cds-aichat-custom-element.onBeforeRender
@@ -174,7 +164,7 @@ describe.each(TAGS)('onBeforeRender and onAfterRender on %s', (tag) => {
   });
 });
 
-describe.each(TAGS)('onViewPreChange and onViewChange on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('onViewPreChange and onViewChange on %s', (tag) => {
   contractSetup();
 
   // @covers element.cds-aichat-container.onViewPreChange element.cds-aichat-custom-element.onViewPreChange
@@ -313,7 +303,7 @@ describe.each(TAGS)('onViewPreChange and onViewChange on %s', (tag) => {
 });
 
 // @covers element.cds-aichat-container.config element.cds-aichat-custom-element.config
-describe.each(TAGS)('config on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('config on %s', (tag) => {
   contractSetup();
 
   it('reaches the chat when set before connect', async () => {

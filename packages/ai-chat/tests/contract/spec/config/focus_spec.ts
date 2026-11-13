@@ -23,16 +23,11 @@ import {
   contractSetup,
   deepActiveElement,
   focusHostButton,
+  focusIsInInput,
   isShownWithin,
   pause,
   textResponse,
 } from '../../helpers';
-
-/** Whether focus is in the chat's input field. */
-function focusIsInInput(): boolean {
-  const input = byTestId(PageObjectId.INPUT);
-  return input !== null && isShownWithin(deepActiveElement(), input);
-}
 
 // @covers config.shouldTakeFocusIfOpensAutomatically config.openChatByDefault
 describe('shouldTakeFocusIfOpensAutomatically', () => {

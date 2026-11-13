@@ -22,7 +22,7 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
-  ContractElementTag,
+  ELEMENT_TAGS,
   changeView,
   contractElement,
   contractSetup,
@@ -32,17 +32,12 @@ import {
   textResponse,
 } from '../../helpers';
 
-const TAGS: ContractElementTag[] = [
-  'cds-aichat-container',
-  'cds-aichat-custom-element',
-];
-
 const WIDGET: GenericItem = {
   response_type: MessageResponseTypes.USER_DEFINED,
   user_defined: {},
 } as GenericItem;
 
-describe.each(TAGS)('taking %s off the page', (tag) => {
+describe.each(ELEMENT_TAGS)('taking %s off the page', (tag) => {
   contractSetup();
 
   // @covers element.cds-aichat-container.onBeforeRender element.cds-aichat-custom-element.onBeforeRender

@@ -39,29 +39,28 @@ describe('ChatCustomElement className and id', () => {
   contractSetup();
 
   it('renders the chat inside an element with the host’s class and id', async () => {
-    await contractCustomElementChat({
+    const { wrapper } = await contractCustomElementChat({
       ...OPEN,
       className: 'host-chat-class',
       id: 'host-chat',
     });
-    const element = document.getElementById('host-chat');
-    expect(element).not.toBeNull();
-    expect(element.classList.contains('host-chat-class')).toBe(true);
-    expect(isShownWithin(getByTestId(PageObjectId.MAIN_PANEL), element)).toBe(
+    expect(wrapper.id).toBe('host-chat');
+    expect(wrapper.classList.contains('host-chat-class')).toBe(true);
+    expect(isShownWithin(getByTestId(PageObjectId.MAIN_PANEL), wrapper)).toBe(
       true
     );
     expect(
       Array.from(document.getElementsByClassName('host-chat-class'))
-    ).toEqual([element]);
+    ).toEqual([wrapper]);
   });
 
   it('gives the element no id when the host passes none', async () => {
-    await contractCustomElementChat({ ...OPEN, className: 'host-chat-class' });
-    const [element] = Array.from(
-      document.getElementsByClassName('host-chat-class')
-    );
-    expect(element.hasAttribute('id')).toBe(false);
-    expect(isShownWithin(getByTestId(PageObjectId.MAIN_PANEL), element)).toBe(
+    const { wrapper } = await contractCustomElementChat({
+      ...OPEN,
+      className: 'host-chat-class',
+    });
+    expect(wrapper.hasAttribute('id')).toBe(false);
+    expect(isShownWithin(getByTestId(PageObjectId.MAIN_PANEL), wrapper)).toBe(
       true
     );
   });
@@ -85,14 +84,13 @@ describe('ChatCustomElement className and id', () => {
     const events = recordEvents(chat.instance);
 
     await chat.rerender(props('class-two', 'id-two'));
-    const element = document.getElementById('id-two');
-    expect(element).not.toBeNull();
-    expect(element.classList.contains('class-two')).toBe(true);
-    expect(element.classList.contains('class-one')).toBe(false);
+    expect(chat.wrapper.id).toBe('id-two');
+    expect(chat.wrapper.classList.contains('class-two')).toBe(true);
+    expect(chat.wrapper.classList.contains('class-one')).toBe(false);
     expect(document.getElementById('id-one')).toBeNull();
-    expect(isShownWithin(getByTestId(PageObjectId.MAIN_PANEL), element)).toBe(
-      true
-    );
+    expect(
+      isShownWithin(getByTestId(PageObjectId.MAIN_PANEL), chat.wrapper)
+    ).toBe(true);
     // A short wait to show the chat doesn't start again.
     await pause();
     expect(onBeforeRender).toHaveBeenCalledTimes(1);

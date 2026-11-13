@@ -21,7 +21,7 @@ import {
   contractChat,
   contractSetup,
   getByTestId,
-  isHidden,
+  imagesNamed,
   pause,
   shownText,
   textResponse,
@@ -133,31 +133,6 @@ describe('locale', () => {
     }
   });
 });
-
-/**
- * The visible images named `name` (their `alt`), searching shadow roots. The
- * shared `byRole` helper doesn't name images, so this does the `img` role's
- * lookup locally.
- */
-function imagesNamed(name: string): HTMLImageElement[] {
-  const found: HTMLImageElement[] = [];
-  const visit = (root: ParentNode) => {
-    for (const element of Array.from(root.querySelectorAll('*'))) {
-      if (
-        element instanceof HTMLImageElement &&
-        element.alt === name &&
-        !isHidden(element)
-      ) {
-        found.push(element);
-      }
-      if (element.shadowRoot) {
-        visit(element.shadowRoot);
-      }
-    }
-  };
-  visit(document);
-  return found;
-}
 
 // @covers config.assistantAvatarUrl config.hideAvatar
 describe('assistant avatar', () => {

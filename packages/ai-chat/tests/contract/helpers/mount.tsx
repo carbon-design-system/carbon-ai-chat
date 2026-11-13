@@ -34,7 +34,7 @@ import '../../../src/web-components/cds-aichat-custom-element/index';
 export interface ContractMount {
   /** The instance the host handed to `onBeforeRender`. */
   instance: ChatInstance;
-  /** The `cds-aichat-container` (or custom element) the host rendered. */
+  /** The `cds-aichat-container` element the React host rendered. */
   host: HTMLElement;
   /** Renders the same host again with new props. */
   rerender: (props: Partial<ChatContainerProps>) => Promise<void>;
@@ -121,13 +121,25 @@ async function mountChatContainer(
   };
 }
 
+/** What `contractCustomElementChat` gives a test. */
+export interface ContractCustomElementMount extends Omit<
+  ContractMount,
+  'rerender'
+> {
+  /** The element `ChatCustomElement` renders the chat into. */
+  wrapper: HTMLElement;
+  /** Renders the same host again with new props. */
+  rerender: (props: Partial<ChatCustomElementProps>) => Promise<void>;
+}
+
 /**
  * Renders `ChatCustomElement` (the React wrapper for a host-owned element)
- * and waits for its first render.
+ * and waits for its first render. Throws when the wrapper or the
+ * `cds-aichat-container` inside it is missing.
  */
 export async function contractCustomElementChat(
   props: Partial<ChatCustomElementProps> = {}
-): Promise<ContractMount> {
+): Promise<ContractCustomElementMount> {
   await warmUp();
   let instance: ChatInstance | null = null;
   let rendered = false;
@@ -153,14 +165,18 @@ export async function contractCustomElementChat(
   });
   await waitForMount(() => instance !== null && rendered);
 
+  const wrapper = result.container.firstElementChild as HTMLElement | null;
+  const host = wrapper?.querySelector<HTMLElement>('cds-aichat-container');
+  if (!wrapper || !host) {
+    throw new Error('ChatCustomElement rendered no wrapper or no container');
+  }
   return {
     instance,
-    host: result.container.querySelector('cds-aichat-custom-element'),
+    host,
+    wrapper,
     rerender: async (next) => {
       await act(async () => {
-        result.rerender(
-          <ChatCustomElement {...wrap(next as ChatCustomElementProps)} />
-        );
+        result.rerender(<ChatCustomElement {...wrap(next)} />);
       });
     },
     unmount: () => result.unmount(),
@@ -170,6 +186,12 @@ export async function contractCustomElementChat(
 /** The two custom-element hosts. */
 export type ContractElementTag =
   'cds-aichat-container' | 'cds-aichat-custom-element';
+
+/** Both custom-element hosts, for `describe.each`. */
+export const ELEMENT_TAGS: ContractElementTag[] = [
+  'cds-aichat-container',
+  'cds-aichat-custom-element',
+];
 
 /** What `contractElement` gives a test. */
 export interface ContractElementMount {
@@ -226,6 +248,24 @@ export async function contractElement(
     element,
     remove: () => element.remove(),
   };
+}
+
+/**
+ * Connects an element that opens its main window at mount
+ * (`openChatByDefault`) with no welcome request. A `messaging` in
+ * `properties` is merged over `skipWelcome`.
+ */
+export function openElement(
+  tag: ContractElementTag,
+  properties: Record<string, unknown> = {}
+): Promise<ContractElementMount> {
+  return contractElement(tag, {
+    properties: {
+      ...properties,
+      openChatByDefault: true,
+      messaging: { skipWelcome: true, ...(properties.messaging as object) },
+    },
+  });
 }
 
 /**

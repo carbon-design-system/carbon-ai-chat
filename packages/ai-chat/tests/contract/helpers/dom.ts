@@ -399,3 +399,28 @@ export function focusHostButton(): HTMLButtonElement {
   }
   return button;
 }
+
+/** The header title the chat shows, or `null` when it shows none. */
+export function headerTitle(): string | null {
+  const title = byTestId(PageObjectId.HEADER_TITLE);
+  return title ? shownText(title) : null;
+}
+
+/**
+ * The visible images named `name` (their `alt`), searching shadow roots.
+ * `byRole` doesn't name images, so this does the `img` role's lookup.
+ */
+export function imagesNamed(name: string): HTMLImageElement[] {
+  return Array.from(descendants(document)).filter(
+    (element): element is HTMLImageElement =>
+      element instanceof HTMLImageElement &&
+      element.alt === name &&
+      !isHidden(element)
+  );
+}
+
+/** Whether focus is in the chat's input field. */
+export function focusIsInInput(): boolean {
+  const input = byTestId(PageObjectId.INPUT);
+  return input !== null && isShownWithin(deepActiveElement(), input);
+}

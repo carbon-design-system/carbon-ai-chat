@@ -29,6 +29,7 @@ import {
 } from '../../../../src/aiChatEntry';
 import {
   ContractElementTag,
+  ELEMENT_TAGS,
   addConnect,
   allByRole,
   byTestId,
@@ -40,9 +41,11 @@ import {
   fakeBackend,
   fakeDesk,
   focusHostButton,
+  focusIsInInput,
   getByTestId,
+  headerTitle,
+  imagesNamed,
   inputField,
-  isHidden,
   isShownWithin,
   mainPanelText,
   pause,
@@ -52,11 +55,6 @@ import {
   textItem,
   textResponse,
 } from '../../helpers';
-
-const TAGS: ContractElementTag[] = [
-  'cds-aichat-container',
-  'cds-aichat-custom-element',
-];
 
 type Properties = Record<string, unknown> & Partial<PublicConfig>;
 
@@ -90,7 +88,7 @@ async function mountOpen(
  * Connects an element the test built itself, and waits for its first render.
  * For attribute sequences `contractElement` can't express.
  */
-async function connect(
+async function connectAndRender(
   element: HTMLElement & Record<string, unknown>
 ): Promise<void> {
   const rendered = jest.fn();
@@ -109,44 +107,7 @@ async function addReply(instance: ChatInstance, text = 'Hi', shown = text) {
   await waitFor(() => expect(mainPanelText()).toContain(shown));
 }
 
-/** The header title the chat shows, or `null` when it shows none. */
-function headerTitle(): string | null {
-  const title = byTestId(PageObjectId.HEADER_TITLE);
-  return title ? shownText(title) : null;
-}
-
-/**
- * The visible images named `name` (their `alt`), searching shadow roots. The
- * shared `byRole` helper doesn't name images, so this does the `img` role's
- * lookup locally.
- */
-function imagesNamed(name: string): HTMLImageElement[] {
-  const found: HTMLImageElement[] = [];
-  const visit = (root: ParentNode) => {
-    for (const element of Array.from(root.querySelectorAll('*'))) {
-      if (
-        element instanceof HTMLImageElement &&
-        element.alt === name &&
-        !isHidden(element)
-      ) {
-        found.push(element);
-      }
-      if (element.shadowRoot) {
-        visit(element.shadowRoot);
-      }
-    }
-  };
-  visit(document);
-  return found;
-}
-
-/** Whether focus is in the chat's input field. */
-function focusIsInInput(): boolean {
-  const input = byTestId(PageObjectId.INPUT);
-  return input !== null && isShownWithin(deepActiveElement(), input);
-}
-
-describe.each(TAGS)('boolean attributes on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('boolean attributes on %s', (tag) => {
   contractSetup();
 
   // @covers attribute.open-chat-by-default
@@ -197,7 +158,7 @@ describe.each(TAGS)('boolean attributes on %s', (tag) => {
     element.setAttribute('open-chat-by-default', '');
     element.messaging = { skipWelcome: true };
     const button = focusHostButton();
-    await connect(element);
+    await connectAndRender(element);
     await pause(100);
     expect(deepActiveElement()).toBe(button);
   });
@@ -283,7 +244,7 @@ describe.each(TAGS)('boolean attributes on %s', (tag) => {
   });
 });
 
-describe.each(TAGS)('string attributes on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('string attributes on %s', (tag) => {
   contractSetup();
 
   // @covers attribute.namespace attribute.strings
@@ -354,7 +315,7 @@ describe.each(TAGS)('string attributes on %s', (tag) => {
   });
 });
 
-describe.each(TAGS)('JSON attributes on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('JSON attributes on %s', (tag) => {
   contractSetup();
 
   // @covers attribute.header
@@ -528,7 +489,7 @@ describe.each(TAGS)('JSON attributes on %s', (tag) => {
   });
 });
 
-describe.each(TAGS)('attribute precedence on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('attribute precedence on %s', (tag) => {
   contractSetup();
 
   // @covers attribute.header element.cds-aichat-container.config element.cds-aichat-custom-element.config

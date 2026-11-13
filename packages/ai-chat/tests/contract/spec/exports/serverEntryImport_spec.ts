@@ -9,9 +9,9 @@
 
 /**
  * `serverEntry` is the SSR-safe entry: importing it must not register
- * elements or reach into the page. A `@jest-environment node` file can't show
- * that here, because `tests/setup.ts` writes to `window` before any test runs,
- * so this file spies on the page in jsdom and imports the entry fresh.
+ * elements or reach into the page. Importing it with no DOM at all is in
+ * `serverEntryNode_spec.ts`; a node environment has no page to spy on, so
+ * this file spies on the page in jsdom and imports the entry fresh.
  *
  * It imports no contract helper and calls no `contractSetup()`: the helpers
  * import both element entries, which would register elements before the spies
