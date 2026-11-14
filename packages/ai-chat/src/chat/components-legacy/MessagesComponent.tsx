@@ -826,7 +826,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           <Fragment key={metadata.messageItemID}>
             <SystemMessage
               divider={
-                systemItem.variant === 'date' || systemItem.variant === 'agent'
+                systemItem.variant === 'divider' ||
+                systemItem.variant === 'date' ||
+                systemItem.variant === 'agent'
               }>
               {systemItem.title}
             </SystemMessage>
