@@ -275,7 +275,7 @@ function addPlans(
           plans,
           allMessageItemsByID,
           owner,
-          `${id}:${part(index)}`,
+          `${id}:${part(nested.ui_state.nestedSourceIndex ?? index)}`,
           nested,
           id
         );

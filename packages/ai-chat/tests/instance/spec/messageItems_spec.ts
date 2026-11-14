@@ -208,6 +208,77 @@ describe('state.messageItems', () => {
       expect(new Set(ids(chat.state.get())).size).toBe(22);
     });
 
+    it.each(['history', 'live'])(
+      'uses raw source positions after unsupported nested children in %s',
+      async (origin) => {
+        const nestedCard = {
+          response_type: MessageResponseTypes.CARD,
+          body: [button('Unsupported body button'), text('Kept body')],
+        } as GenericItem;
+        const panelButton = {
+          response_type: MessageResponseTypes.BUTTON,
+          button_type: 'show_panel',
+          label: 'Nested panel',
+          panel: { title: 'Nested', body: [] },
+        } as GenericItem;
+        const containers = [
+          nestedCard,
+          {
+            response_type: MessageResponseTypes.CAROUSEL,
+            items: [text('Unsupported slide'), nestedCard],
+          },
+          {
+            response_type: MessageResponseTypes.BUTTON,
+            button_type: 'show_panel',
+            label: 'Outer panel',
+            panel: { body: [], footer: [panelButton, button('Kept footer')] },
+          },
+          {
+            response_type: MessageResponseTypes.GRID,
+            columns: [{ width: '1' }],
+            rows: [
+              {
+                cells: [
+                  { items: [card('Unsupported grid card'), text('Kept cell')] },
+                ],
+              },
+            ],
+          },
+        ] as GenericItem[];
+        const errors = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+        try {
+          const chat =
+            origin === 'history'
+              ? await chatWithHistory(
+                  history(response('raw-nested', containers))
+                )
+              : await sdkChat();
+          if (origin === 'live') {
+            await chat.messaging.upsertMessage(
+              'raw-nested',
+              MessageState.COMPLETE,
+              () => response('raw-nested', containers)
+            );
+          }
+          expect(ids(chat.state.get())).toEqual([
+            'raw-nested:i:0',
+            'raw-nested:i:0:i:1',
+            'raw-nested:i:1',
+            'raw-nested:i:1:i:1',
+            'raw-nested:i:1:i:1:i:1',
+            'raw-nested:i:2',
+            'raw-nested:i:2:f:1',
+            'raw-nested:i:3',
+            'raw-nested:i:3:i:0.0.1',
+          ]);
+        } finally {
+          errors.mockRestore();
+        }
+      }
+    );
+
     it('gives nested items their parent and the content they draw', async () => {
       const chat = await chatWithHistory();
       const byID = new Map(
