@@ -405,7 +405,9 @@ class InputActionsService {
     ) {
       return;
     }
-    await this.startUpload(file, uploadConfig.onFileUpload).done;
+    await this.startUpload(file, uploadConfig.onFileUpload, () =>
+      selectIsInputToHumanAgent(this.serviceManager.store.getState())
+    ).done;
   }
 
   /**
@@ -436,7 +438,11 @@ class InputActionsService {
       uploadConfig,
       'config'
     );
-    return { id: this.startUpload(file, uploadConfig.onFileUpload).id };
+    return {
+      id: this.startUpload(file, uploadConfig.onFileUpload, () =>
+        selectIsInputToHumanAgent(state)
+      ).id,
+    };
   }
 
   /** Stages a file for the service desk, which receives it with the next message. */
@@ -507,13 +513,13 @@ class InputActionsService {
    */
   private startUpload(
     file: File,
-    onFileUpload: (file: File, signal: AbortSignal) => Promise<StructuredData>
+    onFileUpload: (file: File, signal: AbortSignal) => Promise<StructuredData>,
+    inputForCompletion: () => boolean
   ) {
     const { store } = this.serviceManager;
     const uploadId = uuid();
     const controller = new AbortController();
     this.uploadAbortControllers.set(uploadId, controller);
-    // The upload settles in the slice it started in, even if an agent connects meanwhile.
     const toHumanAgent = selectIsInputToHumanAgent(store.getState());
 
     store.dispatch(
@@ -533,7 +539,7 @@ class InputActionsService {
             actions.updatePendingUpload(
               uploadId,
               { status: PendingUploadStatus.COMPLETE, contributedData },
-              toHumanAgent
+              inputForCompletion()
             )
           );
         }
@@ -547,7 +553,7 @@ class InputActionsService {
           actions.updatePendingUpload(
             uploadId,
             { status: PendingUploadStatus.ERROR, errorMessage },
-            toHumanAgent
+            inputForCompletion()
           )
         );
       } finally {
