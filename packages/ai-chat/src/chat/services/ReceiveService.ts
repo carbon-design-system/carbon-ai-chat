@@ -7,6 +7,7 @@
  *  @license
  */
 
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import merge from 'lodash-es/merge.js';
 
 import actions from '../store/actions';
@@ -280,9 +281,15 @@ class ReceiveService {
 
     const state = this.serviceManager.store.getState();
 
-    // TODO: This doesn't work right if this is called more than once.
+    // The chat writes its defaults onto each message, which a frozen one can't take.
+    const items = messages?.map((item) =>
+      item && Object.isFrozen(item.message)
+        ? { ...item, message: cloneDeep(item.message) }
+        : item
+    );
+
     const notes: { notes: HistoryNote[] } = {
-      notes: [{ body: messages }],
+      notes: [{ body: items }],
     };
     const history = await this.serviceManager.historyService.loadHistory(notes);
 
@@ -298,20 +305,54 @@ class ReceiveService {
       allMessagesByID: state.allMessagesByID,
       assistantMessageState: state.assistantMessageState,
     };
+    const inserted = history.messageHistory;
     const newAppStateMessages: AppStateMessages = merge(
       {},
-      history.messageHistory,
+      inserted,
       currentAppStateMessages
     );
 
+    // A message inserted again appears once, at its first position, and takes the later call's content and items.
+    const repeatedIDs = new Set(
+      inserted.assistantMessageState.messageIDs.filter(
+        (id) => state.allMessagesByID[id]
+      )
+    );
+    const isRepeatedItem = (
+      itemsByID: AppStateMessages['allMessageItemsByID'],
+      localID: string
+    ) => repeatedIDs.has(itemsByID[localID]?.fullMessageID);
+    const currentLocalIDs =
+      currentAppStateMessages.assistantMessageState.localMessageIDs;
+    currentLocalIDs
+      .filter((localID) => isRepeatedItem(state.allMessageItemsByID, localID))
+      .forEach((localID) => {
+        delete newAppStateMessages.allMessageItemsByID[localID];
+      });
+    inserted.assistantMessageState.localMessageIDs
+      .filter((localID) =>
+        isRepeatedItem(inserted.allMessageItemsByID, localID)
+      )
+      .forEach((localID) => {
+        newAppStateMessages.allMessageItemsByID[localID] =
+          inserted.allMessageItemsByID[localID];
+      });
+    repeatedIDs.forEach((id) => {
+      newAppStateMessages.allMessagesByID[id] = inserted.allMessagesByID[id];
+    });
+
     // Now make sure the message arrays are merged correctly.
     newAppStateMessages.assistantMessageState.messageIDs = [
-      ...history.messageHistory.assistantMessageState.messageIDs,
-      ...currentAppStateMessages.assistantMessageState.messageIDs,
+      ...new Set([
+        ...inserted.assistantMessageState.messageIDs,
+        ...currentAppStateMessages.assistantMessageState.messageIDs,
+      ]),
     ];
     newAppStateMessages.assistantMessageState.localMessageIDs = [
-      ...history.messageHistory.assistantMessageState.localMessageIDs,
-      ...currentAppStateMessages.assistantMessageState.localMessageIDs,
+      ...inserted.assistantMessageState.localMessageIDs,
+      ...currentLocalIDs.filter(
+        (localID) => !isRepeatedItem(state.allMessageItemsByID, localID)
+      ),
     ];
 
     this.serviceManager.store.dispatch(

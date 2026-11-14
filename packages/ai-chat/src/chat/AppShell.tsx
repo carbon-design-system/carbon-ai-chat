@@ -39,6 +39,7 @@ import { LocalMessageItem } from '../types/messaging/LocalMessageItem';
 import { AppShellPanels } from './AppShellPanels';
 
 import { HasServiceManager } from './hocs/withServiceManager';
+import { fireUserEvent } from './services/fireUserEvent';
 import { useMobileViewportLayout } from './hooks/useMobileViewportLayout';
 import { useOnMount } from './hooks/useOnMount';
 import { useSelector, useStateAccessSelector } from './hooks/useSelector';
@@ -60,6 +61,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
+  selectLoadedLocale,
   selectStopStreamingButtonVisible,
 } from './store/selectors';
 import { shallowEqual } from './store/appStore';
@@ -220,6 +222,7 @@ function AppShell({
   const chatWidthBreakpoint = useSelector(selectChatWidthBreakpoint);
 
   const languagePack = useSelector(selectLanguagePack);
+  const loadedLocale = useSelector(selectLoadedLocale);
   const theme = useSelector(selectThemeWithDefaults);
   const layout = useSelector(selectLayoutConfig);
   const launcher = useSelector(selectLauncherConfig);
@@ -362,14 +365,9 @@ function AppShell({
     requestFocus: requestFocusCallback,
   });
 
-  // Auto-focus is based on config only - no dynamic toggling to avoid
-  // interrupting screen reader announcements when messages arrive
-  const shouldAutoFocus =
-    publicConfig.shouldTakeFocusIfOpensAutomatically ?? true;
-
   // Focus manager - provides requestFocus function
   const requestFocus = useFocusManager({
-    shouldAutoFocus,
+    shouldAutoFocus: publicConfig.shouldTakeFocusIfOpensAutomatically ?? true,
     showDisclaimer,
     iFramePanelIsOpen: iFramePanelState.isOpen,
     viewSourcePanelIsOpen: viewSourcePanelState.isOpen,
@@ -603,7 +601,7 @@ function AppShell({
         {
           text: languagePack.history_new_chat,
           handler: () => {
-            serviceManager.fire({
+            fireUserEvent(serviceManager, {
               type: BusEventType.HISTORY_PANEL_NEW_CHAT,
             });
           },
@@ -611,7 +609,7 @@ function AppShell({
         {
           text: languagePack.history_view_chats,
           handler: () => {
-            serviceManager.fire({
+            fireUserEvent(serviceManager, {
               type: BusEventType.HISTORY_PANEL_PRE_OPEN,
             });
 
@@ -694,11 +692,12 @@ function AppShell({
           serviceManager.store.getState();
         const { viewState: storeViewState } = persisted;
         if (storeViewState.mainWindow) {
-          mainWindowRef.current?.requestFocus();
+          return Boolean(mainWindowRef.current?.requestFocus());
         }
       } catch (error) {
         consoleError('An error occurred in App.requestFocus', error);
       }
+      return false;
     }
     serviceManager.appWindow = { requestFocus: requestFocusWrapper };
   });
@@ -1019,7 +1018,7 @@ function AppShell({
                   assistantAvatarUrl={publicConfig.assistantAvatarUrl}
                   intl={intl}
                   onEndHumanAgentChat={showConfirmEndChat}
-                  locale={publicConfig.locale || 'en'}
+                  locale={loadedLocale}
                   carbonTheme={theme.derivedCarbonTheme}
                 />
               )}

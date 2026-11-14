@@ -33,6 +33,7 @@ import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
 import type { ToolbarAction } from '@carbon/ai-chat-components/es/react/toolbar.js';
 import { useSelector } from '../../hooks/useSelector';
 import { useServiceManager } from '../../hooks/useServiceManager';
+import { fireUserEvent } from '../../services/fireUserEvent';
 import { useWriteableElementPresence } from '../../hooks/useWriteableElementPresence';
 import { shallowEqual } from '../../store/appStore';
 import { selectHumanAgentDisplayState } from '../../store/selectors';
@@ -192,7 +193,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       clickType: HeaderMenuClickType.HOMESCREEN_BUTTON,
       menuItemText: backButtonLabel,
     };
-    serviceManager.fire(event);
+    fireUserEvent(serviceManager, event);
 
     onToggleHomeScreen?.();
   }, [onToggleHomeScreen, backButtonLabel, serviceManager]);
@@ -203,7 +204,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
       type: BusEventType.HEADER_MENU_CLICK,
       clickType: HeaderMenuClickType.OVERFLOW_MENU_OPENED,
     };
-    serviceManager.fire(event);
+    fireUserEvent(serviceManager, event);
   }, [serviceManager]);
 
   const overflowClicked = useCallback(
@@ -217,7 +218,7 @@ function Header(props: HeaderProps, ref: Ref<HasRequestFocus>) {
         menuItemIndex: index,
         menuItemText,
       };
-      serviceManager.fire(event);
+      fireUserEvent(serviceManager, event);
 
       if (index === 0 && allowHomeScreen) {
         onToggleHomeScreen?.();
