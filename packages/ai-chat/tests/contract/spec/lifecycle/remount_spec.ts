@@ -197,3 +197,79 @@ describe.each(ELEMENT_TAGS)('removing and adding back the same %s', (tag) => {
     ]);
   });
 });
+
+// @covers instance.state.subscribe instance.state.select state.messages
+// C14: main remounts a fresh chat; reuse layers keep the same listener boundary.
+describe('state listeners across removal and remount', () => {
+  contractSetup();
+
+  function removableChat(namespace: string) {
+    return contractElement('cds-aichat-container', {
+      properties: {
+        namespace,
+        openChatByDefault: true,
+        messaging: { skipWelcome: true },
+        lifecycle: { reuseInstance: true, releaseGraceMs: 2000 },
+      },
+    });
+  }
+
+  it('drops old state listeners while the current mount keeps its listeners', async () => {
+    const first = await removableChat('contract-state-remount');
+    const oldSubscriber = jest.fn();
+    const oldSelector = jest.fn();
+    const stopOldSubscriber = first.instance.state.subscribe(oldSubscriber);
+    const stopOldSelector = first.instance.state.select(
+      (state) => state.messages.length,
+      oldSelector
+    );
+    await act(async () => first.remove());
+    await pause();
+    oldSubscriber.mockClear();
+    oldSelector.mockClear();
+
+    const second = await removableChat('contract-state-remount');
+    const newSubscriber = jest.fn();
+    const newSelector = jest.fn();
+    second.instance.state.subscribe(newSubscriber);
+    second.instance.state.select((state) => state.messages.length, newSelector);
+    await act(() =>
+      second.instance.messaging.addMessage(textResponse('current', 'new-mount'))
+    );
+
+    expect(oldSubscriber).not.toHaveBeenCalled();
+    expect(oldSelector).not.toHaveBeenCalled();
+    expect(newSubscriber).toHaveBeenCalled();
+    expect(newSelector).toHaveBeenLastCalledWith(
+      second.instance.state.get().messages.length
+    );
+    stopOldSubscriber();
+    stopOldSelector();
+  });
+
+  it('keeps late listeners on the removed instance out of the current chat', async () => {
+    const first = await removableChat('contract-state-late');
+    await act(async () => first.remove());
+    await pause();
+    const second = await removableChat('contract-state-late');
+    const oldSubscriber = jest.fn();
+    const oldSelector = jest.fn();
+    const stopSubscriber = first.instance.state.subscribe(oldSubscriber);
+    const stopSelector = first.instance.state.select(
+      (state) => state.messages.length,
+      oldSelector
+    );
+    await act(() =>
+      second.instance.messaging.addMessage(
+        textResponse('current', 'late-mount')
+      )
+    );
+
+    expect(oldSubscriber).not.toHaveBeenCalled();
+    expect(oldSelector).not.toHaveBeenCalled();
+    expect(() => {
+      stopSubscriber();
+      stopSelector();
+    }).not.toThrow();
+  });
+});
