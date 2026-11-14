@@ -222,8 +222,8 @@ export interface ChatSDKState {
   /**
    * One entry per item the message list draws, in the order it shows them, with items nested in
    * another one right after it. Each entry's `messageID` is in `messages`. Silent requests, pauses, and
-   * items marked `user_defined.silent` aren't listed, except a `user_defined.silent` item loaded from
-   * history, which the list draws today. It changes in the same update as `messages`. The array and its entries
+   * items marked `user_defined.silent` aren't listed, whether they arrive live or through history.
+   * It changes in the same update as `messages`. The array and its entries
    * are frozen, and the array keeps its object until an entry changes. See {@link ChatSDKMessageItem}.
    *
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
