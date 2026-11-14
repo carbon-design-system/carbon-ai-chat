@@ -184,8 +184,7 @@ describe('state.messageItems', () => {
         'response-1:i:0',
         // A stream ID of "0" and position 0 stay apart.
         'response-1:s:0',
-        // Pauses keep their positions in output.generic. History draws a hidden item, so it's listed.
-        'response-1:i:3',
+        // Pauses and silent items keep their raw positions without being listed.
         'response-1:i:4',
         'response-1:i:5',
         'response-1:i:5:i:0',
@@ -205,7 +204,7 @@ describe('state.messageItems', () => {
         'response-1:i:7:i:0.0.1',
         'response-1:i:7:i:0.1.0',
       ]);
-      expect(new Set(ids(chat.state.get())).size).toBe(22);
+      expect(new Set(ids(chat.state.get())).size).toBe(21);
     });
 
     it.each(['history', 'live'])(
@@ -352,6 +351,43 @@ describe('state.messageItems', () => {
       );
       expect(messageIDs.has('silent')).toBe(true);
     });
+
+    it.each(['history', 'live'])(
+      'leaves out silent nested items from %s without removing their source data',
+      async (origin) => {
+        const silent: GenericItem = {
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { silent: true, marker: 'quiet' },
+        };
+        const container = {
+          response_type: MessageResponseTypes.CARD,
+          body: [silent, text('Shown')],
+        } as GenericItem;
+        const chat =
+          origin === 'history'
+            ? await chatWithHistory(
+                history(response('silent-nested', [container]))
+              )
+            : await sdkChat();
+        if (origin === 'live') {
+          await chat.messaging.upsertMessage(
+            'silent-nested',
+            MessageState.COMPLETE,
+            () => response('silent-nested', [container])
+          );
+        }
+        const state = chat.state.get();
+        expect(ids(state)).toEqual([
+          'silent-nested:i:0',
+          'silent-nested:i:0:i:1',
+        ]);
+        expect(
+          state.messages.find((message) => message.id === 'silent-nested')
+        ).toMatchObject({
+          output: { generic: [{ body: [silent, text('Shown')] }] },
+        });
+      }
+    );
 
     it('lists a request with the text its bubble shows', async () => {
       const chat = await chatWithHistory(

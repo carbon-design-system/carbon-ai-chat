@@ -248,6 +248,9 @@ function addPlans(
   parentID?: string
 ) {
   const { message } = owner;
+  if (isResponse(message) && isHiddenOutputItem(message, local.item)) {
+    return;
+  }
   const internal = message.ui_state_internal;
   const isConnectToAgent = isConnectToHumanAgent(local.item);
   plans.push({
