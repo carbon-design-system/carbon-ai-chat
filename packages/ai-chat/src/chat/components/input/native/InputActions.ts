@@ -125,14 +125,10 @@ class InputActions extends NativeChatView {
     if (close) {
       this.open = false;
     }
-    try {
-      if (action.href) {
-        window.open(action.href, action.target || '_self');
-      } else {
-        action.onClick?.();
-      }
-    } catch (error) {
-      this.reportFailure(error);
+    if (action.href) {
+      window.open(action.href, action.target || '_self');
+    } else {
+      action.onClick?.();
     }
   }
 
