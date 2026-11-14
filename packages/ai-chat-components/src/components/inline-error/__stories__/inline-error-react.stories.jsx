@@ -10,6 +10,7 @@
 /* eslint-disable */
 import React from 'react';
 import InlineError from '../../../react/inline-error';
+import Markdown from '../../../react/markdown';
 import {
   Default as DefaultWC,
   WithMarkdown as WithMarkdownWC,
@@ -21,7 +22,9 @@ export default {
 };
 
 const render = ({ text, iconLabel }) => (
-  <InlineError iconLabel={iconLabel || undefined}>{text}</InlineError>
+  <InlineError iconLabel={iconLabel || undefined}>
+    <Markdown removeHTML markdown={text} />
+  </InlineError>
 );
 
 export const Default = {

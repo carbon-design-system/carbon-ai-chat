@@ -9,7 +9,7 @@ import * as Stories from './inline-error-react.stories';
 
 ## Overview
 
-Use `InlineError` to show an error row: an error icon followed by the error text. The text you pass as children is rendered as markdown with all HTML removed, so pass text, not child markup. This component is experimental, and its API may change without a deprecation window.
+Use `InlineError` to show an error row: an error icon followed by the error text. Pass the error text as children, as plain text or as a `Markdown` component. This component is experimental, and its API may change without a deprecation window.
 
 <Canvas of={Stories.Default} />
 
@@ -17,7 +17,7 @@ Use `InlineError` to show an error row: an error icon followed by the error text
 
 - **Error icon**: The component draws the icon. You do not supply one.
 - **Host-supplied label**: Pass a translated string to `iconLabel` so assistive technology names the icon.
-- **Markdown text**: The children text is rendered as markdown. HTML in the text is removed.
+- **Slotted text**: The component renders its children. To render markdown with your own settings, pass a `Markdown` component, and set `removeHTML` for untrusted text.
 
 ## Examples
 
@@ -25,7 +25,10 @@ Use `InlineError` to show an error row: an error icon followed by the error text
 
 ```jsx
 <InlineError>
-  Something went wrong. [Try again](https://www.carbondesignsystem.com/)
+  <Markdown
+    removeHTML
+    markdown="Something went wrong. [Try again](https://www.carbondesignsystem.com/)"
+  />
 </InlineError>
 ```
 
@@ -45,6 +48,7 @@ When `iconLabel` is set, the icon has `role="img"` and an `aria-label` with that
 
 ```jsx
 import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
 ```
 
 ## Feedback

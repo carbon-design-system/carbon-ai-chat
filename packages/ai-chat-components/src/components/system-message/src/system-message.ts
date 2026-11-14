@@ -33,12 +33,12 @@ class CDSAIChatSystemMessage extends LitElement {
   static styles = [commonStyles, styles];
 
   /**
-   * If true (the default), the message sits on its own between other messages
-   * and adds its own outer spacing. Set to false to render it inside a message
-   * bubble, which owns the spacing, with no outer margin.
+   * If true, the message sits inside a message bubble, which owns the spacing,
+   * so it adds no outer margin. By default the message sits on its own between
+   * other messages and adds its own outer spacing.
    */
   @property({ type: Boolean, reflect: true })
-  standalone = true;
+  inline = false;
 
   /**
    * If true, draws a divider line above the message.

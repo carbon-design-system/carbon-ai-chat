@@ -123,6 +123,7 @@ const selectMessageTypeStrings = (state: AppState) => ({
   chainOfThought_statusSucceededLabel:
     state.languagePack.chainOfThought_statusSucceededLabel,
   chainOfThought_toolLabel: state.languagePack.chainOfThought_toolLabel,
+  errors_iconLabel: state.languagePack.errors_iconLabel,
   errors_imageSource: state.languagePack.errors_imageSource,
   feedback_categoriesLabel: state.languagePack.feedback_categoriesLabel,
   feedback_defaultPlaceholder: state.languagePack.feedback_defaultPlaceholder,
@@ -451,6 +452,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     return (
       <Image
         imageError={languagePack.errors_imageSource}
+        imageErrorIconLabel={languagePack.errors_iconLabel}
         source={message.item.source}
         title={message.item.title}
         description={message.item.description}
@@ -461,8 +463,13 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
   function renderInlineError(message: LocalMessageItem<TextItem>) {
     return (
-      <InlineError>
-        {message.item.text || formatMessage({ id: 'errors_generalContent' })}
+      <InlineError iconLabel={languagePack.errors_iconLabel}>
+        <MarkdownWithDefaults
+          removeHTML
+          text={
+            message.item.text || formatMessage({ id: 'errors_generalContent' })
+          }
+        />
       </InlineError>
     );
   }
@@ -652,7 +659,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
   ) {
     // Render inline system message (within message bubble)
     return (
-      <SystemMessageElement standalone={false}>
+      <SystemMessageElement inline>
         {localMessageItem.item.title}
       </SystemMessageElement>
     );

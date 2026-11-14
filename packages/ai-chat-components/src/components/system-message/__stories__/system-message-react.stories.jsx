@@ -23,9 +23,9 @@ export default {
   component: SystemMessage,
 };
 
-const render = ({ text, standalone, divider, responseStopped, showIcon }) => (
+const render = ({ text, inline, divider, responseStopped, showIcon }) => (
   <SystemMessage
-    standalone={standalone}
+    inline={inline}
     divider={divider}
     responseStopped={responseStopped}
     icon={showIcon ? Headset16 : undefined}>

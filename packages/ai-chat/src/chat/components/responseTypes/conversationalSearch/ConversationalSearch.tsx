@@ -60,6 +60,7 @@ function ConversationalSearch({
   const languagePack = useSelector(
     (state: AppState) => ({
       errors_generalContent: state.languagePack.errors_generalContent,
+      errors_iconLabel: state.languagePack.errors_iconLabel,
       conversationalSearch_citationsLabel:
         state.languagePack.conversationalSearch_citationsLabel,
       conversationalSearch_toggleCitations:
@@ -137,15 +138,19 @@ function ConversationalSearch({
       />
       {isStreamingError && (
         <div slot="answer-error">
-          <InlineError>
-            {languagePack.conversationalSearch_streamingIncomplete}
+          <InlineError iconLabel={languagePack.errors_iconLabel}>
+            <MarkdownWithDefaults
+              removeHTML
+              text={languagePack.conversationalSearch_streamingIncomplete}
+            />
           </InlineError>
         </div>
       )}
       <div slot="citations" ref={citationsContainerRef}>
         {citationsOpen && (
           <CitationsErrorBoundary
-            errorText={languagePack.errors_generalContent}>
+            errorText={languagePack.errors_generalContent}
+            iconLabel={languagePack.errors_iconLabel}>
             <Suspense
               fallback={
                 <SkeletonPlaceholder className="cds-aichat--conversational-search__skeleton" />

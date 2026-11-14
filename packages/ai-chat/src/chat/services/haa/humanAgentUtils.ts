@@ -99,7 +99,7 @@ async function createHumanAgentLocalMessage(
 function createHumanAgentLocalMessageForType(
   agentMessageType: HumanAgentMessageType
 ) {
-  // Define message types that should use SystemMessageItem with 'agent' variant
+  // Define message types that should use SystemMessageItem with 'divider' variant
   const agentVariantTypes = [
     HumanAgentMessageType.HUMAN_AGENT_JOINED,
     HumanAgentMessageType.HUMAN_AGENT_LEFT_CHAT,

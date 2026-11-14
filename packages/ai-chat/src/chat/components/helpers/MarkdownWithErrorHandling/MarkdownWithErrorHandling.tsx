@@ -51,6 +51,7 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
     (state: AppState) => ({
       conversationalSearch_streamingIncomplete:
         state.languagePack.conversationalSearch_streamingIncomplete,
+      errors_iconLabel: state.languagePack.errors_iconLabel,
     }),
     shallowEqual
   );
@@ -68,8 +69,11 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
         highlight={true}
       />
       {isStreamingError && (
-        <InlineError>
-          {languagePack.conversationalSearch_streamingIncomplete}
+        <InlineError iconLabel={languagePack.errors_iconLabel}>
+          <MarkdownWithDefaults
+            removeHTML
+            text={languagePack.conversationalSearch_streamingIncomplete}
+          />
         </InlineError>
       )}
     </>

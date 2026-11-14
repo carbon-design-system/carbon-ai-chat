@@ -12,7 +12,6 @@ import { property } from 'lit/decorators.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import ErrorFilled16 from '@carbon/icons/es/error--filled/16.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
-import '../../markdown/index.js';
 import prefix from '../../../globals/settings.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
 import styles from './inline-error.scss?lit';
@@ -20,13 +19,14 @@ import styles from './inline-error.scss?lit';
 const blockClass = `${prefix}-inline-error`;
 
 /**
- * An error row: an error icon followed by error text. The text content of
- * the element is the error message. It is rendered as markdown with all HTML
- * removed, so put text in the element, not child markup. The text is read when
- * the element renders.
+ * An error row: an error icon followed by error text. The host supplies the
+ * text through the default slot, as plain text or as a `cds-aichat-markdown`
+ * element when the text needs the host's markdown settings.
  *
  * @experimental
  * @element cds-aichat-inline-error
+ *
+ * @slot - The error text.
  */
 @carbonElement(blockClass)
 class CDSAIChatInlineError extends LitElement {
@@ -47,11 +47,7 @@ class CDSAIChatInlineError extends LitElement {
           this.iconLabel ? { 'aria-label': this.iconLabel } : {}
         )}</span
       >
-      <span class="${blockClass}__text"
-        ><cds-aichat-markdown
-          remove-html
-          .markdown=${(this.textContent ?? '').trim()}></cds-aichat-markdown
-      ></span>
+      <span class="${blockClass}__text"><slot></slot></span>
     `;
   }
 }

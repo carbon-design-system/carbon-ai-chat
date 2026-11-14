@@ -63,6 +63,11 @@ interface ImageProps extends ClickableImageProps, HasClassName {
   imageError?: string;
 
   /**
+   * The accessible label for the error icon shown when the image fails to load.
+   */
+  imageErrorIconLabel?: string;
+
+  /**
    * The url to display on the image tile.
    */
   displayURL?: string;
@@ -97,6 +102,7 @@ interface ImageProps extends ClickableImageProps, HasClassName {
 function Image(props: ImageProps) {
   const {
     imageError,
+    imageErrorIconLabel,
     title,
     description,
     displayURL,
@@ -119,7 +125,9 @@ function Image(props: ImageProps) {
   const Icon = renderIcon;
 
   if (isError) {
-    return <InlineError>{imageError}</InlineError>;
+    return (
+      <InlineError iconLabel={imageErrorIconLabel}>{imageError}</InlineError>
+    );
   }
 
   if (inline) {

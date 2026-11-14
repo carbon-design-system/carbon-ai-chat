@@ -62,13 +62,15 @@ function IFrameComponent({
   onTimeoutOverride,
   onLoad,
 }: IFrameComponentProps) {
-  const { errors_iframeSource, iframe_ariaSourceLoaded } = useSelector(
-    (state: AppState) => ({
-      errors_iframeSource: state.languagePack.errors_iframeSource,
-      iframe_ariaSourceLoaded: state.languagePack.iframe_ariaSourceLoaded,
-    }),
-    shallowEqual
-  );
+  const { errors_iconLabel, errors_iframeSource, iframe_ariaSourceLoaded } =
+    useSelector(
+      (state: AppState) => ({
+        errors_iconLabel: state.languagePack.errors_iconLabel,
+        errors_iframeSource: state.languagePack.errors_iframeSource,
+        iframe_ariaSourceLoaded: state.languagePack.iframe_ariaSourceLoaded,
+      }),
+      shallowEqual
+    );
   const ariaAnnouncer = useAriaAnnouncer();
   const [showSpinner, setShowSpinner] = useState(true);
   const [showError, setShowError] = useState(false);
@@ -107,7 +109,7 @@ function IFrameComponent({
 
   return (
     <div className="cds-aichat--i-frame-component__wrapper">
-      {showError && renderErrorMessage(errors_iframeSource)}
+      {showError && renderErrorMessage(errors_iframeSource, errors_iconLabel)}
       {!showError && (
         <iframe
           className="cds-aichat--i-frame-component__i-frame"
@@ -137,10 +139,10 @@ function renderLoadingSpinner() {
   );
 }
 
-function renderErrorMessage(errorText: string) {
+function renderErrorMessage(errorText: string, iconLabel: string) {
   return (
     <div className="cds-aichat--i-frame-component__status-container">
-      <InlineError>{errorText}</InlineError>
+      <InlineError iconLabel={iconLabel}>{errorText}</InlineError>
     </div>
   );
 }

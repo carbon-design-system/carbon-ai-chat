@@ -11,7 +11,7 @@ import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import React from 'react';
 
 export class CitationsErrorBoundary extends React.Component<
-  { children: React.ReactNode; errorText: string },
+  { children: React.ReactNode; errorText: string; iconLabel: string },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -22,7 +22,9 @@ export class CitationsErrorBoundary extends React.Component<
 
   render() {
     return this.state.failed ? (
-      <InlineError>{this.props.errorText}</InlineError>
+      <InlineError iconLabel={this.props.iconLabel}>
+        {this.props.errorText}
+      </InlineError>
     ) : (
       this.props.children
     );

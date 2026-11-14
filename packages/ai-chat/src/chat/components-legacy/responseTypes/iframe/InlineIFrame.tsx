@@ -37,6 +37,9 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
   const errors_iframeSource = useSelector(
     (state: AppState) => state.languagePack.errors_iframeSource
   );
+  const errors_iconLabel = useSelector(
+    (state: AppState) => state.languagePack.errors_iconLabel
+  );
   const [isError, setIsError] = useState(false);
   const { source, title } = messageItem;
   const baseHeight = getMediaDimensions(messageItem)?.base_height;
@@ -66,7 +69,11 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
   }, [ariaAnnouncer, errors_iframeSource]);
 
   if (isError) {
-    return <InlineError>{errors_iframeSource}</InlineError>;
+    return (
+      <InlineError iconLabel={errors_iconLabel}>
+        {errors_iframeSource}
+      </InlineError>
+    );
   }
 
   return (

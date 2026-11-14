@@ -85,6 +85,7 @@ jest.mock(
 );
 
 const ERROR_TEXT = enLanguagePack.errors_singleMessage;
+const ERROR_ICON_LABEL = enLanguagePack.errors_iconLabel;
 const BACK_LABEL = enLanguagePack.general_returnToAssistant;
 
 /** An option with no `options` list, which throws inside `OptionComponent`. */
@@ -191,7 +192,7 @@ describe('render errors in a message item', () => {
 
     expect(mockAnnounce.mock.calls).toEqual([
       ['watsonx is responding...', 'polite'],
-      [`watsonx said ${ERROR_TEXT}`, 'polite'],
+      [`watsonx said ${ERROR_ICON_LABEL} ${ERROR_TEXT}`, 'polite'],
     ]);
   });
 

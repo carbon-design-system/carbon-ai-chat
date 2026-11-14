@@ -53,24 +53,24 @@ describe(blockClass, () => {
     });
   });
 
-  describe('standalone', () => {
-    it('defaults to true and adds outer spacing', async () => {
+  describe('inline', () => {
+    it('defaults to false and adds outer spacing', async () => {
       const el = await fixture<CDSAIChatSystemMessage>(
         html`<cds-aichat-system-message>Between</cds-aichat-system-message>`
       );
-      expect(el.standalone).to.equal(true);
-      expect(el.hasAttribute('standalone')).to.be.true;
+      expect(el.inline).to.equal(false);
+      expect(el.hasAttribute('inline')).to.be.false;
       expect(getComputedStyle(el).marginBlockStart).to.not.equal('0px');
       expect(getComputedStyle(el).marginInlineStart).to.not.equal('0px');
     });
 
-    it('adds no outer spacing when standalone is false', async () => {
+    it('adds no outer spacing with the inline attribute', async () => {
       const el = await fixture<CDSAIChatSystemMessage>(
-        html`<cds-aichat-system-message .standalone=${false}
+        html`<cds-aichat-system-message inline
           >Inside</cds-aichat-system-message
         >`
       );
-      expect(el.hasAttribute('standalone')).to.be.false;
+      expect(el.inline).to.equal(true);
       const style = getComputedStyle(el);
       expect(style.marginBlockStart).to.equal('0px');
       expect(style.marginInlineStart).to.equal('0px');

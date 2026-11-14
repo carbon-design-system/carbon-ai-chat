@@ -8,6 +8,7 @@
  */
 
 import '../index';
+import '../../markdown/index';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -20,7 +21,7 @@ const argTypes = {
   text: {
     control: 'text',
     description:
-      'Story-only. The text placed inside the element. It is rendered as markdown with HTML removed.',
+      'Story-only. The text slotted into the element, as a `cds-aichat-markdown` element with HTML removed.',
   },
   iconLabel: {
     control: 'text',
@@ -40,7 +41,7 @@ export const Default = {
   render: (args) => html`
     <cds-aichat-inline-error
       icon-label=${ifDefined(args.iconLabel || undefined)}>
-      ${args.text}
+      <cds-aichat-markdown remove-html>${args.text}</cds-aichat-markdown>
     </cds-aichat-inline-error>
   `,
 };
