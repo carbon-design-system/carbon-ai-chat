@@ -65,7 +65,8 @@ function sameDrawnItems(
  * The same array comes back while no entry, local item, or message changes.
  */
 function useDrawnMessageItems(
-  messageItems: readonly Readonly<ChatSDKMessageItem>[]
+  messageItems: readonly Readonly<ChatSDKMessageItem>[],
+  retainedLocalIDs?: readonly string[]
 ): readonly DrawnMessageItem[] {
   const { publicStateService } = useServiceManager();
   const selectDrawn = useCallback(
@@ -82,9 +83,18 @@ function useDrawnMessageItems(
           drawn.push({ messageItem, localMessageItem, message });
         }
       });
+      if (retainedLocalIDs) {
+        const byLocalID = new Map(
+          drawn.map((entry) => [entry.localMessageItem.ui_state.id, entry])
+        );
+        return retainedLocalIDs.flatMap((localID) => {
+          const entry = byLocalID.get(localID);
+          return entry ? [entry] : [];
+        });
+      }
       return drawn;
     },
-    [messageItems, publicStateService]
+    [messageItems, publicStateService, retainedLocalIDs]
   );
   const drawn = useSelector(selectDrawn, sameDrawnItems);
   // A new list of entries makes a new selector, which compares with the last value React
@@ -133,7 +143,8 @@ function useMessageItem(
  */
 function useNestedMessageItems(
   localItemID: string,
-  list: NestedList
+  list: NestedList,
+  retainedLocalIDs?: readonly string[]
 ): readonly DrawnMessageItem[] {
   const parentID = useMessageItemID(localItemID);
   const row = typeof list === 'string' ? undefined : list.row;
@@ -142,7 +153,7 @@ function useNestedMessageItems(
   const nested = usePublicChatState((state) =>
     nestedMessageItems(state.messageItems, parentID, kind ?? { row, column })
   );
-  return useDrawnMessageItems(nested);
+  return useDrawnMessageItems(nested, retainedLocalIDs);
 }
 
 export {

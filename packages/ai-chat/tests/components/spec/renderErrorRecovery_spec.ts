@@ -810,7 +810,7 @@ describe('render errors in response panel content', () => {
     expect(deepText(responsePanelBody())).not.toContain('Body two');
   });
 
-  it('draws the live nested items when an update inside an open panel drops one', async () => {
+  it('skips a removed nested item from the opening panel membership', async () => {
     const { instance, store, onError } = await renderOpenChat();
     await upsertPanelMessage(instance, {
       body: [panelText('Body one'), panelText('Body two')],
@@ -834,7 +834,7 @@ describe('render errors in response panel content', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
-  it('draws a nested item an update adds inside an open panel', async () => {
+  it('keeps the opening nested membership when an update adds an item', async () => {
     const { instance, store, onError } = await renderOpenChat();
     await upsertPanelMessage(instance, {
       body: [panelText('Body one'), panelText('Body two')],
@@ -854,9 +854,9 @@ describe('render errors in response panel content', () => {
     });
     await settle();
 
-    await waitFor(() =>
-      expect(deepText(responsePanelBody())).toContain('Body three')
-    );
+    expect(deepText(responsePanelBody())).toContain('Body two');
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(deepText(responsePanelBody())).not.toContain('Body three');
     expect(panelError('body')).toBeFalsy();
     expect(onError).not.toHaveBeenCalled();
     expect(store.getState().view.catastrophicErrorType).toBeUndefined();
