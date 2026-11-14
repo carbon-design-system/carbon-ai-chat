@@ -120,7 +120,8 @@ export interface ChatSDKMessageItem {
   /**
    * - `streaming`: more of the item is on its way.
    * - `complete`: the item is done.
-   * - `error`: its request failed, or its response failed while streaming.
+   * - `error`: its request failed, its response failed while streaming, or the latest upsert used
+   *   {@link MessageState.ERROR}.
    */
   readonly status: 'streaming' | 'complete' | 'error';
 

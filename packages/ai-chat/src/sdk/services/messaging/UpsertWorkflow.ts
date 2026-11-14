@@ -470,7 +470,7 @@ class UpsertWorkflow {
         ownedResult,
         nextState === MessageState.STREAMING && !isStopped,
         holdFromIndex,
-        options
+        { ...options, nativeMessageState: nextState }
       )
     );
     if (isStale()) {
@@ -728,6 +728,7 @@ class UpsertWorkflow {
       const ownedResult = this.incomingMessageService.copyNativeMessage(result);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
+          nativeMessageState: revealState,
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
         })
       );

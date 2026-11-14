@@ -128,6 +128,13 @@ interface LocalMessageUIState<
   nestedSourceIndex?: number;
 
   /**
+   * Whether the latest native upsert marked this item's message as errored.
+   *
+   * @internal
+   */
+  upsertError?: boolean;
+
+  /**
    * A list of local message item ids for nested message item. This prop is used by response types that can support
    * response types nested inside them.
    */

@@ -521,6 +521,55 @@ describe('state.messageItems', () => {
       });
     });
 
+    it('projects native ERROR without changing conversation state or an older snapshot', async () => {
+      const chat = await sdkChat();
+      const payload = response('native-error', [card('answer')]);
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.ERROR,
+        () => payload
+      );
+      const failed = chat.state.get();
+      expect(failed.messageItems).toHaveLength(4);
+      expect(failed.messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('error')
+      );
+      expect(failed.status).toBe('ready');
+      expect(failed.error).toBeNull();
+      expect(failed.messages[0]).not.toHaveProperty('history.error_state');
+      expect(failed.messages[0]).not.toHaveProperty('state');
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.ERROR,
+        (previous) => previous
+      );
+      expect(chat.state.get().messageItems).toBe(failed.messageItems);
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.COMPLETE,
+        (previous) => previous
+      );
+      expect(chat.state.get().messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('complete')
+      );
+      expect(failed.messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('error')
+      );
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.ERROR,
+        (previous) => previous
+      );
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.STREAMING,
+        (previous) => previous
+      );
+      expect(chat.state.get().messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('streaming')
+      );
+    });
+
     it('marks a turn failed while streaming as an error', async () => {
       const hold = resolvablePromise<void>();
       const chat = await sdkChat({

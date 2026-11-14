@@ -15,6 +15,7 @@ import isPlainObject from 'lodash-es/isPlainObject.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 
+import { MessageState } from '../../types/config/MessagingConfig';
 import { ConversationState } from '../../types/state/ConversationState';
 import {
   AppStateMessages,
@@ -86,6 +87,7 @@ import type {
 import { humanAgentReducers } from './humanAgentReducers';
 
 import {
+  applyUpsertErrorState,
   applyAssistantMessageState,
   applyChunkWriteWithIdentity,
   applyFullMessageWithIdentity,
@@ -1174,14 +1176,25 @@ const ownershipReducers: {
     if (options?.origin === 'chunk' && isStreaming) {
       const result = applyChunkWriteWithIdentity(state, message, options.chunk);
       return {
-        state: result.state,
+        state: applyUpsertErrorState(result.state, result.messageID, false),
         ownership: { kind: 'upsert', messageID: result.messageID },
       };
     }
 
     // A message from `addMessage` or `final_response` keeps the rules it has always had.
     if (options?.received) {
-      return applyReceivedWrite(state, message, options.received, messageID);
+      const result = applyReceivedWrite(
+        state,
+        message,
+        options.received,
+        messageID
+      );
+      return result.state === state
+        ? result
+        : {
+            ...result,
+            state: applyUpsertErrorState(result.state, messageID, false),
+          };
     }
 
     const messageResponse = keepPriorUIStateInternal(
@@ -1238,7 +1251,14 @@ const ownershipReducers: {
       },
     };
 
-    return { state: newState, ownership };
+    return {
+      state: applyUpsertErrorState(
+        newState,
+        messageID,
+        options?.nativeMessageState === MessageState.ERROR
+      ),
+      ownership,
+    };
   },
   [ADD_MESSAGE]: (
     state: ConversationState,

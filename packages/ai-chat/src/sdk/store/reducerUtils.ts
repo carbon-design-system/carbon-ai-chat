@@ -836,7 +836,36 @@ function applyChunkWriteWithIdentity(
   return { state: nextState, messageID: full.messageID };
 }
 
+/** Keeps native upsert status on local items without changing the public message. */
+function applyUpsertErrorState(
+  state: ConversationState,
+  messageID: string,
+  isError: boolean
+): ConversationState {
+  let items = state.allMessageItemsByID;
+  for (const id of state.assistantMessageState.localMessageIDs) {
+    const local = items[id];
+    if (
+      local?.fullMessageID !== messageID ||
+      Boolean(local.ui_state.upsertError) === isError
+    ) {
+      continue;
+    }
+    if (items === state.allMessageItemsByID) {
+      items = { ...items };
+    }
+    items[id] = {
+      ...local,
+      ui_state: { ...local.ui_state, upsertError: isError },
+    };
+  }
+  return items === state.allMessageItemsByID
+    ? state
+    : { ...state, allMessageItemsByID: items };
+}
+
 export {
+  applyUpsertErrorState,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,

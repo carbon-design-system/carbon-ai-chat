@@ -89,6 +89,7 @@ function kindOf(message: Message): Kind {
 function statusOf(message: Message, local: LocalMessageItem): Status {
   const errorState = message.history?.error_state;
   if (
+    local.ui_state.upsertError ||
     errorState === MessageErrorState.FAILED ||
     errorState === MessageErrorState.FAILED_WHILE_STREAMING
   ) {
