@@ -16,6 +16,8 @@ import {
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  DANA,
+  addConnect,
   allByRole,
   byRole,
   changeView,
@@ -23,6 +25,7 @@ import {
   contractChat,
   contractSetup,
   fakeBackend,
+  fakeDesk,
   finishSend,
   instanceSender,
   isDisabled,
@@ -581,4 +584,50 @@ describe('upload: maxFiles', () => {
       false
     );
   });
+});
+
+// @covers config.upload.onFileUpload state.input.hasInFlightUploads instance.serviceDesk.updateIsSuspended
+// C13: 1.x applies upload settlement to the active input after the host awaits.
+describe('prebuilt upload routing across an agent connection', () => {
+  contractSetup();
+
+  it.each(['complete', 'error'] as const)(
+    'keeps the original pending upload when %s settles while the input goes to an agent',
+    async (outcome) => {
+      const uploader = fakeUploader();
+      const desk = fakeDesk();
+      const backend = fakeBackend({ autoResolve: true });
+      const { instance } = await contractChat({
+        strings: STRINGS,
+        input: { expanded: true },
+        serviceDeskFactory: desk.factory,
+        serviceDesk: { skipConnectHumanAgentCard: true },
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: backend.customSendMessage,
+        },
+        upload: { isOn: true, onFileUpload: uploader.onFileUpload },
+      });
+      await changeView(instance, ViewType.MAIN_WINDOW);
+      await pickFiles(STRINGS.input_uploadButtonLabel, [
+        makeFile('routing.pdf'),
+      ]);
+      expect(instance.getState().input.hasInFlightUploads).toBe(true);
+      await addConnect(instance, 'upload-connect');
+      await waitFor(() => expect(desk.desk.startChat).toHaveBeenCalledTimes(1));
+      await act(() => desk.callback().agentJoined(DANA));
+      expect(instance.getState().humanAgent.isConnected).toBe(true);
+
+      await settle(
+        uploader.calls[0],
+        outcome === 'complete'
+          ? { data: { user_defined: { uploaded: true } } }
+          : { error: new Error('Upload failed') }
+      );
+      await act(() => instance.serviceDesk.updateIsSuspended(true));
+
+      expect(instance.getState().humanAgent.isSuspended).toBe(true);
+      expect(instance.getState().input.hasInFlightUploads).toBe(true);
+    }
+  );
 });
