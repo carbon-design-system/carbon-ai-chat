@@ -23,7 +23,10 @@ export async function changeView(
   view: ViewType | Partial<ViewState>
 ): Promise<void> {
   await act(async () => {
-    await instance.changeView(view);
+    // Older 1.x types require a full state even though partials work at runtime.
+    await instance.changeView(
+      view as Parameters<ChatInstance['changeView']>[0]
+    );
   });
 }
 
