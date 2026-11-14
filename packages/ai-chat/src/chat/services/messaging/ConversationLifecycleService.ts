@@ -19,6 +19,7 @@ class ConversationLifecycleService {
   private activeResponses = new Set<string>();
   private responseOwners = new Map<string, string | undefined>();
   private stoppedRequests = new Set<string>();
+  private userStoppedRequests = new Set<string>();
   private failure: { messageID?: string; generation: number } | null = null;
   private respondedRequests = new Set<string>();
   private stoppedResponses = new Set<string>();
@@ -41,6 +42,7 @@ class ConversationLifecycleService {
     this.activeResponses.clear();
     this.responseOwners.clear();
     this.stoppedRequests.clear();
+    this.userStoppedRequests.clear();
     this.respondedRequests.clear();
     this.stoppedResponses.clear();
     this.failure = null;
@@ -84,13 +86,22 @@ class ConversationLifecycleService {
     }
   }
 
-  requestStopped(messageID: string, generation = this.generation) {
+  /** `byUser` marks a stop the user asked for, not a failed send or a restart. */
+  requestStopped(
+    messageID: string,
+    generation = this.generation,
+    byUser = false
+  ) {
     if (!this.isCurrent(generation)) {
       return [];
     }
     const requestID = this.resolveRequestID(messageID);
     this.stoppedRequests.add(messageID);
     this.stoppedRequests.add(requestID);
+    if (byUser) {
+      this.userStoppedRequests.add(messageID);
+      this.userStoppedRequests.add(requestID);
+    }
     this.activeRequests.delete(requestID);
     this.respondedRequests.delete(requestID);
     const responseIDs: string[] = [];
@@ -107,6 +118,14 @@ class ConversationLifecycleService {
 
   isRequestStopped(requestID?: string) {
     return this.stoppedRequests.has(this.resolveRequestID(requestID));
+  }
+
+  isRequestStoppedByUser(requestID?: string) {
+    return this.userStoppedRequests.has(this.resolveRequestID(requestID));
+  }
+
+  isResponseStopped(messageID: string) {
+    return this.stoppedResponses.has(messageID);
   }
 
   responseRequestID(messageID: string) {

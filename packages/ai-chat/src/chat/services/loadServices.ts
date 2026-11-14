@@ -32,21 +32,21 @@ import {
   copyToSessionStorage,
   refreshLocalizationOnChange,
 } from '../store/subscriptions';
-import { AppConfig } from '../../types/state/AppConfig';
+import { PublicConfig } from '../../types/config/PublicConfig';
 import { WriteableElementName } from '../utils/constants';
 import { assertType, setEnableDebugLog } from '../utils/miscUtils';
 import { setIntl } from '../utils/intlUtils';
 import { isBrowser } from '../utils/browserUtils';
 
-type CreateServiceManagerFunction = (appConfig: AppConfig) => ServiceManager;
+type CreateServiceManagerFunction = (
+  publicConfig: PublicConfig
+) => ServiceManager;
 
 /**
  * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
  * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
-function createServiceManager(appConfig: AppConfig) {
-  const publicConfig = appConfig.public;
-
+function createServiceManager(publicConfig: PublicConfig) {
   const serviceManager = new ServiceManager();
 
   // Create all the services we will be using.
