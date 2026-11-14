@@ -72,7 +72,14 @@ function useDrawnMessageItems(
   const selectDrawn = useCallback(
     (state: AppState) => {
       const drawn: DrawnMessageItem[] = [];
-      messageItems.forEach((messageItem) => {
+      const selectedItems = retainedLocalIDs
+        ? retainedLocalIDs.flatMap((localID) => {
+            const itemID = publicStateService.messageItemIDOf(localID, state);
+            const entry = messageItemByID(messageItems, itemID);
+            return entry ? [entry] : [];
+          })
+        : messageItems;
+      selectedItems.forEach((messageItem) => {
         const localID = publicStateService.localItemIDOf(messageItem.id, state);
         const localMessageItem =
           localID === undefined
@@ -83,15 +90,6 @@ function useDrawnMessageItems(
           drawn.push({ messageItem, localMessageItem, message });
         }
       });
-      if (retainedLocalIDs) {
-        const byLocalID = new Map(
-          drawn.map((entry) => [entry.localMessageItem.ui_state.id, entry])
-        );
-        return retainedLocalIDs.flatMap((localID) => {
-          const entry = byLocalID.get(localID);
-          return entry ? [entry] : [];
-        });
-      }
       return drawn;
     },
     [messageItems, publicStateService, retainedLocalIDs]
@@ -151,7 +149,13 @@ function useNestedMessageItems(
   const column = typeof list === 'string' ? undefined : list.column;
   const kind = typeof list === 'string' ? list : undefined;
   const nested = usePublicChatState((state) =>
-    nestedMessageItems(state.messageItems, parentID, kind ?? { row, column })
+    retainedLocalIDs
+      ? state.messageItems
+      : nestedMessageItems(
+          state.messageItems,
+          parentID,
+          kind ?? { row, column }
+        )
   );
   return useDrawnMessageItems(nested, retainedLocalIDs);
 }
