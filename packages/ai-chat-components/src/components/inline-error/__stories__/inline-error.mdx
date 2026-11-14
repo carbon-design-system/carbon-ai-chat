@@ -1,0 +1,55 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './inline-error.stories';
+
+<Meta of={Stories} />
+
+# Inline error
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/inline-error) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-inline-error` to show an error row: an error icon followed by the error text. Put the error text in the default slot, as plain text or as a `cds-aichat-markdown` element. This element is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Error icon**: The element draws the icon. You do not supply one.
+- **Host-supplied label**: Set `icon-label` to a translated string so assistive technology names the icon.
+- **Slotted text**: The element renders whatever you slot. To render markdown with your own settings, slot a `cds-aichat-markdown` element, and add `remove-html` for untrusted text.
+
+## Examples
+
+### With markdown
+
+```html
+<cds-aichat-inline-error>
+  <cds-aichat-markdown remove-html>
+    Something went wrong. [Try again](https://www.carbondesignsystem.com/)
+  </cds-aichat-markdown>
+</cds-aichat-inline-error>
+```
+
+<Canvas of={Stories.WithMarkdown} />
+
+## Accessibility
+
+When `icon-label` is set, the icon has `role="img"` and an `aria-label` with that value. Otherwise the icon has `aria-hidden="true"`. The element adds no live region; if the error appears after the user acts, announce it from the host.
+
+## Component API
+
+### `cds-aichat-inline-error`
+
+<ArgTypes of="cds-aichat-inline-error" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/inline-error/index.js';
+import '@carbon/ai-chat-components/es/components/markdown/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

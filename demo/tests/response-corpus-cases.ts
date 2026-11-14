@@ -187,7 +187,7 @@ export const RESPONSE_EXPECTATIONS: Record<string, CorpusExpectation> = {
     responses: 3,
     text: ['This is a system message', 'Activated carbon'],
   },
-  'system message (stand alone, agent variant)': {
+  'system message (stand alone, divider variant)': {
     items: 4,
     responses: 4,
     text: [
@@ -195,11 +195,6 @@ export const RESPONSE_EXPECTATIONS: Record<string, CorpusExpectation> = {
       'This is a system message',
       'Activated carbon',
     ],
-  },
-  'system message (stand alone, date variant)': {
-    items: 2,
-    responses: 2,
-    text: ['Monday, June 14th 2025', 'Activated carbon'],
   },
   'system message (stand alone, default variant)': {
     items: 2,

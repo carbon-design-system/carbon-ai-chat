@@ -1,0 +1,56 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './inline-error-react.stories';
+
+<Meta of={Stories} />
+
+# Inline error
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/inline-error) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `InlineError` to show an error row: an error icon followed by the error text. Pass the error text as children, as plain text or as a `Markdown` component. This component is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Error icon**: The component draws the icon. You do not supply one.
+- **Host-supplied label**: Pass a translated string to `iconLabel` so assistive technology names the icon.
+- **Slotted text**: The component renders its children. To render markdown with your own settings, pass a `Markdown` component, and set `removeHTML` for untrusted text.
+
+## Examples
+
+### With markdown
+
+```jsx
+<InlineError>
+  <Markdown
+    removeHTML
+    markdown="Something went wrong. [Try again](https://www.carbondesignsystem.com/)"
+  />
+</InlineError>
+```
+
+<Canvas of={Stories.WithMarkdown} />
+
+## Accessibility
+
+When `iconLabel` is set, the icon has `role="img"` and an `aria-label` with that value. Otherwise the icon has `aria-hidden="true"`. The component adds no live region; if the error appears after the user acts, announce it from your app.
+
+## Component API
+
+### `<InlineError>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

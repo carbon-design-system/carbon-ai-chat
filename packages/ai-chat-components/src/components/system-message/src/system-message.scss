@@ -1,0 +1,62 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+
+$block-class: #{$prefix}-system-message;
+
+:host(#{$block-class}) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Lines between messages carry their own outer spacing. Inline lines sit
+// inside a message bubble, which owns the spacing.
+:host(#{$block-class}:not([inline])) {
+  margin-block: layout.$spacing-07 0;
+  margin-inline: layout.$spacing-05;
+}
+
+:host(#{$block-class}[divider]) {
+  border-block-start: 1px solid;
+  border-block-start-color: theme.$border-subtle;
+  padding-block-start: layout.$spacing-05;
+}
+
+:host(#{$block-class}[response-stopped]) {
+  margin-block-start: layout.$spacing-05;
+
+  .#{$block-class}__text {
+    @include type.type-style('body-01');
+
+    font-style: italic;
+  }
+}
+
+.#{$block-class}__icon {
+  display: flex;
+  align-items: center;
+  margin-inline-end: layout.$spacing-03;
+
+  svg {
+    fill: theme.$text-secondary;
+  }
+}
+
+.#{$block-class}__text {
+  @include type.type-style('helper-text-01');
+
+  color: theme.$text-secondary;
+  line-height: layout.$spacing-05;
+  text-align: center;
+}

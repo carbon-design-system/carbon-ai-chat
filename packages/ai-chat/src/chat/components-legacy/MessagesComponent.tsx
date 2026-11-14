@@ -18,7 +18,7 @@ import { MessagesScrollHandle } from './MessagesScrollHandle';
 import { MessagesScrollToBottomButton } from './MessagesScrollToBottomButton';
 import { ProcessingWithText } from '../components/helpers/ProcessingWithText/ProcessingWithText';
 import { MessagesView } from './MessagesView';
-import { SystemMessage } from '../components/responseTypes/message/SystemMessage';
+import SystemMessage from '@carbon/ai-chat-components/es/react/system-message.js';
 import WriteableElement from '../components/helpers/WriteableElement/WriteableElement';
 import {
   HasServiceManager,
@@ -55,7 +55,11 @@ import MessageComponent, {
   MessageClass,
   MoveFocusType,
 } from './MessageComponent';
-import { Message, MessageRequest } from '../../types/messaging/Messages';
+import {
+  Message,
+  MessageRequest,
+  SystemMessageItem,
+} from '../../types/messaging/Messages';
 import type { PublicChatState } from '../../types/instance/PublicChatState';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
@@ -817,9 +821,17 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
 
     metadataList.forEach((metadata) => {
       if (metadata.isStandaloneSystemMessage) {
+        const systemItem = metadata.localMessageItem.item as SystemMessageItem;
         renderMessageArray.push(
           <Fragment key={metadata.messageItemID}>
-            <SystemMessage message={metadata.fullMessage} standalone={true} />
+            <SystemMessage
+              divider={
+                systemItem.variant === 'divider' ||
+                systemItem.variant === 'date' ||
+                systemItem.variant === 'agent'
+              }>
+              {systemItem.title}
+            </SystemMessage>
           </Fragment>
         );
         return;

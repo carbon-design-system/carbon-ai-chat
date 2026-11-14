@@ -17,7 +17,8 @@ import type { OnErrorData } from '../../../types/config/ErrorConfig';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { focusOnFirstFocusableElement } from '../../utils/domUtils';
 import { createDidCatchErrorData } from '../../utils/miscUtils';
-import { InlineError } from '../responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 
 interface PanelWithFocusProps {
   header?: ReactNode;
@@ -87,6 +88,11 @@ interface PanelContentErrorBoundaryProps {
   errorText: string;
 
   /**
+   * The accessible label for the error icon.
+   */
+  iconLabel: string;
+
+  /**
    * Draws the error inside the body's wrapper elements, so it gets the body's padding.
    */
   isBody?: boolean;
@@ -126,7 +132,11 @@ export class PanelContentErrorBoundary extends React.Component<
     if (!this.state.didError) {
       return this.props.children;
     }
-    const error = <InlineError text={this.props.errorText} />;
+    const error = (
+      <InlineError iconLabel={this.props.iconLabel}>
+        <MarkdownWithDefaults removeHTML text={this.props.errorText} />
+      </InlineError>
+    );
     if (!this.props.isBody) {
       return error;
     }
