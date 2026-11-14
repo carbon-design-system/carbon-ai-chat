@@ -249,7 +249,11 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
     ...conversation,
 
     // A reused chat outlives this mount; what it subscribed goes with it.
-    ...mountSubscriptions(serviceManager.eventBus, () => instance),
+    ...mountSubscriptions(
+      serviceManager.eventBus,
+      conversation.state,
+      () => instance
+    ),
 
     send: (message: MessageRequest | string, options?: SendOptions) => {
       debugLog('Called instance.send', message, options);
