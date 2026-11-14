@@ -84,8 +84,8 @@ export interface ChatSDKMessageItem {
    *
    * An item nested in another one adds to its parent's ID: `<parentID>:i:<index>` for a carousel item
    * or a body item, `<parentID>:f:<index>` for a footer item, and `<parentID>:i:<row>.<column>.<index>`
-   * for an item in a grid cell. A nested index counts only the children the list draws, so a child of
-   * a type its parent doesn't support takes no index.
+   * for an item in a grid cell. A nested index is the child's position in its parent's raw source
+   * array, including positions occupied by children the list doesn't draw.
    *
    * The same messages give the same IDs after a reload or a history replay, as long as the messages
    * have IDs. The chat gives a message without one a new ID each time it loads, so give your messages
