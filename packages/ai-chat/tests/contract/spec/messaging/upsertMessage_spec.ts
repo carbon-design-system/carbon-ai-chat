@@ -13,7 +13,10 @@ import {
   BusEventPreReceive,
   BusEventReceive,
   BusEventType,
+  BusEventCustomFooterSlot,
+  BusEventUserDefinedResponse,
   MessageResponse,
+  MessageResponseTypes,
   MessageState,
 } from '../../../../src/aiChatEntry';
 import {
@@ -423,4 +426,97 @@ describeShared('upsertMessage mixed with addMessage', (makeDriver) => {
     expect(events.types()).toEqual([]);
     expect(textsOf(chat, 'm1')).toEqual(['upserted']);
   });
+});
+
+// @covers instance.messaging.upsertMessage event.receive state.messages
+describeShared('upsertMessage keeps receive edits', (makeDriver) => {
+  it('commits receive edits even when its handler throws, without changing a retained snapshot', async () => {
+    const chat = await makeDriver();
+    const response = textResponse('before', 'receive-edit');
+    let retained: MessageResponse;
+    const failure = new Error('receive handler failed');
+    const log = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const receive = jest.fn((event: BusEventReceive) => {
+      retained = chat.messages()[0] as MessageResponse;
+      expect(event.data).toBe(response);
+      (event.data.output.generic[0] as { text: string }).text = 'edited';
+      throw failure;
+    });
+    chat.on({ type: BusEventType.RECEIVE, handler: receive });
+    try {
+      await act(async () => {
+        await expect(
+          chat.messaging.upsertMessage(
+            response.id,
+            MessageState.COMPLETE,
+            () => response
+          )
+        ).resolves.toBeUndefined();
+      });
+      expect(receive).toHaveBeenCalledTimes(1);
+      expect(outputTexts(retained)).toEqual(['before']);
+      expect(textsOf(chat, response.id)).toEqual(['edited']);
+    } finally {
+      log.mockRestore();
+    }
+  });
+});
+
+// @covers instance.messaging.upsertMessage event.userDefinedResponse event.customFooterSlot state.messages
+describeShared('upsertMessage keeps slot edits', (makeDriver) => {
+  it.each([
+    BusEventType.USER_DEFINED_RESPONSE,
+    BusEventType.CUSTOM_FOOTER_SLOT,
+  ])(
+    'commits %s edits when its handler throws, without changing a retained snapshot',
+    async (type) => {
+      const chat = await makeDriver();
+      const response: MessageResponse = {
+        id: 'slot-edit',
+        output: {
+          generic: [
+            {
+              response_type: MessageResponseTypes.USER_DEFINED,
+              user_defined: { value: 'before' },
+              message_item_options: {
+                custom_footer_slot: { is_on: true, slot_name: 'edit-footer' },
+              },
+            },
+          ],
+        },
+      };
+      let retained: MessageResponse;
+      const failure = new Error('slot handler failed');
+      const slot = jest.fn(
+        (event: BusEventUserDefinedResponse | BusEventCustomFooterSlot) => {
+          retained = chat.messages()[0] as MessageResponse;
+          const item =
+            event.type === BusEventType.USER_DEFINED_RESPONSE
+              ? (event as BusEventUserDefinedResponse).data.message
+              : (
+                  (event as BusEventCustomFooterSlot).data
+                    .message as MessageResponse
+                ).output.generic[0];
+          item.user_defined.value = 'edited';
+          throw failure;
+        }
+      );
+      chat.on({ type, handler: slot });
+      await act(async () => {
+        await expect(
+          chat.messaging.upsertMessage(
+            response.id,
+            MessageState.STREAMING,
+            () => response
+          )
+        ).rejects.toThrow(failure);
+      });
+      expect(slot).toHaveBeenCalledTimes(1);
+      expect(retained.output.generic[0].user_defined.value).toBe('before');
+      expect(
+        (chat.messages()[0] as MessageResponse).output.generic[0].user_defined
+          .value
+      ).toBe('edited');
+    }
+  );
 });
