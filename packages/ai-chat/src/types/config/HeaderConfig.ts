@@ -64,8 +64,11 @@ export interface CustomMenuOption {
   disabled?: boolean;
 
   /**
-   * Optional data-testid attribute for testing purposes.
-   * This allows tests to reliably find and interact with specific menu options.
+   * A `data-testid` attribute for the menu option, so tests can find it.
+   *
+   * @experimental
+   * @deprecated In tests, select the menu option by its visible text instead.
+   * Removed in a 2.x minor release.
    */
   testId?: string;
 }
