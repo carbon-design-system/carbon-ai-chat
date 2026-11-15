@@ -349,7 +349,8 @@ describe('extension slot hosts', () => {
 
     hosts.setRendererPresent('customFooter', false);
 
-    expect(attached(chatWrapper)).toEqual([callerNode, responseHost]);
+    // The chat places its hosts ahead of the page's own children.
+    expect(attached(chatWrapper)).toEqual([responseHost, callerNode]);
     expect(footerHost.isConnected).toBe(false);
   });
 
