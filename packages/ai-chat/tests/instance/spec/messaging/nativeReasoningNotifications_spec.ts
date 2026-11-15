@@ -179,7 +179,7 @@ it('keeps native and legacy reasoning writable without refiring existing items',
 });
 
 it.each(['pause', 'handoff'])(
-  'keeps the %s copy of native reasoning content writable',
+  'copies native reasoning content through %s',
   async (copyKind) => {
     const config = createBaseConfig();
     config.serviceDesk = { skipConnectHumanAgentCard: true };
