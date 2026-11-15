@@ -52,6 +52,10 @@ class SendWorkflow {
     this.outboundCoordinator.resolveCancelledMessage(request);
   }
 
+  processHandlerError(request: PendingMessageRequest, error: unknown) {
+    this.outboundCoordinator.processHandlerError(request, error);
+  }
+
   /**
    * Process a response from the assistant send path, return the messageResponse.
    *
