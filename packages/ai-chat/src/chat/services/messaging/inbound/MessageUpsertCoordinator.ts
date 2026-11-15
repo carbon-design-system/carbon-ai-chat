@@ -58,7 +58,6 @@ import { deepFreeze } from '../../../utils/lang/objectUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import { hasDisplayableContentForItem } from '../../../utils/streamingUtils';
 import { ServiceManager } from '../../ServiceManager';
-import { retainNativeMessageOrigin } from '../nativeMessageEvents';
 
 /**
  * Whether an upserted item counts as content for the stream-start announcement. A text
@@ -524,7 +523,6 @@ class MessageUpsertCoordinator {
               previousState.allMessageItemsByID[id]?.fullMessageID === messageID
           );
     const ownedResult = cloneDeep(result);
-    retainNativeMessageOrigin(ownedResult);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
         ownedResult,
@@ -961,7 +959,6 @@ class MessageUpsertCoordinator {
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
       const ownedResult = cloneDeep(result);
-      retainNativeMessageOrigin(ownedResult);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
@@ -1397,7 +1394,6 @@ class MessageUpsertCoordinator {
       ...eventValues,
       commit: () => {
         eventValues.commit((committed) => {
-          retainNativeMessageOrigin(committed as MessageResponse);
           stamp.eventMessage = committed as MessageResponse;
         });
       },

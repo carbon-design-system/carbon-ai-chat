@@ -34,7 +34,6 @@ import { OnErrorType } from '../../../../types/config/ErrorConfig';
 import { MessageState } from '../../../../types/config/MessagingConfig';
 import { HistoryItem, HistoryNote } from '../../../../types/messaging/History';
 import type { ServiceManager } from '../../ServiceManager';
-import { retainCopiedNativeMessageOrigin } from '../nativeMessageEvents';
 
 class ReceiveService {
   private serviceManager: ServiceManager;
@@ -312,14 +311,6 @@ class ReceiveService {
       inserted,
       currentAppStateMessages
     );
-    for (const [messageID, message] of Object.entries(
-      currentAppStateMessages.allMessagesByID
-    )) {
-      const copied = newAppStateMessages.allMessagesByID[messageID];
-      if (isResponse(message) && isResponse(copied)) {
-        retainCopiedNativeMessageOrigin(message, copied);
-      }
-    }
 
     // A message inserted again appears once, at its first position, and takes the later call's content and items.
     const repeatedIDs = new Set(
