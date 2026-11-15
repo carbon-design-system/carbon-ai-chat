@@ -253,8 +253,8 @@ class ChatContainer extends FlattenedConfigElement {
    * `HTMLElement` (or `null`). The library mounts the element inside the
    * bubble via a slot.
    *
-   * The chat may call it more than once for the same node, for example while the message is sending. Return
-   * the same output for the same node.
+   * The chat calls it once per node and keeps the returned element while that node stays the same. A message
+   * update that leaves the node unchanged, such as a status change, doesn't call it again.
    *
    * @experimental
    */
@@ -861,8 +861,8 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content).
    *
-   * The chat may call it more than once for the same node, for example while the message is sending. Return
-   * the same output for the same node.
+   * The chat calls it once per node and keeps the returned element while that node stays the same. A message
+   * update that leaves the node unchanged, such as a status change, doesn't call it again.
    *
    * @experimental
    */
