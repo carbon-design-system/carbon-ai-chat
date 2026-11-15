@@ -10,18 +10,25 @@
 import { expect } from '@open-wc/testing';
 import { Editor } from '@tiptap/core';
 import DocumentNode from '@tiptap/extension-document';
+import HardBreakNode from '@tiptap/extension-hard-break';
 import ParagraphNode from '@tiptap/extension-paragraph';
 import TextNode from '@tiptap/extension-text';
 
-import { getRawText } from '../json-utils.js';
+import { getRawText, textToDoc } from '../json-utils.js';
 import { PlainTextPaste } from '../plain-text-paste.js';
 
-function makeEditor(initialContent = '') {
+function makeEditor(initialContent = '', { hardBreak = true } = {}) {
   const mount = document.createElement('div');
   document.body.appendChild(mount);
   const editor = new Editor({
     element: mount,
-    extensions: [DocumentNode, ParagraphNode, TextNode, PlainTextPaste],
+    extensions: [
+      DocumentNode,
+      ParagraphNode,
+      TextNode,
+      ...(hardBreak ? [HardBreakNode] : []),
+      PlainTextPaste,
+    ],
     content: initialContent,
   });
   return {
@@ -76,8 +83,50 @@ describe('tiptap/plain-text-paste', function () {
     expect(getRawText(editor.getJSON())).to.equal('hello world');
   });
 
-  it('splits multi-line text into paragraphs merged with the surrounding text', () => {
+  it('starts a paragraph at each newline and merges the surrounding text', () => {
     const { editor, cleanup: c } = makeEditor('world');
+    cleanup = c;
+
+    editor.commands.setTextSelection(3);
+    dispatchPaste(editor, 'a\nb');
+
+    expect(editor.getJSON().content?.length).to.equal(2);
+    expect(getRawText(editor.getJSON())).to.equal('woa\nbrld');
+  });
+
+  it('keeps an empty paragraph for a pasted blank line', () => {
+    const { editor, cleanup: c } = makeEditor('world');
+    cleanup = c;
+
+    editor.commands.setTextSelection(3);
+    dispatchPaste(editor, 'a\n\nb');
+
+    expect(editor.getJSON().content?.length).to.equal(3);
+    expect(getRawText(editor.getJSON())).to.equal('woa\n\nbrld');
+  });
+
+  it('reads back pasted text the way textToDoc builds it', () => {
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
+
+    const text = 'one\ntwo\n\nthree\n\n\nfour';
+    dispatchPaste(editor, text);
+
+    expect(editor.getJSON()).to.deep.equal(textToDoc(text));
+    expect(getRawText(editor.getJSON())).to.equal(text);
+  });
+
+  it('treats Windows and old Mac line endings as newlines', () => {
+    const { editor, cleanup: c } = makeEditor();
+    cleanup = c;
+
+    dispatchPaste(editor, 'a\r\nb\r\rc');
+
+    expect(getRawText(editor.getJSON())).to.equal('a\nb\n\nc');
+  });
+
+  it('makes one paragraph per line in a schema without hardBreak', () => {
+    const { editor, cleanup: c } = makeEditor('world', { hardBreak: false });
     cleanup = c;
 
     editor.commands.setTextSelection(3);
@@ -99,6 +148,18 @@ describe('tiptap/plain-text-paste', function () {
   });
 
   it('keeps every pasted line when replacing a select-all', () => {
+    const { editor, cleanup: c } = makeEditor('<p>one</p><p>two</p>');
+    cleanup = c;
+
+    editor.commands.selectAll();
+    dispatchPaste(editor, '\n\n');
+    editor.commands.insertContent('Z');
+
+    expect(editor.getJSON().content?.length).to.equal(3);
+    expect(getRawText(editor.getJSON())).to.equal('\n\nZ');
+  });
+
+  it('keeps a pasted lone newline as two paragraphs when replacing a select-all', () => {
     const { editor, cleanup: c } = makeEditor('<p>one</p><p>two</p>');
     cleanup = c;
 

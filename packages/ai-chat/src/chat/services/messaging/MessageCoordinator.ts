@@ -58,8 +58,17 @@ class MessageCoordinator {
     }
   }
 
-  requestStopped(messageID: string, generation = this.currentGeneration) {
-    const responseIDs = this.state.requestStopped(messageID, generation);
+  /** `byUser` marks a stop the user asked for, not a failed send or a restart. */
+  requestStopped(
+    messageID: string,
+    generation = this.currentGeneration,
+    byUser = false
+  ) {
+    const responseIDs = this.state.requestStopped(
+      messageID,
+      generation,
+      byUser
+    );
     if (responseIDs === undefined) {
       return [];
     }
@@ -69,6 +78,14 @@ class MessageCoordinator {
 
   isRequestStopped(requestID?: string) {
     return this.state.isRequestStopped(requestID);
+  }
+
+  isRequestStoppedByUser(requestID?: string) {
+    return this.state.isRequestStoppedByUser(requestID);
+  }
+
+  isResponseStopped(messageID: string) {
+    return this.state.isResponseStopped(messageID);
   }
 
   responseRequestID(messageID: string) {
