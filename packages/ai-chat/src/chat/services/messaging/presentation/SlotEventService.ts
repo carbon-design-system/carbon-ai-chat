@@ -35,7 +35,10 @@ import {
 import { AppStateMessages } from '../../../../types/state/AppState';
 import { MessageState } from '../../../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
-import { captureMessageEvent } from '../../../utils/messageEventOwnership';
+import {
+  captureMessageEvent,
+  eventLocalItems,
+} from '../../../utils/messageEventOwnership';
 import type {
   ServiceManager,
   UserDefinedElementRegistryItem,
@@ -120,7 +123,10 @@ class SlotEventService {
       );
       try {
         await this.handleUserDefinedResponseItems(
-          eventValues.localItems[localMessage.ui_state.id] ?? localMessage,
+          eventValues.localItems[localMessage.ui_state.id] ??
+            eventLocalItems(originalMessage, eventValues.message, {
+              [localMessage.ui_state.id]: localMessage,
+            })[localMessage.ui_state.id],
           eventValues.message,
           messageState,
           eventValues.localItems,
