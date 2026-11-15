@@ -432,11 +432,14 @@ class MessageService {
     // Clean up the controller from the map and streaming tracking
     this.inboundStreaming.clearStreamingResponse(responseId);
     if (!pendingRequest) {
-      // The sender already settled, so only the response stream remains.
-      this.serviceManager.messageCoordinator.responseStopped(
-        responseId,
-        generation
-      );
+      // The sender already settled, so only the response stream remains. A user stop still
+      // records its request as stopped, so the request's late partial chunks are dropped.
+      const coordinator = this.serviceManager.messageCoordinator;
+      coordinator.responseStopped(responseId, generation);
+      const requestID = coordinator.responseRequestID(responseId);
+      if (requestID && reason === CancellationReason.STOP_STREAMING) {
+        coordinator.requestStopped(requestID, generation, true);
+      }
     }
 
     // Only process the pending request if it exists (it may have already been cleared from queue)
@@ -444,7 +447,8 @@ class MessageService {
       if (reason !== CancellationReason.TIMEOUT) {
         this.serviceManager.messageCoordinator.requestStopped(
           pendingRequest.message.id,
-          pendingRequest.generation
+          pendingRequest.generation,
+          reason === CancellationReason.STOP_STREAMING
         );
       }
       if (reason === CancellationReason.TIMEOUT) {
