@@ -334,11 +334,20 @@ class ReceiveService {
         isRepeatedItem(inserted.allMessageItemsByID, localID)
       )
       .forEach((localID) => {
-        newAppStateMessages.allMessageItemsByID[localID] =
-          inserted.allMessageItemsByID[localID];
+        newAppStateMessages.allMessageItemsByID[localID] = merge(
+          {},
+          {
+            [localID]: inserted.allMessageItemsByID[localID],
+          }
+        )[localID];
       });
     repeatedIDs.forEach((id) => {
-      newAppStateMessages.allMessagesByID[id] = inserted.allMessagesByID[id];
+      newAppStateMessages.allMessagesByID[id] = merge(
+        {},
+        {
+          [id]: inserted.allMessagesByID[id],
+        }
+      )[id];
     });
 
     // Now make sure the message arrays are merged correctly.
