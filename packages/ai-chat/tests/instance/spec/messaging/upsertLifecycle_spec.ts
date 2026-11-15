@@ -101,7 +101,9 @@ describe('upsert and chunk request ownership', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
 
-    await expect(instance.send('first')).rejects.toEqual(new Error('{}'));
+    await expect(instance.send('first')).rejects.toEqual(
+      new Error('send failed')
+    );
     consoleError.mockRestore();
     await instance.send('second');
 
@@ -142,7 +144,9 @@ describe('upsert and chunk request ownership', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
 
-    await expect(instance.send('first')).rejects.toEqual(new Error('{}'));
+    await expect(instance.send('first')).rejects.toEqual(
+      new Error('send failed')
+    );
     consoleError.mockRestore();
     await instance.send('second');
     release.doResolve();
@@ -284,7 +288,7 @@ describe('upsert and chunk request ownership', () => {
       const send = instance.send('first');
       const sendSettled =
         outcome === 'failure'
-          ? expect(send).rejects.toEqual(new Error('{}'))
+          ? expect(send).rejects.toEqual(new Error('send failed'))
           : send;
       await chunksQueued;
       if (outcome === 'cancel') {
@@ -346,7 +350,9 @@ describe('upsert and chunk request ownership', () => {
       await renderChatAndGetInstanceWithStore(config);
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    await expect(instance.send('first')).rejects.toEqual(new Error('{}'));
+    await expect(instance.send('first')).rejects.toEqual(
+      new Error('send failed')
+    );
     for (const responseID of ['response-a', 'response-b']) {
       expect(
         store.getState().allMessageItemsByID[`${responseID}-text`].ui_state
@@ -447,7 +453,9 @@ describe('upsert and chunk request ownership', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
     await instance.send('first');
-    await expect(instance.send('second')).rejects.toEqual(new Error('{}'));
+    await expect(instance.send('second')).rejects.toEqual(
+      new Error('send failed')
+    );
     consoleError.mockRestore();
     const pendingSend = instance.send('third');
     await started;

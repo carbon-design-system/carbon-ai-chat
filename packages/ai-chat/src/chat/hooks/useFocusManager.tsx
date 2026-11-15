@@ -46,7 +46,7 @@ export function useFocusManager({
   inputRef,
 }: UseFocusManagerProps) {
   const requestFocus = useCallback(() => {
-    requestFocusForTargets({
+    return requestFocusForTargets({
       shouldAutoFocus,
       showDisclaimer,
       iFramePanelIsOpen,
