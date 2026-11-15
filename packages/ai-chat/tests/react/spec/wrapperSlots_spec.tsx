@@ -926,6 +926,17 @@ describe('React render props through the shared container', () => {
         imperative.textContent = String(Number(imperative.textContent) + 1);
       };
       writable.appendChild(imperative);
+      // The home screen samples writable content when it renders, as on main, so a settled DOM write alone leaves
+      // the class.
+      await Promise.resolve();
+      await (native as HTMLElement & { updateComplete: Promise<boolean> })
+        .updateComplete;
+      expect(
+        body().classList.contains(
+          'cds-aichat--home-screen__body--no-custom-content'
+        )
+      ).toBe(true);
+      mounted.rerender(host(false, 'With content'));
       await waitFor(() =>
         expect(
           body().classList.contains(
@@ -935,6 +946,7 @@ describe('React render props through the shared container', () => {
       );
       imperative.click();
       imperative.remove();
+      mounted.rerender(host(false, 'Without content'));
       await waitFor(() =>
         expect(
           body().classList.contains(
@@ -943,6 +955,7 @@ describe('React render props through the shared container', () => {
         ).toBe(true)
       );
       writable.appendChild(imperative);
+      mounted.rerender(host(false, 'Content again'));
       await waitFor(() =>
         expect(
           body().classList.contains(
