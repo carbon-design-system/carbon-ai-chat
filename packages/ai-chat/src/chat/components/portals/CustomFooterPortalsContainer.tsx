@@ -33,7 +33,7 @@ const selectRecords = (snapshot: ExtensionHostsSnapshot) =>
 
 /**
  * Renders each custom message footer into the slot host the host service
- * keeps for it. A portal places the host's React content there, in the page's
+ * keeps for it. A portal places the host's React content there, in the container's
  * light DOM.
  */
 function CustomFooterPortalsContainer({
