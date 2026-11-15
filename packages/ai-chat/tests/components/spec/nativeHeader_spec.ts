@@ -201,6 +201,21 @@ describe('native header', () => {
     ]);
   });
 
+  it('logs a header menu click handler that rejects and still runs the click', async () => {
+    const failure = new Error('header menu handler failed');
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const { view, base, fire } = await createHeader();
+    fire.mockImplementationOnce(() => Promise.reject(failure));
+    base().navigationBackOnClick();
+    expect(view.onToggleHomeScreen).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(BusEventType.HEADER_MENU_CLICK),
+        failure
+      )
+    );
+  });
+
   it('keeps overflow events, inserted home indices, links, and callbacks wired in order', async () => {
     const custom = jest.fn();
     const { base, view, fire, order } = await createHeader({
