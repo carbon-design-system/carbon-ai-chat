@@ -206,7 +206,7 @@ describe('conversation status', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
 
-    await expect(instance.send('first')).rejects.toThrow('{}');
+    await expect(instance.send('first')).rejects.toThrow('send failed');
     consoleError.mockRestore();
     await instance.send('second');
 
@@ -243,7 +243,7 @@ describe('conversation status', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
 
-    await expect(instance.send('first')).rejects.toThrow('{}');
+    await expect(instance.send('first')).rejects.toThrow('send failed');
     consoleError.mockRestore();
     await instance.send('second');
     release.doResolve();
@@ -373,7 +373,9 @@ describe('conversation status', () => {
       await handlerStarted;
       const send = instance.send('first');
       const sendSettled =
-        outcome === 'failure' ? expect(send).rejects.toThrow('{}') : send;
+        outcome === 'failure'
+          ? expect(send).rejects.toThrow('send failed')
+          : send;
       await chunksQueued;
       if (outcome === 'cancel') {
         await serviceManager.messageService.cancelCurrentMessageRequest();
@@ -421,7 +423,7 @@ describe('conversation status', () => {
     const { instance } = await renderChatAndGetInstanceWithStore(config);
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    await expect(instance.send('first')).rejects.toThrow('{}');
+    await expect(instance.send('first')).rejects.toThrow('send failed');
     expect(instance.state.get().status).toBe('error');
     await instance.send('next');
 
@@ -459,7 +461,7 @@ describe('conversation status', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
     await instance.send('first');
-    await expect(instance.send('second')).rejects.toThrow('{}');
+    await expect(instance.send('second')).rejects.toThrow('send failed');
     consoleError.mockRestore();
     const pendingSend = instance.send('third');
     await started;
@@ -813,12 +815,12 @@ describe('conversation status', () => {
     };
     const { instance } = await renderChatAndGetInstanceWithStore(config);
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    await expect(instance.send('question')).rejects.toThrow('{}');
+    await expect(instance.send('question')).rejects.toThrow('failed');
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onError.mock.calls[0][0]).toEqual({
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
-      otherData: '{}',
+      otherData: 'failed',
     });
     expect(Object.isFrozen(onError.mock.calls[0][0])).toBe(false);
     expect(Object.isFrozen(failure)).toBe(false);

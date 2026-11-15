@@ -46,6 +46,7 @@ import {
 } from '../../../schema/outputItemToLocalItem';
 import {
   addDefaultsToMessage,
+  hasLiveHumanAgentMessage,
   isConnectToHumanAgent,
   isHiddenOutputItem,
   isPause,
@@ -57,10 +58,7 @@ import { deepFreeze } from '../../../utils/lang/objectUtils';
 import { consoleError } from '../../../utils/miscUtils';
 import { hasDisplayableContentForItem } from '../../../utils/streamingUtils';
 import { ServiceManager } from '../../ServiceManager';
-import {
-  retainNativeMessageOrigin,
-  snapshotNativeMessageEvent,
-} from '../nativeMessageEvents';
+import { retainNativeMessageOrigin } from '../nativeMessageEvents';
 
 /**
  * Whether an upserted item counts as content for the stream-start announcement. A text
@@ -264,7 +262,11 @@ class MessageUpsertCoordinator {
     for (const messageID of this.streamingIDs) {
       const requestID = lifecycle.responseRequestID(messageID);
       if (requestID) {
-        lifecycle.requestStopped(requestID);
+        lifecycle.requestStopped(
+          requestID,
+          undefined,
+          reason === CancellationReason.STOP_STREAMING
+        );
       }
       this.endStreamingMessage(messageID);
     }
@@ -1164,13 +1166,19 @@ class MessageUpsertCoordinator {
     });
   }
 
-  private getStoredResponse(messageID: string): MessageResponse | undefined {
+  /**
+   * Reads the stored response for `messageID`, throwing `ErrorType` when the ID names a request.
+   */
+  private getStoredResponse(
+    messageID: string,
+    ErrorType: new (message: string) => Error = Error
+  ): MessageResponse | undefined {
     const existing = this.serviceManager.store.getState().allMessagesByID[
       messageID
     ] as Message | undefined;
 
     if (existing && isRequest(existing as MessageRequest)) {
-      throw new Error(
+      throw new ErrorType(
         `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
       );
     }
@@ -1185,11 +1193,8 @@ class MessageUpsertCoordinator {
     messageID: string,
     updater: UpsertMessageUpdater
   ): Promise<MessageResponse> {
-    const existing = this.getStoredResponse(messageID);
-
-    const previousMessage = existing
-      ? cloneDeep(existing as MessageResponse)
-      : undefined;
+    const existing = this.getStoredResponse(messageID, TypeError);
+    const previousMessage = existing ? cloneDeep(existing) : undefined;
     let result = await updater(previousMessage);
 
     if (result === null || result === undefined) {
@@ -1200,6 +1205,11 @@ class MessageUpsertCoordinator {
     if (typeof result !== 'object') {
       throw new TypeError(
         'upsertMessage: updater must return a MessageResponse object.'
+      );
+    }
+    if (isRequest(result) || hasLiveHumanAgentMessage(result)) {
+      throw new TypeError(
+        'upsertMessage: updater must return an assistant message, not a request or a human-agent message.'
       );
     }
 
@@ -1217,7 +1227,7 @@ class MessageUpsertCoordinator {
     if (result.id === undefined || result.id === null) {
       result.id = messageID;
     } else if (result.id !== messageID) {
-      throw new Error(
+      throw new TypeError(
         `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`
       );
     }
@@ -1242,7 +1252,7 @@ class MessageUpsertCoordinator {
       if (!result.id) {
         result.id = messageID;
       } else {
-        throw new Error(
+        throw new TypeError(
           `upsertMessage: pre:receive handler changed message id from "${messageID}" to "${result.id}".`
         );
       }
@@ -1435,51 +1445,47 @@ class MessageUpsertCoordinator {
     if (!eventValues) {
       return;
     }
-    const snapshot = snapshotNativeMessageEvent({
-      message: eventValues.message as MessageResponse,
-      localItems: eventValues.localItems,
-    });
-    for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
-      if (isStale()) {
-        return;
-      }
-      const storedLocalItem =
-        entry.index >= fromIndex
-          ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
-          : undefined;
-      if (storedLocalItem) {
-        const localItem = entry.isHidden
-          ? {
-              ...storedLocalItem,
-              item: snapshot.message.output.generic[entry.index],
-              ui_state: { ...storedLocalItem.ui_state },
-            }
-          : snapshot.localItems[storedLocalItem.ui_state.id];
-        if (!localItem) {
-          continue;
-        }
-        const nestedItems = entry.isHidden
-          ? {
-              ...snapshot.localItems,
-              ...this.createHiddenNestedItems(localItem, snapshot.message),
-            }
-          : snapshot.localItems;
-        await chatActions.handleUserDefinedResponseItems(
-          localItem,
-          snapshot.message,
-          nextState,
-          nestedItems,
-          () => !isStale()
-        );
+    try {
+      for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
         if (isStale()) {
           return;
         }
-        await chatActions.handleCustomFooterSlot(
-          localItem,
-          snapshot.message,
-          () => !isStale()
-        );
+        const storedLocalItem =
+          entry.index >= fromIndex
+            ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
+            : undefined;
+        if (storedLocalItem) {
+          const localItem = entry.isHidden
+            ? storedLocalItem
+            : eventValues.localItems[storedLocalItem.ui_state.id];
+          if (!localItem) {
+            continue;
+          }
+          const nestedItems = entry.isHidden
+            ? {
+                ...eventValues.localItems,
+                ...this.createHiddenNestedItems(localItem, result),
+              }
+            : eventValues.localItems;
+          await chatActions.handleUserDefinedResponseItems(
+            localItem,
+            result,
+            nextState,
+            nestedItems,
+            () => !isStale()
+          );
+          if (isStale()) {
+            return;
+          }
+          await chatActions.handleCustomFooterSlot(
+            localItem,
+            result,
+            () => !isStale()
+          );
+        }
       }
+    } finally {
+      eventValues.commit();
     }
   }
 
@@ -1597,12 +1603,11 @@ class MessageUpsertCoordinator {
     result: MessageResponse,
     stamp: UpsertStamp
   ): Promise<void> {
-    // Capture current internal metadata before creating the detached notification.
-    this.captureUpsertEvent(messageID, result, stamp);
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
-      data: snapshotNativeMessageEvent(result),
+      data: result,
     };
+    const eventValues = this.captureUpsertEvent(messageID, result, stamp);
     try {
       await this.serviceManager.fire(
         receiveEvent,
@@ -1610,6 +1615,8 @@ class MessageUpsertCoordinator {
       );
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
+    } finally {
+      eventValues?.commit();
     }
     if (!this.isStale(stamp, result.request_id)) {
       this.serviceManager.messageService.finalizeStreamingMessage(messageID);

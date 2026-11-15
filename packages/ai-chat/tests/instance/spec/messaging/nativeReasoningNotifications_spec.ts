@@ -147,10 +147,11 @@ it('keeps new reasoning from a same-ID history merge on the legacy mutation path
   ).toBe('native');
 });
 
-it('keeps native reasoning frozen and legacy chunk reasoning mutable without refiring existing items', async () => {
+it('keeps native and legacy reasoning writable without refiring existing items', async () => {
   const { instance, store } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
   const seen: unknown[] = [];
+  let retainedNativeEvent: BusEventUserDefinedResponse;
   instance.on({
     type: BusEventType.USER_DEFINED_RESPONSE,
     handler: (event: BusEventUserDefinedResponse) => {
@@ -160,17 +161,14 @@ it('keeps native reasoning frozen and legacy chunk reasoning mutable without ref
         expect(Object.isFrozen(event.data.message)).toBe(false);
         event.data.message.user_defined.value = 'legacy edit';
       } else {
-        expect(event.data.message).toBe(
-          (event.data.fullMessage as MessageResponse).message_options.reasoning
-            .content[seen.length - 1]
-        );
-        expect(Object.isFrozen(event.data.fullMessage)).toBe(true);
+        retainedNativeEvent = event;
+        expect(Object.isFrozen(event.data.message)).toBe(false);
+        expect(Object.isFrozen(event.data.fullMessage)).toBe(false);
         expect(event.data.fullMessage).not.toBe(
           store.getState().allMessagesByID['reasoning-origin']
         );
-        expect(() => {
-          event.data.message.user_defined.value = 'bad edit';
-        }).toThrow(TypeError);
+        event.data.message.user_defined.edited = true;
+        expect(event.data.message.user_defined.edited).toBe(true);
       }
     },
   });
@@ -183,6 +181,30 @@ it('keeps native reasoning frozen and legacy chunk reasoning mutable without ref
     );
   });
   await waitFor(() => expect(seen).toEqual(['native']));
+  await waitFor(() =>
+    expect(store.getState().allMessagesByID[first.id]).toMatchObject({
+      message_options: {
+        reasoning: { content: [{ user_defined: { edited: true } }] },
+      },
+    })
+  );
+  const firstSnapshot = instance.getState();
+  expect(
+    (first.message_options.reasoning.content as GenericItem[])[0].user_defined
+      .edited
+  ).toBeUndefined();
+  expect(
+    store.getState().allMessageItemsByID[`${first.id}-reasoning-intro-item-0`]
+  ).toBeUndefined();
+  retainedNativeEvent.data.message.user_defined.edited = false;
+  retainedNativeEvent.data.fullMessage.context = { late: true };
+  expect(store.getState().allMessagesByID[first.id]).toMatchObject({
+    message_options: {
+      reasoning: { content: [{ user_defined: { edited: true } }] },
+    },
+  });
+  expect(store.getState().allMessagesByID[first.id].context).toBeUndefined();
+  expect(instance.getState()).toEqual(firstSnapshot);
   await act(async () => {
     await instance.messaging.addMessageChunk({
       streaming_metadata: { response_id: first.id },
