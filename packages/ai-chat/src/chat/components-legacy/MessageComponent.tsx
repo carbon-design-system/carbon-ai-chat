@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { prepareReasoningMessageEvent } from '../services/messaging/nativeMessageEvents';
 import ChatBot32 from '@carbon/icons/es/chat-bot/32.js';
 import CheckmarkFilled16 from '@carbon/icons/es/checkmark--filled/16.js';
 import Headset32 from '@carbon/icons/es/headset/32.js';
@@ -980,10 +979,9 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
           message.id,
           stableId
         );
-        const event = prepareReasoningMessageEvent(message, localItem);
         void this.props.serviceManager.actions.handleUserDefinedResponseItems(
-          event.localItem,
-          event.message
+          localItem,
+          message
         );
       });
     };

@@ -22,6 +22,9 @@ import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 const AddIcon = carbonIconToReact(Add16);
 
 function renderMenuItemIcon(icon: ToolbarAction['icon']) {
+  if (!icon) {
+    return null;
+  }
   const carbonIcon = transformReactIconToCarbonIcon(icon, 16);
   const IconComp = carbonIconToReact(
     carbonIcon as Parameters<typeof carbonIconToReact>[0]
@@ -81,6 +84,10 @@ function InputActionsMenu({
               disabled={opt.disabled}
               data-testid={opt.testId}
               onClick={() => {
+                // A disabled menu item still gets mouse clicks.
+                if (opt.disabled) {
+                  return;
+                }
                 setOpen(false);
                 if (opt.href) {
                   window.open(opt.href, opt.target || '_self');
