@@ -8,6 +8,7 @@
  */
 
 import { ContextProvider } from '@lit/context';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import { LitElement, nothing } from 'lit';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -199,6 +200,20 @@ describe('native header', () => {
       `event:${HeaderMenuClickType.HOMESCREEN_BUTTON}`,
       'home',
     ]);
+  });
+
+  it('renders a configured action that has no icon', async () => {
+    const { view, base, manager } = await createHeader(
+      { actions: [{ text: 'Text only', onClick: jest.fn() }] },
+      (headerView) => {
+        headerView.transformIcon = transformReactIconToCarbonIcon;
+      }
+    );
+    await view.updateComplete;
+    expect(manager.actions.errorOccurred).not.toHaveBeenCalled();
+    expect(base().actions[0]).toEqual(
+      expect.objectContaining({ text: 'Text only', icon: undefined })
+    );
   });
 
   it('logs a header menu click handler that rejects and still runs the click', async () => {
