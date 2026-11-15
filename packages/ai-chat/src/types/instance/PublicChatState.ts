@@ -16,7 +16,8 @@ import type { JSONContent } from '@tiptap/core';
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
  *
- * - `loading`: history and the welcome are loading.
+ * - `loading`: the chat itself is loading history and the welcome. Calls to
+ *   {@link ChatInstance.updateIsChatLoadingCounter} don't set it.
  * - `submitted`: a send is waiting for its first associated response.
  * - `streaming`: a response is active, or its sender is still pending after a response arrives.
  *   This includes the gap after the response completes and before the sender settles.
@@ -40,6 +41,8 @@ export type ConversationStatus =
 export interface PublicInputState {
   /**
    * Raw text currently queued in the input before being sent to customSendMessage.
+   * In 1.x, the plain field joins paragraphs with one newline; the rich editor joins them with two.
+   * Both use one newline for a hard break. The deprecated raw updater uses the one-newline projection in both editors.
    */
   rawValue: string;
 
@@ -100,7 +103,8 @@ export interface PublicWorkspaceCustomPanelState {
   isOpen: boolean;
 
   /**
-   * Config options for the workspace panels.
+   * The options the open workspace was opened with. Holds only the default `preferredLocation` while the workspace
+   * is closed.
    */
   options: WorkspaceCustomPanelConfigOptions;
 
@@ -185,7 +189,9 @@ export type PublicChatState = Readonly<
     /**
      * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
      *
-     * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` — removed in 2.0.0.
+     * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` to know when the chat itself is
+     * hydrating. `status` doesn't follow {@link ChatInstance.updateIsChatLoadingCounter}, so if you drive that counter,
+     * track its value yourself. Removed in 2.0.0.
      */
     isHydratingCounter: number;
 
@@ -211,6 +217,11 @@ export type PublicChatState = Readonly<
      * State for the workspace panel.
      */
     workspace: PublicWorkspaceCustomPanelState;
+
+    /**
+     * State for the history panel. The same value as `customPanels.history`.
+     */
+    history?: PublicHistoryPanelState;
   }
 >;
 

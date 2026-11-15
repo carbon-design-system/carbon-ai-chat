@@ -86,6 +86,27 @@ describe('extension host records', () => {
     expect(records()).toEqual({});
   });
 
+  it('ignores user-defined response and chunk events with no slot', () => {
+    const { hosts, fire } = setup();
+    const before = hosts.getSnapshot().userDefinedResponse;
+
+    fire({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      data: { fullMessage: { id: 'm1' }, message: { id: 'i1' } },
+    });
+    fire({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      data: { chunk: { partial_item: { t: 'p1' } } },
+    });
+    fire({
+      type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+      data: { chunk: { complete_item: { id: 'i2' } } },
+    });
+
+    expect(hosts.getSnapshot().userDefinedResponse).toBe(before);
+    expect(hosts.getSnapshot().userDefinedResponse).toEqual({});
+  });
+
   it('tracks custom message footers', () => {
     const { hosts, fire } = setup();
     const records = () => hosts.getSnapshot().customFooter as any;
@@ -330,7 +351,8 @@ describe('extension slot hosts', () => {
 
     hosts.setRendererPresent('customFooter', false);
 
-    expect(attached(chatWrapper)).toEqual([callerNode, responseHost]);
+    // The chat places its hosts ahead of the page's own children.
+    expect(attached(chatWrapper)).toEqual([responseHost, callerNode]);
     expect(footerHost.isConnected).toBe(false);
   });
 
