@@ -146,6 +146,23 @@ describe('WindowOpenState', () => {
     controller.disconnect();
   });
 
+  it('forwards hydration and reopen focus requests to the shared focus manager', () => {
+    const { controller, options } = setup({
+      isHydrated: true,
+    });
+    controller.connect();
+    jest.runAllTimers();
+    expect(options.requestFocus).toHaveBeenCalledTimes(1);
+    controller.update({
+      ...options,
+      viewStateMainWindow: false,
+    });
+    jest.mocked(options.requestFocus).mockClear();
+    controller.update(options);
+    expect(options.requestFocus).toHaveBeenCalledTimes(1);
+    controller.disconnect();
+  });
+
   it('opens an initially closed window and announces hydration completion', () => {
     const { controller, options } = setup({ viewStateMainWindow: false });
     controller.connect();
