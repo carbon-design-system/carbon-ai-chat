@@ -32,7 +32,7 @@ const selectRecords = (snapshot: ExtensionHostsSnapshot) =>
 /**
  * Renders each footer below a user message into the slot host the host
  * service keeps for it. A portal places the host's React content there, in the
- * page's light DOM.
+ * container's light DOM.
  *
  * An empty result attaches no host. An empty host still picks up the slotted
  * margin, so a callback that returns null would leave a gap under the bubble.
