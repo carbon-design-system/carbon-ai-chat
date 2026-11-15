@@ -201,16 +201,21 @@ class SendWorkflow {
       return;
     }
 
-    await this.firePreSendEvent(current);
+    try {
+      await this.firePreSendEvent(current);
 
-    if (current.isProcessed) {
-      // This message was canceled.
+      if (current.isProcessed) {
+        // This message was canceled.
+        return;
+      }
+
+      this.commitOutgoingMessage(current, originalUserText);
+
+      await this.fireSendEvent(current);
+    } catch (error) {
+      this.outboundCoordinator.processHandlerError(current, error);
       return;
     }
-
-    this.commitOutgoingMessage(current, originalUserText);
-
-    await this.fireSendEvent(current);
 
     this.sendToAssistant(current, startLoading);
   }
