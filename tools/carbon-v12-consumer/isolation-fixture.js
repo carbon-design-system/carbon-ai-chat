@@ -213,6 +213,7 @@ export async function propsFor(tag) {
       status: 'processing',
     },
     'tool-call-data': { toolName: 'Isolated tool' },
+    'message-byline': { label: 'Isolated sender' },
     'conversational-search-shell': {
       citationsOpen: true,
       showCitationsToggle: true,

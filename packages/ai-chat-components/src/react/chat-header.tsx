@@ -71,7 +71,9 @@ const ChatHeader = React.forwardRef<CdsAiChatChatHeader, ChatHeaderProps>(
 
       return actions.map((action: ToolbarAction) => ({
         ...action,
-        icon: transformReactIconToCarbonIcon(action.icon, 16),
+        icon: action.icon
+          ? transformReactIconToCarbonIcon(action.icon, 16)
+          : undefined,
       }));
     }, [actions]);
 

@@ -1,4 +1,4 @@
-# agent-guidance.md — AGENTS.md, references/, and skills (type 7)
+# agent-guidance.md: AGENTS.md, references/, and skills (type 7)
 
 Load this before writing an `AGENTS.md`, a file under any `references/`, or a skill. Structural owner: [authoring-agents-md.md](../../../../references/authoring-agents-md.md). It owns the file budget, one-topic-per-file, the "read when…" triggers, the Related-guidance footer, and the skill-versus-reference split. Read it for the shape, and this for the words.
 
@@ -17,6 +17,6 @@ Use the reading-level score to spot dense prose. Read the workflow too: a low sc
 
 ## Related guidance
 
-- [caic-copy-writer](../SKILL.md) — the routing table and the draft-measure-revise loop
-- [authoring-agents-md.md](../../../../references/authoring-agents-md.md) — file budgets, routing, and the skill-vs-reference split
-- [.bob/skills/README.md](../../README.md) — the skill collection and its mirror rules
+- [caic-copy-writer](../SKILL.md): the routing table and the draft-measure-revise loop
+- [authoring-agents-md.md](../../../../references/authoring-agents-md.md): file budgets, routing, and the skill-vs-reference split
+- [.bob/skills/README.md](../../README.md): the skill collection and its mirror rules

@@ -113,12 +113,13 @@ test('packed manifest does not treat imported Error as a library global', async 
   );
 });
 
-test('packed manifest rejects parameter-shadowed Error and unresolved local bases', async () => {
+test('packed manifest rejects shadowed Error and unresolved local bases', async () => {
   for (const [source, base] of [
     [
       'function make(Error) { class Example extends Error {} return Example; } export const Example = make(Object);',
       'Error',
     ],
+    ['const Error = Object; class Example extends Error {}', 'Error'],
     ['export class Example extends MissingBase {}', 'MissingBase'],
   ]) {
     await withManifest(source, { name: base }, async (read) => {

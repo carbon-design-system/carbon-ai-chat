@@ -104,8 +104,6 @@ interface InputState extends FileUploadCapabilities {
    * Tiptap-native `JSONContent` projection of the editor doc — kept in
    * lockstep with `rawValue` (both update from the same input-change
    * event).
-   *
-   * @experimental
    */
   content: JSONContent;
 
@@ -113,8 +111,6 @@ interface InputState extends FileUploadCapabilities {
    * Whether the input editor currently has focus. Mirrors the
    * `cds-aichat-input-focus` / `cds-aichat-input-blur` events emitted by
    * the input web component.
-   *
-   * @experimental
    */
   focused: boolean;
 
