@@ -22,6 +22,7 @@ import {
   BusEventViewChange,
   ChatInstance,
   GenericItem,
+  MessageRequest,
   MessageResponseTypes,
   PageObjectId,
   ViewType,
@@ -30,6 +31,7 @@ import {
   changeView,
   contractElement,
   contractSetup,
+  fakeBackend,
   getByTestId,
   isInFlatTree,
   isShownWithin,
@@ -151,7 +153,16 @@ describe('cds-aichat-custom-element host content', () => {
   it('keeps response output and writeable elements when a Lit host clears its last child part', async () => {
     const out = document.createElement('span');
     const renderUserDefinedResponse = () => out;
-    const messaging = { skipWelcome: true };
+    // A block input node's output lands in this element's own light DOM, the
+    // page's DOM, where the banner's part can reach it.
+    const chip = document.createElement('span');
+    chip.textContent = 'Rendered chip';
+    const renderUserDefinedInputNode = () => chip;
+    const backend = fakeBackend({ autoResolve: true });
+    const messaging = {
+      skipWelcome: true,
+      customSendMessage: backend.customSendMessage,
+    };
     let instance: ChatInstance | null = null;
     const onAfterRender = (handed: ChatInstance) => {
       instance = handed;
@@ -164,6 +175,7 @@ describe('cds-aichat-custom-element host content', () => {
         .openChatByDefault=${true}
         .messaging=${messaging}
         .renderUserDefinedResponse=${renderUserDefinedResponse}
+        .renderUserDefinedInputNode=${renderUserDefinedInputNode}
         .onAfterRender=${onAfterRender}
         >${banner ? html`<p>Banner</p>` : nothing}</cds-aichat-custom-element
       >`;
@@ -177,6 +189,23 @@ describe('cds-aichat-custom-element host content', () => {
       )
     );
     await waitFor(() => expect(out.isConnected).toBe(true));
+    await act(() =>
+      instance.send({
+        input: {
+          text: 'custom',
+          display_content: {
+            type: 'doc',
+            content: [{ type: 'custom', attrs: { label: 'fallback' } }],
+          },
+        },
+      } as MessageRequest)
+    );
+    await waitFor(() =>
+      expect(isShownWithin(chip, getByTestId(PageObjectId.MAIN_PANEL))).toBe(
+        true
+      )
+    );
+    expect(chip.getRootNode()).toBe(document);
 
     await act(async () => {
       render(view(false), root);
@@ -192,6 +221,9 @@ describe('cds-aichat-custom-element host content', () => {
       )
     ).toEqual([]);
     expect(isInFlatTree(instance.writeableElements.footerElement)).toBe(true);
+    expect(isShownWithin(chip, getByTestId(PageObjectId.MAIN_PANEL))).toBe(
+      true
+    );
   });
 
   it('keeps response output in the order the responses arrived', async () => {
