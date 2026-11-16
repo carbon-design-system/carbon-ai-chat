@@ -16,7 +16,10 @@ import {
   isResponseWithNestedItems,
   renderAsUserDefinedMessage,
 } from '../../utils/messageUtils';
-import { captureMessageEvent } from '../../utils/messageEventOwnership';
+import {
+  captureMessageEvent,
+  eventLocalItems,
+} from '../../utils/messageEventOwnership';
 import {
   BusEventType,
   type BusEventUserDefinedResponse,
@@ -86,7 +89,10 @@ export async function coordinateUserDefinedResponseItems(
       await coordinateUserDefinedResponseItems(
         serviceManager,
         presentation,
-        eventValues.localItems[localMessage.ui_state.id] ?? localMessage,
+        eventValues.localItems[localMessage.ui_state.id] ??
+          eventLocalItems(originalMessage, eventValues.message, {
+            [localMessage.ui_state.id]: localMessage,
+          })[localMessage.ui_state.id],
         eventValues.message,
         messageState,
         eventValues.localItems,
