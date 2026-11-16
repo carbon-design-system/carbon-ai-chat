@@ -45,7 +45,10 @@ class CDSAIChatChainOfThoughtToggle extends LitElement {
   closedLabelText = 'Show chain of thought';
 
   /**
-   * The ID of the panel controlled by this button.
+   * An ID the toggle passes back in the `chain-of-thought-toggle` event's
+   * `panelId`, and nowhere else.
+   *
+   * @deprecated This property has no effect on the button. Removed in 2.0.0.
    */
   @property({ type: String, attribute: 'panel-id', reflect: true })
   panelId?: string;
@@ -82,7 +85,6 @@ class CDSAIChatChainOfThoughtToggle extends LitElement {
         class="${prefix}--chain-of-thought-button"
         type="button"
         aria-expanded=${this.open ? 'true' : 'false'}
-        ?aria-controls=${this.panelId}
         ?disabled=${this.disabled}
         @click=${this.handleToggleClick}>
         <span
