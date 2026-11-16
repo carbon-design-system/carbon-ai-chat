@@ -289,7 +289,8 @@ export class AutocompleteController {
 
   /**
    * Apply a user selection. Routes by trigger type:
-   * - starter → insert text + (if not send-disabled) fire onStarterSelected
+   * - starter → insert text + (unless send is disabled or the starters set
+   *   `disableDirectSend`) fire onStarterSelected
    * - mention / command → insert chip node at trigger range
    * - autocomplete → insert plain text at trigger range
    */
@@ -309,7 +310,7 @@ export class AutocompleteController {
       const text = item.value ?? item.label;
       editor.commands.insertContent(text);
       this.dismiss();
-      if (!this._isSendDisabled) {
+      if (!this._isSendDisabled && !this._starters?.disableDirectSend) {
         this._onStarterSelected?.(projectRawValue(editor));
       }
       return;
@@ -360,6 +361,26 @@ export class AutocompleteController {
     }
 
     this.dismiss();
+  }
+
+  /**
+   * Report a chosen item that sends instead of being inserted, so the
+   * autocomplete config's `onSelect` fires for it as it does for an insert.
+   * Call it before `dismiss()`, which clears the trigger.
+   */
+  reportSent(item: SuggestionItem): void {
+    if (this._destroyed || this._trigger?.type !== 'autocomplete') {
+      return;
+    }
+    // The send follows this call, so a host's throw must not stop it.
+    try {
+      this._autocomplete?.onSelect?.(item);
+    } catch (error) {
+      console.error(
+        'The autocomplete onSelect handler threw, and the item is sent anyway:',
+        error
+      );
+    }
   }
 
   // ---------------------------------------------------------------------

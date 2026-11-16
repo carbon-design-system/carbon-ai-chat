@@ -41,6 +41,7 @@ import { useSelector } from './hooks/useSelector';
 import { useChatViewStateInstance } from './hooks/useChatViewState';
 import actions from './store/actions';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from './store/reducerUtils';
+import { fireUserEvent } from './services/fireUserEvent';
 import type { ButtonItem, MessageResponse } from '../types/messaging/Messages';
 import type { AppState } from '../types/state/AppState';
 import type { OnErrorData } from '../types/config/ErrorConfig';
@@ -325,7 +326,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
       confirmHumanAgentEndChat,
       hideConfirmEndChat,
       fireCustomPanelEvent: (type) => {
-        serviceManager.eventBus.fire({ type }, serviceManager.instance);
+        fireUserEvent(serviceManager, { type });
       },
       resetCustomPanelOptions: () => {
         serviceManager.store.dispatch(
