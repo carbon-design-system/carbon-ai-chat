@@ -447,6 +447,15 @@ for (const mutation of [
   'Default.args = Default.argTypes; Default.args.onChange.table.disable = true;',
   'export const Other = { args: Default.argTypes }; Other.args.onChange.table.disable = true;',
   'export const Other = { args: Default.argTypes }; const { args: { onChange: row } } = Other; row.table.disable = true;',
+  'const copy = { ...Default }; copy.argTypes.onChange.table.disable = true;',
+  'export const Second = { ...Default, args: { value: 1 } }; Second.argTypes.onChange.table.disable = true;',
+  'const holder = {}; holder.ref = Default; holder.ref.argTypes.onChange.table.disable = true;',
+  'let s; [s] = [Default]; s.argTypes.onChange.table.disable = true;',
+  'function hide(s = Default) { s.argTypes.onChange.table.disable = true; } hide();',
+  'const { s = Default } = {}; s.argTypes.onChange.table.disable = true;',
+  'for (const s of [Default]) { s.argTypes.onChange.table.disable = true; }',
+  'new Hide(Default);',
+  'class Holder { static ref = Default; } Holder.ref.argTypes.onChange.table.disable = true;',
 ]) {
   test(`rejects metadata mutation or escape: ${mutation}`, () => {
     const source = mutation.includes('Default.parameters')
@@ -487,46 +496,28 @@ test('does not trust a shadowed Object.keys as a read-only helper', () => {
   );
 });
 
-test('keeps runtime-only story fields outside documentation mutation checks', () => {
+test("lets a story call another story's play and render", () => {
   const source = `${story}
-    Default.args = { value: 'before' };
-    Default.args.value = 'after';
-    const args = Default.args; args.value = 'changed';
-    const { args: values } = Default; Object.assign(values, { value: 'again' });
-    Default.render = () => null; Default.render();
-    Default.play = () => {}; run(Default.play);
+    export const Second = {
+      play: async (context) => { await Default.play(context); },
+      render: (args) => Default.render(args),
+    };
   `;
   assert.deepEqual(check('<Rows of={Examples.Default} />', source), []);
 });
 
-test('rejects an initializer shared by documentation and runtime args', () => {
-  const source = `${helper}\nimport Button from '../react/button.js';
-    const rows = callbackRows(Button);
-    export default { title: 'Button' };
-    export const Default = { argTypes: rows, args: rows };
-    Default.args.onChange.table.disable = true;
-  `;
-  fails('<Rows of={Examples.Default} />', /without later writes/, source);
-  const composed = source.replace(
-    'export const Default = { argTypes: rows, args: rows };',
-    'const shared = { args: rows }; export const Default = { ...shared, argTypes: rows };'
-  );
-  fails('<Rows of={Examples.Default} />', /without later writes/, composed);
-  assert.deepEqual(
-    check(
+test('rejects writes to runtime story fields too', () => {
+  for (const write of [
+    "Default.args = { value: 'before' };",
+    "const { args: values } = Default; Object.assign(values, { value: 'again' });",
+    'Default.render = () => null;',
+  ]) {
+    fails(
       '<Rows of={Examples.Default} />',
-      composed
-        .replace(
-          '...shared, argTypes: rows',
-          '...shared, args: { value: "before" }, argTypes: rows'
-        )
-        .replace(
-          'Default.args.onChange.table.disable = true;',
-          'Default.args.value = "after";'
-        )
-    ),
-    []
-  );
+      /without later writes/,
+      `${story}\n${write}`
+    );
+  }
 });
 
 const metaRowStory = `${helper}\nimport Button from '../react/button.js';\nexport default { title: 'Button', argTypes: { ...callbackRows(Button) } };\n`;
