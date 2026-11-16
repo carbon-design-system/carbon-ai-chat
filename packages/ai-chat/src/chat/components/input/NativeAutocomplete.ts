@@ -12,6 +12,7 @@ import { property } from 'lit/decorators.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 import type Autocomplete from '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
+import type { AutocompleteSendEventDetail } from '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 import type PromptLine from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
 import {
   AutocompleteController,
@@ -41,6 +42,8 @@ interface AutocompleteLifetime {
   active: boolean;
   retired: boolean;
   pendingError?: { error: unknown };
+  /** True while a chosen item that sends is reported to the host. */
+  reportingSent: boolean;
   configs: WeakMap<object, object>;
   failedResults: WeakMap<SuggestionItem[], unknown>;
 }
@@ -257,8 +260,8 @@ class NativeAutocomplete extends NativeChatView {
       list.slot = 'autocomplete-content';
       const select = (event: CustomEvent<{ item: SuggestionItem }>) =>
         this.selectItem(lifetime, event.detail.item);
-      const send = (event: CustomEvent<{ text: string }>) =>
-        this.sendItem(lifetime, event.detail?.text);
+      const send = (event: CustomEvent<AutocompleteSendEventDetail>) =>
+        this.sendItem(lifetime, event.detail?.text, event.detail?.item);
       const dismiss = () =>
         this.run(lifetime, () => lifetime.controller.dismiss());
       list.addEventListener('cds-aichat-autocomplete-select', select);
@@ -337,6 +340,7 @@ class NativeAutocomplete extends NativeChatView {
       report: this.captureErrorReporter(),
       active: true,
       retired: false,
+      reportingSent: false,
       configs: new WeakMap<object, object>(),
       failedResults: new WeakMap<SuggestionItem[], unknown>(),
     } as AutocompleteLifetime;
@@ -394,8 +398,15 @@ class NativeAutocomplete extends NativeChatView {
         };
       }
       if (config.onSelect) {
-        wrapped.onSelect = (item) =>
-          this.run(lifetime, () => config.onSelect(item));
+        wrapped.onSelect = (item) => {
+          // The controller catches and logs a throw while it reports a sent
+          // item, so the send still happens.
+          if (lifetime.reportingSent) {
+            config.onSelect(item);
+          } else {
+            this.run(lifetime, () => config.onSelect(item));
+          }
+        };
       }
       lifetime.configs.set(config, wrapped);
     }
@@ -446,9 +457,21 @@ class NativeAutocomplete extends NativeChatView {
     });
   }
 
-  private sendItem(lifetime: AutocompleteLifetime, text: string) {
+  private sendItem(
+    lifetime: AutocompleteLifetime,
+    text: string,
+    item?: SuggestionItem
+  ) {
     this.run(lifetime, () => {
       if (text && !this.isSendDisabled) {
+        if (item) {
+          lifetime.reportingSent = true;
+          try {
+            lifetime.controller.reportSent(item);
+          } finally {
+            lifetime.reportingSent = false;
+          }
+        }
         lifetime.controller.dismiss(true);
         this.onSendItem?.(text);
       }

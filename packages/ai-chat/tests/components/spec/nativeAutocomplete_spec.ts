@@ -18,6 +18,7 @@ import type {
   CustomListProps,
   TriggerChangeEventDetail,
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/types.js';
+import { AutocompleteController } from '@carbon/ai-chat-components/es/components/prompt-line/src/autocomplete-controller.js';
 import '../../../src/chat/components/input/NativeAutocomplete';
 import type NativeAutocomplete from '../../../src/chat/components/input/NativeAutocomplete';
 import { AutocompleteContentAdapter } from '../../../src/chat/components/input/AutocompleteContentAdapter';
@@ -633,7 +634,65 @@ describe('native autocomplete', () => {
     props.onSend('direct');
     await flush(f.view);
     expect(sent).toHaveBeenCalledWith('direct');
+    // A custom list's direct send carries no item, so onSelect stays quiet.
+    expect(order).toEqual(['insert', 'config', 'selected']);
     expect(f.owner.getSnapshot().request).toBeNull();
+  });
+
+  it('logs a throw from onSelect for a sent item, then reports a later insert throw through the chat error owner', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const sendError = new Error('send onSelect failed');
+    const insertError = new Error('insert onSelect failed');
+    let failure = sendError;
+    const onSelect = jest.fn(() => {
+      throw failure;
+    });
+    const sent = jest.fn();
+    const selected = jest.fn();
+    const f = await fixture((view) => {
+      view.autocomplete = { items, onSelect };
+      view.onSendItem = sent;
+      view.onSelectItem = selected;
+    });
+    const list = () =>
+      f.shell.querySelector<Autocomplete>('cds-aichat-autocomplete');
+    await f.trigger();
+    list().dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-send', {
+        detail: { text: 'Alpha value', item: items[0] },
+      })
+    );
+    await flush(f.view);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(sent).toHaveBeenCalledWith('Alpha value');
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(expect.any(String), sendError);
+    expect(f.errorOccurred).not.toHaveBeenCalled();
+
+    failure = insertError;
+    const select = jest.spyOn(AutocompleteController.prototype, 'select');
+    await f.trigger();
+    list().dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-select', {
+        detail: { item: items[1] },
+      })
+    );
+    await flush(f.view);
+    expect(onSelect).toHaveBeenCalledTimes(2);
+    // The view's guard contains the insert's throw, so it never escapes the
+    // controller the way a sent item's onSelect throw reaches reportSent.
+    expect(select).toHaveBeenCalledTimes(1);
+    expect(select.mock.results[0].type).toBe('return');
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(f.errorOccurred).toHaveBeenCalledTimes(1);
+    expect(f.errorOccurred).toHaveBeenCalledWith(
+      expect.objectContaining({
+        otherData: expect.objectContaining({ error: insertError }),
+      })
+    );
+    expect(selected).not.toHaveBeenCalled();
   });
 
   it('inserts starter text before notifying its existing send owner and suppresses notification when disabled', async () => {

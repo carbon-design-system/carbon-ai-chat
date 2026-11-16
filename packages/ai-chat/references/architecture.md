@@ -100,7 +100,7 @@ The revision is React's `parts` object; a request counts only for it, while its 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
 | Web component never renders | No renderer: the page loaded the React entry but not the web-component entry | Import `@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js`; waiting hosts wake when it loads |
-| Slot content not projecting | Host appended to the wrong element, or the app renders no slot by that name | Append to `chatWrapper` (the container) and check the host's `assignedSlot` |
+| Slot content not projecting | Host appended to the wrong element, or the app renders no slot by that name | Append to the container element (`cds-aichat-container`) and check the host's `assignedSlot` |
 | Fallback text hidden | A host node is still assigned to the slot | Remove the host node; the slot falls back to its own children |
 
 ## Related guidance
