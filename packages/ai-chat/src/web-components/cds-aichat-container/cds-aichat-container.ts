@@ -301,6 +301,7 @@ class ChatContainer extends FlattenedConfigElement {
    */
   private pluginHostController = createMarkdownPluginHostController(this, {
     shouldDefer: (event) => this.hasOuterChatHandler(event),
+    placeHost: (host) => placeHosts(this, [host]),
   });
 
   connectedCallback() {

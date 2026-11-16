@@ -15,17 +15,26 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
+import { html, nothing, render } from 'lit';
 
 import {
+  ChatInstance,
   GenericItem,
+  MessageRequest,
   MessageResponseTypes,
+  PageObjectId,
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   changeView,
   contractElement,
   contractSetup,
+  fakeBackend,
+  getByTestId,
+  isShownWithin,
+  pause,
   responseOf,
+  textItem,
 } from '../../helpers';
 
 /** Connects a container with these properties and no welcome request. */
@@ -79,5 +88,68 @@ describe('cds-aichat-container element', () => {
       )
     );
     await waitFor(() => expect(element.contains(out)).toBe(true));
+  });
+
+  // @covers element.cds-aichat-container.renderUserDefinedInputNode element.cds-aichat-container.markdown
+  it('keeps input-node and markdown renderer output when a Lit host clears its last child part', async () => {
+    const chip = document.createElement('span');
+    chip.textContent = 'Rendered chip';
+    const renderUserDefinedInputNode = () => chip;
+    const code = document.createElement('pre');
+    code.textContent = 'Custom code';
+    const markdown = { customRenderers: { codeBlock: () => code } };
+    const backend = fakeBackend({ autoResolve: true });
+    const messaging = {
+      skipWelcome: true,
+      customSendMessage: backend.customSendMessage,
+    };
+    let instance: ChatInstance | null = null;
+    const onAfterRender = (handed: ChatInstance) => {
+      instance = handed;
+    };
+    const root = document.body.appendChild(document.createElement('div'));
+    // No whitespace before the closing tag, so the banner's part runs to the
+    // end of the element's children, and clearing it clears everything after.
+    const view = (banner: boolean) =>
+      html`<cds-aichat-container
+        .openChatByDefault=${true}
+        .messaging=${messaging}
+        .markdown=${markdown}
+        .renderUserDefinedInputNode=${renderUserDefinedInputNode}
+        .onAfterRender=${onAfterRender}
+        >${banner ? html`<p>Banner</p>` : nothing}</cds-aichat-container
+      >`;
+    await act(async () => {
+      render(view(true), root);
+    });
+    await waitFor(() => expect(instance).not.toBeNull(), { timeout: 10000 });
+    await act(() =>
+      instance.send({
+        input: {
+          text: 'custom',
+          display_content: {
+            type: 'doc',
+            content: [{ type: 'custom', attrs: { label: 'fallback' } }],
+          },
+        },
+      } as MessageRequest)
+    );
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r1', [textItem('```js\nlet x = 1;\n```')])
+      )
+    );
+    const panel = () => getByTestId(PageObjectId.MAIN_PANEL);
+    await waitFor(() => expect(isShownWithin(chip, panel())).toBe(true));
+    await waitFor(() => expect(isShownWithin(code, panel())).toBe(true));
+
+    await act(async () => {
+      render(view(false), root);
+    });
+    await pause();
+
+    expect(root.textContent).not.toContain('Banner');
+    expect(isShownWithin(chip, panel())).toBe(true);
+    expect(isShownWithin(code, panel())).toBe(true);
   });
 });

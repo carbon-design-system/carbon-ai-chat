@@ -13,11 +13,14 @@ import {
   render as renderWithTestingLibrary,
   waitFor,
 } from '@testing-library/react';
+import { html, nothing, render as renderLit } from 'lit';
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
+import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
 import { InputNodePortalsContainer } from '../../../src/chat/components/portals/InputNodePortalsContainer';
+import { LightDomPortalsContainer } from '../../../src/chat/components/portals/LightDomPortalsContainer';
 import type { WCRenderUserDefinedInputNode } from '../../../src/types/component/ChatContainer';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
@@ -228,4 +231,47 @@ test('Strict Mode keeps one host, moves it with the wrapper, and removes deleted
   view.rerender(tree(replacement));
   expect(replacement.children).toHaveLength(0);
   view.unmount();
+});
+
+test('keeps editor and input-node hosts when a Lit template clears its last child part', () => {
+  const wrapper = document.body.appendChild(document.createElement('div'));
+  // The part runs to the end of the wrapper's children, so clearing it
+  // removes every node after its marker.
+  renderLit(html`${html`<p>Banner</p>`}`, wrapper);
+  const view = render(
+    <>
+      <LightDomPortalsContainer chatWrapper={wrapper} />
+      <InputNodePortalsContainer
+        chatWrapper={wrapper}
+        chatInstance={instance}
+        renderUserDefinedInputNode={() => <span>custom</span>}
+      />
+    </>
+  );
+  const editorContent = document.createElement('b');
+  act(() => {
+    wrapper.dispatchEvent(
+      new CustomEvent(LIGHT_DOM_PORTAL_EVENT, {
+        detail: {
+          container: document.createElement('span'),
+          htmlElement: editorContent,
+        },
+      })
+    );
+  });
+  const inputNodeHost = wrapper.querySelector(`[slot="${slotName}"]`);
+  const editorHost = editorContent.parentElement;
+  expect(inputNodeHost?.parentElement).toBe(wrapper);
+  expect(editorHost?.parentElement).toBe(wrapper);
+
+  renderLit(nothing, wrapper);
+
+  expect(wrapper.textContent).not.toContain('Banner');
+  expect(inputNodeHost.parentElement).toBe(wrapper);
+  expect(editorHost.parentElement).toBe(wrapper);
+  expect(editorHost.getAttribute('slot')).toMatch(/^cds-aichat-light-dom-/);
+  // Hosts keep the order they were created in.
+  expect([...wrapper.children]).toEqual([inputNodeHost, editorHost]);
+  view.unmount();
+  wrapper.remove();
 });

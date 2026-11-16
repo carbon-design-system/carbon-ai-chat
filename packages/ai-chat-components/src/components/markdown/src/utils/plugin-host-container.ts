@@ -152,6 +152,13 @@ export interface MarkdownPluginHostControllerOptions {
    * chat element will. Omitted by surfaces that are always outermost.
    */
   shouldDefer?: (event: Event) => boolean;
+
+  /**
+   * Puts a host into `target`. Defaults to `target.appendChild(host)`. A
+   * surface whose light DOM a page template can render into passes one that
+   * keeps hosts ahead of the page's own children.
+   */
+  placeHost?: (host: HTMLElement) => void;
 }
 
 export interface MarkdownPluginHostController {
@@ -195,7 +202,11 @@ export function createMarkdownPluginHostController(
   target: HTMLElement,
   options: MarkdownPluginHostControllerOptions = {}
 ): MarkdownPluginHostController {
-  const { onSlotNamesChange, shouldDefer } = options;
+  const {
+    onSlotNamesChange,
+    shouldDefer,
+    placeHost = (host: HTMLElement) => target.appendChild(host),
+  } = options;
   // Keyed by slot name alone: the markdown element namespaces every name it
   // mints per element (see `./slot-names.js`), so two messages rendering the
   // same markdown can't collide here. Only hosts this controller created —
@@ -238,7 +249,7 @@ export function createMarkdownPluginHostController(
       // Re-appending a node already parented here detaches and reattaches the
       // consumer's whole subtree, running its disconnect/connect teardown.
       if (detail.element.parentElement !== target) {
-        target.appendChild(detail.element);
+        placeHost(detail.element);
       }
       return;
     }
@@ -253,7 +264,7 @@ export function createMarkdownPluginHostController(
         host.style.marginBlockStart = '1rem';
       }
       hosts.set(detail.slotName, host);
-      target.appendChild(host);
+      placeHost(host);
     }
     // `?? ''` here and in `handleUpdate`: `html` is typed `string`, but the
     // emitter can be a third-party element this compiler never saw, and
