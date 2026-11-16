@@ -44,12 +44,13 @@ interface PersistedState {
   showUnreadIndicator: boolean;
 
   /**
-   * Indicates if the launcher should be in the expanded state.
+   * Indicates if the launcher should be in the expanded state. A restored session always starts with this false.
    */
   launcherIsExpanded: boolean;
 
   /**
-   * Determines if the launcher should start a timer to show its expanded state.
+   * Determines if the launcher should start a timer to show its expanded state. A restored session always starts with
+   * this false.
    */
   launcherShouldStartCallToActionCounterIfEnabled: boolean;
 
