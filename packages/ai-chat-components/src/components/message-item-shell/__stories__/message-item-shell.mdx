@@ -1,0 +1,81 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './message-item-shell.stories';
+
+<Meta of={Stories} />
+
+# Message item shell
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/message-item-shell) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-message-item-shell` as the frame for one message row. It provides slots for the byline, content, attachments, and footer. It knows nothing about message data. This element is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Layout
+
+Request and response rows use the same shell. Set `row-type` to `request` or `response` to choose the layout.
+
+| Slot         | Region                                                      |
+| ------------ | ----------------------------------------------------------- |
+| `byline`     | A `cds-aichat-message-byline`. Available on both row types. |
+| default      | The message content.                                        |
+| `attachment` | File upload status.                                         |
+| `footer`     | Footer content from the host.                               |
+
+The shell adds no screen reader announcements. Your slotted content decides what is announced, including file upload status.
+
+<Canvas of={Stories.Response} />
+
+## Examples
+
+### Full width
+
+Set `full-width` to break the content out of the inset column.
+
+```html
+<cds-aichat-message-item-shell row-type="response" full-width>
+  <div>Wide content</div>
+</cds-aichat-message-item-shell>
+```
+
+<Canvas of={Stories.FullWidth} />
+
+### Hidden avatar
+
+Set `hide-avatar` to hide the avatar in the byline. The label and timestamp remain visible.
+
+Slot a `cds-aichat-message-byline` in `byline` and give its avatar `slot="avatar"` directly. The shell sets `hidden` on that avatar, and the byline then renders no avatar box. An avatar nested inside another element is not hidden.
+
+```html
+<cds-aichat-message-item-shell row-type="response" hide-avatar>
+  <cds-aichat-message-byline
+    slot="byline"
+    label="Assistant"
+    timestamp="10:42 AM">
+    <cds-aichat-user-avatar
+      slot="avatar"
+      name="Assistant"></cds-aichat-user-avatar>
+  </cds-aichat-message-byline>
+  <div>Content</div>
+</cds-aichat-message-item-shell>
+```
+
+<Canvas of={Stories.HiddenAvatar} />
+
+## Component API
+
+### `cds-aichat-message-item-shell`
+
+<ArgTypes of="cds-aichat-message-item-shell" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/message-item-shell/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

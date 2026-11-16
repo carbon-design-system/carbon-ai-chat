@@ -1,0 +1,92 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './message-byline-react.stories';
+
+<Meta of={Stories} />
+
+# Message byline
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/message-byline) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `MessageByline` to show who sent a message, with an optional avatar, timestamp, and reasoning steps control. It knows nothing about message data. This component is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Optional avatar**: The byline centers a slotted avatar in a fixed square box, so labels line up whatever size you give the avatar. With nothing in the `avatar` slot, or an avatar with the `hidden` attribute, the byline renders no box and no space.
+- **Reasoning steps control**: Place a reasoning steps toggle in the `reasoning` slot. The byline adds a separator before it. The reasoning steps stay at the top of the message, and the toggle opens and closes them from the byline.
+- **Host-supplied text**: The byline shows the `label` and `timestamp` you pass in as one line of text, separated by a space.
+
+## Examples
+
+### Without an avatar
+
+```jsx
+import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+
+function Sender() {
+  return <MessageByline label="You" timestamp="10:42 AM" />;
+}
+```
+
+<Canvas of={Stories.WithoutAvatar} />
+
+### With reasoning steps
+
+The byline only holds the toggle. Render the `ReasoningSteps` panel at the top of the message content inside `MessageItemShell`. Set `panelID` on the toggle to the panel's `id` so assistive technology can connect them. The toggle does not open the panel itself, so keep the open state in your component and pass it to both.
+
+```jsx
+import { useState } from 'react';
+import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+import ReasoningSteps from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
+import ReasoningStep from '@carbon/ai-chat-components/es/react/reasoning-step.js';
+import ReasoningStepsToggle from '@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js';
+
+function Message() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <MessageItemShell rowType="response">
+      <MessageByline slot="byline" label="Assistant" timestamp="10:42 AM">
+        <ReasoningStepsToggle
+          slot="reasoning"
+          panelID="reasoning-panel"
+          open={open}
+          onToggle={(event) => setOpen(event.detail.open)}
+        />
+      </MessageByline>
+      <ReasoningSteps id="reasoning-panel" open={open}>
+        <ReasoningStep title="Understand the request">
+          Parsed the intent and restated it as a concise objective.
+        </ReasoningStep>
+      </ReasoningSteps>
+      <p>The answer.</p>
+    </MessageItemShell>
+  );
+}
+```
+
+<Canvas of={Stories.WithReasoningSteps} />
+
+## Accessibility
+
+The `label` is the only place the sender name is read. Do not add a label to a slotted avatar, or screen readers read the name twice. The separator before the reasoning steps toggle is hidden from assistive technology.
+
+## Component API
+
+### `<MessageByline>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.

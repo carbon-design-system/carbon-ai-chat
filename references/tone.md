@@ -1,18 +1,18 @@
-# tone.md — voice and tone for Carbon AI Chat docs
+# tone.md: voice and tone for Carbon AI Chat docs
 
-Read this before writing any copy this repo ships — every surface in [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md)'s table, from JSDoc to a commit body. It governs how the words sound, and only that: markdown structure is [doc-style.md](../packages/ai-chat/docs/references/doc-style.md), JSDoc mechanics are [types/AGENTS.md](../packages/ai-chat/src/types/AGENTS.md), and anything that changes with the copy type belongs to the skill.
+Read this before writing any copy this repo ships: every surface in [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md)'s table, from JSDoc to a commit body. It governs how the words sound, and only that. Markdown structure is [doc-style.md](../packages/ai-chat/docs/references/doc-style.md), JSDoc mechanics are [types/AGENTS.md](../packages/ai-chat/src/types/AGENTS.md), and anything that changes with the copy type belongs to the skill.
 
 We mirror the voice of [carbondesignsystem.com](https://carbondesignsystem.com/guidelines/content/overview/).
 
 ## The mandate
 
-Write the fewest words that convey the idea. Every word a reader skips is a word you should have cut. **Audience varies by copy type** — a JSDoc block, a docs page, and a string in the chat UI are read by three different people — so take the audience, the rules, and the gate for what you are writing from [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md). If you can explain a concept with code instead of prose, prefer code.
+Write the fewest words that convey the idea. Every word a reader skips is a word you should have cut. **Audience varies by copy type.** A JSDoc block, a docs page, and a string in the chat UI are read by three different people, so take the audience, the rules, and the gate for what you are writing from [caic-copy-writer](../.bob/skills/caic-copy-writer/SKILL.md). If you can explain a concept with code instead of prose, prefer code.
 
 Write so a developer gets it on the first read. **Grade 10 is the ceiling, and there is no floor.** A page that scores 6 because it is plain is a good page. The levers are sentence length and word choice; [revision-pass.md](../.bob/skills/caic-copy-writer/references/revision-pass.md) carries both. Keep most sentences short and one-idea, but let a sentence run when the idea needs it. Never pad a sentence to raise a score.
 
 Measure any doc with `npm run reading-level -- <file>`. It reports the Flesch-Kincaid grade. Treat a score above 10 as a defect to fix. No score is too low to ship.
 
-## Voice — constant
+## Voice: constant
 
 Voice is who we are; it never changes. Carbon's voice:
 
@@ -24,26 +24,27 @@ Voice is who we are; it never changes. Carbon's voice:
 
 ## Quick rules
 
-Apply these mechanically — you don't have to be a wordsmith to follow them.
+Apply these mechanically. You don't have to be a wordsmith to follow them.
 
 - **Active voice.** "The chat fires an event," not "an event is fired by the chat."
 - **Present tense.** "`addMessage` inserts a message," not "will insert." Avoid tense built on _have, has, had, been, should, would, will_.
-- **Second person.** Address the reader as "you." Never "we," "our," or "I" — the reader cares what _they_ can do.
+- **Second person.** Address the reader as "you." Never "we," "our," or "I." The reader cares what _they_ can do.
 - **Sentence case.** Capitalize only the first word and proper nouns, in headings and body alike. Exceptions: product, service, and trademarked names.
-- **US English.** "color," not "colour." "behavior," not "behaviour." "canceled" and "labeled," not "cancelled" and "labelled" — US doubles a final `l` only when the stress lands on the last syllable, so "cancellation" and "compelling" keep both. This binds prose; an identifier, a dependency name, or a string literal keeps the spelling its source gave it.
+- **US English.** "color," not "colour." "behavior," not "behaviour." "canceled" and "labeled," not "cancelled" and "labelled": US doubles a final `l` only when the stress lands on the last syllable, so "cancellation" and "compelling" keep both. This binds prose; an identifier, a dependency name, or a string literal keeps the spelling its source gave it.
 - **Short, everyday words.** "use," not "utilize." "to," not "in order to." Short words read faster.
-- **Contractions are fine.** "it's," "you'll," "don't" — they keep the tone human.
+- **Contractions are fine.** "it's," "you'll," "don't." They keep the tone human.
+- **No dashes in prose.** No em dash (—), en dash (–), or double hyphen used as one. Use a period, comma, colon, or parentheses, or rewrite the sentence. Write ranges with "to": "3 to 6 lines." Code, identifiers, commands, paths, URLs, and ICU ranges in UI strings, such as "1–10 of 50", keep theirs. Existing copy changes only on lines you already touch.
 - **No marketing language and no emoji.** Describe; don't sell.
-- **Gloss an internal name on first use.** `projectDocuments`, `es-custom`, `PublicConfig.strings` — when your reader may not know the name, say what it is in a few words the first time it appears. Otherwise it is a stop-and-search.
-- **Lead with the task.** Open a section with what the reader does, then the mechanism. The same rule at document scale — the claim ahead of its scaffolding and larger than it — is [claim before scaffolding](../.bob/skills/caic-copy-writer/references/revision-pass.md#claim-before-scaffolding), which owns it and is checked at revise time.
+- **Gloss an internal name on first use.** When your reader may not know a name such as `projectDocuments`, `es-custom`, or `PublicConfig.strings`, say what it is in a few words the first time it appears. Otherwise the reader has to stop and search.
+- **Lead with the task.** Open a section with what the reader does, then the mechanism. The same rule at document scale, with the claim ahead of its scaffolding and larger than it, is [claim before scaffolding](../.bob/skills/caic-copy-writer/references/revision-pass.md#claim-before-scaffolding). That section owns it, and it is checked at revise time.
 
-## Tone — flexes with context
+## Tone: flexes with context
 
 Voice stays constant; tone shifts to fit the moment.
 
-- **Terse for terse moments.** Empty states and labels are short and direct — fragments over sentences. "No conversations yet." not "There are currently no conversations to display." Errors a developer reads in a console go the other way: [error-strings.md](../.bob/skills/caic-copy-writer/references/error-strings.md) wants a full sentence.
+- **Terse for terse moments.** Empty states and labels are short and direct, with fragments over sentences. "No conversations yet." not "There are currently no conversations to display." Errors a developer reads in a console go the other way: [error-strings.md](../.bob/skills/caic-copy-writer/references/error-strings.md) wants a full sentence.
 - **Warmer for onboarding and concepts.** A guide's overview or a getting-started README can use full, friendly sentences to orient a newcomer.
 
 ## Related guidance
 
-- [AGENTS.md](../AGENTS.md) — repository-wide guidance.
+- [AGENTS.md](../AGENTS.md): repository-wide guidance.

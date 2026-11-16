@@ -77,7 +77,12 @@ const lockfile = JSON.parse(
   await readFile(join(repository, 'package-lock.json'), 'utf8')
 );
 function resolvedVersion(name) {
-  const version = lockfile.packages[`node_modules/${name}`]?.version;
+  // A workspace dev dependency can hoist a different copy to the root, so
+  // prefer the one web-components itself resolves.
+  const version =
+    lockfile.packages[
+      `node_modules/@carbon/web-components/node_modules/${name}`
+    ]?.version ?? lockfile.packages[`node_modules/${name}`]?.version;
   assert.ok(version, `The workspace lockfile must resolve ${name}.`);
   return version;
 }

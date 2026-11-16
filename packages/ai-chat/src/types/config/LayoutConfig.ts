@@ -72,6 +72,13 @@ export interface LayoutConfig {
    *   "$button-primary": "#1a1a2e",
    * }
    * ```
+   *
+   * @deprecated Set these custom properties with CSS instead, on an element that contains the chat.
+   * They inherit into it. A bare key here is `--cds-aichat-<key>` in CSS, and a `$`-prefixed key is
+   * `--cds-<key>`. If you force a theme with {@link PublicConfig.injectCarbonTheme}, stop forcing it
+   * first, or your Carbon token overrides won't reach the chat. Removed in 2.0.0. The v2 styling contract,
+   * [ADR-0004](https://github.com/carbon-design-system/carbon-ai-chat/blob/main/docs/adr/0004-component-styling-contract.md),
+   * proposes CSS as the only way to set these, including on parts of the chat that config can't target.
    */
   customProperties?: Partial<
     Record<LayoutCustomProperties | `$${string}`, string>

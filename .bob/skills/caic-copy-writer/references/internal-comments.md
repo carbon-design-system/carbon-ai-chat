@@ -1,4 +1,4 @@
-# internal-comments.md — comments in the source (type 2)
+# internal-comments.md: comments in the source (type 2)
 
 Load this for internal source comments. Public API JSDoc uses [public-jsdoc.md](public-jsdoc.md) instead; open that route only when the comment is part of the public contract.
 
@@ -7,12 +7,13 @@ Structural owner: the [comments rule](../../../../references/code-patterns.md#co
 - **A comment earns its place by carrying a non-obvious _why_**: a hidden constraint, a subtle invariant, a bug workaround.
 - **Note form is correct here.** Fragments, no ceremony. Type 1's complete-sentence bar does not reach this tree.
 - **Where type 1 demands coverage, this demands restraint.** Delete a comment that restates the code, and delete one that points at the current task, PR, or issue.
+- **Describe the code, not its history.** "Now uses a map instead of the old loop" or "previously this threw" goes stale on merge. Say what the code does and why; the history belongs in the commit or PR.
 - **A Lit component's public prop JSDoc is not this type.** It feeds the generated custom-elements manifest and the ArgTypes table a reader sees, so hold it to [storybook-mdx.md](storybook-mdx.md)'s bar.
 
 ## Before and after
 
-- Before: `// increment the counter` above `counter += 1;` — delete it; the line says that already.
-- After: `// Safari fires focusout before the click lands, so defer the close.` — the constraint is invisible in the code, so the comment is the only place it exists.
+- Before: `// increment the counter` above `counter += 1;`. Delete it; the line says that already.
+- After: `// Safari fires focusout before the click lands, so defer the close.` The constraint is invisible in the code, so the comment is the only place it exists.
 
 ## Gate
 
@@ -20,6 +21,6 @@ Review. [caic-review](../../caic-review/SKILL.md) flags a comment that restates 
 
 ## Related guidance
 
-- [caic-copy-writer](../SKILL.md) — the routing table and the draft-measure-revise loop
-- [code-patterns.md](../../../../references/code-patterns.md) — the no-comment-by-default rule this type comes from
-- [public-jsdoc.md](public-jsdoc.md) — the inverse rules, for the public types tree
+- [caic-copy-writer](../SKILL.md): the routing table and the draft-measure-revise loop
+- [code-patterns.md](../../../../references/code-patterns.md): the no-comment-by-default rule this type comes from
+- [public-jsdoc.md](public-jsdoc.md): the inverse rules, for the public types tree

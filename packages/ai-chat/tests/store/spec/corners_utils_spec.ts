@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { CornersType } from '../../src/types/config/CornersType';
+import { CornersType } from '../../../src/types/config/CornersType';
 
 // Import the utility functions - we need to export them from doCreateStore first
 // For now, we'll test them through the public API
