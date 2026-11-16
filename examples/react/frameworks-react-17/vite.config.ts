@@ -24,6 +24,15 @@ export default defineConfig({
     port: Number(process.env.PORT) || 3000,
     open: true,
   },
+  build: {
+    rollupOptions: {
+      // interop.html is a test-only page for the component interop spec.
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        interop: path.resolve(__dirname, 'interop.html'),
+      },
+    },
+  },
   optimizeDeps: {
     exclude: ['@carbon/ai-chat', '@carbon/ai-chat-components'],
   },
