@@ -12,7 +12,7 @@ import { TerminationWorkflow } from './TerminationWorkflow';
 import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import { consoleError } from '../../utils/miscUtils';
 import type { PublicConfig } from '../../../types/config/PublicConfig';
-import { coordinateSend } from './coordinateSend';
+import { coordinateSend, type SendOrder } from './coordinateSend';
 import type { MessagePresentationPort } from './presentationPort';
 import type { MessageRequest } from '../../../types/messaging/Messages';
 import type { MessageSendSource } from '../../../types/events/eventBusTypes';
@@ -39,6 +39,15 @@ import type {
 } from '../../../types/messaging/Messages';
 import type { DeepPartial } from '../../../types/utilities/DeepPartial';
 import type { AppStateMessages } from '../../../types/state/AppState';
+
+// The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
+// move on to the next item in the queue.
+const MS_MAX_ATTEMPT = 150 * 1000;
+
+/** The request timeout for a `messageTimeoutSecs` value, in milliseconds: 0 turns it off, unset uses the default. */
+function messageTimeoutMS(timeoutSecs: number | undefined): number {
+  return timeoutSecs || timeoutSecs === 0 ? timeoutSecs * 1000 : MS_MAX_ATTEMPT;
+}
 
 class MessageCoordinator {
   handleUserDefinedResponseItemsChunk(
@@ -121,6 +130,8 @@ class MessageCoordinator {
   private requestQueue = new RequestQueue();
   private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
+  private sendOrder: SendOrder = { sendStartingHydration: null };
+
   constructor(
     private serviceManager: ServiceManager,
     private presentation?: MessagePresentationPort
@@ -132,8 +143,8 @@ class MessageCoordinator {
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
    * the event bus before delegating to `customSendMessage`. Resolves when
    * `customSendMessage` completes or when the turn is stopped; rejects when
-   * `customSendMessage` throws, when the send path fails terminally, or when a
-   * file upload is still in progress.
+   * `customSendMessage` throws, when a `pre:send` or `send` handler throws, when
+   * the send path fails terminally, or when a file upload is still in progress.
    *
    * @param message The message to send.
    * @param source The source of the message.
@@ -149,6 +160,7 @@ class MessageCoordinator {
     return coordinateSend(
       this.serviceManager,
       this.presentation,
+      this.sendOrder,
       message,
       source,
       options,
@@ -248,11 +260,9 @@ class MessageCoordinator {
   }
 
   configureMessageTimeout(publicConfig: PublicConfig) {
-    const timeoutOverride = publicConfig.messaging?.messageTimeoutSecs;
-    this.timeoutMS =
-      timeoutOverride || timeoutOverride === 0
-        ? timeoutOverride * 1000
-        : 150 * 1000;
+    this.timeoutMS = messageTimeoutMS(
+      publicConfig.messaging?.messageTimeoutSecs
+    );
   }
 
   get lastProcessedMessageID() {
@@ -425,8 +435,17 @@ class MessageCoordinator {
     }
   }
 
-  requestStopped(messageID: string, generation = this.currentGeneration) {
-    const responseIDs = this.state.requestStopped(messageID, generation);
+  /** `byUser` marks a stop the user asked for, not a failed send or a restart. */
+  requestStopped(
+    messageID: string,
+    generation = this.currentGeneration,
+    byUser = false
+  ) {
+    const responseIDs = this.state.requestStopped(
+      messageID,
+      generation,
+      byUser
+    );
     if (responseIDs === undefined) {
       return [];
     }
@@ -436,6 +455,14 @@ class MessageCoordinator {
 
   isRequestStopped(requestID?: string) {
     return this.state.isRequestStopped(requestID);
+  }
+
+  isRequestStoppedByUser(requestID?: string) {
+    return this.state.isRequestStoppedByUser(requestID);
+  }
+
+  isResponseStopped(messageID: string) {
+    return this.state.isResponseStopped(messageID);
   }
 
   responseRequestID(messageID: string) {
@@ -522,4 +549,4 @@ class MessageCoordinator {
   }
 }
 
-export { MessageCoordinator };
+export { MessageCoordinator, messageTimeoutMS };
