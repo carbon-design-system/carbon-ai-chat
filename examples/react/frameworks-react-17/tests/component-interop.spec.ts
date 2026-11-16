@@ -27,7 +27,7 @@ test('preserves the native component contract in a real browser', async ({
       errors.push(`${response.status()} ${response.url()}`);
     }
   });
-  await page.goto('/?interop');
+  await page.goto('/interop.html');
   const result = page.locator('#root');
   await expect(result).toHaveAttribute('data-interop-status', /passed|failed/, {
     timeout: 30000,
