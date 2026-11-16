@@ -253,9 +253,7 @@ const actions = {
     };
   },
 
-  updateCatastrophicErrorPanel(
-    panelState: Partial<CatastrophicErrorPanelState>
-  ) {
+  updateCatastrophicErrorPanel(panelState: CatastrophicErrorPanelState) {
     return {
       type: UPDATE_CATASTROPHIC_ERROR_PANEL,
       panelState,
@@ -307,7 +305,7 @@ const actions = {
 
   resetIsHydratingCounter() {
     return {
-      type: RESET_IS_LOADING_COUNTER,
+      type: RESET_IS_HYDRATING_COUNTER,
     };
   },
 
