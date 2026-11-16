@@ -27,7 +27,7 @@ export interface ToolbarAction extends Omit<Action, 'icon'> {
   /**
    * Either an icon from `@carbon/icons` or from `@carbon/icons-react`.
    */
-  icon: CarbonIcon | ComponentType<any>;
+  icon?: CarbonIcon | ComponentType<any>;
 }
 
 // Base toolbar component from @lit/react
@@ -100,10 +100,12 @@ const Toolbar = React.forwardRef<CDSAIChatToolbar, ToolbarProps>(
 
       return actions.map((action: ToolbarAction) => ({
         ...action,
-        icon: transformReactIconToCarbonIcon(
-          action.icon,
-          getSizeInPixels(action.size)
-        ),
+        icon: action.icon
+          ? transformReactIconToCarbonIcon(
+              action.icon,
+              getSizeInPixels(action.size)
+            )
+          : undefined,
         // Preserve testId if provided
         testId: action.testId,
       }));

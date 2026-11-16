@@ -248,10 +248,9 @@ export interface StartersConfig extends Pick<
 }
 
 /**
- * Detail payload for the trigger-change event emitted directly by each carbon
- * factory's suggestion-render lifecycle. The shape is shared with the legacy
- * `TriggerChangeEventDetail` (see `../types.ts`) so existing listeners keep
- * working unchanged across the wave.
+ * Detail payload for the trigger-change event emitted by the Carbon trigger
+ * factories (mention, command, autocomplete, and starter). This is the only
+ * definition; `../types.ts` re-exports it.
  */
 export interface TriggerChangeEventDetail {
   /** The trigger type that fired (`"mention"`/`"command"`/`"autocomplete"`/`"starter"`). */

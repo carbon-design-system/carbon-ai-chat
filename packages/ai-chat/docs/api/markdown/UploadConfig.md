@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.UploadConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.UploadConfig.html
 
 Configuration for file upload behavior in the chat input.
 
@@ -28,7 +28,7 @@ Accepted MIME types or file extensions, in the same format as the HTML `accept` 
 Examples: `"image/*"`, `".pdf,.docx"`, `"application/pdf"`.
 If omitted, all file types are accepted.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.UploadConfig.html#accept)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.UploadConfig.html#accept)
 
 ### isOn
 
@@ -40,7 +40,7 @@ in the input area. Defaults to `false`.
 If `isOn` is `true` but `onFileUpload` is not provided, an error is logged and
 file upload is disabled.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.UploadConfig.html#ison)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.UploadConfig.html#ison)
 
 ### maxFileSizeBytes
 
@@ -49,7 +49,7 @@ file upload is disabled.
 Maximum file size in bytes. Files exceeding this limit are rejected client-side
 before `onFileUpload` is called.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.UploadConfig.html#maxfilesizebytes)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.UploadConfig.html#maxfilesizebytes)
 
 ### maxFiles
 
@@ -57,7 +57,7 @@ before `onFileUpload` is called.
 
 Maximum number of files that can be attached at once. If omitted, there is no limit.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.UploadConfig.html#maxfiles)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.UploadConfig.html#maxfiles)
 
 ### onFileUpload
 
@@ -75,14 +75,16 @@ errored in the UI. Your `Error`'s `message` becomes the description of that
 error, so write it as the reason the file was rejected.
 
 The chat owns the rest of the copy: the title above your message, and the
-instruction to remove the attachment and try again. Both come from the
-`fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery` keys of
-LanguagePack, so don't repeat the recovery step in your own message.
+instruction to remove the attachment and try again. On screen, each failed
+file gets its own row, titled from `fileSharing_uploadErrorTitleWithName`
+(which names the file). The recovery instruction comes from
+`fileSharing_uploadErrorRecovery`, so don't repeat it in your own message.
 Reword either one through PublicConfig.strings.
 
-The same two keys and your message make up the screen-reader announcement,
+`fileSharing_uploadErrorTitle` and `fileSharing_uploadErrorRecovery`, with
+your message, make up the screen-reader announcement,
 which is assertive because a failed upload blocks sending.
 `fileSharing_uploadFailed` does not reach this path — it belongs to the
 human-agent file transfer.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.24.0-rc.1/docs/interfaces/Type_reference.UploadConfig.html#onfileupload)
+[Reference](https://chat.carbondesignsystem.com/version/v1.25.0-rc.0/docs/interfaces/Type_reference.UploadConfig.html#onfileupload)
