@@ -6,7 +6,14 @@
  */
 
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
@@ -16,6 +23,7 @@ import {
   renderReactRegistry,
 } from '../manifest-react-docs-registry.js';
 import { validateReactDocs } from '../manifest-react-docs-coverage.js';
+import { generateReactDocs } from '../manifest-react-docs.js';
 import { mdxTables } from '../manifest-react-docs-mdx.js';
 import { createManifestEventArgTypes } from '../../.storybook-react/manifest-event-arg-types-core.js';
 
@@ -581,4 +589,114 @@ test('merges partial story row overrides with meta rows as Storybook does', () =
     /Show onChange/,
     source.replace('disable: false', 'disable: true')
   );
+});
+
+test('generateReactDocs writes the registry only when every callback has a visible table', async (context) => {
+  const directory = await mkdtemp(
+    path.join(tmpdir(), 'manifest-docs-generate-')
+  );
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const element = `
+    export default class Example extends HTMLElement {
+      static get is() { return 'x-example'; }
+      static get eventChange() { return 'example-change'; }
+    }
+  `;
+  const wrapper = `
+    import React from 'react';
+    import { createComponent, type EventName } from '@lit/react';
+    import Example from '../components/aichat-example/aichat-example.js';
+    export default createComponent({
+      tagName: Example.is,
+      elementClass: Example,
+      react: React,
+      events: {
+        onChange: Example.eventChange as EventName<CustomEvent<{ value: string }>>,
+      },
+    });
+  `;
+  const manifest = {
+    schemaVersion: '1.0.0',
+    modules: [
+      {
+        kind: 'javascript-module',
+        path: 'src/components/aichat-example/aichat-example.ts',
+        declarations: [
+          {
+            kind: 'class',
+            name: 'Example',
+            tagName: 'x-example',
+            events: [
+              {
+                name: 'example-change',
+                description: 'Emitted when the value changes.',
+                type: { text: 'CustomEvent<{ value: string }>' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  const exampleStory = `import { manifestEventArgTypes } from '../../.storybook-react/manifest-event-arg-types.js';
+import Example from '../react/example.js';
+export default { title: 'Example' };
+export const ExampleEvents = { argTypes: { ...manifestEventArgTypes(Example) } };
+`;
+  const files = {
+    'custom-elements.json': JSON.stringify(manifest),
+    'src/components/aichat-example/aichat-example.ts': element,
+    'src/react/example.tsx': wrapper,
+    '.storybook-react/main.js':
+      "export default { stories: ['../src/**/*.mdx', '../src/**/*.stories.jsx'] };",
+    '.storybook-react/preview.jsx':
+      'export const parameters = {};\nexport const argTypes = {};',
+    '.storybook-react/manifest-event-arg-types.js':
+      'export const manifestEventArgTypes = () => ({});',
+    'src/stories/example.stories.jsx': exampleStory,
+    'src/stories/example.mdx': `import { Meta, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as Examples from './example.stories.jsx';
+
+<Meta of={Examples} />
+
+## Events
+
+<ArgTypes of={Examples.ExampleEvents} />
+`,
+  };
+  await symlink(
+    path.resolve(import.meta.dirname, '../../../../node_modules'),
+    path.join(directory, 'node_modules'),
+    'dir'
+  );
+  await Promise.all(
+    Object.entries(files).map(async ([file, text]) => {
+      const filename = path.join(directory, file);
+      await mkdir(path.dirname(filename), { recursive: true });
+      await writeFile(filename, text);
+    })
+  );
+  const registryFile = path.join(
+    directory,
+    '.storybook-react/manifest-wrapper-registry.generated.js'
+  );
+
+  await generateReactDocs(directory);
+  const generated = await readFile(registryFile, 'utf8');
+  assert.match(generated, /"callback":"onChange"/);
+  assert.match(generated, /Emitted when the value changes\./);
+
+  await rm(registryFile);
+  await writeFile(
+    path.join(directory, 'src/stories/example.mdx'),
+    files['src/stories/example.mdx'].replace(
+      '<ArgTypes of={Examples.ExampleEvents} />',
+      'No table here.'
+    )
+  );
+  await assert.rejects(
+    generateReactDocs(directory),
+    /Show onChange in a visible MDX ArgTypes table/
+  );
+  await assert.rejects(readFile(registryFile, 'utf8'), { code: 'ENOENT' });
 });
