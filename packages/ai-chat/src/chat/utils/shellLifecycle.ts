@@ -39,6 +39,7 @@ import {
 } from '../services/inputCallbacks';
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 import { WindowOpenState } from '../services/windowOpenState';
+import { fireUserEvent } from '../services/fireUserEvent';
 import { shallowEqual } from '../store/appStore';
 import actions from '../store/actions';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../store/reducerUtils';
@@ -205,7 +206,7 @@ export class ShellLifecycle {
   private readonly window: WindowOpenState;
   readonly panelCallbacks: PanelCompositionCallbacks;
   readonly mainWindow: MainWindowFunctions;
-  private readonly appWindow: { requestFocus: () => void };
+  private readonly appWindow: { requestFocus: () => boolean };
 
   constructor(
     readonly viewState: ChatViewState,
@@ -236,14 +237,13 @@ export class ShellLifecycle {
     this.appWindow = {
       requestFocus: () => {
         try {
-          if (
+          return (
             manager.store.getState().persistedToBrowserStorage.viewState
-              .mainWindow
-          ) {
-            this.mainWindow.requestFocus();
-          }
+              .mainWindow && this.requestFocus()
+          );
         } catch (error) {
           consoleError('An error occurred in App.requestFocus', error);
+          return false;
         }
       },
     };
@@ -257,7 +257,7 @@ export class ShellLifecycle {
         this.humanAgentCallbacks.confirmHumanAgentEndChat,
       hideConfirmEndChat: this.humanAgentCallbacks.hideConfirmEndChat,
       fireCustomPanelEvent: (type) => {
-        manager.eventBus.fire({ type }, manager.instance);
+        fireUserEvent(manager, { type });
       },
       resetCustomPanelOptions: () => {
         manager.store.dispatch(
@@ -387,7 +387,7 @@ export class ShellLifecycle {
     const handle = (
       name: Parameters<NonNullable<typeof panels>['requestPanelFocus']>[0]
     ) => ({ requestFocus: () => panels?.requestPanelFocus(name) ?? false });
-    focusTargets({
+    return focusTargets({
       shouldAutoFocus:
         state.config.public.shouldTakeFocusIfOpensAutomatically ?? true,
       showDisclaimer: derived.showDisclaimer,
@@ -651,7 +651,7 @@ export class ShellLifecycle {
               {
                 text: languagePack.history_new_chat,
                 handler: () => {
-                  serviceManager.fire({
+                  fireUserEvent(serviceManager, {
                     type: BusEventType.HISTORY_PANEL_NEW_CHAT,
                   });
                 },
@@ -659,7 +659,7 @@ export class ShellLifecycle {
               {
                 text: languagePack.history_view_chats,
                 handler: () => {
-                  serviceManager.fire({
+                  fireUserEvent(serviceManager, {
                     type: BusEventType.HISTORY_PANEL_PRE_OPEN,
                   });
                   serviceManager.store.dispatch(
