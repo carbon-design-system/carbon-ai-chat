@@ -17,9 +17,11 @@ import { BusEventSend } from '../events/eventBusTypes';
  * it is never written onto a {@link MessageResponse}.
  *
  * `addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message
- * id without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks
- * the recorded state per id and fires those events only on the first transition to
- * {@link COMPLETE}.
+ * id. Carbon AI Chat records the state per id and fires `pre:receive` and `receive` each
+ * time the message moves into {@link COMPLETE} from another state, so a message that goes
+ * from COMPLETE to ERROR and back to COMPLETE fires them twice.
+ * {@link ChatInstanceMessaging.addMessage} on an id that an upsert already completed fires
+ * them again.
  *
  * @category Messaging
  * @experimental
@@ -97,6 +99,10 @@ export interface ChatInstanceMessaging {
    * Instructs the widget to process the given message as an incoming message received from the assistant. This will
    * fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
    *
+   * The chat writes its defaults onto the message you pass, including a generated `id` when it has none, and then
+   * freezes it, so don't change the object afterward. If the message is already frozen, the chat copies it first and
+   * stores the copy.
+   *
    * @param message A {@link MessageResponse} object.
    */
   addMessage: (message: MessageResponse) => Promise<void>;
@@ -130,27 +136,8 @@ export interface ChatInstanceMessaging {
    * message did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE
    * upserts do not fire these events.
    *
-   * Message data in user-defined response, custom message footer, and receive callbacks
-   * uses a snapshot. Plain objects and arrays are frozen. Cloneable special values,
-   * such as dates and typed arrays, remain mutable copies with their usual APIs.
-   * Copied typed arrays and DataViews use fixed bounds from their current offset and
-   * length. Copied backing buffers keep their resize or grow APIs, but the views do
-   * not expand when those buffers grow. Shrinking a copied buffer can put a view out
-   * of bounds.
-   * Opaque values, such as WeakMap, WeakSet, Promise, and Error objects, keep their
-   * original references and shared internal state. Functions keep their APIs, but
-   * closures, accessors, private state, and inherited prototype data remain shared. Calling
-   * these APIs can affect shared state. Edits to copied message fields do not write
-   * back. Use the updater or mutable {@link BusEventType.PRE_RECEIVE} data to change
-   * the message.
-   * Shared callback types stay unchanged; these runtime rules apply only to this method.
-   * Stable add-message, chunk, and human-agent paths are unchanged.
-   *
-   * This call keeps its existing callback and pause waits. Rejection from an awaited
-   * response or footer callback still rejects the upsert. Receive-handler errors are
-   * logged without rejecting it. Detached render notifications are not directly awaited.
-   * A later awaited callback of the same event type can still wait behind them in the
-   * shared queue. An attempted write to frozen data follows these same error rules.
+   * After the user stops a request, a STREAMING upsert of its response still updates the
+   * message, but the stop button doesn't show again.
    *
    * If the returned message has no `id`, Carbon AI Chat assigns `messageID`. The
    * cancellation contract for outbound messages is unchanged — see
@@ -161,9 +148,12 @@ export interface ChatInstanceMessaging {
    * @param state The {@link MessageState} to record for this message once the updater
    *   resolves.
    * @param updater Function that produces the {@link MessageResponse} to store.
-   * @throws `TypeError` when the updater returns `null`/`undefined`, returns a message
-   *   whose `id` differs from `messageID`, or returns a non-assistant message (a request
-   *   or a human-agent message).
+   * @throws `TypeError` when `messageID` is the ID of a request, or when the updater
+   *   returns `null`/`undefined`, a message whose `id` differs from `messageID`, or a
+   *   non-assistant message (a request or a human-agent message). These cases reject
+   *   before any event fires, and store nothing. A {@link BusEventType.PRE_RECEIVE}
+   *   handler that changes the message's `id` also rejects the call with a `TypeError`,
+   *   and the message isn't stored.
    * @remarks A STREAMING sequence whose host simply stops calling `upsertMessage` without
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for
@@ -182,15 +172,25 @@ export interface ChatInstanceMessaging {
   removeMessages: (messageIDs: string[]) => Promise<void>;
 
   /**
-   * Clears the current conversation. This will trigger a restart of the conversation but will not start a new
-   * conversation (hydration). It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * Clears the current conversation: removes every message and cancels any outstanding messages. Unlike
+   * {@link ChatInstanceMessaging.restartConversation}, it fires no restart events, sends no new welcome request, and
+   * leaves a conversation with a human agent alone. Like a restart, it resets an open workspace without calling
+   * its close handlers or firing `workspace:pre:close` and `workspace:close`. It cancels each file upload still in
+   * progress: the upload's abort signal fires and its attachment leaves the input. It also clears loading indicators
+   * unless you have
+   * set {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. A clear before the chat's first open
+   * leaves loading to that open, which calls {@link PublicConfigMessaging.customLoadHistory}, sends the welcome, and
+   * fires {@link BusEventType.CHAT_READY} as usual.
    */
   clearConversation: () => Promise<void>;
 
   /**
    * Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
-   * and history:end events.
+   * and history:end events. These messages fire no "pre:receive" or "receive" events.
+   *
+   * The chat writes its defaults onto each item's message, including a generated `id` when it has none, and then
+   * freezes it, so don't change the object afterward. If a message is already frozen, the chat copies it first and
+   * stores the copy.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
 
@@ -198,7 +198,14 @@ export interface ChatInstanceMessaging {
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
    * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
    * messages. It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. It also cancels each file upload still in
+   * progress: the upload's abort signal fires and its attachment leaves the input. It resets an open workspace
+   * without calling its close handlers or firing `workspace:pre:close` and `workspace:close`.
+   *
+   * If the main window is open and {@link PublicConfigMessaging.skipWelcome} isn't set, the chat then sends a new
+   * welcome request, and the promise resolves only after {@link PublicConfigMessaging.customSendMessage} finishes with
+   * that request. It sends no welcome request when {@link HomeScreenConfig.isOn} is set (it opens the home screen
+   * instead) or when the user has a conversation with a human agent, now or earlier in the session.
    */
   restartConversation: () => Promise<void>;
 }
