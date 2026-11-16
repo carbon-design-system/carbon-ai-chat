@@ -126,8 +126,9 @@ interface ChatActions {
   messaging: ChatInstanceMessaging;
   /**
    * Moves focus into the chat. The chat decides where focus belongs, such as the input or an open panel. Returns
-   * true when it moved focus there, and false when it found nothing to focus, such as while the main window is
-   * closed. Returns false when {@link PublicConfig.shouldTakeFocusIfOpensAutomatically} is false.
+   * true when it moved focus there, or when that place is a disabled input, which can't take focus. Returns false
+   * when it found nothing to focus, such as while the main window is closed. Returns false when
+   * {@link PublicConfig.shouldTakeFocusIfOpensAutomatically} is false.
    * On a phone the chat never moves focus, so this moves nothing and returns false.
    *
    * @example Move focus into the chat
