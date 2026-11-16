@@ -42,7 +42,11 @@ export interface BaseOverflowMenuItem extends Partial<
   target?: string;
 
   /**
-   * Optional data-testid string for e2e testing.
+   * A `data-testid` attribute for the menu item, so tests can find it.
+   *
+   * @experimental
+   * @deprecated In tests, select the menu item by its visible text instead.
+   * Removed in a 2.x minor release.
    */
   testId?: string;
 

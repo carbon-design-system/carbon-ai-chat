@@ -255,6 +255,9 @@ function createInitialState(config: AppConfig): AppState {
     // Active language pack (defaults + host `strings`), kept off the config tree.
     languagePack: buildLanguagePack(config.public.strings),
 
+    // Boot loads this locale's data before the first render.
+    loadedLocale: config.public.locale || 'en',
+
     // Host markdown config; set from the `markdown` prop in ChatAppEntry.
     markdownConfig: undefined,
 
