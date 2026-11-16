@@ -529,6 +529,42 @@ test('rejects an initializer shared by documentation and runtime args', () => {
   );
 });
 
+const metaRowStory = `${helper}\nimport Button from '../react/button.js';\nexport default { title: 'Button', argTypes: { ...callbackRows(Button) } };\n`;
+for (const [label, source, pattern] of [
+  [
+    'story argTypes',
+    `${metaRowStory}const hide = () => ({ onChange: { table: { disable: true } } });\nexport const Default = { argTypes: hide() };`,
+    /Resolve argTypes statically/,
+  ],
+  [
+    'story Docs parameters',
+    `${metaRowStory}const off = () => ({ disable: true });\nexport const Default = { parameters: { docs: off() } };`,
+    /Resolve parameters\.docs statically/,
+  ],
+  [
+    'Docs argTypes filters',
+    `${metaRowStory}const only = () => ({ include: [] });\nexport const Default = { parameters: { docs: { argTypes: only() } } };`,
+    /Resolve parameters\.docs\.argTypes statically/,
+  ],
+  [
+    'Docs page',
+    `${metaRowStory}const page = () => null;\nexport const Default = { parameters: { docs: { page: page() } } };`,
+    /enabled Docs page/,
+  ],
+  [
+    'meta',
+    `${helper}\nimport Button from '../react/button.js';\nconst meta = () => ({ title: 'Button', parameters: { docs: { disable: true } } });\nexport default meta();\nexport const Default = { argTypes: { ...callbackRows(Button) } };`,
+    /Resolve the story metadata statically/,
+  ],
+]) {
+  test(`rejects unresolved ${label} instead of treating it as empty`, () =>
+    fails(
+      '<Page of={Examples} />\n\n<Rows of={Examples.Default} />',
+      pattern,
+      source
+    ));
+}
+
 test('does not count conditional callback rows but preserves value controls', () => {
   fails(
     '<Rows of={Examples.Default} />',
