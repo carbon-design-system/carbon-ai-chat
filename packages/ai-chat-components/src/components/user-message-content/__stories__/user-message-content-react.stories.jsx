@@ -38,7 +38,9 @@ const Hint = ({ children }) => (
   <p className="user-message-content-story-hint">{children}</p>
 );
 
-const InlineCode = ({ children }) => <code>{children}</code>;
+const InlineCode = ({ children }) => (
+  <code className="user-message-content-story-hint__code">{children}</code>
+);
 
 /** Text and markdown only. */
 export const Default = {

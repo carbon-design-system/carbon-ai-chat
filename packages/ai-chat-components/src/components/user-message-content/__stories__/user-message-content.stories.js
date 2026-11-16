@@ -167,8 +167,10 @@ class UserMessageContentComposerStory extends LitElement {
     return html`
       <div style="inline-size: 640px; max-inline-size: 100%;">
         <p class="user-message-content-story-hint">
-          Type <code>@</code> anywhere to mention a team member. Type
-          <code>/</code> at the start of the line to run a command.
+          Type <code class="user-message-content-story-hint__code">@</code>
+          anywhere to mention a team member. Type
+          <code class="user-message-content-story-hint__code">/</code> at the
+          start of the line to run a command.
         </p>
         ${this._sent.map(
           (content, index) => html`

@@ -22,7 +22,7 @@
   margin-block-end: layout.$spacing-03;
 }
 
-.user-message-content-story-hint code {
+.user-message-content-story-hint__code {
   @include type.type-style('code-01');
 
   padding: layout.$spacing-01 layout.$spacing-02;

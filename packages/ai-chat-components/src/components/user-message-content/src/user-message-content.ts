@@ -21,6 +21,7 @@ import {
   type MarkdownItPlugin,
 } from '../../markdown/index.js';
 import { renderTokenChip } from '../../prompt-line/src/tiptap/render-token-chip.js';
+import { splitRunBreaks } from './split-run-breaks.js';
 import styles from './user-message-content.scss?lit';
 
 const blockClass = `${prefix}-user-message-content`;
@@ -148,23 +149,16 @@ class CDSAIChatUserMessageContent extends LitElement {
   }
 
   /**
-   * Renders one run of text. The inline renderer drops newlines at the edge of
-   * a run, so a break beside a chip is restored here. A break at the start or
-   * end of the paragraph is dropped, and a run of only newlines renders each
-   * break once. A run the renderer rejects, such as one that reads as a
-   * heading, shows as plain text so none of it is lost.
+   * Renders one run of text, restoring the breaks `splitRunBreaks` finds at its
+   * edges. A run the renderer rejects, such as one that reads as a heading,
+   * shows as plain text so none of it is lost.
    */
   private _renderRun(
     run: string,
     isFirst: boolean,
     isLast: boolean
   ): TemplateResult {
-    const onlyBreaks = /^\n+$/.test(run);
-    const leading =
-      isFirst || (isLast && onlyBreaks) ? '' : (run.match(/^\n+/)?.[0] ?? '');
-    const rest = run.slice(leading.length);
-    const trailing = isLast ? '' : (rest.match(/\n+$/)?.[0] ?? '');
-    const body = rest.slice(0, rest.length - trailing.length);
+    const { leading, body, trailing } = splitRunBreaks(run, isFirst, isLast);
 
     let rendered: TemplateResult | typeof nothing = nothing;
     if (body) {
