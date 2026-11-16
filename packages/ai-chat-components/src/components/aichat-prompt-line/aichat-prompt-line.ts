@@ -49,10 +49,12 @@ import styles from './aichat-prompt-line.scss?lit';
  * for the rest of its life.
  *
  * Both modes expose the same imperative API (`getEditor`, `setContent`,
- * `insertContent`, …) and emit the same events, so the React wrapper and
- * `@carbon/ai-chat`'s `Input` are mode-agnostic. `getEditor()` returns `null`
- * in textarea mode (it's a probe — it never triggers a load); call
- * `ensureEditor()` to force the upgrade and resolve with the live editor.
+ * `insertContent`, …) and emit the same `cds-aichat-prompt-*` events, so the
+ * React wrapper and `@carbon/ai-chat`'s `Input` are mode-agnostic. Only rich
+ * mode fires `cds-aichat-trigger-change` and `cds-aichat-light-dom-portal`.
+ * `getEditor()` returns `null` in textarea mode (it's a probe — it never
+ * triggers a load); call `ensureEditor()` to force the upgrade and resolve
+ * with the live editor.
  *
  * The Carbon Tiptap bundle the rich editor installs — schema, value-sync,
  * typing-indicator, plain-text paste, keymap (`Mod-Enter`/`Enter` →
@@ -61,17 +63,17 @@ import styles from './aichat-prompt-line.scss?lit';
  * should compose their own element against `@tiptap/core` directly.
  *
  * @element cds-aichat-prompt-line
+ * @fires {CustomEvent<InputChangeEventDetail>} cds-aichat-prompt-change - Fired when the content changes.
+ * @fires {CustomEvent<PromptFocusEventDetail>} cds-aichat-prompt-focus - Fired when the editing surface gains focus. `keyboard` is false for mouse focus.
+ * @fires {CustomEvent<null>} cds-aichat-prompt-blur - Fired when the editing surface loses focus.
+ * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - Fired when the user starts or stops typing.
+ * @fires {CustomEvent<PromptKeydownEventDetail>} cds-aichat-prompt-keydown - Fired for each key press in the editing surface.
+ * @fires {CustomEvent<null>} cds-aichat-prompt-send-intent - Fired when the user presses Enter in a non-empty field, or Cmd+Enter (Ctrl+Enter on Windows and Linux) even when the field is empty.
+ * @fires {CustomEvent<TriggerChangeEventDetail | null>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends. Rich mode only.
+ * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM. Rich mode only.
+ * @slot editor - Editor content.
  *
  * @experimental
- * @fires {CustomEvent<InputChangeEventDetail>} cds-aichat-prompt-change - The editor content changes.
- * @fires {CustomEvent<PromptFocusEventDetail>} cds-aichat-prompt-focus - The editor gains focus.
- * @fires {CustomEvent<null>} cds-aichat-prompt-blur - The editor loses focus.
- * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - The user starts or stops typing.
- * @fires {CustomEvent<PromptKeydownEventDetail>} cds-aichat-prompt-keydown - The editor receives a keydown event.
- * @fires {CustomEvent<null>} cds-aichat-prompt-send-intent - The editor requests a send action.
- * @fires {CustomEvent<TriggerChangeEventDetail | null>} cds-aichat-trigger-change - The active suggestion trigger changes or ends.
- * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Requests content projection into the page light DOM.
- * @slot editor - Editor content.
  */
 class PromptLineElement extends LitElement {
   static get is() {
