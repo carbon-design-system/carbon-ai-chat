@@ -111,7 +111,8 @@ it.each([true, false])(
       type: BusEventType.CUSTOM_FOOTER_SLOT,
       handler: (event: any) => {
         trace.push('footer');
-        expect(Object.isFrozen(event.data.message)).toBe(true);
+        // An upserted message reaches its callback as a writable copy whose edits commit.
+        expect(Object.isFrozen(event.data.message)).toBe(false);
         return blocked;
       },
     });
