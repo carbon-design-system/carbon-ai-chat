@@ -4,7 +4,7 @@
 
 We should be looking for what here can can automate, and as we do, we can remove it from this list.
 
-Automated upload checks: `input-actions-upload.spec.ts` covers file selection, pending state, and upload limits through both hosts. `file-upload-styles.spec.ts` checks chip styles, moves, and cleanup under strict CSP.
+Automated upload checks: `input-actions-upload.spec.ts` covers file selection, pending state, upload limits, and completed-file removal through both hosts. It checks that Remove stays visible and enabled while an upload is pending. `file-upload-styles.spec.ts` checks chip styles, moves, and cleanup under strict CSP.
 
 ## Testing Tracks
 

@@ -32,8 +32,14 @@ import {
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { InlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
 import { renderTokenChip } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import {
+  LIGHT_DOM_PORTAL_EVENT,
+  type LightDomPortalEventDetail,
+} from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 import type { JSONContent } from '@tiptap/core';
 import type { MessageRequest } from '../../types/messaging/Messages';
+import type { AppState } from '../../types/state/AppState';
+import { useSelector } from '../hooks/useSelector';
 
 export const INPUT_NODE_SLOT_ATTR = 'data-aichat-input-node-slot';
 const INPUT_NODE_TYPE_ATTR = 'data-aichat-input-node-type';
@@ -289,32 +295,59 @@ function UnknownNodeSlot({
     return () => slot.removeEventListener('slotchange', update);
   }, [inline, slotKey]);
   const isTokenNode = node.type === 'mention' || node.type === 'command';
-
-  // Chip element is rebuilt only when its visible attrs change.
-  const chip = useMemo(
-    () =>
-      isTokenNode
-        ? renderTokenChip({
-            attrs: (node.attrs ?? {}) as Record<string, string>,
-            type: node.type as 'mention' | 'command',
-            context: 'historical',
-          })
-        : null,
-    [isTokenNode, node.attrs, node.type]
+  // The input's custom renderer for this token's trigger, so a sent chip
+  // renders as it did in the input.
+  const renderCustomToken = useSelector((state: AppState) =>
+    node.type === 'mention' || node.type === 'command'
+      ? state.config.public.input?.[node.type]?.renderCustomToken
+      : undefined
   );
 
+  const [customContent, setCustomContent] = useState<{
+    container: HTMLElement;
+    node: React.ReactNode;
+  } | null>(null);
+
+  // Chip element is rebuilt only when its visible attrs or renderer change.
   useEffect(() => {
-    if (!chip || !hostRef.current) {
+    if (!isTokenNode || !hostRef.current) {
       return undefined;
     }
     const host = hostRef.current;
+    // A sent paragraph already shows from the page's light DOM, where the
+    // chat's light-DOM portal can't project into it. So the chip places the
+    // renderer's content itself: an element goes straight in, and a React
+    // node renders through a portal from this component.
+    let reactContent: { container: HTMLElement; node: React.ReactNode } = null;
+    const placeContent = new EventTarget();
+    placeContent.addEventListener(LIGHT_DOM_PORTAL_EVENT, (event) => {
+      const { container, htmlElement, reactNode } = (
+        event as CustomEvent<LightDomPortalEventDetail>
+      ).detail;
+      if (htmlElement) {
+        container.appendChild(htmlElement);
+      } else {
+        reactContent = { container, node: reactNode };
+      }
+    });
+    const chip = renderTokenChip({
+      attrs: (node.attrs ?? {}) as Record<string, string>,
+      config: { renderCustomToken },
+      type: node.type as 'mention' | 'command',
+      dispatchTarget: placeContent,
+      context: 'historical',
+    });
     host.appendChild(chip);
+    setCustomContent(reactContent);
     return () => {
       if (chip.parentNode === host) {
         host.removeChild(chip);
       }
     };
-  }, [chip]);
+  }, [isTokenNode, node.attrs, node.type, renderCustomToken]);
+
+  const customPortal =
+    customContent && createPortal(customContent.node, customContent.container);
 
   const fallback = (node.attrs?.label ?? node.attrs?.value ?? '') as string;
   const dataProps = {
@@ -325,6 +358,7 @@ function UnknownNodeSlot({
     return (
       <span ref={targetRef} {...dataProps}>
         <span ref={hostRef}>{isTokenNode ? null : fallback}</span>
+        {customPortal}
       </span>
     );
   }
@@ -335,6 +369,7 @@ function UnknownNodeSlot({
       <span ref={hostRef} hidden={hasAssignedContent}>
         {isTokenNode ? null : fallback}
       </span>
+      {customPortal}
     </>
   );
 }
