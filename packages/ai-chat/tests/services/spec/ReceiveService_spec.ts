@@ -46,6 +46,7 @@ function createHarness(config: PublicConfig = {}) {
       handleConnectToHumanAgent,
     },
     streamAnnouncerService: { clearAll: jest.fn() },
+    inputActionsService: { cancelPendingUploads: jest.fn() },
     messageCoordinator: {
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       inboundStreaming: { streamingMessageID: null },

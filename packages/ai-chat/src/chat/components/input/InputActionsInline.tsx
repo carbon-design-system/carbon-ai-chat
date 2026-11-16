@@ -13,7 +13,7 @@ import { createOverflowHandler } from '@carbon/utilities';
 import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 
 import IconButton from '../carbon/IconButton';
-import { BUTTON_KIND } from '../carbon/Button';
+import Button, { BUTTON_KIND } from '../carbon/Button';
 import Menu from '../carbon/Menu';
 import MenuItem from '../carbon/MenuItem';
 import { carbonIconToReact } from '../../utils/carbonIcon';
@@ -30,8 +30,41 @@ function optionIconToReact(icon: ToolbarAction['icon']) {
 }
 
 function renderMenuItemIcon(icon: ToolbarAction['icon']) {
+  if (!icon) {
+    return null;
+  }
   const Icon = optionIconToReact(icon);
   return <Icon slot="render-icon" />;
+}
+
+function renderActionButton(
+  opt: ToolbarAction,
+  key: React.Key,
+  disabled: boolean,
+  fixed: boolean
+) {
+  const shared = {
+    'data-fixed': fixed ? '' : undefined,
+    kind: BUTTON_KIND.GHOST,
+    size: 'sm',
+    disabled: disabled || opt.disabled,
+    'data-testid': opt.testId,
+    onClick: () => runAction(opt),
+  } as const;
+  if (!opt.icon) {
+    return (
+      <Button key={key} {...shared}>
+        {opt.text}
+      </Button>
+    );
+  }
+  const Icon = optionIconToReact(opt.icon);
+  return (
+    <IconButton key={key} {...shared}>
+      <Icon slot="icon" />
+      <span slot="tooltip-content">{opt.text}</span>
+    </IconButton>
+  );
 }
 
 function runAction(opt: ToolbarAction) {
@@ -52,7 +85,8 @@ interface InputActionsInlineProps {
 /**
  * The expanded-layout counterpart to {@link InputActionsMenu}. Renders each
  * action as a standalone icon-only ghost button directly in the input's
- * `message-actions` slot — no "+" trigger. When the row runs out of room the
+ * `message-actions` slot — no "+" trigger; an action without an icon renders
+ * as a text-only ghost button instead. When the row runs out of room the
  * trailing actions collapse into a "more" overflow menu (an `@carbon/icons`
  * "⋯" button that opens the same `cds-menu` popover the compact layout uses);
  * actions flagged `fixed` are kept out of the overflow. The option `text`
@@ -131,21 +165,9 @@ function InputActionsInline({
         ref={containerRef}
         className="cds-aichat-input-inline-actions"
         data-measuring={measuring ? '' : undefined}>
-        {nonFixedActions.map((opt, index) => {
-          const Icon = optionIconToReact(opt.icon);
-          return (
-            <IconButton
-              key={opt.id ?? index}
-              kind={BUTTON_KIND.GHOST}
-              size="sm"
-              disabled={disabled || opt.disabled}
-              data-testid={opt.testId}
-              onClick={() => runAction(opt)}>
-              <Icon slot="icon" />
-              <span slot="tooltip-content">{opt.text}</span>
-            </IconButton>
-          );
-        })}
+        {nonFixedActions.map((opt, index) =>
+          renderActionButton(opt, opt.id ?? index, disabled, false)
+        )}
 
         {/*
           Overflow ("more") trigger. `data-offset` marks it as the element the
@@ -170,22 +192,9 @@ function InputActionsInline({
           <span slot="tooltip-content">{overflowMenuLabel}</span>
         </IconButton>
 
-        {fixedActions.map((opt, index) => {
-          const Icon = optionIconToReact(opt.icon);
-          return (
-            <IconButton
-              key={opt.id ?? index}
-              data-fixed=""
-              kind={BUTTON_KIND.GHOST}
-              size="sm"
-              disabled={disabled || opt.disabled}
-              data-testid={opt.testId}
-              onClick={() => runAction(opt)}>
-              <Icon slot="icon" />
-              <span slot="tooltip-content">{opt.text}</span>
-            </IconButton>
-          );
-        })}
+        {fixedActions.map((opt, index) =>
+          renderActionButton(opt, opt.id ?? index, disabled, true)
+        )}
       </div>
 
       {open && hiddenActions.length > 0 && (
@@ -203,6 +212,10 @@ function InputActionsInline({
               disabled={opt.disabled}
               data-testid={opt.testId}
               onClick={() => {
+                // A disabled menu item still gets mouse clicks.
+                if (opt.disabled) {
+                  return;
+                }
                 setOpen(false);
                 runAction(opt);
               }}>
