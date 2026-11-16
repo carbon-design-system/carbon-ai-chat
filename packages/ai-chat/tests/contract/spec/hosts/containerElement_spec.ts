@@ -20,12 +20,14 @@ import { html, nothing, render } from 'lit';
 import {
   ChatInstance,
   GenericItem,
+  MarkdownItPlugin,
   MessageRequest,
   MessageResponseTypes,
   PageObjectId,
   ViewType,
 } from '../../../../src/aiChatEntry';
 import {
+  allByRole,
   changeView,
   contractElement,
   contractSetup,
@@ -36,6 +38,21 @@ import {
   responseOf,
   textItem,
 } from '../../helpers';
+
+/** A plugin that renders inline code as a link to it. */
+function codeAsLink(md: {
+  renderer: {
+    rules: Record<
+      string,
+      (tokens: { content: string }[], index: number) => string
+    >;
+  };
+}): void {
+  md.renderer.rules.code_inline = (tokens, index) => {
+    const { content } = tokens[index];
+    return `<a href="https://example.com/${content}">${content}</a>`;
+  };
+}
 
 /** Connects a container with these properties and no welcome request. */
 function mount(properties: Record<string, unknown> = {}) {
@@ -97,7 +114,12 @@ describe('cds-aichat-container element', () => {
     const renderUserDefinedInputNode = () => chip;
     const code = document.createElement('pre');
     code.textContent = 'Custom code';
-    const markdown = { customRenderers: { codeBlock: () => code } };
+    // A plugin's renderer rule output reaches the page through a host the
+    // element creates, separate from the custom renderer's relocated element.
+    const markdown = {
+      customRenderers: { codeBlock: () => code },
+      markdownItPlugins: [codeAsLink] as unknown as MarkdownItPlugin[],
+    };
     const backend = fakeBackend({ autoResolve: true });
     const messaging = {
       skipWelcome: true,
@@ -139,9 +161,20 @@ describe('cds-aichat-container element', () => {
         responseOf('r1', [textItem('```js\nlet x = 1;\n```')])
       )
     );
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r2', [textItem('See `plugin-link` here')])
+      )
+    );
     const panel = () => getByTestId(PageObjectId.MAIN_PANEL);
     await waitFor(() => expect(isShownWithin(chip, panel())).toBe(true));
     await waitFor(() => expect(isShownWithin(code, panel())).toBe(true));
+    const pluginLink = () =>
+      allByRole('link', 'plugin-link').find((link) =>
+        isShownWithin(link, panel())
+      );
+    await waitFor(() => expect(pluginLink()).toBeDefined());
+    const link = pluginLink();
 
     await act(async () => {
       render(view(false), root);
@@ -151,5 +184,7 @@ describe('cds-aichat-container element', () => {
     expect(root.textContent).not.toContain('Banner');
     expect(isShownWithin(chip, panel())).toBe(true);
     expect(isShownWithin(code, panel())).toBe(true);
+    expect(link.isConnected).toBe(true);
+    expect(isShownWithin(link, panel())).toBe(true);
   });
 });

@@ -156,7 +156,9 @@ export interface MarkdownPluginHostControllerOptions {
   /**
    * Puts a host into `target`. Defaults to `target.appendChild(host)`. A
    * surface whose light DOM a page template can render into passes one that
-   * keeps hosts ahead of the page's own children.
+   * keeps hosts ahead of the page's own children. It must leave the host a
+   * child of `target`: a relocated element is placed again only while its
+   * parent is some other element.
    */
   placeHost?: (host: HTMLElement) => void;
 }
