@@ -35,8 +35,11 @@ export interface ChatInstanceInput {
    * `paragraph`, `text`, or `hardBreak`, or if any text node carries
    * marks. Also throws `"Input content is host-owned while CUSTOM_PROMPT_LINE has content."`
    * before calling the updater while the custom prompt line has content.
-   * Empty paragraphs pass through; `hardBreak` renders as `\n` in
-   * the rawValue projection. Emits one deprecation warning per session.
+   * Empty paragraphs pass through. In 1.x, `previous` uses one newline for both paragraph and hard breaks.
+   * The rich editor's `rawValue` uses two newlines between paragraphs, so it can differ from `previous`.
+   * Returned text keeps literal characters and newlines. In the plain field, each newline starts a paragraph;
+   * a rich write uses hard breaks in one paragraph to preserve the exact text.
+   * Emits one deprecation warning per session.
    *
    * @example Replace a plain-text draft
    * ```ts
@@ -57,6 +60,10 @@ export interface ChatInstanceInput {
    * content is applied. Plain-text writes — and writes when the rich editor is
    * already mounted — apply immediately and the promise resolves on the same
    * tick.
+   *
+   * If the rich editor can't hold the result, such as a node or mark that no
+   * installed extension supports, the promise rejects with a `TypeError` that
+   * names it, and the draft stays as it was.
    *
    * While the input is hidden or not yet mounted, a plain-text result is staged
    * as the pending value and seeds the field when it renders; a result with
