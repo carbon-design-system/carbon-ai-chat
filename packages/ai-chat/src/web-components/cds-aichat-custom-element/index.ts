@@ -21,6 +21,7 @@ import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
+import { placeHosts } from '../../chat/utils/removeHostsOnUnmount';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import {
@@ -265,6 +266,7 @@ class ChatCustomElement extends FlattenedConfigElement {
       this.pluginSlotNames = slotNames;
       this.syncPluginForwarders();
     },
+    placeHost: (host) => placeHosts(this, [host]),
   });
 
   connectedCallback() {
