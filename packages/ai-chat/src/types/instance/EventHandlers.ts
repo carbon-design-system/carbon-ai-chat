@@ -14,6 +14,12 @@ import type { ChatInstance } from './ChatInstance';
  * This is a subset of the public interface that is managed by the event bus that is used for registering and
  * unregistering event listeners on the bus.
  *
+ * If a handler throws or its promise rejects, the chat skips the later handlers for that event. When your call fired
+ * the event, such as {@link ChatInstance.changeView}, that call rejects with the error. When the user fired it, such
+ * as by pressing the stop button or a feedback button, no call of yours rejects. The chat logs the error to the console
+ * and carries on, so catch the error in the handler if you need it.
+ * {@link BusEventType.STATE_CHANGE} is the exception: the chat logs the error and still runs the other handlers.
+ *
  * @category Instance
  */
 export interface EventHandlers {
@@ -25,11 +31,21 @@ export interface EventHandlers {
    *
    * @example Listen for received messages, chaining a second subscription
    * ```ts
-   * import { BusEventType } from "@carbon/ai-chat";
+   * import {
+   *   BusEventType,
+   *   type BusEventReceive,
+   *   type BusEventViewChange,
+   * } from "@carbon/ai-chat";
    *
    * instance
-   *   .on({ type: BusEventType.RECEIVE, handler: (event) => console.log(event.data) })
-   *   .on({ type: BusEventType.VIEW_CHANGE, handler: (event) => console.log(event.newViewState) });
+   *   .on({
+   *     type: BusEventType.RECEIVE,
+   *     handler: (event) => console.log((event as BusEventReceive).data),
+   *   })
+   *   .on({
+   *     type: BusEventType.VIEW_CHANGE,
+   *     handler: (event) => console.log((event as BusEventViewChange).newViewState),
+   *   });
    * ```
    */
   on: (handlers: TypeAndHandler | TypeAndHandler[]) => EventHandlers;
@@ -42,10 +58,11 @@ export interface EventHandlers {
    *
    * @example Remove a previously registered handler
    * ```ts
-   * import { BusEventType } from "@carbon/ai-chat";
+   * import { BusEventType, type BusEvent, type BusEventReceive } from "@carbon/ai-chat";
    *
    * // off requires the same handler reference passed to on.
-   * const onReceive = (event) => console.log(event.data);
+   * const onReceive = (event: BusEvent) =>
+   *   console.log((event as BusEventReceive).data);
    * instance.on({ type: BusEventType.RECEIVE, handler: onReceive });
    * instance.off({ type: BusEventType.RECEIVE, handler: onReceive });
    * ```
