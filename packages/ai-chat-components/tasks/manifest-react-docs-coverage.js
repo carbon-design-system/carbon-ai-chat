@@ -37,11 +37,25 @@ function exportedStories(model, source, meta) {
     );
 }
 
-function docsParameters(...values) {
-  return Object.assign(
-    {},
-    ...values.map((value) => value?.parameters?.docs?.argTypes)
-  );
+// Reads a field Storybook applies to the table, failing on any step the
+// evaluator could not resolve instead of treating it as absent.
+function field(values, table, layer, ...path) {
+  const fail = (at) => {
+    throw new Error(
+      `${table.filename}:${table.line}: Resolve ${at} statically.`
+    );
+  };
+  if (layer === values.unresolved) {
+    fail('the story metadata');
+  }
+  let value = layer;
+  for (const [index, key] of path.entries()) {
+    value = value?.[key];
+    if (value === values.unresolved) {
+      fail(path.slice(0, index + 1).join('.'));
+    }
+  }
+  return value;
 }
 
 export function mergeDocsAnnotations(...layers) {
@@ -59,7 +73,8 @@ export function mergeDocsAnnotations(...layers) {
 }
 
 export function docsTableContext(model, values, table, preview = {}) {
-  const meta = values.exported(table.source, 'default') ?? {};
+  const meta =
+    field(values, table, values.exported(table.source, 'default')) ?? {};
   const stories = exportedStories(model, table.source, meta);
   const name = table.story === 'default' ? undefined : table.story;
   if (
@@ -76,17 +91,27 @@ export function docsTableContext(model, values, table, preview = {}) {
       `${table.filename}:${table.line}: Resolve the ArgTypes story metadata.`
     );
   }
+  const layers = [preview, meta, story];
   const docs = Object.assign(
     {},
-    ...[preview, meta, story].map((value) => value?.parameters?.docs)
+    ...layers.map((layer) => field(values, table, layer, 'parameters', 'docs'))
   );
-  if (docs.disable || (Object.hasOwn(docs, 'page') && docs.page == null)) {
+  if (
+    docs.disable ||
+    docs.page === values.unresolved ||
+    (Object.hasOwn(docs, 'page') && docs.page == null)
+  ) {
     throw new Error(
       `${table.filename}:${table.line}: Show the ArgTypes table on an enabled Docs page.`
     );
   }
   const filters = {
-    ...docsParameters(preview, meta, story),
+    ...Object.assign(
+      {},
+      ...layers.map((layer) =>
+        field(values, table, layer, 'parameters', 'docs', 'argTypes')
+      )
+    ),
     ...Object.fromEntries(
       ['include', 'exclude']
         .filter((key) => table[key] !== undefined)
@@ -94,9 +119,7 @@ export function docsTableContext(model, values, table, preview = {}) {
     ),
   };
   const rows = mergeDocsAnnotations(
-    preview?.argTypes,
-    meta.argTypes,
-    story.argTypes
+    ...layers.map((layer) => field(values, table, layer, 'argTypes'))
   );
   return { meta, story, filters, argTypes: rows };
 }

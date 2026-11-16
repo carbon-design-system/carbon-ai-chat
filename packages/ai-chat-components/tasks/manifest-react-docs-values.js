@@ -85,293 +85,7 @@ function unwrap(ts, node) {
   return node;
 }
 
-function metadataWrites(model) {
-  const { ts } = model;
-  const writes = new Map();
-  const owners = metadataOwners(model);
-  const record = (target, node) => {
-    for (const symbol of owners(target)) {
-      writes.set(symbol, node);
-    }
-  };
-  const visit = (node) => {
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
-      node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
-    ) {
-      const target = unwrap(ts, node.left);
-      if (ts.isIdentifier(target)) {
-        const symbol = model.symbol(target);
-        if (symbol) {
-          writes.set(symbol, node);
-        }
-      } else {
-        record(target, node);
-      }
-      if (mutableMetadata(model, node.right)) {
-        record(node.right, node);
-      }
-    }
-    if (ts.isDeleteExpression(node)) {
-      record(node.expression, node);
-    }
-    if (
-      (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
-      [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
-        node.operator
-      )
-    ) {
-      record(node.operand, node);
-    }
-    if (ts.isCallExpression(node) && !readOnlyMetadataCall(model, node)) {
-      node.arguments
-        .filter((argument) => mutableMetadata(model, argument))
-        .forEach((argument) => record(argument, node));
-      if (
-        ts.isPropertyAccessExpression(node.expression) ||
-        ts.isElementAccessExpression(node.expression)
-      ) {
-        record(node.expression, node);
-      }
-    }
-    ts.forEachChild(node, visit);
-  };
-  model.program
-    .getSourceFiles()
-    .filter(
-      (source) =>
-        source.fileName.startsWith(`${model.root}/`) &&
-        !source.isDeclarationFile
-    )
-    .forEach(visit);
-  return writes;
-}
-
-function storyAnnotations(model) {
-  const symbols = new Set();
-  for (const source of model.program.getSourceFiles()) {
-    if (!/\.stories\.[jt]sx?$/.test(source.fileName)) {
-      continue;
-    }
-    const module = model.checker.getSymbolAtLocation(source);
-    if (!module) {
-      continue;
-    }
-    for (const entry of model.checker.getExportsOfModule(module)) {
-      const symbol = exportedSymbol(model, source, entry.name);
-      symbols.add(symbol);
-      const declaration = symbol?.valueDeclaration;
-      if (declaration && model.ts.isExportAssignment(declaration)) {
-        symbols.add(model.symbol(declaration.expression));
-      }
-    }
-  }
-  return symbols;
-}
-
-function annotationAlias(model, node, annotations, seen = new Set()) {
-  if (!node) {
-    return false;
-  }
-  node = unwrap(model.ts, node);
-  if (!model.ts.isIdentifier(node)) {
-    return false;
-  }
-  const symbol = model.symbol(node);
-  if (!symbol || seen.has(symbol)) {
-    return false;
-  }
-  if (annotations.has(symbol)) {
-    return true;
-  }
-  const initializer = symbol.valueDeclaration?.initializer;
-  return (
-    !!initializer &&
-    annotationAlias(model, initializer, annotations, new Set([...seen, symbol]))
-  );
-}
-
-function bindingSource(ts, declaration) {
-  const names = [];
-  let owner = declaration;
-  while (owner && !ts.isVariableDeclaration(owner)) {
-    if (ts.isBindingElement(owner)) {
-      names.unshift((owner.propertyName ?? owner.name).text);
-    }
-    owner = owner.parent;
-  }
-  return { initializer: owner?.initializer, name: names[0] };
-}
-
-function returnedValues(model, node) {
-  if (!node.body) {
-    return [];
-  }
-  if (!model.ts.isBlock(node.body)) {
-    return [node.body];
-  }
-  const values = [];
-  model.visit(node.body, (child) => {
-    if (model.ts.isReturnStatement(child) && child.expression) {
-      values.push(child.expression);
-    }
-  });
-  return values;
-}
-
-function annotationRuntimeValues(model, input, name, seen = new Set()) {
-  if (!input) {
-    return [];
-  }
-  const { ts } = model;
-  const node = unwrap(ts, input);
-  if (ts.isIdentifier(node)) {
-    const symbol = model.symbol(node);
-    if (!symbol || seen.has(symbol)) {
-      return [];
-    }
-    const declaration = symbol.valueDeclaration;
-    const value =
-      declaration && ts.isExportAssignment(declaration)
-        ? declaration.expression
-        : declaration?.initializer;
-    return annotationRuntimeValues(
-      model,
-      value,
-      name,
-      new Set([...seen, symbol])
-    );
-  }
-  if (ts.isCallExpression(node)) {
-    return annotationRuntimeValues(model, inlineReturn(ts, node), name, seen);
-  }
-  if (!ts.isObjectLiteralExpression(node)) {
-    return [];
-  }
-  for (const property of [...node.properties].reverse()) {
-    if (property.name?.text === name) {
-      return [property.initializer ?? property.name];
-    }
-    if (ts.isSpreadAssignment(property)) {
-      const values = annotationRuntimeValues(
-        model,
-        property.expression,
-        name,
-        seen
-      );
-      if (values.length) {
-        return values;
-      }
-    }
-  }
-  return [];
-}
-
-function metadataOwners(model) {
-  const { ts } = model;
-  const annotations = storyAnnotations(model);
-
-  function memberOwners(node, seen) {
-    const name = ts.isPropertyAccessExpression(node)
-      ? node.name.text
-      : ts.isStringLiteralLike(node.argumentExpression)
-        ? node.argumentExpression.text
-        : undefined;
-    if (
-      ignoredProperties.has(name) &&
-      annotationAlias(model, node.expression, annotations)
-    ) {
-      return annotationRuntimeValues(model, node.expression, name).flatMap(
-        (value) => read(value, seen)
-      );
-    }
-    return read(node.expression, seen);
-  }
-
-  function referenceOwners(node, seen) {
-    const symbol = model.symbol(node);
-    if (!symbol || seen.has(symbol)) {
-      return [];
-    }
-    const declaration = symbol.valueDeclaration ?? symbol.declarations?.[0];
-    const binding =
-      declaration &&
-      ts.isBindingElement(declaration) &&
-      bindingSource(ts, declaration);
-    if (
-      binding &&
-      ignoredProperties.has(binding.name) &&
-      annotationAlias(model, binding.initializer, annotations)
-    ) {
-      return [
-        symbol,
-        ...annotationRuntimeValues(
-          model,
-          binding.initializer,
-          binding.name
-        ).flatMap((value) => read(value, seen)),
-      ];
-    }
-    const initializer = binding
-      ? binding.initializer
-      : declaration && ts.isFunctionLike(declaration)
-        ? declaration
-        : declaration?.initializer;
-    return [
-      symbol,
-      ...(mutableMetadata(model, node)
-        ? read(initializer, new Set([...seen, symbol]))
-        : []),
-    ];
-  }
-
-  function read(input, seen = new Set()) {
-    if (!input) {
-      return [];
-    }
-    const node = unwrap(ts, input);
-    if (ts.isIdentifier(node)) {
-      return referenceOwners(node, seen);
-    }
-    if (
-      ts.isPropertyAccessExpression(node) ||
-      ts.isElementAccessExpression(node)
-    ) {
-      return memberOwners(node, seen);
-    }
-    if (ts.isObjectLiteralExpression(node)) {
-      return node.properties.flatMap((property) =>
-        read(property.initializer ?? property.expression ?? property.name, seen)
-      );
-    }
-    if (ts.isArrayLiteralExpression(node)) {
-      return node.elements.flatMap((element) => read(element, seen));
-    }
-    if (ts.isSpreadElement(node)) {
-      return read(node.expression, seen);
-    }
-    if (ts.isConditionalExpression(node)) {
-      return [node.whenTrue, node.whenFalse].flatMap((branch) =>
-        read(branch, seen)
-      );
-    }
-    if (ts.isBinaryExpression(node)) {
-      return [node.left, node.right].flatMap((branch) => read(branch, seen));
-    }
-    if (ts.isFunctionLike(node)) {
-      return returnedValues(model, node).flatMap((value) => read(value, seen));
-    }
-    if (ts.isCallExpression(node) && !readOnlyMetadataCall(model, node)) {
-      return read(node.expression, seen);
-    }
-    return [];
-  }
-
-  return read;
-}
-
-function mutableMetadata(model, node) {
+function primitiveType(model, node) {
   const { TypeFlags } = model.ts;
   const primitive =
     TypeFlags.StringLike |
@@ -383,10 +97,10 @@ function mutableMetadata(model, node) {
     TypeFlags.Undefined |
     TypeFlags.Void |
     TypeFlags.Never;
-  return !(model.checker.getTypeAtLocation(node).flags & primitive);
+  return !!(model.checker.getTypeAtLocation(node).flags & primitive);
 }
 
-function readOnlyMetadataCall(model, node) {
+function readOnlyCall(model, node) {
   if (importedHelper(model, node.expression)) {
     return true;
   }
@@ -406,6 +120,207 @@ function readOnlyMetadataCall(model, node) {
         declaration.getSourceFile().fileName
       )
     );
+}
+
+function captured(model, node) {
+  const symbols = [];
+  model.visit(node, (child) => {
+    const symbol = model.ts.isIdentifier(child) && model.symbol(child);
+    if (symbol) {
+      symbols.push(symbol);
+    }
+  });
+  return symbols;
+}
+
+// Symbols whose objects the value of `input` can share. Functions share
+// everything they capture, so returning metadata from one still counts.
+function aliases(model, input) {
+  if (!input) {
+    return [];
+  }
+  const { ts } = model;
+  const node = unwrap(ts, input);
+  if (ts.isIdentifier(node)) {
+    const symbol = model.symbol(node);
+    return symbol ? [symbol] : [];
+  }
+  if (
+    ts.isPropertyAccessExpression(node) ||
+    ts.isElementAccessExpression(node) ||
+    ts.isSpreadElement(node) ||
+    ts.isSpreadAssignment(node)
+  ) {
+    return aliases(model, node.expression);
+  }
+  if (ts.isCallExpression(node)) {
+    return readOnlyCall(model, node) ? [] : aliases(model, node.expression);
+  }
+  if (ts.isFunctionLike(node)) {
+    return captured(model, node);
+  }
+  if (ts.isObjectLiteralExpression(node)) {
+    return node.properties.flatMap((property) =>
+      ts.isFunctionLike(property)
+        ? captured(model, property)
+        : aliases(
+            model,
+            property.initializer ?? property.expression ?? property.name
+          )
+    );
+  }
+  if (ts.isArrayLiteralExpression(node)) {
+    return node.elements.flatMap((element) => aliases(model, element));
+  }
+  if (ts.isConditionalExpression(node)) {
+    return [node.whenTrue, node.whenFalse].flatMap((branch) =>
+      aliases(model, branch)
+    );
+  }
+  if (ts.isBinaryExpression(node)) {
+    return [node.left, node.right].flatMap((branch) => aliases(model, branch));
+  }
+  return [];
+}
+
+function bindingNames(ts, name) {
+  return ts.isIdentifier(name)
+    ? [name]
+    : name.elements.flatMap((element) =>
+        ts.isOmittedExpression(element) ? [] : bindingNames(ts, element.name)
+      );
+}
+
+// Any assignment, delete, increment, method call, or non-primitive call
+// argument reaching a value counts as a write to every symbol that value can
+// share. Rebinding a variable writes only that variable, and calling a story's
+// own play or render does not write the story. This over-reports on purpose:
+// the stories never write their metadata, so a hit means a story started doing
+// something the guard cannot follow.
+function metadataWrites(model) {
+  const { ts } = model;
+  const links = new Map();
+  const writes = [];
+  const link = (symbol, targets) => {
+    if (symbol) {
+      links.set(symbol, [...(links.get(symbol) ?? []), ...targets]);
+    }
+  };
+  const write = (node, subject) => {
+    const target = unwrap(ts, subject);
+    if (ts.isIdentifier(target)) {
+      writes.push({ node, symbols: [model.symbol(target)], shared: false });
+    } else {
+      writes.push({ node, symbols: aliases(model, target), shared: true });
+    }
+  };
+  const visit = (node) => {
+    if (
+      (ts.isVariableDeclaration(node) ||
+        ts.isParameter(node) ||
+        ts.isBindingElement(node)) &&
+      node.initializer
+    ) {
+      const targets = aliases(model, node.initializer);
+      for (const name of bindingNames(ts, node.name)) {
+        link(model.symbol(name), targets);
+      }
+    }
+    if (ts.isForOfStatement(node)) {
+      const targets = aliases(model, node.expression);
+      const names = ts.isVariableDeclarationList(node.initializer)
+        ? node.initializer.declarations
+            .flatMap((declaration) => bindingNames(ts, declaration.name))
+            .map((name) => model.symbol(name))
+        : aliases(model, node.initializer);
+      names.forEach((symbol) => link(symbol, targets));
+    }
+    if (
+      (ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) &&
+      node.name
+    ) {
+      link(model.symbol(node.name), captured(model, node));
+    }
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+      node.operatorToken.kind <= ts.SyntaxKind.LastAssignment
+    ) {
+      write(node, node.left);
+      const stored = aliases(model, node.right);
+      for (const symbol of aliases(model, node.left)) {
+        link(symbol, stored);
+      }
+    }
+    if (ts.isDeleteExpression(node)) {
+      write(node, node.expression);
+    }
+    if (
+      (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+      [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(
+        node.operator
+      )
+    ) {
+      write(node, node.operand);
+    }
+    if (
+      (ts.isCallExpression(node) || ts.isNewExpression(node)) &&
+      !readOnlyCall(model, node)
+    ) {
+      for (const argument of node.arguments ?? []) {
+        if (!primitiveType(model, argument)) {
+          writes.push({
+            node,
+            symbols: aliases(model, argument),
+            shared: true,
+          });
+        }
+      }
+      const callee = unwrap(ts, node.expression);
+      const method = ts.isPropertyAccessExpression(callee)
+        ? callee.name.text
+        : callee.argumentExpression?.text;
+      if (
+        (ts.isPropertyAccessExpression(callee) ||
+          ts.isElementAccessExpression(callee)) &&
+        !ignoredProperties.has(method)
+      ) {
+        writes.push({
+          node,
+          symbols: aliases(model, callee.expression),
+          shared: true,
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  model.program
+    .getSourceFiles()
+    .filter(
+      (source) =>
+        source.fileName.startsWith(`${model.root}/`) &&
+        !source.isDeclarationFile
+    )
+    .forEach(visit);
+
+  const reach = (symbols, seen = new Set()) => {
+    for (const symbol of symbols) {
+      if (symbol && !seen.has(symbol)) {
+        seen.add(symbol);
+        reach(links.get(symbol) ?? [], seen);
+      }
+    }
+    return seen;
+  };
+  const written = new Map();
+  for (const { node, symbols, shared } of writes) {
+    for (const symbol of shared ? reach(symbols) : symbols) {
+      if (symbol && !written.has(symbol)) {
+        written.set(symbol, node);
+      }
+    }
+  }
+  return written;
 }
 
 function assertConstant(model, writes, symbol) {
