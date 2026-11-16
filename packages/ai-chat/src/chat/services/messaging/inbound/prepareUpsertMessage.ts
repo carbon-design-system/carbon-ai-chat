@@ -10,10 +10,6 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import { MessageState } from '../../../../types/config/MessagingConfig';
 import type { MessageResponse } from '../../../../types/messaging/Messages';
-import {
-  hasLiveHumanAgentMessage,
-  isRequest,
-} from '../../../utils/messageUtils';
 
 function prepareUpsertMessage(result: MessageResponse): MessageResponse {
   if (result === null || result === undefined) {
@@ -24,11 +20,6 @@ function prepareUpsertMessage(result: MessageResponse): MessageResponse {
   if (typeof result !== 'object') {
     throw new TypeError(
       'upsertMessage: updater must return a MessageResponse object.'
-    );
-  }
-  if (isRequest(result) || hasLiveHumanAgentMessage(result)) {
-    throw new TypeError(
-      'upsertMessage: updater must return an assistant message, not a request or a human-agent message.'
     );
   }
 

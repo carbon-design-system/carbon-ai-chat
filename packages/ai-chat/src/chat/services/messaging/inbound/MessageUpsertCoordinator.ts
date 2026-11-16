@@ -47,6 +47,7 @@ import {
 } from '../../../schema/outputItemToLocalItem';
 import {
   addDefaultsToMessage,
+  hasLiveHumanAgentMessage,
   isConnectToHumanAgent,
   isHiddenOutputItem,
   isPause,
@@ -1200,6 +1201,11 @@ class MessageUpsertCoordinator {
     let result = await updater(previousMessage);
 
     result = this.incomingMessageService.prepareUpsertMessage(result);
+    if (isRequest(result) || hasLiveHumanAgentMessage(result)) {
+      throw new TypeError(
+        'upsertMessage: updater must return an assistant message, not a request or a human-agent message.'
+      );
+    }
     if (Object.isFrozen(result.history)) {
       result.history = { ...result.history };
     }
