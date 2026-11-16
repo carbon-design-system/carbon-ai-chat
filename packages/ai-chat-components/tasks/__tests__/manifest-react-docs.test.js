@@ -6,7 +6,14 @@
  */
 
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { test } from 'node:test';
@@ -16,6 +23,7 @@ import {
   renderReactRegistry,
 } from '../manifest-react-docs-registry.js';
 import { validateReactDocs } from '../manifest-react-docs-coverage.js';
+import { generateReactDocs } from '../manifest-react-docs.js';
 import { mdxTables } from '../manifest-react-docs-mdx.js';
 import { createManifestEventArgTypes } from '../../.storybook-react/manifest-event-arg-types-core.js';
 
@@ -439,6 +447,15 @@ for (const mutation of [
   'Default.args = Default.argTypes; Default.args.onChange.table.disable = true;',
   'export const Other = { args: Default.argTypes }; Other.args.onChange.table.disable = true;',
   'export const Other = { args: Default.argTypes }; const { args: { onChange: row } } = Other; row.table.disable = true;',
+  'const copy = { ...Default }; copy.argTypes.onChange.table.disable = true;',
+  'export const Second = { ...Default, args: { value: 1 } }; Second.argTypes.onChange.table.disable = true;',
+  'const holder = {}; holder.ref = Default; holder.ref.argTypes.onChange.table.disable = true;',
+  'let s; [s] = [Default]; s.argTypes.onChange.table.disable = true;',
+  'function hide(s = Default) { s.argTypes.onChange.table.disable = true; } hide();',
+  'const { s = Default } = {}; s.argTypes.onChange.table.disable = true;',
+  'for (const s of [Default]) { s.argTypes.onChange.table.disable = true; }',
+  'new Hide(Default);',
+  'class Holder { static ref = Default; } Holder.ref.argTypes.onChange.table.disable = true;',
 ]) {
   test(`rejects metadata mutation or escape: ${mutation}`, () => {
     const source = mutation.includes('Default.parameters')
@@ -479,47 +496,65 @@ test('does not trust a shadowed Object.keys as a read-only helper', () => {
   );
 });
 
-test('keeps runtime-only story fields outside documentation mutation checks', () => {
+test("lets a story call another story's play and render", () => {
   const source = `${story}
-    Default.args = { value: 'before' };
-    Default.args.value = 'after';
-    const args = Default.args; args.value = 'changed';
-    const { args: values } = Default; Object.assign(values, { value: 'again' });
-    Default.render = () => null; Default.render();
-    Default.play = () => {}; run(Default.play);
+    export const Second = {
+      play: async (context) => { await Default.play(context); },
+      render: (args) => Default.render(args),
+    };
   `;
   assert.deepEqual(check('<Rows of={Examples.Default} />', source), []);
 });
 
-test('rejects an initializer shared by documentation and runtime args', () => {
-  const source = `${helper}\nimport Button from '../react/button.js';
-    const rows = callbackRows(Button);
-    export default { title: 'Button' };
-    export const Default = { argTypes: rows, args: rows };
-    Default.args.onChange.table.disable = true;
-  `;
-  fails('<Rows of={Examples.Default} />', /without later writes/, source);
-  const composed = source.replace(
-    'export const Default = { argTypes: rows, args: rows };',
-    'const shared = { args: rows }; export const Default = { ...shared, argTypes: rows };'
-  );
-  fails('<Rows of={Examples.Default} />', /without later writes/, composed);
-  assert.deepEqual(
-    check(
+test('rejects writes to runtime story fields too', () => {
+  for (const write of [
+    "Default.args = { value: 'before' };",
+    "const { args: values } = Default; Object.assign(values, { value: 'again' });",
+    'Default.render = () => null;',
+  ]) {
+    fails(
       '<Rows of={Examples.Default} />',
-      composed
-        .replace(
-          '...shared, argTypes: rows',
-          '...shared, args: { value: "before" }, argTypes: rows'
-        )
-        .replace(
-          'Default.args.onChange.table.disable = true;',
-          'Default.args.value = "after";'
-        )
-    ),
-    []
-  );
+      /without later writes/,
+      `${story}\n${write}`
+    );
+  }
 });
+
+const metaRowStory = `${helper}\nimport Button from '../react/button.js';\nexport default { title: 'Button', argTypes: { ...callbackRows(Button) } };\n`;
+for (const [label, source, pattern] of [
+  [
+    'story argTypes',
+    `${metaRowStory}const hide = () => ({ onChange: { table: { disable: true } } });\nexport const Default = { argTypes: hide() };`,
+    /Resolve argTypes statically/,
+  ],
+  [
+    'story Docs parameters',
+    `${metaRowStory}const off = () => ({ disable: true });\nexport const Default = { parameters: { docs: off() } };`,
+    /Resolve parameters\.docs statically/,
+  ],
+  [
+    'Docs argTypes filters',
+    `${metaRowStory}const only = () => ({ include: [] });\nexport const Default = { parameters: { docs: { argTypes: only() } } };`,
+    /Resolve parameters\.docs\.argTypes statically/,
+  ],
+  [
+    'Docs page',
+    `${metaRowStory}const page = () => null;\nexport const Default = { parameters: { docs: { page: page() } } };`,
+    /enabled Docs page/,
+  ],
+  [
+    'meta',
+    `${helper}\nimport Button from '../react/button.js';\nconst meta = () => ({ title: 'Button', parameters: { docs: { disable: true } } });\nexport default meta();\nexport const Default = { argTypes: { ...callbackRows(Button) } };`,
+    /Resolve the story metadata statically/,
+  ],
+]) {
+  test(`rejects unresolved ${label} instead of treating it as empty`, () =>
+    fails(
+      '<Page of={Examples} />\n\n<Rows of={Examples.Default} />',
+      pattern,
+      source
+    ));
+}
 
 test('does not count conditional callback rows but preserves value controls', () => {
   fails(
@@ -581,4 +616,114 @@ test('merges partial story row overrides with meta rows as Storybook does', () =
     /Show onChange/,
     source.replace('disable: false', 'disable: true')
   );
+});
+
+test('generateReactDocs writes the registry only when every callback has a visible table', async (context) => {
+  const directory = await mkdtemp(
+    path.join(tmpdir(), 'manifest-docs-generate-')
+  );
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const element = `
+    export default class Example extends HTMLElement {
+      static get is() { return 'x-example'; }
+      static get eventChange() { return 'example-change'; }
+    }
+  `;
+  const wrapper = `
+    import React from 'react';
+    import { createComponent, type EventName } from '@lit/react';
+    import Example from '../components/aichat-example/aichat-example.js';
+    export default createComponent({
+      tagName: Example.is,
+      elementClass: Example,
+      react: React,
+      events: {
+        onChange: Example.eventChange as EventName<CustomEvent<{ value: string }>>,
+      },
+    });
+  `;
+  const manifest = {
+    schemaVersion: '1.0.0',
+    modules: [
+      {
+        kind: 'javascript-module',
+        path: 'src/components/aichat-example/aichat-example.ts',
+        declarations: [
+          {
+            kind: 'class',
+            name: 'Example',
+            tagName: 'x-example',
+            events: [
+              {
+                name: 'example-change',
+                description: 'Emitted when the value changes.',
+                type: { text: 'CustomEvent<{ value: string }>' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  const exampleStory = `import { manifestEventArgTypes } from '../../.storybook-react/manifest-event-arg-types.js';
+import Example from '../react/example.js';
+export default { title: 'Example' };
+export const ExampleEvents = { argTypes: { ...manifestEventArgTypes(Example) } };
+`;
+  const files = {
+    'custom-elements.json': JSON.stringify(manifest),
+    'src/components/aichat-example/aichat-example.ts': element,
+    'src/react/example.tsx': wrapper,
+    '.storybook-react/main.js':
+      "export default { stories: ['../src/**/*.mdx', '../src/**/*.stories.jsx'] };",
+    '.storybook-react/preview.jsx':
+      'export const parameters = {};\nexport const argTypes = {};',
+    '.storybook-react/manifest-event-arg-types.js':
+      'export const manifestEventArgTypes = () => ({});',
+    'src/stories/example.stories.jsx': exampleStory,
+    'src/stories/example.mdx': `import { Meta, ArgTypes } from '@storybook/addon-docs/blocks';
+import * as Examples from './example.stories.jsx';
+
+<Meta of={Examples} />
+
+## Events
+
+<ArgTypes of={Examples.ExampleEvents} />
+`,
+  };
+  await symlink(
+    path.resolve(import.meta.dirname, '../../../../node_modules'),
+    path.join(directory, 'node_modules'),
+    'dir'
+  );
+  await Promise.all(
+    Object.entries(files).map(async ([file, text]) => {
+      const filename = path.join(directory, file);
+      await mkdir(path.dirname(filename), { recursive: true });
+      await writeFile(filename, text);
+    })
+  );
+  const registryFile = path.join(
+    directory,
+    '.storybook-react/manifest-wrapper-registry.generated.js'
+  );
+
+  await generateReactDocs(directory);
+  const generated = await readFile(registryFile, 'utf8');
+  assert.match(generated, /"callback":"onChange"/);
+  assert.match(generated, /Emitted when the value changes\./);
+
+  await rm(registryFile);
+  await writeFile(
+    path.join(directory, 'src/stories/example.mdx'),
+    files['src/stories/example.mdx'].replace(
+      '<ArgTypes of={Examples.ExampleEvents} />',
+      'No table here.'
+    )
+  );
+  await assert.rejects(
+    generateReactDocs(directory),
+    /Show onChange in a visible MDX ArgTypes table/
+  );
+  await assert.rejects(readFile(registryFile, 'utf8'), { code: 'ENOENT' });
 });
