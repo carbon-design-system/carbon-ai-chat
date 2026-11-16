@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { placeHosts } from '../../utils/removeHostsOnUnmount';
+
 interface InlineEntry {
   target?: HTMLElement;
   fallback?: HTMLElement;
@@ -112,7 +114,7 @@ export function mountHost(
   });
   chatWrapper.dispatchEvent(mount);
   if (!mount.defaultPrevented) {
-    chatWrapper.appendChild(host);
+    placeHosts(chatWrapper, [host]);
   }
 }
 
