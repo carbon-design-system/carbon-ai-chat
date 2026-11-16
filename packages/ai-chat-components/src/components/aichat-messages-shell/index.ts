@@ -12,5 +12,11 @@ import CDSAIChatMessagesShell from './aichat-messages-shell.js';
 
 export { CDSAIChatMessagesShell };
 export type { MessagesShellScrollDetail } from './aichat-messages-shell.js';
+export { MessagesScrollController } from './messages-scroll-controller.js';
+export type {
+  PortableMessage,
+  ScrollOptions,
+  ScrollHost,
+} from './messages-scroll-controller.js';
 
 defineCustomElement(CDSAIChatMessagesShell);

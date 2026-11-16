@@ -7,6 +7,14 @@
 
 import { parse } from '@babel/parser';
 
+// The package pins parser 7, but a workspace or worktree can resolve parser 8.
+// Version 8 renames some AST fields and fixes the setter reason-code spelling,
+// so the readers below accept both shapes.
+const SET_ACCESSOR_RETURN_TYPE = new Set([
+  'SetAccesorCannotHaveReturnType',
+  'SetAccessorCannotHaveReturnType',
+]);
+
 const rename = (content, prefix) => content.replace(/(?<!--)cds/g, prefix);
 
 function literalValue(node) {
@@ -29,7 +37,7 @@ function moduleArgument(node) {
     return node.source;
   }
   if (node.type === 'TSImportType') {
-    return node.argument;
+    return node.argument ?? node.source;
   }
   if (node.type === 'TSExternalModuleReference') {
     return node.expression;
@@ -112,12 +120,13 @@ function setterAnnotations(ast) {
     if (!node || typeof node !== 'object') {
       return;
     }
+    const returnType = node.returnType ?? node.typeAnnotation;
     if (
       node.type === 'TSMethodSignature' &&
       node.kind === 'set' &&
-      node.typeAnnotation?.typeAnnotation?.type === 'TSAnyKeyword'
+      returnType?.typeAnnotation?.type === 'TSAnyKeyword'
     ) {
-      annotations.push(node.typeAnnotation);
+      annotations.push(returnType);
     }
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) {
@@ -135,7 +144,7 @@ function parseDeclaration(content, options, originalError) {
   const recovered = parse(content, { ...options, errorRecovery: true });
   const annotations = setterAnnotations(recovered);
   const matches = (error, annotation) =>
-    error.reasonCode === 'SetAccesorCannotHaveReturnType' &&
+    SET_ACCESSOR_RETURN_TYPE.has(error.reasonCode) &&
     error.pos === annotation.start;
   const errorsMatch = recovered.errors.every((error) =>
     annotations.some((annotation) => matches(error, annotation))
@@ -169,7 +178,7 @@ function parseModule(content, declaration) {
   try {
     return parse(content, options);
   } catch (error) {
-    if (!declaration || error.reasonCode !== 'SetAccesorCannotHaveReturnType') {
+    if (!declaration || !SET_ACCESSOR_RETURN_TYPE.has(error.reasonCode)) {
       throw error;
     }
     return parseDeclaration(content, options, error);

@@ -205,178 +205,113 @@ function stylesheetResourceSpecifiers(ts, source) {
   );
 }
 
-let libraryProgram;
+const libraryOptions = {
+  allowJs: true,
+  // Without this, a file with no import or export is a script whose top-level
+  // names resolve through global scope, hiding a local `const Error`.
+  moduleDetection: typescript.ModuleDetectionKind.Force,
+  noEmit: true,
+  noResolve: true,
+  target: typescript.ScriptTarget.ESNext,
+  types: [],
+};
+const libraryFiles = new Map();
+let compilerHost;
+let defaultLibrary;
 
-function libraryValue(name) {
-  libraryProgram ??= typescript.createProgram(
-    [
-      typescript.getDefaultLibFilePath({
-        target: typescript.ScriptTarget.ESNext,
-      }),
-    ],
-    { target: typescript.ScriptTarget.ESNext, types: [], noEmit: true }
-  );
-  const symbol = libraryProgram
-    .getTypeChecker()
-    .resolveName(name, undefined, typescript.SymbolFlags.Value, false);
+// Parses the default library once and shares it, so each source program only
+// parses and binds its own file.
+function libraryProgram(fileName, text) {
+  compilerHost ??= typescript.createCompilerHost(libraryOptions);
+  return typescript.createProgram([fileName], libraryOptions, {
+    ...compilerHost,
+    getSourceFile(name, languageVersion) {
+      if (name === fileName && text !== undefined) {
+        return typescript.createSourceFile(name, text, languageVersion, true);
+      }
+      if (!libraryFiles.has(name)) {
+        libraryFiles.set(
+          name,
+          compilerHost.getSourceFile(name, languageVersion)
+        );
+      }
+      return libraryFiles.get(name);
+    },
+  });
+}
+
+function declaredInLibrary(program, symbol) {
   return (
     Boolean(symbol?.declarations?.length) &&
     symbol.declarations.every((declaration) =>
-      libraryProgram.isSourceFileDefaultLibrary(declaration.getSourceFile())
+      program.isSourceFileDefaultLibrary(declaration.getSourceFile())
     )
   );
 }
 
-function bindsName(ts, declaration, name) {
-  if (!declaration) {
-    return false;
-  }
-  if (ts.isIdentifier(declaration)) {
-    return declaration.text === name;
-  }
-  if (
-    ts.isObjectBindingPattern(declaration) ||
-    ts.isArrayBindingPattern(declaration)
-  ) {
-    return declaration.elements.some((entry) =>
-      bindsName(ts, entry.name, name)
-    );
-  }
-  return false;
-}
-
-function statementBinds(ts, statement, name) {
-  if (ts.isVariableStatement(statement)) {
-    return statement.declarationList.declarations.some((entry) =>
-      bindsName(ts, entry.name, name)
-    );
-  }
-  if (ts.isImportDeclaration(statement)) {
-    const clause = statement.importClause;
-    const bindings = clause?.namedBindings;
-    return (
-      bindsName(ts, clause?.name, name) ||
-      Boolean(
-        bindings &&
-        (ts.isNamedImports(bindings)
-          ? bindings.elements.some((entry) => entry.name.text === name)
-          : bindings.name.text === name)
-      )
-    );
-  }
-  return (
-    (ts.isClassDeclaration(statement) ||
-      ts.isFunctionDeclaration(statement) ||
-      ts.isEnumDeclaration(statement) ||
-      ts.isModuleDeclaration(statement) ||
-      ts.isImportEqualsDeclaration(statement)) &&
-    bindsName(ts, statement.name, name)
+function libraryValue(name) {
+  defaultLibrary ??= libraryProgram(
+    typescript.getDefaultLibFilePath(libraryOptions)
+  );
+  return declaredInLibrary(
+    defaultLibrary,
+    defaultLibrary
+      .getTypeChecker()
+      .resolveName(name, undefined, typescript.SymbolFlags.Value, false)
   );
 }
 
-function hoistedBinding(ts, scope, name) {
-  let found = false;
+function forEachClassBase(source, callback) {
   const visit = (node) => {
-    if (node !== scope && (ts.isFunctionLike(node) || ts.isClassLike(node))) {
-      return;
-    }
-    if (
-      ts.isVariableDeclaration(node) &&
-      ts.isVariableDeclarationList(node.parent) &&
-      !(node.parent.flags & ts.NodeFlags.BlockScoped) &&
-      bindsName(ts, node.name, name)
-    ) {
-      found = true;
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(scope);
-  return found;
-}
-
-function scopeNameBinds(ts, scope, name) {
-  return (
-    (ts.isClassLike(scope) ||
-      ts.isFunctionDeclaration(scope) ||
-      ts.isFunctionExpression(scope)) &&
-    bindsName(ts, scope.name, name)
-  );
-}
-
-function scopeBinds(ts, scope, name) {
-  if (scopeNameBinds(ts, scope, name)) {
-    return true;
-  }
-  if (
-    scope.parameters?.some((parameter) => bindsName(ts, parameter.name, name))
-  ) {
-    return true;
-  }
-  if (
-    ts.isCatchClause(scope) &&
-    bindsName(ts, scope.variableDeclaration?.name, name)
-  ) {
-    return true;
-  }
-  const statements = ts.isCaseBlock(scope)
-    ? scope.clauses.flatMap((clause) => [...clause.statements])
-    : (scope.statements ?? []);
-  if (statements.some((statement) => statementBinds(ts, statement, name))) {
-    return true;
-  }
-  if (
-    scope.initializer &&
-    ts.isVariableDeclarationList(scope.initializer) &&
-    scope.initializer.declarations.some((entry) =>
-      bindsName(ts, entry.name, name)
-    )
-  ) {
-    return true;
-  }
-  return (
-    (ts.isSourceFile(scope) || ts.isFunctionLike(scope)) &&
-    hoistedBinding(ts, scope, name)
-  );
-}
-
-function lexicalBinding(ts, expression, name) {
-  for (let scope = expression.parent; scope; scope = scope.parent) {
-    if (scopeBinds(ts, scope, name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export function globalSuperclassReferences(ts, source) {
-  const references = new Map();
-  const seen = new Set();
-  const ambiguous = new Set();
-  const visit = (node) => {
-    if (ts.isClassDeclaration(node) && node.name) {
-      const name = node.name.text;
-      if (seen.has(name)) {
-        ambiguous.add(name);
-      }
-      seen.add(name);
+    if (typescript.isClassDeclaration(node) && node.name) {
       const base = node.heritageClauses?.find(
-        (clause) => clause.token === ts.SyntaxKind.ExtendsKeyword
+        (clause) => clause.token === typescript.SyntaxKind.ExtendsKeyword
       )?.types[0]?.expression;
-      if (
-        base &&
-        ts.isIdentifier(base) &&
-        !lexicalBinding(ts, base, base.text) &&
-        libraryValue(base.text)
-      ) {
-        references.set(name, base.text);
-      }
+      callback(
+        node.name.text,
+        base && typescript.isIdentifier(base) ? base : undefined
+      );
     }
-    ts.forEachChild(node, visit);
+    typescript.forEachChild(node, visit);
   };
   visit(source);
-  for (const name of ambiguous) {
-    references.delete(name);
+}
+
+/**
+ * Maps each uniquely named class to its superclass when the TypeScript
+ * checker resolves that name to the default library, such as `Error`.
+ */
+export function globalSuperclassReferences(source) {
+  const counts = new Map();
+  let candidate = false;
+  forEachClassBase(source, (name, base) => {
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+    candidate ||= Boolean(base) && libraryValue(base.text);
+  });
+  const references = new Map();
+  if (!candidate) {
+    return references;
   }
+  const fileName = `/__superclass__/${path.basename(source.fileName)}`;
+  const program = libraryProgram(fileName, source.text);
+  const checker = program.getTypeChecker();
+  forEachClassBase(program.getSourceFile(fileName), (name, base) => {
+    if (
+      base &&
+      counts.get(name) === 1 &&
+      declaredInLibrary(
+        program,
+        checker.resolveName(
+          base.text,
+          base,
+          typescript.SymbolFlags.Value,
+          false
+        )
+      )
+    ) {
+      references.set(name, base.text);
+    }
+  });
   return references;
 }
 
@@ -419,7 +354,7 @@ function sourceInfo(ts, source) {
     exports,
     decorators,
     resources,
-    globalBases: globalSuperclassReferences(ts, source),
+    globalBases: globalSuperclassReferences(source),
     defaultName,
     types: { names, exported: typeOnlyExportNames(ts, source, names) },
     dynamicRegistrations: dynamicRegistrationNames(ts, source),

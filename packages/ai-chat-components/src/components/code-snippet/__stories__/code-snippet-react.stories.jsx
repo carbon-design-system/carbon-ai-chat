@@ -38,6 +38,8 @@ const renderSnippet = (args, code) => {
     showMoreText,
     showLessText,
     copyButtonTooltipContent,
+    feedback,
+    feedbackTimeout,
     language,
     defaultLanguage,
     onChange,
@@ -73,6 +75,12 @@ const renderSnippet = (args, code) => {
   }
   if (typeof copyButtonTooltipContent !== 'undefined') {
     commonProps.copyButtonTooltipContent = copyButtonTooltipContent;
+  }
+  if (typeof feedback !== 'undefined') {
+    commonProps.feedback = feedback;
+  }
+  if (typeof feedbackTimeout !== 'undefined') {
+    commonProps.feedbackTimeout = feedbackTimeout;
   }
   if (typeof language !== 'undefined') {
     commonProps.language = language;
@@ -115,6 +123,8 @@ const StreamingDemo = (args) => {
     showMoreText,
     showLessText,
     copyButtonTooltipContent,
+    feedback,
+    feedbackTimeout,
   } = args;
 
   const [streamedContent, setStreamedContent] = useState('');
@@ -185,6 +195,12 @@ const StreamingDemo = (args) => {
   if (typeof copyButtonTooltipContent !== 'undefined') {
     commonProps.copyButtonTooltipContent = copyButtonTooltipContent;
   }
+  if (typeof feedback !== 'undefined') {
+    commonProps.feedback = feedback;
+  }
+  if (typeof feedbackTimeout !== 'undefined') {
+    commonProps.feedbackTimeout = feedbackTimeout;
+  }
 
   const snippet = <CodeSnippet {...commonProps} />;
 
@@ -229,6 +245,15 @@ export default {
       description:
         'Array of actions that can overflow into a menu when space is limited.',
     },
+    feedback: {
+      control: 'text',
+      description: 'Feedback text shown after copying.',
+    },
+    feedbackTimeout: {
+      control: 'number',
+      description:
+        'The number in milliseconds to determine how long the feedback tooltip should remain.',
+    },
     // Event handler
     onChange: {
       action: 'onChange',
@@ -252,6 +277,8 @@ export const Default = {
     maxCollapsedNumberOfRows: 15,
     showMoreText: 'Show more',
     showLessText: 'Show less',
+    feedback: 'Copied!',
+    feedbackTimeout: 2000,
   },
   render: (args) => renderSnippet(args, multilineCode),
 };

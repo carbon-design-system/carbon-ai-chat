@@ -1,16 +1,17 @@
-# public-jsdoc.md — JSDoc on the public types (type 1)
+# public-jsdoc.md: JSDoc on the public types (type 1)
 
-Load this before writing or editing a JSDoc block under `packages/ai-chat/src/types/`. **[internal-comments.md](internal-comments.md) is the opposite instruction in the same source tree** — check which side of the types directory you are on before writing a word.
+Load this before writing or editing a JSDoc block under `packages/ai-chat/src/types/`. **[internal-comments.md](internal-comments.md) is the opposite instruction in the same source tree.** Check which side of the types directory you are on before writing a word.
 
 Structural owner: [types/AGENTS.md](../../../../packages/ai-chat/src/types/AGENTS.md).
 
 **Product copy for a reader who never opens the source.** See [types/AGENTS.md](../../../../packages/ai-chat/src/types/AGENTS.md#why-this-matters) for its consumers; write for someone reading cold, out of order, with none of the file around it.
 
 - **Complete sentences that end in periods.** No note form, no internal jargon, no ticket refs, no TODOs.
-- **State purpose, not shape.** The signature already shows the shape. Explain what it means and when to use it. Give a primitive its units and its constraint — `timeout: number` needs "milliseconds"; `id: string` needs "must be unique across X".
+- **State purpose, not shape.** The signature already shows the shape. Explain what it means and when to use it. Give a primitive its units and its constraint: `timeout: number` needs "milliseconds"; `id: string` needs "must be unique across X".
 - **Every public property and enum member gets its own JSDoc.** A `?` is not an explanation.
-- **`{@link Target}` over backticks** whenever the target is public — the reader gets a clickable jump and the MCP index gets a resolvable symbol. Third-party symbols stay in backticks; `{@link}` cannot resolve them and the build fails ([Cross-linking](../../../../packages/ai-chat/src/types/references/cross-linking.md#external-third-party-types)).
-- **Keep the qualifiers.** "May return null", "only after the chat mounts" — here the hedge *is* the contract, so nothing in this skill licenses cutting it.
+- **`{@link Target}` over backticks** whenever the target is public. The reader gets a clickable jump and the MCP index gets a resolvable symbol. Third-party symbols stay in backticks; `{@link}` cannot resolve them and the build fails ([Cross-linking](../../../../packages/ai-chat/src/types/references/cross-linking.md#external-third-party-types)).
+- **Keep the qualifiers.** "May return null", "only after the chat mounts": here the hedge *is* the contract, so nothing in this skill licenses cutting it.
+- **Describe the current contract, not its history.** "Now accepts a function" or "previously required" reads as a changelog. History belongs in release notes or a migration guide.
 
 **Match the tone of existing types**, such as [Messages.ts](../../../../packages/ai-chat/src/types/messaging/Messages.ts) and [ChatInstance.ts](../../../../packages/ai-chat/src/types/instance/ChatInstance.ts). Follow [tone.md](../../../../references/tone.md) for voice and word economy.
 
@@ -29,7 +30,7 @@ The TypeDoc build, which fails on a broken `{@link}`. Review adds `@category` on
 
 ## Related guidance
 
-- [caic-copy-writer](../SKILL.md) — the routing table and the draft-measure-revise loop
-- [types/AGENTS.md](../../../../packages/ai-chat/src/types/AGENTS.md) — the JSDoc mechanics this type is held to
-- [internal-comments.md](internal-comments.md) — the inverse rules, for everything outside the types tree
-- [tone.md](../../../../references/tone.md) — the voice that does not vary by type
+- [caic-copy-writer](../SKILL.md): the routing table and the draft-measure-revise loop
+- [types/AGENTS.md](../../../../packages/ai-chat/src/types/AGENTS.md): the JSDoc mechanics this type is held to
+- [internal-comments.md](internal-comments.md): the inverse rules, for everything outside the types tree
+- [tone.md](../../../../references/tone.md): the voice that does not vary by type
