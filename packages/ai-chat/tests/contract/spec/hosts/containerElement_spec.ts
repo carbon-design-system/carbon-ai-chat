@@ -54,6 +54,21 @@ function codeAsLink(md: {
   };
 }
 
+/** A plugin that renders a fenced code block as a link to its code. */
+function fenceAsLink(md: {
+  renderer: {
+    rules: Record<
+      string,
+      (tokens: { content: string }[], index: number) => string
+    >;
+  };
+}): void {
+  md.renderer.rules.fence = (tokens, index) => {
+    const content = tokens[index].content.trim();
+    return `<p><a href="https://example.com/${content}">${content}</a></p>`;
+  };
+}
+
 /** Connects a container with these properties and no welcome request. */
 function mount(properties: Record<string, unknown> = {}) {
   return contractElement('cds-aichat-container', {
@@ -114,8 +129,8 @@ describe('cds-aichat-container element', () => {
     const renderUserDefinedInputNode = () => chip;
     const code = document.createElement('pre');
     code.textContent = 'Custom code';
-    // A plugin's renderer rule output reaches the page through a host the
-    // element creates, separate from the custom renderer's relocated element.
+    // Inline plugin output reaches the page as a projected inline run, which
+    // the element relocates like a custom renderer's element.
     const markdown = {
       customRenderers: { codeBlock: () => code },
       markdownItPlugins: [codeAsLink] as unknown as MarkdownItPlugin[],
@@ -184,6 +199,56 @@ describe('cds-aichat-container element', () => {
     expect(root.textContent).not.toContain('Banner');
     expect(isShownWithin(chip, panel())).toBe(true);
     expect(isShownWithin(code, panel())).toBe(true);
+    expect(link.isConnected).toBe(true);
+    expect(isShownWithin(link, panel())).toBe(true);
+  });
+
+  // @covers element.cds-aichat-container.markdown
+  it('keeps a markdown plugin’s block output when a Lit host clears its last child part', async () => {
+    // Block plugin output reaches the page through a host the element
+    // creates and fills with the rule's HTML.
+    const markdown = {
+      markdownItPlugins: [fenceAsLink] as unknown as MarkdownItPlugin[],
+    };
+    const messaging = { skipWelcome: true };
+    let instance: ChatInstance | null = null;
+    const onAfterRender = (handed: ChatInstance) => {
+      instance = handed;
+    };
+    const root = document.body.appendChild(document.createElement('div'));
+    // No whitespace before the closing tag, so the banner's part runs to the
+    // end of the element's children, and clearing it clears everything after.
+    const view = (banner: boolean) =>
+      html`<cds-aichat-container
+        .openChatByDefault=${true}
+        .messaging=${messaging}
+        .markdown=${markdown}
+        .onAfterRender=${onAfterRender}
+        >${banner ? html`<p>Banner</p>` : nothing}</cds-aichat-container
+      >`;
+    await act(async () => {
+      render(view(true), root);
+    });
+    await waitFor(() => expect(instance).not.toBeNull(), { timeout: 10000 });
+    await act(() =>
+      instance.messaging.addMessage(
+        responseOf('r1', [textItem('```\nblock-link\n```')])
+      )
+    );
+    const panel = () => getByTestId(PageObjectId.MAIN_PANEL);
+    const blockLink = () =>
+      allByRole('link', 'block-link').find((link) =>
+        isShownWithin(link, panel())
+      );
+    await waitFor(() => expect(blockLink()).toBeDefined());
+    const link = blockLink();
+
+    await act(async () => {
+      render(view(false), root);
+    });
+    await pause();
+
+    expect(root.textContent).not.toContain('Banner');
     expect(link.isConnected).toBe(true);
     expect(isShownWithin(link, panel())).toBe(true);
   });
