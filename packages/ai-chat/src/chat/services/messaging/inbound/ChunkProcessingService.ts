@@ -172,10 +172,15 @@ class ChunkProcessingService {
       messageID
     );
     const lifecycle = this.serviceManager.messageCoordinator;
+    // After the user stops a request, its own response still takes its closing complete_item and
+    // final_response, but no more partial content. After a failed send, its own response still
+    // takes every chunk.
     if (
       requestID &&
       lifecycle.isRequestStopped(requestID) &&
-      !lifecycle.isResponseOwnedByRequest(extractedMessageID, requestID)
+      ((isStreamPartialItem(chunk) &&
+        lifecycle.isRequestStoppedByUser(requestID)) ||
+        !lifecycle.isResponseOwnedByRequest(extractedMessageID, requestID))
     ) {
       return;
     }
@@ -307,16 +312,21 @@ class ChunkProcessingService {
         this.advanceChunkQueue(chunkPromise);
         return;
       }
+      const cancellationID =
+        messageID ??
+        this.serviceManager.messageCoordinator.inboundStreaming
+          .streamingMessageID ??
+        '';
       if (
         isPartialItem &&
-        !this.serviceManager.messageCoordinator.isRequestStopped(requestID)
+        !this.serviceManager.messageCoordinator.isRequestStopped(requestID) &&
+        !this.serviceManager.messageCoordinator.isResponseStopped(
+          cancellationID
+        )
       ) {
         runCoreOperation(() =>
           this.serviceManager.messageCoordinator.updateStreamingCancellation(
-            messageID ??
-              this.serviceManager.messageCoordinator.inboundStreaming
-                .streamingMessageID ??
-              '',
+            cancellationID,
             (chunk as PartialItemChunk).partial_item?.streaming_metadata
               ?.cancellable
           )

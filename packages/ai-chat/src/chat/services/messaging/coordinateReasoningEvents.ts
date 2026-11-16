@@ -12,7 +12,6 @@ import { MessageResponseTypes } from '../../../types/messaging/Messages';
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 import { isResponse } from '../../utils/messageUtils';
 import { synthesizeReasoningLocalMessageItem } from '../../utils/reasoningContent';
-import { prepareReasoningMessageEvent } from './nativeMessageEvents';
 
 export function coordinateReasoningEvents(
   session: Set<string>,
@@ -52,8 +51,7 @@ export function coordinateReasoningEvents(
         message.id,
         stableId
       );
-      const event = prepareReasoningMessageEvent(message, localItem);
-      void deliver(event.localItem, event.message);
+      void deliver(localItem, message);
     });
   };
 

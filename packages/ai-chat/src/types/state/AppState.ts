@@ -223,6 +223,12 @@ interface AppState
   languagePack: LanguagePack;
 
   /**
+   * The locale the date library formats times with. It changes only once a new locale's data has loaded, so
+   * components that show times re-render with the new format instead of the old one.
+   */
+  loadedLocale: string;
+
+  /**
    * Host-provided markdown config (custom renderers + markdown-it plugins). Kept in its own top-level slice and read
    * with `useSelector` by the deep `MarkdownWithDefaults` consumer, instead of a global context provider. Set from the
    * `markdown` prop in `ChatAppEntry` via `setAppStateValue("markdownConfig", ...)`; `undefined` when the host omits it.
