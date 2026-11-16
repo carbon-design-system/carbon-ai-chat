@@ -9,6 +9,7 @@
 
 import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { type CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
@@ -75,7 +76,13 @@ class CDSAIChatSystemMessage extends LitElement {
             >`
           : nothing
       }
-      <span class="${blockClass}__text"><slot></slot></span>
+      <span
+        class=${classMap({
+          [`${blockClass}__text`]: true,
+          [`${blockClass}__text--response-stopped`]: this.responseStopped,
+        })}
+        ><slot></slot
+      ></span>
     `;
   }
 }

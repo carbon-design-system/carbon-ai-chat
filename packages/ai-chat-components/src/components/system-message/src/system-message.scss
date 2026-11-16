@@ -35,12 +35,6 @@ $block-class: #{$prefix}-system-message;
 
 :host(#{$block-class}[response-stopped]) {
   margin-block-start: layout.$spacing-05;
-
-  .#{$block-class}__text {
-    @include type.type-style('body-01');
-
-    font-style: italic;
-  }
 }
 
 .#{$block-class}__icon {
@@ -59,4 +53,10 @@ $block-class: #{$prefix}-system-message;
   color: theme.$text-secondary;
   line-height: layout.$spacing-05;
   text-align: center;
+}
+
+.#{$block-class}__text--response-stopped {
+  @include type.type-style('body-01');
+
+  font-style: italic;
 }
