@@ -431,6 +431,29 @@ describe('AutocompleteController', () => {
     expect(starterFired).to.equal(false);
   });
 
+  it('disableDirectSend on starters inserts the starter without firing onStarterSelected', async () => {
+    const { editor, promptLine } = makeEditorStub();
+    let starterFired = false;
+    const controller = new AutocompleteController({
+      starters: { ...STARTERS, disableDirectSend: true },
+      isSendDisabled: false,
+      onStarterSelected: () => {
+        starterFired = true;
+      },
+      onChange: () => {},
+    });
+    controller.setPromptLine(promptLine);
+    controller.handleTriggerChange({
+      type: 'starter',
+      query: '',
+      triggerOffset: 0,
+    });
+    await flush();
+    controller.select(STARTERS.items[0]);
+    expect(editor.rawValue).to.equal('Say hello');
+    expect(starterFired).to.equal(false);
+  });
+
   it('setConfigs() updates configs and re-resolves the active trigger', async () => {
     let last: SuggestionItem[] = [];
     const controller = new AutocompleteController({
@@ -1380,6 +1403,74 @@ describe('AutocompleteController', () => {
       // chip node — the range arithmetic @tiptap/suggestion used to supply.
       expect(selected).to.equal(USERS[0]);
       expect(editor.rawValue).to.equal('@alice');
+    });
+
+    it('fires the autocomplete config onSelect for an item reported as sent', async () => {
+      const { promptLine } = makeEditorStub();
+      const selected: SuggestionItem[] = [];
+      const controller = new AutocompleteController({
+        autocomplete: { items: USERS, onSelect: (item) => selected.push(item) },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'autocomplete',
+        query: 'al',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.reportSent(USERS[0]);
+      expect(selected).to.deep.equal([USERS[0]]);
+    });
+
+    it('logs a throw from onSelect for an item reported as sent, and returns', async () => {
+      const { promptLine } = makeEditorStub();
+      const failure = new Error('host onSelect failed');
+      const controller = new AutocompleteController({
+        autocomplete: {
+          items: USERS,
+          onSelect: () => {
+            throw failure;
+          },
+        },
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'autocomplete',
+        query: 'al',
+        triggerOffset: 0,
+      });
+      await flush();
+      const logged: unknown[][] = [];
+      const originalError = console.error;
+      console.error = (...args: unknown[]) => logged.push(args);
+      try {
+        expect(() => controller.reportSent(USERS[0])).not.to.throw();
+      } finally {
+        console.error = originalError;
+      }
+      expect(logged).to.have.length(1);
+      expect(logged[0][1]).to.equal(failure);
+    });
+
+    it('does not fire onSelect for a starter reported as sent', async () => {
+      const { promptLine } = makeEditorStub();
+      const selected: SuggestionItem[] = [];
+      const controller = new AutocompleteController({
+        autocomplete: { items: USERS, onSelect: (item) => selected.push(item) },
+        starters: STARTERS,
+        onChange: () => {},
+      });
+      controller.setPromptLine(promptLine);
+      controller.handleTriggerChange({
+        type: 'starter',
+        query: '',
+        triggerOffset: 0,
+      });
+      await flush();
+      controller.reportSent(STARTERS.items[0]);
+      expect(selected).to.deep.equal([]);
     });
   });
 });
