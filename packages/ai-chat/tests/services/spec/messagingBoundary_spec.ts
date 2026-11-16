@@ -573,6 +573,7 @@ function isAllowedStateField(
     'src/chat/services/ChatInstanceService.ts': ['catastrophicErrorType'],
     'src/chat/services/HydrationService.ts': ['persistedToBrowserStorage'],
     'src/chat/utils/dynamicConfigUpdates.ts': ['languagePack'],
+    'src/chat/utils/intlUtils.ts': ['loadedLocale'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
     'src/web-components/cds-aichat-container/cds-aichat-container.ts': [
       'markdownConfig',
