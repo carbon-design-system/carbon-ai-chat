@@ -893,6 +893,7 @@ export {
   isConnectToHumanAgent,
   renderAsUserDefinedMessage,
   hasServiceDesk,
+  hasLiveHumanAgentMessage,
   isLiveHumanAgentMessage,
   isItemSupportedInResponseBody,
   isCarouselResponseType,
