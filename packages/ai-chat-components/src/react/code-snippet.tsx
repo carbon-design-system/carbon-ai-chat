@@ -40,6 +40,13 @@ const BaseCodeSnippet = createComponent({
   },
 });
 
+export interface CodeSnippetProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof BaseCodeSnippet>,
+  'actions'
+> {
+  actions?: ReactAction[];
+}
+
 /**
  * CodeSnippet component with automatic icon transformation support.
  *
@@ -60,13 +67,6 @@ const BaseCodeSnippet = createComponent({
  * </CodeSnippet>
  * ```
  */
-export interface CodeSnippetProps extends Omit<
-  React.ComponentPropsWithoutRef<typeof BaseCodeSnippet>,
-  'actions'
-> {
-  actions?: ReactAction[];
-}
-
 const CodeSnippet = React.forwardRef<CDSAIChatCodeSnippet, CodeSnippetProps>(
   (props, ref) => {
     const { actions, children, ...restProps } = props;
