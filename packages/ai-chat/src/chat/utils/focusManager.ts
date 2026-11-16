@@ -27,25 +27,30 @@ export interface FocusManagerOptions {
   input: HasRequestFocus | null;
 }
 
-export function requestFocus(options: FocusManagerOptions): void {
+/** Moves focus to the window's current target, and returns whether it found one to focus. */
+export function requestFocus(options: FocusManagerOptions): boolean {
   try {
     if (!options.shouldAutoFocus || IS_MOBILE) {
-      return;
+      return false;
     }
     if (options.showDisclaimer) {
-      doFocus(options.disclaimer);
-    } else if (options.iFramePanelIsOpen) {
-      options.iframePanel?.requestFocus();
-    } else if (options.viewSourcePanelIsOpen) {
-      options.viewSourcePanel?.requestFocus();
-    } else if (options.customPanelIsOpen) {
-      options.customPanel?.requestFocus();
-    } else if (options.responsePanelIsOpen) {
-      options.responsePanel?.requestFocus();
-    } else {
-      options.input?.requestFocus();
+      return doFocus(options.disclaimer);
     }
+    if (options.iFramePanelIsOpen) {
+      return Boolean(options.iframePanel?.requestFocus());
+    }
+    if (options.viewSourcePanelIsOpen) {
+      return Boolean(options.viewSourcePanel?.requestFocus());
+    }
+    if (options.customPanelIsOpen) {
+      return Boolean(options.customPanel?.requestFocus());
+    }
+    if (options.responsePanelIsOpen) {
+      return Boolean(options.responsePanel?.requestFocus());
+    }
+    return Boolean(options.input?.requestFocus());
   } catch (error) {
     consoleError('An error occurred in MainWindow.requestFocus', error);
+    return false;
   }
 }
