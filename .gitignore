@@ -120,3 +120,7 @@ packages/ai-chat-components/scss
 /.mcp.json
 /specs/
 /examples/shared/playwright/tests/seed.spec.ts
+/.opencode/
+/opencode.json
+/.github/agents/
+/.github/workflows/copilot-setup-steps.yml

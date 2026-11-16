@@ -16,6 +16,7 @@ import {
 } from '@carbon/ai-chat';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
+import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
 
 import { sendResponse } from './sendResponse';
 
@@ -149,6 +150,7 @@ function doCard(instance: ChatInstance, requestID?: MessageRequest['id']) {
               label: 'View Carbon Docs',
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
+              icon: ArrowRight16,
             },
           ],
           response_type: MessageResponseTypes.CARD,

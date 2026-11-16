@@ -356,6 +356,22 @@ export const wrapperEntries = [
     {},
   ],
   [
+    '@carbon/ai-chat-components/es/react/message-byline.js',
+    ['default'],
+    'cds-aichat-message-byline',
+    'CDSAIChatMessageByline',
+    'aichat-message-byline/aichat-message-byline.ts',
+    {},
+  ],
+  [
+    '@carbon/ai-chat-components/es/react/message-item-shell.js',
+    ['default'],
+    'cds-aichat-message-item-shell',
+    'CDSAIChatMessageItemShell',
+    'aichat-message-item-shell/aichat-message-item-shell.ts',
+    {},
+  ],
+  [
     '@carbon/ai-chat-components/es/react/messages-shell.js',
     ['default'],
     'cds-aichat-messages-shell',
@@ -489,6 +505,14 @@ export const wrapperEntries = [
     'cds-aichat-truncated-text',
     'CDSAIChatTruncatedText',
     'aichat-truncated-text/aichat-truncated-text.ts',
+    {},
+  ],
+  [
+    '@carbon/ai-chat-components/es/react/user-avatar.js',
+    ['default'],
+    'cds-aichat-user-avatar',
+    'CDSAIChatUserAvatar',
+    'aichat-user-avatar/aichat-user-avatar.ts',
     {},
   ],
   [

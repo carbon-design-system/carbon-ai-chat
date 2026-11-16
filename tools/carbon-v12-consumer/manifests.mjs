@@ -10,7 +10,6 @@ import { access, readFile, realpath } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
-import { globalSuperclassReferences } from '../../packages/ai-chat-components/tasks/cem-plugins.js';
 
 function declarations(manifest) {
   return manifest.modules.flatMap((module) =>
@@ -31,25 +30,63 @@ function bareSuperclass(reference) {
   return Boolean(reference?.name) && !reference.module && !reference.package;
 }
 
-async function publishedGlobalSuperclasses(manifest, root) {
+function classBase(source, name) {
+  const matches = [];
+  const visit = (node) => {
+    if (ts.isClassDeclaration(node) && node.name?.text === name) {
+      matches.push(node);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return matches.length === 1
+    ? matches[0].heritageClauses?.find(
+        (clause) => clause.token === ts.SyntaxKind.ExtendsKeyword
+      )?.types[0]?.expression
+    : undefined;
+}
+
+// Asks the TypeScript checker, not the manifest generator, whether each bare
+// superclass in the published JavaScript resolves to the default library.
+function publishedGlobalSuperclasses(manifest, root) {
+  const owners = manifest.modules.flatMap((module) =>
+    (module.declarations ?? [])
+      .filter((entry) => bareSuperclass(entry.superclass))
+      .map((entry) => ({ module, entry, path: localPath(root, module.path) }))
+  );
   const globals = new Set();
-  for (const module of manifest.modules) {
+  if (owners.length === 0) {
+    return globals;
+  }
+  const program = ts.createProgram(
+    [...new Set(owners.map((owner) => owner.path))],
+    {
+      allowJs: true,
+      // Keeps a top-level `const Error` local in files with no import or export.
+      moduleDetection: ts.ModuleDetectionKind.Force,
+      noEmit: true,
+      noResolve: true,
+      types: [],
+      target: ts.ScriptTarget.ESNext,
+    }
+  );
+  const checker = program.getTypeChecker();
+  for (const { module, entry, path } of owners) {
+    const source = program.getSourceFile(path);
+    assert.ok(source, `Not a published module: ${module.path}`);
+    const base = classBase(source, entry.name);
+    const symbol =
+      base &&
+      ts.isIdentifier(base) &&
+      base.text === entry.superclass.name &&
+      checker.getSymbolAtLocation(base);
     if (
-      !(module.declarations ?? []).some((entry) =>
-        bareSuperclass(entry.superclass)
+      symbol?.declarations?.length &&
+      symbol.declarations.every((declaration) =>
+        program.isSourceFileDefaultLibrary(declaration.getSourceFile())
       )
     ) {
-      continue;
-    }
-    const filename = localPath(root, module.path);
-    const source = ts.createSourceFile(
-      filename,
-      await readFile(filename, 'utf8'),
-      ts.ScriptTarget.Latest,
-      true
-    );
-    for (const [name, base] of globalSuperclassReferences(ts, source)) {
-      globals.add(`${module.path}#${name}#${base}`);
+      globals.add(`${module.path}#${entry.name}#${base.text}`);
     }
   }
   return globals;
@@ -64,7 +101,7 @@ function globalSuperclass(reference, key, owner, globals) {
 }
 
 async function checkReferences(manifest, root, packageName) {
-  const globals = await publishedGlobalSuperclasses(manifest, root);
+  const globals = publishedGlobalSuperclasses(manifest, root);
   const defined = new Set(
     manifest.modules.flatMap((module) => [
       ...(module.declarations ?? []).map(

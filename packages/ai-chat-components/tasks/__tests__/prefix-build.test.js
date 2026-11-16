@@ -494,7 +494,11 @@ test('rejects unrelated declaration errors and other setter return types', async
       'acme',
       resolve
     ),
-    { reasonCode: 'SetAccesorCannotHaveReturnType' }
+    (error) =>
+      [
+        'SetAccesorCannotHaveReturnType',
+        'SetAccessorCannotHaveReturnType',
+      ].includes(error.reasonCode)
   );
   await assert.rejects(
     transformModule(
@@ -673,6 +677,25 @@ test('rejects different app and components Carbon roots before replacing output'
     await fs.readFile(path.join(setup.output, 'keep.txt'), 'utf8'),
     'existing output'
   );
+});
+
+test('refuses an output that holds the working directory or a source tree', async () => {
+  const setup = await fixture({ app: true });
+  const marker = path.join(setup.components, 'es/index.js');
+  const before = await fs.readFile(marker, 'utf8');
+  for (const out of [
+    '.',
+    '..',
+    'node_modules',
+    setup.carbon,
+    path.join(setup.components, 'es/nested'),
+  ]) {
+    const result = invoke(setup, ['--prefix', 'acme', '--out', out]);
+    assert.equal(result.status, 1, out);
+    assert.match(result.stderr, /Cannot use --out/, out);
+    assert.equal(await fs.readFile(marker, 'utf8'), before, out);
+  }
+  await fs.access(setup.runner);
 });
 
 test('preserves opaque maps and their filenames byte for byte', async () => {

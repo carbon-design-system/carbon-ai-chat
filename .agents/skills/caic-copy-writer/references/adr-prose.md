@@ -1,4 +1,4 @@
-# adr-prose.md — ADR prose (type 11)
+# adr-prose.md: ADR prose (type 11)
 
 Load this before writing the body of a numbered ADR under `docs/adr/`. Structural owner: [caic-adr](../../caic-adr/SKILL.md) and [docs/adr/template.md](../../../../docs/adr/template.md), which own the sections and what each settles.
 
@@ -10,7 +10,7 @@ Load this before writing the body of a numbered ADR under `docs/adr/`. Structura
 - **Show code before prose in Proposal, and in Consumer impact when a record has one.** A sample of what a host writes carries a surface faster than a paragraph about it. Words carry only what the code can't show.
 - **Make Reference precise enough to review a diff against.** State defaults, failure paths, and timing as facts. A hedge here reads as two allowed behaviors.
 - **Use the contract's native form in Reference**, per [caic-adr](../../caic-adr/SKILL.md): commented types for APIs, CSS and markup for styling, tables for policy. Read code comments for plainness; `reading-level` cannot score them.
-- **Describe costs as what a host experiences.** "Your build fails with a missing-module error," not "the peer dependency is no longer auto-installed." Evidence from the source goes in the PR description, never as file:line citations in the ADR.
+- **Describe costs as what a host experiences.** "Your build fails with a missing-module error," not "the peer dependency is no longer auto-installed." Evidence from the source goes in your hand-back to the developer, never as file:line citations in the ADR or the PR description.
 - **Gloss an internal name on first use**, and in the clause that links another ADR, epic, or issue, say what it decided. Years later, half of those links are closed.
 - **Address the reader as "you."** Per [tone.md](../../../../references/tone.md), write "this proposal", not "we propose".
 
@@ -24,7 +24,7 @@ Apply [the shared skim-reading rule](../SKILL.md#write-for-readers-who-skip-to-c
 
 ## Related guidance
 
-- [caic-copy-writer](../SKILL.md) — the routing table and the draft-measure-revise loop
-- [caic-adr](../../caic-adr/SKILL.md) — the sections, the review, and opening the discussion
-- [revision-pass.md](revision-pass.md) — the tightening pass, and the claim-before-scaffolding rule
-- [issue-bodies.md](issue-bodies.md) — the same plain-language opening, for issues
+- [caic-copy-writer](../SKILL.md): the routing table and the draft-measure-revise loop
+- [caic-adr](../../caic-adr/SKILL.md): the sections, the review, and opening the discussion
+- [revision-pass.md](revision-pass.md): the tightening pass, and the claim-before-scaffolding rule
+- [issue-bodies.md](issue-bodies.md): the same plain-language opening, for issues

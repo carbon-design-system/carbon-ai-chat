@@ -24,7 +24,7 @@ export type { Action } from '../components/aichat-code-snippet/aichat-code-snipp
  * This allows React developers to use @carbon/icons-react directly.
  */
 export interface ReactAction extends Omit<Action, 'icon'> {
-  icon: CarbonIcon | React.ComponentType<any>;
+  icon?: CarbonIcon | React.ComponentType<any>;
 }
 
 // Base code snippet component from @lit/react
@@ -79,7 +79,9 @@ const CodeSnippet = React.forwardRef<CDSAIChatCodeSnippet, CodeSnippetProps>(
 
       return actions.map((action: ReactAction) => ({
         ...action,
-        icon: transformReactIconToCarbonIcon(action.icon, 16),
+        icon: action.icon
+          ? transformReactIconToCarbonIcon(action.icon, 16)
+          : undefined,
       }));
     }, [actions]);
 
