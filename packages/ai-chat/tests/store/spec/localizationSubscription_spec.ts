@@ -70,4 +70,18 @@ describe('refreshLocalizationOnChange', () => {
       expect(serviceManager.intl?.locale).toBe('de');
     });
   });
+
+  it('sets loadedLocale only after the new locale data loads', async () => {
+    const store = makeConfigStore(BASE_CONFIG);
+    const serviceManager = { store } as unknown as ServiceManager;
+    store.subscribe(refreshLocalizationOnChange(serviceManager));
+
+    applyConfigChange(store, { ...BASE_CONFIG, locale: 'de' });
+
+    expect(store.getState().loadedLocale).toBe('en');
+    await waitFor(() => {
+      expect(store.getState().loadedLocale).toBe('de');
+    });
+    expect(serviceManager.intl.locale).toBe('de');
+  });
 });
