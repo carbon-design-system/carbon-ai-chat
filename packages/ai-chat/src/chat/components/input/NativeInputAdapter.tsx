@@ -77,7 +77,10 @@ function NativeInputAdapterComponent(
     () =>
       actions?.map((action) => ({
         ...action,
-        icon: transformReactIconToCarbonIcon(action.icon, 16),
+        // An action without an icon renders as a text button or menu item.
+        icon: action.icon
+          ? transformReactIconToCarbonIcon(action.icon, 16)
+          : undefined,
       })),
     [actions]
   );
