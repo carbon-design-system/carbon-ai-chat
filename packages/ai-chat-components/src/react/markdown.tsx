@@ -33,7 +33,12 @@ const LitMarkdown = createComponent({
   react: React,
 });
 
-const ForwardedBaseMarkdown = React.forwardRef<
+/**
+ * Thin `@lit/react` wrapper around `<cds-aichat-markdown>`. Handles text vs.
+ * element children, but performs no React-specific `customRenderers`
+ * portaling — that is layered on by the `Markdown` wrapper below.
+ */
+const BaseMarkdown = React.forwardRef<
   CDSAIChatMarkdown,
   React.ComponentProps<typeof LitMarkdown> & { markdown?: string }
 >(({ children, markdown, ...rest }, forwardedRef) => {
@@ -53,15 +58,7 @@ const ForwardedBaseMarkdown = React.forwardRef<
   );
 });
 
-ForwardedBaseMarkdown.displayName = 'BaseMarkdown';
-
-/**
- * Thin `@lit/react` wrapper around `<cds-aichat-markdown>`. Handles text vs.
- * element children, but performs no
- * React-specific `customRenderers` portaling — that is layered on by the
- * `Markdown` wrapper below.
- */
-const BaseMarkdown = ForwardedBaseMarkdown;
+BaseMarkdown.displayName = 'BaseMarkdown';
 
 /**
  * React-flavored variant of {@link MarkdownCustomRenderers}. The element
