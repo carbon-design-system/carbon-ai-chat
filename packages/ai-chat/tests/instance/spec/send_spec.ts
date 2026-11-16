@@ -21,11 +21,11 @@ describe('ChatInstance.send', () => {
   afterEach(setupAfterEach);
 
   it.each([
-    ['Error', new Error('transport failed'), '{}'],
+    ['Error', new Error('transport failed'), 'transport failed'],
     ['string', 'transport failed', 'transport failed'],
     ['object', { reason: 'transport failed' }, '{"reason":"transport failed"}'],
   ])(
-    'preserves legacy error text for a thrown %s',
+    'reports the error text for a thrown %s',
     async (_kind, thrown, expected) => {
       const onError = jest.fn();
       const instance = await renderChatAndGetInstance({
