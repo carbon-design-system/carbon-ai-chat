@@ -13,6 +13,8 @@ import {
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 import type { ReactNode } from 'react';
 
+import { placeHosts } from '../utils/removeHostsOnUnmount';
+
 /** One editor token or node view rendered through `renderInLightDom`. */
 interface LightDomEntry {
   key: string;
@@ -52,9 +54,14 @@ class LightDomHosts {
     this.connected = true;
     this.chatWrapper?.addEventListener(LIGHT_DOM_PORTAL_EVENT, this.onPortal);
     this.prune();
-    this.entries.forEach((entry) =>
-      this.chatWrapper?.appendChild(entry.hostElement)
-    );
+    if (this.chatWrapper) {
+      placeHosts(
+        this.chatWrapper,
+        this.entries
+          .map((entry) => entry.hostElement)
+          .filter((element) => element.parentNode !== this.chatWrapper)
+      );
+    }
     this.syncObserver();
   }
 
@@ -94,7 +101,7 @@ class LightDomHosts {
 
     const hostElement = document.createElement(hostTag ?? 'span');
     hostElement.setAttribute('slot', key);
-    this.chatWrapper.appendChild(hostElement);
+    placeHosts(this.chatWrapper, [hostElement]);
     if (htmlElement) {
       hostElement.appendChild(htmlElement);
     }
