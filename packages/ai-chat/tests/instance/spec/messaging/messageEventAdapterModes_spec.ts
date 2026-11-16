@@ -47,7 +47,8 @@ it.each([true, false])(
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: (event: any) => {
         trace.push('response');
-        expect(Object.isFrozen(event.data.fullMessage)).toBe(true);
+        // An upserted message reaches its callback as a writable copy whose edits commit.
+        expect(Object.isFrozen(event.data.fullMessage)).toBe(false);
         return blocked;
       },
     });
