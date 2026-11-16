@@ -1637,7 +1637,7 @@ helper	packages/ai-chat/tests/contract/helpers/dom.ts	""	9d071b35b192419c129475a
 helper	packages/ai-chat/tests/contract/helpers/driver.ts	""	5031240fdb608b8f2e909f5b728933c4b5c12f281f687d8268b5e9d673b7208e
 helper	packages/ai-chat/tests/contract/helpers/events.ts	""	a8aa5478767b154fb37d85e667d06b103e0d014d5e3b7dad64efb5d6c5ea30a6
 helper	packages/ai-chat/tests/contract/helpers/index.ts	""	73c96809162ed6a786ad8e0cddb14e3e54ddafb41a2ee67af50159a339e84762
-helper	packages/ai-chat/tests/contract/helpers/input.ts	""	5a5dbdd761948181555eac3d771f85e5a0e0eb50702eea1479603f02a676475f
+helper	packages/ai-chat/tests/contract/helpers/input.ts	""	45934e968e78a2a8c6b5b48849f12b98755a5b001707d7faa994849337019e4f
 helper	packages/ai-chat/tests/contract/helpers/messages.ts	""	1b6ef1c664cbf4792331ea6d3f190f44be1100b50da77bb01008c6c71c3b0a4e
 helper	packages/ai-chat/tests/contract/helpers/mount.tsx	""	03ae85fb0f4ba54809ef46b27f187a00514c8092c373536e0cf91b40b1914c8a
 helper	packages/ai-chat/tests/contract/helpers/serviceDesk.ts	""	9a965390f787cac07026924d13be4279f96e801871dd6dd81d8ae626effde62f
