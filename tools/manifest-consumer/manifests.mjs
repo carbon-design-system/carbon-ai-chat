@@ -34,6 +34,9 @@ const programOptions = {
   target: ts.ScriptTarget.ESNext,
   module: ts.ModuleKind.ESNext,
   moduleResolution: ts.ModuleResolutionKind.Bundler,
+  // Published files load as ES modules, so a top-level `const Error` stays
+  // local even in a file with no import or export.
+  moduleDetection: ts.ModuleDetectionKind.Force,
 };
 
 function publishedGlobalSuperclasses(manifest, root, program) {
