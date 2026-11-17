@@ -13,11 +13,13 @@ import Close16 from '@carbon/icons/es/close/16.js';
 window.consumerState = { ready: false, actions: 0, sent: [] };
 
 window.consumerState.hosts = [
-  ['PREFIX-aichat-container', ChatContainer],
-  ['PREFIX-aichat-custom-element', ChatCustomElement],
-].map(([tag, constructor]) => {
+  ['container', ChatContainer],
+  ['custom-element', ChatCustomElement],
+].map(([host, constructor]) => {
+  const tag = `PREFIX-aichat-${host}`;
   const attributes = constructor.observedAttributes;
   return {
+    module: `dist/TREE/web-components/cds-aichat-${host}/index.js`,
     tag,
     attributes,
     defaultExportRegistered: customElements.get(tag) === constructor,
@@ -26,6 +28,7 @@ window.consumerState.hosts = [
       .map(([name, options]) => ({
         name,
         attribute: options.attribute ?? true,
+        type: options.type?.name,
       })),
   };
 });
