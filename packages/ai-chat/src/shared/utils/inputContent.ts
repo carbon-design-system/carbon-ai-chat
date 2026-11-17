@@ -9,6 +9,24 @@
 
 import type { JSONContent } from '@tiptap/core';
 
+export function literalTextToDoc(text: string): JSONContent {
+  const content: JSONContent[] = [];
+  text.split('\n').forEach((line, index) => {
+    if (index > 0) {
+      content.push({ type: 'hardBreak' });
+    }
+    if (line) {
+      content.push({ type: 'text', text: line });
+    }
+  });
+  return {
+    type: 'doc',
+    content: [
+      content.length ? { type: 'paragraph', content } : { type: 'paragraph' },
+    ],
+  };
+}
+
 export function isPlainTextDoc(json: JSONContent): boolean {
   const allowed = new Set(['doc', 'paragraph', 'text', 'hardBreak']);
   let ok = true;

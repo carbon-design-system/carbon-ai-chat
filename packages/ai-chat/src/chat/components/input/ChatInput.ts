@@ -124,6 +124,10 @@ class ChatInput extends NativeChatView {
   private stopPending = false;
   private listNavigated = false;
   private restored?: { prompt: PromptLineElement; agent: boolean };
+  // A tracked draft staged before the first surface rendered (from
+  // onBeforeRender, for example) never passes through the store mirror, so that
+  // surface restores it once. Null when no draft was staged.
+  private stagedDraftPrompt?: PromptLineElement | null;
   private restoring?: {
     prompt: PromptLineElement;
     agent: boolean;
@@ -282,6 +286,7 @@ class ChatInput extends NativeChatView {
     this.trackedSlice = undefined;
     this.restored = undefined;
     this.restoring = undefined;
+    this.stagedDraftPrompt = undefined;
     this.rawValue = '';
     this.valueInitialized = false;
     this.displayContent = null;
@@ -440,7 +445,20 @@ class ChatInput extends NativeChatView {
   private restoreDraft() {
     const prompt = this.prompt;
     const props = this.inputProps;
-    if (!props.trackInputState || !props.restoreDraft || !prompt) {
+    if (prompt && this.stagedDraftPrompt === undefined) {
+      const { rawValue } = selectInputState(
+        this.serviceManager.store.getState()
+      );
+      this.stagedDraftPrompt =
+        props.trackInputState && rawValue ? prompt : null;
+    }
+    const restoresStagedDraft =
+      this.stagedDraftPrompt === prompt && !this.restored;
+    if (
+      !props.trackInputState ||
+      !prompt ||
+      (!props.restoreDraft && !restoresStagedDraft)
+    ) {
       this.draftGeneration += 1;
       this.restoring = undefined;
       return;
