@@ -11,6 +11,8 @@ Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs
 | `@web/test-runner` (WTR) | Lit custom elements | `src/components/<c>/__tests__/<name>.test.ts` | `npm run test:web-components` |
 | Jest                     | React wrappers      | `src/react/__tests__/<file>.test.ts`          | `npm run test:react`          |
 
+Registration helper browser tests live in `src/globals/__tests__/`. The WTR scripts include that folder; Jest excludes its browser test. Do not widen WTR to all `globals/`: other folders contain Jest tests.
+
 `npm test` runs both. Use the right runner for the file — a Lit element test under Jest (or vice versa) will fail to resolve its environment.
 
 ## Snapshots
