@@ -25,7 +25,8 @@ async function mount() {
   const attributes = constructor.observedAttributes;
   window.consumerState.hosts = [
     {
-      module: `dist/TREE/web-components/cds-aichat-${host}/index.js`,
+      // The published manifest path; the generated build keeps the es layout.
+      module: `dist/es/web-components/cds-aichat-${host}/index.js`,
       tag,
       attributes,
       defaultExportRegistered: customElements.get(tag) === constructor,
