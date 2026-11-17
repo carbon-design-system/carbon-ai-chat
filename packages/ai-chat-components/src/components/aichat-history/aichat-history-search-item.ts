@@ -81,14 +81,16 @@ class CDSAIChatHistorySearchItem extends HostListenerMixin(
   render() {
     const { name, date } = this;
     const classes = classMap({
-      [`cds--side-nav__link`]: true,
+      [`${prefix}--side-nav__link`]: true,
     });
     return html`
       <button class="${classes}">
-        <span part="name" class="cds--side-nav__link-text">
+        <span part="name" class="${prefix}--side-nav__link-text">
           <slot>${name}</slot>
         </span>
-        <span part="date" class="cds--side-nav__link-subtitle"> ${date} </span>
+        <span part="date" class="${prefix}--side-nav__link-subtitle">
+          ${date}
+        </span>
       </button>
     `;
   }

@@ -62,7 +62,7 @@ The JSON is generated and ignored: never hand-edit or commit it. The wrappers ar
 ## Naming
 
 - **One element per file**, named for the `aichat-*` tag suffix and exported from the family's `index.ts`.
-- **Tag naming**: compose `${prefix}-aichat-<thing>` with the shared prefix value `cds`. Keep the `aichat` segment in chat-specific classes and custom properties too. Prefix discipline is build-breaking; see [code-patterns.md](../../../references/code-patterns.md#naming--prefix-discipline-build-breaking).
+- **Tag naming**: compose `${prefix}-aichat-<thing>` with the shared prefix value `cds`. Keep the `aichat` segment in chat-specific classes and custom properties too. See [prefix discipline](../../../references/code-patterns.md#naming--prefix-discipline).
 - **Attributes** are kebab-case (`has-footer`, not `hasFooter`); React wrappers expose the element's camelCase properties.
 - **Events** follow `cds-aichat-<thing>-<verb>` (e.g. `cds-aichat-card-expand`).
 - **Slots** use plain names; reserve `default` for primary content.

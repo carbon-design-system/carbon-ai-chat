@@ -354,14 +354,14 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
       _handleMenuItemClick: handleMenuItemClick,
     } = this;
     const classes = classMap({
-      [`cds--side-nav__link`]: true,
-      [`cds--side-nav__link--current`]: selected,
+      [`${prefix}--side-nav__link`]: true,
+      [`${prefix}--side-nav__link--current`]: selected,
     });
     return html`
       ${
         !rename
           ? html` <button class="${classes}">
-              <span part="name" class="cds--side-nav__link-text">
+              <span part="name" class="${prefix}--side-nav__link-text">
                 ${name}
               </span>
               <slot name="actions">

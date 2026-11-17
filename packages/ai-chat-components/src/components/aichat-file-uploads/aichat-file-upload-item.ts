@@ -310,12 +310,12 @@ class FileUploadItemElement extends LitElement {
     // Carbon hardcodes its WarningFilled icon for the invalid state. Swap in
     // ErrorFilled; the marker keeps repeat syncs from replacing it again.
     const warningIcon = innerRoot.querySelector(
-      '.cds--file__state-container .cds--file-invalid:not([data-error-icon])'
+      `.${prefix}--file__state-container .${prefix}--file-invalid:not([data-error-icon])`
     );
     if (invalid && warningIcon) {
       const template = document.createElement('template');
       template.innerHTML = carbonIconToSVG(ErrorFilled16, {
-        class: 'cds--file-invalid',
+        class: `${prefix}--file-invalid`,
         'aria-hidden': 'true',
         'data-error-icon': '',
       });
@@ -342,15 +342,15 @@ class FileUploadItemElement extends LitElement {
     const rules: string[] = [];
     if (this._hasMediaPreview()) {
       rules.push(
-        ':host(cds-file-uploader-item) p.cds--file-filename { margin-inline-start: 2px; }'
+        `:host(cds-file-uploader-item) p.${prefix}--file-filename { margin-inline-start: 2px; }`
       );
     }
     if (this.readOnly) {
-      rules.push(':host .cds--file__state-container { display: none; }');
+      rules.push(`:host .${prefix}--file__state-container { display: none; }`);
       // Carbon hangs the chip's trailing padding off the status container, so
       // hiding it leaves the name flush to the edge against a 1rem leading margin.
       // Restate it on the name to even the two sides up.
-      rules.push('.cds--file-filename { margin-inline-end: 1rem; }');
+      rules.push(`.${prefix}--file-filename { margin-inline-end: 1rem; }`);
     }
     if (!this.readOnly) {
       // Column gap between the name and the status area.
@@ -359,7 +359,7 @@ class FileUploadItemElement extends LitElement {
       );
       // Column gap between the status area's children (error icon, remove button).
       rules.push(
-        ':host([size]) .cds--file__state-container { gap: var(--cds-spacing-02, 0.25rem); }'
+        `:host([size]) .${prefix}--file__state-container { gap: var(--cds-spacing-02, 0.25rem); }`
       );
     }
     if (!this.readOnly && this._uploadError.isError) {
@@ -367,7 +367,7 @@ class FileUploadItemElement extends LitElement {
       // inline error text, and redraw the outline so it paints above the content.
       rules.push(':host([invalid][size]) { padding: 0; outline: none; }');
       rules.push(
-        ':host([invalid][size]) .cds--form-requirement { display: none; }'
+        `:host([invalid][size]) .${prefix}--form-requirement { display: none; }`
       );
       rules.push(
         ':host([invalid][size])::after { content: ""; position: absolute; inset: 0; border-radius: 0.5rem; outline: 2px solid var(--cds-support-error, #da1e28); outline-offset: -2px; pointer-events: none; }'
