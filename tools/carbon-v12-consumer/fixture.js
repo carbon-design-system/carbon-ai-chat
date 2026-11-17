@@ -6,10 +6,32 @@
  */
 
 import '@carbon/ai-chat-components/TREE/components/toolbar/index.js';
-import '@carbon/ai-chat/dist/TREE/web-components/cds-aichat-container/index.js';
+import ChatContainer from '@carbon/ai-chat/dist/TREE/web-components/cds-aichat-container/index.js';
+import ChatCustomElement from '@carbon/ai-chat/dist/TREE/web-components/cds-aichat-custom-element/index.js';
 import Close16 from '@carbon/icons/es/close/16.js';
 
 window.consumerState = { ready: false, actions: 0, sent: [] };
+
+window.consumerState.hosts = [
+  ['container', ChatContainer],
+  ['custom-element', ChatCustomElement],
+].map(([host, constructor]) => {
+  const tag = `PREFIX-aichat-${host}`;
+  const attributes = constructor.observedAttributes;
+  return {
+    module: `dist/TREE/web-components/cds-aichat-${host}/index.js`,
+    tag,
+    attributes,
+    defaultExportRegistered: customElements.get(tag) === constructor,
+    properties: Array.from(constructor.elementProperties.entries())
+      .filter(([, options]) => !options.state)
+      .map(([name, options]) => ({
+        name,
+        attribute: options.attribute ?? true,
+        type: options.type?.name,
+      })),
+  };
+});
 
 async function mount() {
   const toolbar = document.createElement('PREFIX-aichat-toolbar');
