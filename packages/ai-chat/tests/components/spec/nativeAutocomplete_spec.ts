@@ -736,8 +736,58 @@ describe('native autocomplete', () => {
       expect(thrown).toEqual({ error: failure });
       expect(order).toEqual(['insert', 'config']);
       expect(f.errorOccurred).not.toHaveBeenCalled();
+      // The throw skips the dismiss, so the list stays open.
+      expect(
+        f.shell.querySelector('[slot="autocomplete-content"]')
+      ).not.toBeNull();
     }
   );
+
+  it('lets an autocomplete onSelect throw leave the select event while the shown list is still a mention list', async () => {
+    const pageErrors: unknown[] = [];
+    const onPageError = (event: ErrorEvent) => {
+      pageErrors.push(event.error);
+      event.preventDefault();
+    };
+    const failure = new Error('autocomplete onSelect failed');
+    const selected = jest.fn();
+    const f = await fixture((view) => {
+      view.mention = { trigger: '@', items };
+      view.autocomplete = {
+        items,
+        onSelect: () => {
+          throw failure;
+        },
+      };
+      view.onSelectItem = selected;
+    });
+    await f.trigger('', 'mention');
+    const list = f.shell.querySelector<Autocomplete>('cds-aichat-autocomplete');
+    expect(list).not.toBeNull();
+    window.addEventListener('error', onPageError);
+    try {
+      // The controller takes the new trigger at once, but the view's copy of
+      // its state updates only after the items resolve.
+      f.prompt.dispatchEvent(
+        new CustomEvent<TriggerChangeEventDetail>('cds-aichat-trigger-change', {
+          bubbles: true,
+          composed: true,
+          detail: { type: 'autocomplete', query: '', triggerOffset: 0 },
+        })
+      );
+      list.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-select', {
+          detail: { item: items[0] },
+        })
+      );
+      await flush(f.view);
+    } finally {
+      window.removeEventListener('error', onPageError);
+    }
+    expect(pageErrors).toEqual([failure]);
+    expect(f.errorOccurred).not.toHaveBeenCalled();
+    expect(selected).not.toHaveBeenCalled();
+  });
 
   it('routes a throw from the insert itself through the chat error owner', async () => {
     const onSelect = jest.fn();

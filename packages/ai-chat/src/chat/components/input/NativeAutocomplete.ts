@@ -416,6 +416,8 @@ class NativeAutocomplete extends NativeChatView {
               throw error;
             }
           } else {
+            // Only select and reportSent call it today; any other caller keeps
+            // the view's guard.
             this.run(lifetime, () => config.onSelect(item));
           }
         };
