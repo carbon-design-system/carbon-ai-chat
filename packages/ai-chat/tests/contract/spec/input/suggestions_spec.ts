@@ -370,6 +370,57 @@ describe('input.autocomplete', () => {
     expect(onSelect.mock.calls[0][0]).toMatchObject({ id: 'hello' });
   });
 
+  it('inserts a chosen item and keeps the chat running when onSelect throws with disableDirectSend', async () => {
+    // The throw leaves the list's click as an uncaught page error. This
+    // listener records it and keeps it from failing the test.
+    const pageErrors: unknown[] = [];
+    const onPageError = (event: ErrorEvent) => {
+      pageErrors.push(event.error);
+      event.preventDefault();
+    };
+    window.addEventListener('error', onPageError);
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const onError = jest.fn();
+    try {
+      const { instance, editor, backend } = await openEditor({
+        onError,
+        input: {
+          autocomplete: {
+            disableDirectSend: true,
+            items: [HELLO],
+            onSelect: () => {
+              throw new Error('host onSelect failed');
+            },
+          },
+        },
+      });
+      await insert(editor, 'hel');
+      await choose('hello world');
+      expect(pageErrors).toEqual([
+        expect.objectContaining({ message: 'host onSelect failed' }),
+      ]);
+      expect(instance.state.get().input.rawValue).toBe('hello world');
+      // The throw stops the list from closing, and the chat reports no error.
+      await pause();
+      expect(options('hello world')).toHaveLength(1);
+      expect(onError).not.toHaveBeenCalled();
+      expect(consoleError).not.toHaveBeenCalled();
+      expect(backend.requests).toHaveLength(0);
+      // The input still offers items after it is cleared and typed in again.
+      await act(async () => {
+        editor.commands.clearContent(true);
+      });
+      await waitFor(() => expect(options('hello world')).toHaveLength(0));
+      await insert(editor, 'hel');
+      await waitFor(() => expect(options('hello world')).toHaveLength(1));
+    } finally {
+      consoleError.mockRestore();
+      window.removeEventListener('error', onPageError);
+    }
+  });
+
   it('waits for minQueryLength characters', async () => {
     const { editor } = await openEditor({
       input: { autocomplete: { minQueryLength: 2, items: [HELLO] } },

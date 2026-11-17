@@ -44,6 +44,10 @@ interface AutocompleteLifetime {
   pendingError?: { error: unknown };
   /** True while a chosen item that sends is reported to the host. */
   reportingSent: boolean;
+  /** True while a chosen item is inserted into the input. */
+  selecting: boolean;
+  /** The host's `onSelect` throw from that insert, if it threw. */
+  insertError?: { error: unknown };
   configs: WeakMap<object, object>;
   failedResults: WeakMap<SuggestionItem[], unknown>;
 }
@@ -341,6 +345,7 @@ class NativeAutocomplete extends NativeChatView {
       active: true,
       retired: false,
       reportingSent: false,
+      selecting: false,
       configs: new WeakMap<object, object>(),
       failedResults: new WeakMap<SuggestionItem[], unknown>(),
     } as AutocompleteLifetime;
@@ -403,7 +408,16 @@ class NativeAutocomplete extends NativeChatView {
           // item, so the send still happens.
           if (lifetime.reportingSent) {
             config.onSelect(item);
+          } else if (lifetime.selecting) {
+            try {
+              config.onSelect(item);
+            } catch (error) {
+              lifetime.insertError = { error };
+              throw error;
+            }
           } else {
+            // Only select and reportSent call it today; any other caller keeps
+            // the view's guard.
             this.run(lifetime, () => config.onSelect(item));
           }
         };
@@ -449,12 +463,31 @@ class NativeAutocomplete extends NativeChatView {
   };
 
   private selectItem(lifetime: AutocompleteLifetime, item: SuggestionItem) {
+    let insertError: { error: unknown } | undefined;
     this.run(lifetime, () => {
-      lifetime.controller.select(item);
+      lifetime.selecting = true;
+      try {
+        lifetime.controller.select(item);
+      } catch (error) {
+        if (!lifetime.insertError || lifetime.insertError.error !== error) {
+          throw error;
+        }
+        insertError = lifetime.insertError;
+        return;
+      } finally {
+        lifetime.selecting = false;
+        lifetime.insertError = undefined;
+      }
       if (!lifetime.retired) {
         this.onSelectItem?.(item);
       }
     });
+    if (insertError) {
+      // The text is already inserted. As in the React input, the host's throw
+      // leaves the list open, reaches the page as an uncaught error, and the
+      // chat keeps running.
+      throw insertError.error;
+    }
   }
 
   private sendItem(
