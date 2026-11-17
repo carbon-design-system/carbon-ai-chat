@@ -35,6 +35,10 @@ async function withManifest(source, superclass, verify, additions = {}) {
   Object.assign(example.declarations[0], additions.declaration);
   example.declarations.push(...(additions.declarations ?? []));
   example.exports.push(...(additions.exports ?? []));
+  if (additions.script) {
+    // A source with no import or export publishes no module exports.
+    example.exports = [];
+  }
   const manifest = {
     schemaVersion: '1.0.0',
     modules: [example, ...(additions.modules ?? [])],
@@ -144,6 +148,30 @@ test('packed manifest rejects Error shadowed by module-scope hoisted and destruc
       await assert.rejects(read, unresolved('Error'), source);
     });
   }
+});
+
+test('packed manifest rejects Error shadowed in a file with no import or export', async () => {
+  for (const source of [
+    'const Error = Object; class Example extends Error {}',
+    'var Error = Object; class Example extends Error {}',
+  ]) {
+    await withManifest(
+      source,
+      { name: 'Error' },
+      async (read) => {
+        await assert.rejects(read, unresolved('Error'), source);
+      },
+      { script: true }
+    );
+  }
+  await withManifest(
+    'class Example extends Error {}',
+    { name: 'Error' },
+    async (read) => {
+      await read();
+    },
+    { script: true }
+  );
 });
 
 test('packed manifest rejects a global base that differs from the source base', async () => {
