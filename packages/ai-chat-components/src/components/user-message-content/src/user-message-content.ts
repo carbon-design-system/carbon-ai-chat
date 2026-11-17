@@ -230,7 +230,7 @@ function flattenTextualDoc(content: JSONContent): string {
       lines.push(block.text);
     }
   }
-  return lines.join('\n');
+  return lines.join('\n\n');
 }
 
 function joinTextualInline(nodes: JSONContent[]): string {

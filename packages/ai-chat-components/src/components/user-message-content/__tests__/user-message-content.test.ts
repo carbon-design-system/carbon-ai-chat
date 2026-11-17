@@ -62,7 +62,7 @@ describe(blockClass, () => {
       const markdown = el.shadowRoot!.querySelector('cds-aichat-markdown')!;
       expect(markdown).to.exist;
       expect((markdown as any).markdown).to.equal(
-        'Hello **world**\nSecond line'
+        'Hello **world**\n\nSecond line'
       );
       expect(el.shadowRoot!.querySelector(`.${blockClass}__content`)).to.be
         .null;
