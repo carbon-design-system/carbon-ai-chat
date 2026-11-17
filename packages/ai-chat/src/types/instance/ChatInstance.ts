@@ -103,34 +103,46 @@ interface ChatActions {
    */
   messaging: ChatInstanceMessaging;
   /**
-   * This function can be called when another component wishes this component to gain focus. It is up to the
-   * component to decide where focus belongs. This may return true or false to indicate if a suitable focus location
-   * was found.
+   * Moves focus into the chat. The chat decides where focus belongs, such as the input or an open panel. Returns
+   * true when it moved focus there, or when that place is a disabled input, which can't take focus. Returns false
+   * when it found nothing to focus, such as while the main window is closed. Returns false when
+   * {@link PublicConfig.shouldTakeFocusIfOpensAutomatically} is false.
+   * On a phone the chat never moves focus, so this moves nothing and returns false.
    *
    * @example Move focus into the chat
    * ```ts
    * const focused = instance.requestFocus();
-   * // => true when a suitable focus target was found
+   * // => true when focus moved into the chat
    * ```
    */
   requestFocus: () => boolean | void;
 
   /**
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
-   * the event bus before delegating to `customSendMessage`.
+   * the event bus before delegating to `customSendMessage`. This holds during
+   * an agent chat too: only what the user types in the chat's input reaches
+   * the service desk.
    *
    * **Settlement points:**
-   * - Resolves when `customSendMessage` completes, or when the turn is stopped
-   *   or the conversation restarted while the message is in flight.
-   * - Rejects when `customSendMessage` throws, when the send path fails
-   *   terminally (for example a timeout), when called in read-only mode, or
-   *   when a file upload is still in progress. For the upload case, check
+   * - Resolves when `customSendMessage` completes. It also resolves at once,
+   *   without waiting for `customSendMessage`, when a stop, a restart, or
+   *   {@link ChatInstanceMessaging.clearConversation} cancels the send. A
+   *   queued send that never reached `customSendMessage` resolves too.
+   * - Rejects when `customSendMessage` throws, when a `pre:send` or `send`
+   *   handler throws (with that handler's error, and without calling
+   *   `customSendMessage`), when the send path fails terminally (for example a
+   *   timeout), when called in read-only mode, or when a file upload is still
+   *   in progress. For the upload case, check
    *   `instance.getState().input.hasInFlightUploads` before calling.
    *
    * The promise settling does **not** mean a response has arrived. Response
    * delivery is handled asynchronously by `customSendMessage` itself; use
    * `{@link EventHandlers.on}` with the `receive` event to react to incoming
    * messages.
+   *
+   * A send made while the chat loads waits until every `chat:ready` handler
+   * settles. A handler that never settles holds those sends, so they never
+   * reach `customSendMessage`. Sends made after `chat:ready` fires don't wait.
    *
    * @param message The message to send.
    * @param options Options for the message sent.
@@ -158,6 +170,9 @@ interface ChatActions {
    * includes all of the views then all of the views will be changed accordingly. If a partial {@link ViewState} is
    * provided then only the views provided will be changed.
    *
+   * The promise rejects if another view change is still running, for example when a view event handler calls
+   * `changeView`. It also rejects with the error a view event handler throws.
+   *
    * @example Open the main window
    * ```ts
    * import { ViewType } from "@carbon/ai-chat";
@@ -170,7 +185,7 @@ interface ChatActions {
    * await instance.changeView({ launcher: false, mainWindow: true });
    * ```
    */
-  changeView: (newView: ViewType | ViewState) => Promise<void>;
+  changeView: (newView: ViewType | Partial<ViewState>) => Promise<void>;
 
   /**
    * Returns the list of writable elements.
@@ -208,8 +223,13 @@ interface ChatActions {
   scrollToMessage: (messageID: string, animate?: boolean) => void;
 
   /**
-   * Fires an event that will open or close the Catastrophic Error Panel in the chat. This also accepts a
-   * custom title and body text (markdown supported) to be displayed in the Catastrophic Error Panel.
+   * Opens or closes the Catastrophic Error Panel in the chat. This also accepts a custom title and body text
+   * (markdown supported) to be displayed in the Catastrophic Error Panel. The call fires no event, and the panel's
+   * state isn't part of {@link ChatInstance.state}.
+   *
+   * Each call merges its fields into the panel's state. Omitted title, body text, and `hideRetryButton` fields retain
+   * their prior values. Until you set them, the panel uses {@link PublicConfig.strings} and shows the retry button.
+   * Restarting the conversation closes the panel and clears what earlier calls set.
    *
    * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
    *
@@ -302,7 +322,8 @@ interface ChatActions {
   /**
    * Either increases or decreases the internal counter that indicates whether the hydration fullscreen loading state is
    * shown. If the count is greater than zero, then the indicator is shown. Values of "increase" or "decrease" will
-   * increase or decrease the value. "reset" will set the value back to 0.
+   * increase or decrease the value. "reset" will set the value back to 0. It leaves the message-loading counter from
+   * {@link ChatInstance.updateIsMessageLoadingCounter} alone.
    *
    * You can access the current value via {@link ChatInstance.getState}.
    *
@@ -326,10 +347,22 @@ interface ChatActions {
   serviceDesk: ChatInstanceServiceDeskActions;
 
   /**
-   * Remove any record of the current session from the browser's SessionStorage.
+   * Resets the saved session to its defaults and removes its record from the browser's sessionStorage. The chat saves
+   * a new record at its next change. With {@link PublicConfig.persistedState} set, nothing touches sessionStorage:
+   * the reset goes to {@link PersistedStateConfig.onStateChange} like any other change.
    *
-   * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
-   * chat is open.
+   * It also does the following:
+   * - Closes the main window to the launcher, unless `keepOpenState` is true. This fires
+   *   {@link BusEventType.STATE_CHANGE}, but not {@link BusEventType.VIEW_PRE_CHANGE} or
+   *   {@link BusEventType.VIEW_CHANGE}.
+   * - Cancels any in-flight send with {@link CancellationReason.CONVERSATION_RESTARTED} and adds a message that says
+   *   the request was canceled.
+   * - Cancels each file upload still in progress: the upload's abort signal fires and its attachment leaves the input.
+   *
+   * The messages stay in place, and a chat that has loaded doesn't load again. Reopening it calls no
+   * {@link PublicConfigMessaging.customLoadHistory}, sends no welcome, and fires no {@link BusEventType.CHAT_READY}.
+   *
+   * @param keepOpenState Keeps the main window open or closed as it is, instead of closing it to the launcher.
    *
    * @example Clear the persisted session
    * ```ts

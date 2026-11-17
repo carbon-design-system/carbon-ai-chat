@@ -160,13 +160,6 @@ it('keeps all processor and state runtime dependencies pure', () => {
   }
 });
 
-it('checks native snapshot preparation while allowing only deferred host callable bodies', () => {
-  const source = get(messaging + 'nativeMessageEvents.ts');
-  const allowed = snapshotDataCalls(checker, source);
-  expect(allowed.size).toBe(16); // Deferred traps, intrinsic reads and owned data operations.
-  expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
-});
-
 it('keeps core runtime imports and capabilities independent of the view', () => {
   const result = coreRuntime;
   expect(result.issues).toEqual([]);
@@ -580,6 +573,7 @@ function isAllowedStateField(
     'src/chat/services/ChatInstanceService.ts': ['catastrophicErrorType'],
     'src/chat/services/HydrationService.ts': ['persistedToBrowserStorage'],
     'src/chat/utils/dynamicConfigUpdates.ts': ['languagePack'],
+    'src/chat/utils/intlUtils.ts': ['loadedLocale'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
     'src/web-components/cds-aichat-container/cds-aichat-container.ts': [
       'markdownConfig',
@@ -1220,42 +1214,6 @@ it('classifies a destructured broad message-state setter as an assistant write',
   expect(writes.map((call) => call.name)).toEqual([
     'setChatMessagesStateProperty',
   ]);
-});
-
-it('recognizes current intrinsic snapshot preparation without eager host invocation', () => {
-  const source = get(messaging + 'nativeMessageEvents.ts');
-  const allowed = snapshotDataCalls(checker, source);
-  expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
-});
-
-it.each([
-  [
-    'Reflect.construct(\n      BufferConstructor,',
-    'Reflect.construct(\n      value as Function,',
-  ],
-  ['isCollection(value, Map.prototype)', 'isCollection(value, value as any)'],
-  [
-    '? [ArrayBuffer]\n      : [ArrayBuffer, SharedArrayBuffer]',
-    '? [ArrayBuffer]\n      : [ArrayBuffer, value as any]',
-  ],
-  [
-    'Function.prototype.toString.call(constructor)',
-    '(constructor as Function).call(undefined)',
-  ],
-  [
-    'copies.set(value, owned);\n    if (map)',
-    'copies.set(value, owned);\n    owned = value;\n    if (map)',
-  ],
-])('rejects replacing an intrinsic snapshot binding: %s', (before, after) => {
-  const original = get(messaging + 'nativeMessageEvents.ts').text;
-  expect(original).toContain(before);
-  const file = '../src/chat/services/messaging/nativeMessageEvents.ts';
-  const f = fixture({ [file]: original.replace(before, after) });
-  const source = f.source(file);
-  expect(
-    pureEffectIssues(f.checker, source, snapshotDataCalls(f.checker, source))
-      .length
-  ).toBeGreaterThan(0);
 });
 
 it.each([

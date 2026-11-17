@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { html, nothing, render } from 'lit';
+
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 
 function fixture() {
@@ -70,6 +72,21 @@ it('places a stable page-light-DOM target before a React commit can make its rea
   expect(f.callbacks.onReady).toHaveBeenCalledWith(list);
   expect(await f.content.commit(request)).toBe(true);
   expect(f.callbacks.onReady).toHaveBeenCalledTimes(1);
+  f.content.disconnect();
+});
+
+it('keeps a placed React target when a page template clears its trailing part', () => {
+  const f = fixture();
+  render(html`${html`<p>Banner</p>`}`, f.wrapper);
+  const request = f.content.prepare(f.owner, {}, {}, f.anchor, f.callbacks);
+  expect(f.content.markPlaced(request)).toBe(true);
+  const list = document.createElement('button');
+  request.target.appendChild(list);
+  render(nothing, f.wrapper);
+  expect(f.wrapper.querySelector('p')).toBe(null);
+  expect(request.target.parentElement).toBe(f.wrapper);
+  expect(f.content.isPlaced(request)).toBe(true);
+  expect(list.isConnected).toBe(true);
   f.content.disconnect();
 });
 

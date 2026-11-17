@@ -7,9 +7,8 @@
  *  @license
  */
 
-import { composedContains } from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
 import { IS_MOBILE } from './browserUtils';
-import { doFocus, getDeepActiveElement } from './domUtils';
+import { doFocus } from './domUtils';
 import { consoleError } from './miscUtils';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
@@ -40,13 +39,8 @@ export function requestFocus(options: FocusManagerOptions): boolean {
       return false;
     }
     if (options.showDisclaimer) {
-      const { disclaimer } = options;
-      if (!disclaimer) {
-        return false;
-      }
-      doFocus(disclaimer);
-      // The accept button delegates focus into its shadow root.
-      return composedContains(disclaimer, getDeepActiveElement());
+      // True once the accept button is asked to take focus, as in 1.x.
+      return doFocus(options.disclaimer);
     }
     let target: HasRequestFocus | null;
     if (options.iFramePanelIsOpen) {
