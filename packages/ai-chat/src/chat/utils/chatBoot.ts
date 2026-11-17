@@ -10,6 +10,7 @@
 import dayjs from 'dayjs';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
@@ -320,9 +321,7 @@ export async function initServiceManagerAndInstance(options: {
       serviceManager.view.current?.instance.scrollToMessage(messageID, animate);
     },
 
-    updateCatastrophicErrorPanel: (
-      panelState: Partial<CatastrophicErrorPanelState>
-    ) => {
+    updateCatastrophicErrorPanel: (panelState: CatastrophicErrorPanelState) => {
       debugLog('Called instance.updateCatastrophicPanel');
 
       if (
@@ -371,6 +370,10 @@ export async function initServiceManagerAndInstance(options: {
         options: AddMessageOptions = {}
       ) => {
         debugLog('Called instance.messaging.addMessage', message, options);
+        // The chat writes its defaults onto the message, which a frozen one can't take.
+        if (Object.isFrozen(message)) {
+          message = cloneDeep(message);
+        }
         if (
           serviceManager.messageCoordinator.isRequestFromPreviousConversation(
             message.request_id

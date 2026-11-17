@@ -11,7 +11,7 @@ import { LoadedHistory } from '../schema/historyToMessages';
 import actions from '../store/actions';
 import { ConversationState } from '../../types/state/ConversationState';
 import { createWelcomeRequest } from '../utils/messageUtils';
-import { consoleWarn, debugLog } from '../utils/miscUtils';
+import { consoleError, consoleWarn, debugLog } from '../utils/miscUtils';
 import {
   BusEventType,
   MessageSendSource,
@@ -56,6 +56,13 @@ class HydrationService {
    * Indicates if we are currently hydrating (the Promise above is unresolved).
    */
   private hydrating = false;
+
+  /**
+   * Indicates if a hydration is running. This turns false once the hydration settles, before `chat:ready` fires.
+   */
+  get isHydrating() {
+    return this.hydrating;
+  }
 
   /**
    * Indicates if a restart is currently in progress.
@@ -168,10 +175,11 @@ class HydrationService {
     // Note, we're not waiting for the human agent service to handle the hydration. It may start an asynchronous
     // process to reconnect the user to an agent but that is considered separate from the main hydration.
     const allowReconnect = config.public.serviceDesk.allowReconnect ?? true;
-    this.serviceManager?.humanAgentService?.handleHydration(
-      allowReconnect,
-      Boolean(history)
-    );
+    this.serviceManager?.humanAgentService
+      ?.handleHydration(allowReconnect, Boolean(history))
+      .catch((error) =>
+        consoleError('Resuming the agent chat after a load failed.', error)
+      );
   }
 
   private async loadInitialHistory(generation: number): Promise<LoadedHistory> {
@@ -221,7 +229,7 @@ class HydrationService {
       await serviceManager.actions.send(
         welcomeRequest,
         MessageSendSource.WELCOME_REQUEST,
-        {},
+        { silent: true },
         true
       );
     } catch (error) {
@@ -318,6 +326,7 @@ class HydrationService {
       }
 
       await this.serviceManager.messageCoordinator.cancelAllMessageRequests();
+      this.serviceManager.inputActionsService.cancelPendingUploads();
 
       // Hide the stop streaming button since we've canceled all streams. Unconditional
       // on purpose — everything was just canceled, so there is no other stream to keep
@@ -346,7 +355,8 @@ class HydrationService {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
-      } else {
+      } else if (this.alreadyHydrated) {
+        // A chat that never started hydrating leaves it to its first open.
         serviceManager.messageCoordinator.markChatHydrated();
       }
       if (!didHydrate) {
@@ -374,19 +384,21 @@ class HydrationService {
   async destroySession(keepOpenState: boolean) {
     const { store } = this.serviceManager;
     this.serviceManager.messageCoordinator.cancelAllMessageRequests();
+    this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageCoordinator.clearAllIncomingWrites();
-
-    // When the host owns persistence there is no sessionStorage to clear; the state reset dispatched
-    // below flows to its onStateChange callback like any other change.
-    const { persistedState } = store.getState().config.public;
-    if (!persistedState?.initialState && !persistedState?.onStateChange) {
-      this.serviceManager.userSessionStorageService.clearSession();
-    }
 
     this.serviceManager.store.dispatch(
       actions.resetPersistedState(keepOpenState)
     );
+
+    // The store subscription saves the reset synchronously, so the record is cleared after the
+    // dispatch; it's saved again at the next change. When the host owns persistence there is no
+    // sessionStorage to clear, and the reset flows to its onStateChange callback like any other change.
+    const { persistedState } = store.getState().config.public;
+    if (!persistedState?.initialState && !persistedState?.onStateChange) {
+      this.serviceManager.userSessionStorageService.clearSession();
+    }
   }
 
   /**

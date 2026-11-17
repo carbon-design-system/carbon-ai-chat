@@ -11,6 +11,10 @@ import { ContextProvider } from '@lit/context';
 import { LitElement, ReactiveElement, nothing } from 'lit';
 import { waitFor } from '@testing-library/react';
 import { Mark, type Extension, type JSONContent } from '@tiptap/core';
+import {
+  getRawText,
+  textToDoc,
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import PromptLine from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
 import '../../../src/chat/components/input/ChatInput';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
@@ -106,7 +110,7 @@ async function setup(
 ) {
   const store = makeConfigStore({});
   store.dispatch(
-    actions.updateInputState({ rawValue: 'parked draft', content }, false)
+    actions.updateInputState({ rawValue: getRawText(content), content }, false)
   );
   let inputFunctions: InputFunctions | null = null;
   const wrapper = document.createElement('div');
@@ -276,6 +280,29 @@ describe('custom prompt line draft restoration', () => {
     expect(fixture.prompt().getEditor()).toBeNull();
   });
 
+  it('restores literal HTML-looking text and repeated edge newlines as hard breaks', async () => {
+    const text = '\n<tag>\n\nlast\n';
+    const fixture = await setup(textToDoc(text));
+    await expectDraft(fixture, text);
+    expect(setContent).toHaveBeenLastCalledWith({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'hardBreak' },
+            { type: 'text', text: '<tag>' },
+            { type: 'hardBreak' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'last' },
+            { type: 'hardBreak' },
+          ],
+        },
+      ],
+    });
+    expect(ensureEditor).not.toHaveBeenCalled();
+  });
+
   it('restores the rich document and sends its display content', async () => {
     const fixture = await setup(rich);
     await expectDraft(fixture, 'parked draft');
@@ -320,10 +347,10 @@ describe('custom prompt line draft restoration', () => {
     expect(fixture.published()).toBeNull();
   });
 
-  it('leaves normal first mounts unchanged', async () => {
+  it('shows a draft staged before a normal first mount, once', async () => {
     const fixture = await setup(plain, true, false);
-    await expectDraft(fixture, '');
-    expect(setContent).not.toHaveBeenCalled();
+    await expectDraft(fixture, 'parked draft');
+    expect(setContent.mock.calls).toEqual([[plain]]);
     expect(ensureEditor).not.toHaveBeenCalled();
   });
 
@@ -340,7 +367,10 @@ describe('custom prompt line draft restoration', () => {
     setContent.mockClear();
     gate.resolve(true);
     await expectDraft(fixture, '');
-    expect(setContent).toHaveBeenLastCalledWith('');
+    expect(setContent).toHaveBeenLastCalledWith({
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    });
     expect(ensureEditor).not.toHaveBeenCalled();
   });
 

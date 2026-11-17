@@ -19,8 +19,6 @@ import {
   BusEventType,
   BusEventUserDefinedResponse,
 } from '../../../../src/types/events/eventBusTypes';
-import { prepareReasoningMessageEvent } from '../../../../src/shared/services/messaging/nativeMessageEvents';
-import { synthesizeReasoningLocalMessageItem } from '../../../../src/shared/utils/reasoningContent';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
@@ -48,66 +46,6 @@ const response = (values: string[]): MessageResponse => ({
 
 beforeEach(setupBeforeEach);
 afterEach(setupAfterEach);
-
-it('keeps native reasoning detached after unrelated history insertion', async () => {
-  const { instance, store } =
-    await renderChatAndGetInstanceWithStore(createBaseConfig());
-  const message = response(['native']);
-  await act(async () => {
-    await instance.messaging.upsertMessage(
-      message.id,
-      MessageState.COMPLETE,
-      () => message
-    );
-  });
-  const before = store.getState().allMessagesByID[
-    message.id
-  ] as MessageResponse;
-  const beforeItem = synthesizeReasoningLocalMessageItem(
-    (before.message_options.reasoning.content as GenericItem[])[0],
-    before.id,
-    'retained-reasoning'
-  );
-  expect(
-    Object.isFrozen(prepareReasoningMessageEvent(before, beforeItem).message)
-  ).toBe(true);
-  const historical = response([]);
-  historical.id = 'older-history';
-  await act(async () => {
-    await instance.messaging.insertHistory([
-      { message: historical, time: '2026-11-02T12:00:00.000Z' },
-    ]);
-  });
-  const current = store.getState().allMessagesByID[
-    message.id
-  ] as MessageResponse;
-  expect(current.output).not.toBe(before.output);
-  const localItem = synthesizeReasoningLocalMessageItem(
-    (current.message_options.reasoning.content as GenericItem[])[0],
-    current.id,
-    'retained-reasoning'
-  );
-  const notification = prepareReasoningMessageEvent(current, localItem);
-  expect(notification.message).not.toBe(current);
-  expect(Object.isFrozen(notification.message)).toBe(true);
-  expect(notification.localItem.item).toBe(
-    notification.message.message_options.reasoning.content[0]
-  );
-  expect(() => {
-    notification.localItem.item.user_defined.value = 'notification edit';
-  }).toThrow(TypeError);
-  expect(
-    (current.message_options.reasoning.content as GenericItem[])[0].user_defined
-      .value
-  ).toBe('native');
-  expect(
-    (message.message_options.reasoning.content as GenericItem[])[0].user_defined
-      .value
-  ).toBe('native');
-  expect(Object.isFrozen(message.message_options.reasoning.content[0])).toBe(
-    false
-  );
-});
 
 it('keeps new reasoning from a same-ID history merge on the legacy mutation path', async () => {
   const { instance } =
@@ -147,10 +85,11 @@ it('keeps new reasoning from a same-ID history merge on the legacy mutation path
   ).toBe('native');
 });
 
-it('keeps native reasoning frozen and legacy chunk reasoning mutable without refiring existing items', async () => {
+it('keeps native and legacy reasoning writable without refiring existing items', async () => {
   const { instance, store } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
   const seen: unknown[] = [];
+  let retainedNativeEvent: BusEventUserDefinedResponse;
   instance.on({
     type: BusEventType.USER_DEFINED_RESPONSE,
     handler: (event: BusEventUserDefinedResponse) => {
@@ -160,17 +99,14 @@ it('keeps native reasoning frozen and legacy chunk reasoning mutable without ref
         expect(Object.isFrozen(event.data.message)).toBe(false);
         event.data.message.user_defined.value = 'legacy edit';
       } else {
-        expect(event.data.message).toBe(
-          (event.data.fullMessage as MessageResponse).message_options.reasoning
-            .content[seen.length - 1]
-        );
-        expect(Object.isFrozen(event.data.fullMessage)).toBe(true);
+        retainedNativeEvent = event;
+        expect(Object.isFrozen(event.data.message)).toBe(false);
+        expect(Object.isFrozen(event.data.fullMessage)).toBe(false);
         expect(event.data.fullMessage).not.toBe(
           store.getState().allMessagesByID['reasoning-origin']
         );
-        expect(() => {
-          event.data.message.user_defined.value = 'bad edit';
-        }).toThrow(TypeError);
+        event.data.message.user_defined.edited = true;
+        expect(event.data.message.user_defined.edited).toBe(true);
       }
     },
   });
@@ -183,6 +119,30 @@ it('keeps native reasoning frozen and legacy chunk reasoning mutable without ref
     );
   });
   await waitFor(() => expect(seen).toEqual(['native']));
+  await waitFor(() =>
+    expect(store.getState().allMessagesByID[first.id]).toMatchObject({
+      message_options: {
+        reasoning: { content: [{ user_defined: { edited: true } }] },
+      },
+    })
+  );
+  const firstSnapshot = instance.getState();
+  expect(
+    (first.message_options.reasoning.content as GenericItem[])[0].user_defined
+      .edited
+  ).toBeUndefined();
+  expect(
+    store.getState().allMessageItemsByID[`${first.id}-reasoning-intro-item-0`]
+  ).toBeUndefined();
+  retainedNativeEvent.data.message.user_defined.edited = false;
+  retainedNativeEvent.data.fullMessage.context = { late: true };
+  expect(store.getState().allMessagesByID[first.id]).toMatchObject({
+    message_options: {
+      reasoning: { content: [{ user_defined: { edited: true } }] },
+    },
+  });
+  expect(store.getState().allMessagesByID[first.id].context).toBeUndefined();
+  expect(instance.getState()).toEqual(firstSnapshot);
   await act(async () => {
     await instance.messaging.addMessageChunk({
       streaming_metadata: { response_id: first.id },
@@ -218,43 +178,8 @@ it('keeps native reasoning frozen and legacy chunk reasoning mutable without ref
   );
 });
 
-it('tags native content before a synchronous store subscriber can prepare a reasoning event', async () => {
-  const { instance, store } =
-    await renderChatAndGetInstanceWithStore(createBaseConfig());
-  const observations: boolean[] = [];
-  const release = store.subscribe(() => {
-    const message = store.getState().allMessagesByID[
-      'reasoning-origin'
-    ] as MessageResponse;
-    const content = message?.message_options?.reasoning?.content;
-    if (Array.isArray(content) && content[0]) {
-      const local = synthesizeReasoningLocalMessageItem(
-        content[0],
-        message.id,
-        'sync-reasoning'
-      );
-      observations.push(
-        Object.isFrozen(prepareReasoningMessageEvent(message, local).message)
-      );
-    }
-  });
-  try {
-    await act(async () => {
-      await instance.messaging.upsertMessage(
-        'reasoning-origin',
-        MessageState.COMPLETE,
-        () => response(['native'])
-      );
-    });
-    expect(observations.length).toBeGreaterThan(0);
-    expect(observations.every(Boolean)).toBe(true);
-  } finally {
-    release();
-  }
-});
-
 it.each(['pause', 'handoff'])(
-  'retains native reasoning provenance through %s copies',
+  'copies native reasoning content through %s',
   async (copyKind) => {
     const config = createBaseConfig();
     config.serviceDesk = { skipConnectHumanAgentCard: true };
@@ -277,7 +202,6 @@ it.each(['pause', 'handoff'])(
         : { response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT }
     );
     const outputs = new Set<object>();
-    const observed: boolean[] = [];
     const release = store.subscribe(() => {
       const current = store.getState().allMessagesByID[
         message.id
@@ -285,14 +209,6 @@ it.each(['pause', 'handoff'])(
       const content = current?.message_options?.reasoning?.content;
       if (Array.isArray(content) && content[0]) {
         outputs.add(current.output);
-        const local = synthesizeReasoningLocalMessageItem(
-          content[0],
-          current.id,
-          'copied-reasoning'
-        );
-        observed.push(
-          Object.isFrozen(prepareReasoningMessageEvent(current, local).message)
-        );
       }
     });
     try {
@@ -304,7 +220,6 @@ it.each(['pause', 'handoff'])(
         );
       });
       expect(outputs.size).toBeGreaterThanOrEqual(2);
-      expect(observed.every(Boolean)).toBe(true);
       if (copyKind === 'pause') {
         expect(wait).toHaveBeenCalledTimes(1);
       } else {
@@ -323,9 +238,9 @@ it.each(['pause', 'handoff'])(
 );
 
 it.each(['addMessage', 'history'])(
-  'does not carry native provenance into %s after removal',
+  'fires one %s reasoning event after the native message is removed',
   async (route) => {
-    const { instance, store } =
+    const { instance } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     await act(async () => {
       await instance.messaging.upsertMessage(
@@ -357,14 +272,5 @@ it.each(['addMessage', 'history'])(
     expect(Object.isFrozen(events[0].data.message)).toBe(
       route === 'addMessage'
     );
-    const current = store.getState().allMessagesByID[
-      'reasoning-origin'
-    ] as MessageResponse;
-    const local = synthesizeReasoningLocalMessageItem(
-      (current.message_options.reasoning.content as GenericItem[])[0],
-      current.id,
-      'legacy-reasoning'
-    );
-    expect(prepareReasoningMessageEvent(current, local).message).toBe(current);
   }
 );

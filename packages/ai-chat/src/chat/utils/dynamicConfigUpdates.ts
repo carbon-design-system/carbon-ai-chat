@@ -11,6 +11,7 @@ import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ServiceManager } from '../../shared/services/ServiceManager';
 import { NamespaceService } from '../../shared/services/NamespaceService';
+import { messageTimeoutMS } from '../../shared/services/messaging/MessageCoordinator';
 import actions from '../../shared/store/actions';
 import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
 import { consoleDebug, consoleError } from '../../shared/utils/miscUtils';
@@ -164,10 +165,10 @@ export async function applyConfigChangesDynamically(
   const nextTimeoutSecs = newConfig.messaging?.messageTimeoutSecs;
   if (
     prevTimeoutSecs !== nextTimeoutSecs &&
-    nextTimeoutSecs &&
     serviceManager.messageCoordinator
   ) {
-    serviceManager.messageCoordinator.timeoutMS = nextTimeoutSecs * 1000;
+    serviceManager.messageCoordinator.timeoutMS =
+      messageTimeoutMS(nextTimeoutSecs);
   }
 
   // SERVICE-INTERNAL MIRROR: the human-agent service coordinates a service desk
