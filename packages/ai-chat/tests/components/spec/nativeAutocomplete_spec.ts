@@ -702,6 +702,43 @@ describe('native autocomplete', () => {
     expect(f.shell.querySelector('cds-aichat-autocomplete')).not.toBeNull();
   });
 
+  it.each([
+    ['an error', new Error('custom onSelect failed')],
+    ['undefined', undefined],
+  ])(
+    'throws %s from onSelect back to a custom list after the insert, without the chat error owner',
+    async (_kind, failure) => {
+      const order: string[] = [];
+      let props: CustomListProps;
+      const f = await fixture((view) => {
+        view.autocomplete = {
+          items,
+          onSelect: () => {
+            order.push('config');
+            throw failure;
+          },
+          renderCustomList: (next) => {
+            props = next;
+            return document.createElement('div');
+          },
+        };
+        view.onSelectItem = () => order.push('selected');
+      });
+      f.chain.run.mockImplementation(() => order.push('insert'));
+      await f.trigger();
+      let thrown: { error: unknown } | undefined;
+      try {
+        props.onSelect(items[0]);
+      } catch (error) {
+        thrown = { error };
+      }
+      await flush(f.view);
+      expect(thrown).toEqual({ error: failure });
+      expect(order).toEqual(['insert', 'config']);
+      expect(f.errorOccurred).not.toHaveBeenCalled();
+    }
+  );
+
   it('routes a throw from the insert itself through the chat error owner', async () => {
     const onSelect = jest.fn();
     const failure = new Error('insert failed');

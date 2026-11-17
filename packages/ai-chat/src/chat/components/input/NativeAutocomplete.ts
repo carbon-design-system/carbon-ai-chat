@@ -44,8 +44,8 @@ interface AutocompleteLifetime {
   pendingError?: { error: unknown };
   /** True while a chosen item that sends is reported to the host. */
   reportingSent: boolean;
-  /** True while a chosen item is inserted as plain autocomplete text. */
-  insertingText: boolean;
+  /** True while a chosen item is inserted into the input. */
+  selecting: boolean;
   /** The host's `onSelect` throw from that insert, if it threw. */
   insertError?: { error: unknown };
   configs: WeakMap<object, object>;
@@ -345,7 +345,7 @@ class NativeAutocomplete extends NativeChatView {
       active: true,
       retired: false,
       reportingSent: false,
-      insertingText: false,
+      selecting: false,
       configs: new WeakMap<object, object>(),
       failedResults: new WeakMap<SuggestionItem[], unknown>(),
     } as AutocompleteLifetime;
@@ -408,7 +408,7 @@ class NativeAutocomplete extends NativeChatView {
           // item, so the send still happens.
           if (lifetime.reportingSent) {
             config.onSelect(item);
-          } else if (lifetime.insertingText) {
+          } else if (lifetime.selecting) {
             try {
               config.onSelect(item);
             } catch (error) {
@@ -463,7 +463,7 @@ class NativeAutocomplete extends NativeChatView {
   private selectItem(lifetime: AutocompleteLifetime, item: SuggestionItem) {
     let insertError: { error: unknown } | undefined;
     this.run(lifetime, () => {
-      lifetime.insertingText = this.state.trigger?.type === 'autocomplete';
+      lifetime.selecting = true;
       try {
         lifetime.controller.select(item);
       } catch (error) {
@@ -473,7 +473,7 @@ class NativeAutocomplete extends NativeChatView {
         insertError = lifetime.insertError;
         return;
       } finally {
-        lifetime.insertingText = false;
+        lifetime.selecting = false;
         lifetime.insertError = undefined;
       }
       if (!lifetime.retired) {
