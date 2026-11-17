@@ -127,7 +127,7 @@ deepFreeze(VIEW_STATE_ALL_CLOSED);
 
 const DEFAULT_INPUT_STATE: InputState = {
   rawValue: '',
-  content: [],
+  content: { type: 'doc', content: [{ type: 'paragraph' }] },
   focused: false,
   fieldVisible: null,
   isReadonly: null,

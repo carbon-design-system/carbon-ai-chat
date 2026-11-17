@@ -54,7 +54,7 @@ describe('createInputImperativeHandle', () => {
     expect(latchRich).not.toHaveBeenCalled();
   });
 
-  it('reports no focus target while the input is disabled', () => {
+  it('reports the disabled input as the target without focusing it', () => {
     const { promptLine } = createSurface();
     const { requestFocus } = createInputImperativeHandle(
       () => promptLine,
@@ -62,7 +62,7 @@ describe('createInputImperativeHandle', () => {
     );
 
     promptLine.disabled = true;
-    expect(requestFocus()).toBe(false);
+    expect(requestFocus()).toBe(true);
     expect(promptLine.focus).not.toHaveBeenCalled();
 
     promptLine.disabled = false;

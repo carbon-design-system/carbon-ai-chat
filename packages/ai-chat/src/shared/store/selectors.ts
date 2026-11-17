@@ -218,6 +218,13 @@ function selectLanguagePack(
   return state.languagePack;
 }
 
+/** The locale the date library formats times with, once its data has loaded. */
+function selectLoadedLocale(
+  state: Pick<ConversationState, 'loadedLocale'>
+): string {
+  return state.loadedLocale;
+}
+
 export {
   selectHumanAgentDisplayState,
   selectIsInputToHumanAgent,
@@ -228,5 +235,6 @@ export {
   selectStopStreamingButtonVisible,
   selectInputUploadAndStreamingFields,
   selectLanguagePack,
+  selectLoadedLocale,
   selectHasInFlightUpload,
 };

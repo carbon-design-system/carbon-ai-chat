@@ -25,7 +25,6 @@ import { WriteableElementName } from '../../../types/instance/WriteableElements'
 import { MessageSendSource } from '../../../types/events/eventBusTypes';
 import { PageObjectId } from '../../../testing/PageObjectId';
 import { shallowEqual } from '../../../shared/store/appStore';
-import { observeWriteableElementPresence } from '../../utils/writeableElementPresence';
 import { NativeChatView } from '../shared/NativeChatView';
 
 interface HomeScreenProps {
@@ -58,7 +57,6 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
   private languagePack: HomeScreenLanguage;
   private showBackToAssistant = false;
   private aiEnabled = false;
-  private hasCustomContent = false;
 
   protected onViewConnected() {
     this.selectStore(
@@ -93,26 +91,16 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
         this.aiEnabled = aiEnabled;
       }
     );
-    this.own(
-      observeWriteableElementPresence(
-        this.serviceManager.writeableElements[
-          WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
-        ],
-        (present) => {
-          if (present !== this.hasCustomContent) {
-            this.hasCustomContent = present;
-            this.requestUpdate();
-          }
-        }
-      )
-    );
   }
 
   protected renderView() {
     const { greeting, starters, customContentOnly } = this.homescreen || {};
     const homeScreenWithStarters =
       starters?.isOn && Boolean(starters.buttons?.length);
-    const { hasCustomContent } = this;
+    const hasCustomContent =
+      this.serviceManager.writeableElements[
+        WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
+      ].hasChildNodes();
 
     return html`
       <div

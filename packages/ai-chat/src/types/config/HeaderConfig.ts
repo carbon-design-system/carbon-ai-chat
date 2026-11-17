@@ -48,6 +48,8 @@ export interface CustomMenuOption {
   /**
    * The URL to navigate to when the option is selected.
    * Provide either this or `handler`, but not both.
+   *
+   * Selecting a link option navigates without firing a {@link BusEventType.HEADER_MENU_CLICK} event.
    */
   href?: string;
 
@@ -64,8 +66,11 @@ export interface CustomMenuOption {
   disabled?: boolean;
 
   /**
-   * Optional data-testid attribute for testing purposes.
-   * This allows tests to reliably find and interact with specific menu options.
+   * A `data-testid` attribute for the menu option, so tests can find it.
+   *
+   * @experimental
+   * @deprecated In tests, select the menu option by its visible text instead.
+   * Removed in a 2.x minor release.
    */
   testId?: string;
 }
