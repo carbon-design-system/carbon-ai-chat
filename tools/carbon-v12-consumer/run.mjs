@@ -25,9 +25,9 @@ import { chromium } from '@playwright/test';
 import {
   assertHostParity,
   proveParityFailures,
-  readPackedManifest,
   readPublishedHostTypes,
-} from './manifests.mjs';
+} from '../manifest-consumer/hosts.mjs';
+import { readPackedManifest } from '../manifest-consumer/manifests.mjs';
 import {
   assertRegistrationProofs,
   prepareRegistrationProofs,

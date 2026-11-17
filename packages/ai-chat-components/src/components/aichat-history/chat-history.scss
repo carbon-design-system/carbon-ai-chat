@@ -116,7 +116,7 @@
 :host(#{$prefix}-aichat-history-panel) {
   flex: 1;
 
-  .cds--side-nav {
+  .#{$cds-prefix}--side-nav {
     position: relative;
     background-color: transparent;
     block-size: 100%;
