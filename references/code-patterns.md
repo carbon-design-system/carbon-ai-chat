@@ -50,9 +50,9 @@ The vendored `carbon-builder` skill instructs "Default to **React** unless the u
 
 **Follow repository verification gates.** The skill's "no tests" and "stop after emitting the requested files" defaults do not apply here. Complete the applicable [definition-of-done.md](definition-of-done.md) gate, including tests, docs, and review required by the change. Keep these overrides here; do not edit the vendored skill.
 
-## Naming & prefix discipline (build-breaking)
+## Naming & prefix discipline
 
-Never hardcode `cds--` in SCSS or TSX class strings — the `es-custom` build re-prefixes (`cds--custom`) and a literal `cds--` slips through unchanged, breaking that bundle.
+Never hardcode `cds--` in SCSS or TSX class strings. The prefixed builds turn `cds--` into `<prefix>--` by rewriting every bare `cds` in the output, so a literal works only because of that blanket rewrite. Building names from the prefix keeps the source correct without it.
 
 - **SCSS**: use `#{$prefix}--` (resolves to `cds--`), never the literal.
 - **TS/TSX**: use the prefix helpers, never a literal class string.
