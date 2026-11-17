@@ -7,10 +7,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../aichat-button/index.js';
+
 // https://storybook.js.org/docs/essentials/controls#conditional-controls
 
-import '../src/chat-button';
-import '../src/chat-button-skeleton';
 import { html } from 'lit';
 import {
   BUTTON_KIND,

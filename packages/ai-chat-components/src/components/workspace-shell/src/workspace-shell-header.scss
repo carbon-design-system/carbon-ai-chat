@@ -1,83 +1,8 @@
 /*
- *  Copyright IBM Corp. 2025, 2026
+ * Copyright IBM Corp. 2026
  *
- *  This source code is licensed under the Apache-2.0 license found in the
- *  LICENSE file in the root directory of this source tree.
- *
- *  @license
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
  */
 
-@use '@carbon/layout';
-@use '@carbon/styles/scss/theme';
-@use '@carbon/styles/scss/type';
-@use '@carbon/styles/scss/spacing';
-@use '../../../globals/scss/vars' as *;
-@use '@carbon/styles/scss/utilities/convert' as *;
-@use '@carbon/styles/scss/breakpoint' as *;
-
-:host(#{$prefix}-workspace-shell-header) {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: rem(24px) rem(32px);
-  border-block-end: solid rem(1px) theme.$chat-bubble-border;
-  color: theme.$text-secondary;
-  gap: spacing.$spacing-05;
-
-  @include type.type-style('body-01');
-
-  @include breakpoint-up('md') {
-    flex-direction: row;
-  }
-
-  ::marker {
-    content: '';
-  }
-
-  ::-webkit-details-marker {
-    display: none;
-  }
-}
-
-.#{$prefix}-workspace-shell {
-  &__header {
-    &-details {
-      cursor: pointer;
-
-      // Only add overflow when details is open
-      &:open {
-        overflow: auto;
-
-        .#{$prefix}-workspace-shell__header-chevron {
-          transform: rotate(180deg);
-        }
-      }
-    }
-
-    &-content {
-      display: flex;
-      flex-direction: column;
-      align-items: start;
-      gap: rem(16px);
-      inline-size: 100%;
-    }
-
-    &-title {
-      color: theme.$text-primary;
-      @include type.type-style('heading-04');
-    }
-
-    &-sub-title {
-      color: theme.$text-secondary;
-      margin-block-start: rem(-14px);
-      @include type.type-style('label-01');
-    }
-
-    &-summary {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      inline-size: 100%;
-    }
-  }
-}
+@forward '../../aichat-workspace-shell/aichat-workspace-shell-header';

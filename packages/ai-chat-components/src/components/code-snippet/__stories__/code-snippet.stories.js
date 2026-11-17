@@ -7,7 +7,8 @@
  *  @license
  */
 
-import '../src/code-snippet';
+import '../../aichat-code-snippet/index.js';
+
 import '../../card/index.js';
 import '@carbon/web-components/es/components/ai-label/index.js';
 import '@carbon/web-components/es/components/button/index.js';

@@ -63,7 +63,7 @@ describe('useChatAutocomplete', () => {
       'utf8'
     );
     expect(source).toContain(
-      'components/prompt-line/src/autocomplete-controller.js'
+      'components/aichat-prompt-line/autocomplete-controller.js'
     );
     expect(source).not.toContain('autocomplete-controller-element');
   });
@@ -74,10 +74,10 @@ describe('AutocompleteController module graph', () => {
   // environment on purpose, so it has to run after this case.
   it('reaches no Lit and registers no custom element', async () => {
     const defined = await tagsDefinedBy(
-      '../../components/prompt-line/src/autocomplete-controller.js'
+      '../../components/aichat-prompt-line/autocomplete-controller.js'
     );
     const module =
-      await import('../../components/prompt-line/src/autocomplete-controller.js');
+      await import('../../components/aichat-prompt-line/autocomplete-controller.js');
 
     // Without this the assertions below would also hold for a module that
     // failed to load at all.

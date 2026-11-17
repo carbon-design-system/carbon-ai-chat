@@ -7,7 +7,8 @@
  *  @license
  */
 
-import '../src/markdown';
+import '../../aichat-markdown/index.js';
+
 import '@carbon/web-components/es/components/data-table/index.js';
 import { html, render, LitElement } from 'lit';
 // `@vscode/markdown-it-katex` is a CommonJS module that assigns the plugin to

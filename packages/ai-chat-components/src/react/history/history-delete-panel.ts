@@ -9,12 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import CDSAIChatHistoryDeletePanel from '../../components/chat-history/src/history-delete-panel.js';
+import { CDSAIChatHistoryDeletePanel } from '../../components/aichat-history/index.js';
 import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
 const HistoryDeletePanel = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-history-delete-panel',
+    tagName: CDSAIChatHistoryDeletePanel.is,
     elementClass: CDSAIChatHistoryDeletePanel,
     react: React,
     events: {

@@ -26,8 +26,8 @@
   @each $pos in $positions {
     border-#{$pos}-radius: calc(
       var(
-          --#{$prefix}-border-radius-#{$pos},
-          var(--#{$prefix}-border-radius)
+          --#{$prefix}-aichat-border-radius-#{$pos},
+          var(--#{$prefix}-aichat-border-radius)
         ) - rem(1px)
     );
   }

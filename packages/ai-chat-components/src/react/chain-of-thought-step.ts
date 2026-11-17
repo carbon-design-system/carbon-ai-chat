@@ -10,12 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import { CDSAIChatChainOfThoughtStep } from '../components/chain-of-thought/src/chain-of-thought-step.js';
+import { CDSAIChatChainOfThoughtStep } from '../components/aichat-chain-of-thought/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ChainOfThoughtStep = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-chain-of-thought-step',
+    tagName: CDSAIChatChainOfThoughtStep.is,
     elementClass: CDSAIChatChainOfThoughtStep,
     react: React,
     events: {

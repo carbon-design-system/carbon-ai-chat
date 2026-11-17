@@ -7,7 +7,8 @@
  *  @license
  */
 
-import '../src/tool-call-data';
+import '../../aichat-chain-of-thought/index.js';
+
 import '../../markdown';
 import { html } from 'lit';
 

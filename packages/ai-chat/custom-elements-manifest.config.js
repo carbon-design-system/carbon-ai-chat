@@ -19,7 +19,13 @@ const hosts = [
   {
     name: 'ChatContainer',
     source: 'src/web-components/cds-aichat-container/cds-aichat-container.ts',
-    module: 'dist/es/web-components/cds-aichat-container/index.js',
+    module:
+      'dist/es/web-components/cds-aichat-container/cds-aichat-container.js',
+    barrel: {
+      source: 'src/web-components/cds-aichat-container/index.ts',
+      module: 'dist/es/web-components/cds-aichat-container/index.js',
+    },
+    registrationSource: 'src/web-components/cds-aichat-container/register.ts',
     attributesInterface: {
       name: 'CdsAiChatContainerAttributes',
       source: 'src/web-components/cds-aichat-container/cds-aichat-container.ts',
@@ -27,8 +33,14 @@ const hosts = [
   },
   {
     name: 'ChatCustomElement',
-    source: 'src/web-components/cds-aichat-custom-element/index.ts',
-    module: 'dist/es/web-components/cds-aichat-custom-element/index.js',
+    source:
+      'src/web-components/cds-aichat-custom-element/cds-aichat-custom-element.ts',
+    module:
+      'dist/es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js',
+    barrel: {
+      source: 'src/web-components/cds-aichat-custom-element/index.ts',
+      module: 'dist/es/web-components/cds-aichat-custom-element/index.js',
+    },
     attributesInterface: {
       name: 'CdsAiChatCustomElementAttributes',
       source: 'src/web-components/cds-aichat-custom-element/types.ts',
@@ -42,6 +54,9 @@ export default {
     publicConfigPath,
     basePath,
     ...hosts.map(({ source }) => source),
+    ...hosts.flatMap(({ barrel, registrationSource }) =>
+      [barrel?.source, registrationSource].filter(Boolean)
+    ),
     ...hosts.map(({ attributesInterface }) => attributesInterface.source),
   ],
   outdir: '.',

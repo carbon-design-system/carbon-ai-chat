@@ -10,16 +10,16 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import CDSAIChatFeedbackElement from '../components/feedback/src/feedback.js';
+import { CDSAIChatFeedback as CDSAIChatFeedbackElement } from '../components/aichat-feedback/index.js';
 import {
   type FeedbackInitialValues,
   type FeedbackSubmitDetails,
-} from '../components/feedback/src/feedback.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge';
+} from '../components/aichat-feedback/aichat-feedback.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const Feedback = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-feedback',
+    tagName: CDSAIChatFeedbackElement.is,
     elementClass: CDSAIChatFeedbackElement,
     react: React,
     events: {

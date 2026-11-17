@@ -10,7 +10,7 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-import PromptLineShellElement from '../components/prompt-line/src/prompt-line-shell.js';
+import { PromptLineShellElement } from '../components/aichat-prompt-line/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 /**
@@ -22,7 +22,7 @@ import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
  */
 const PromptLineShell = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-prompt-line-shell',
+    tagName: PromptLineShellElement.is,
     elementClass: PromptLineShellElement,
     react: React,
     events: {},

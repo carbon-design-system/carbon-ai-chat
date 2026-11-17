@@ -7,6 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../../../aichat-prompt-line/index.js';
+
 /**
  * Regression coverage for issue #2152 — a host config update rebuilt an
  * equivalent extension set, which recreated the live Tiptap editor and reset
@@ -17,7 +19,6 @@ import { expect, fixture, html, nextFrame, oneEvent } from '@open-wc/testing';
 import { Extension } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
 
-import '../prompt-line.js';
 import { TYPING_TIMEOUT_MS } from '../prompt-line-constants.js';
 import type PromptLineElement from '../prompt-line.js';
 import { buildCarbonExtensions } from '../tiptap/build-extensions.js';

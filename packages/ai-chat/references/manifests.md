@@ -8,7 +8,7 @@ The public host interfaces can extend a config field's type. The plugin reads th
 
 The Rollup watcher does not rerun the analyzer. After table, type, or host metadata edits, run `npm run custom-elements --workspace=@carbon/ai-chat` from the root to refresh the CEM.
 
-The manifest projects both concrete hosts onto their published default entries. Inherited config metadata stays on each host. The abstract base has no public module or tag. Keep declaration and export references resolvable in packed packages.
+The manifest keeps each concrete host declaration on its pure class module. Its public registering index owns the custom-element definition and points back to that declaration. Inherited config metadata stays on each host. The plugin checks that the public barrel loads the actual registration; a type-only import does not count. The abstract base has no public module or tag. Keep all references resolvable in packed packages.
 
 ## What builds and checks do
 

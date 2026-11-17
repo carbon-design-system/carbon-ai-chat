@@ -7,7 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import '../src/shell.js';
+import '../../aichat-shell/index.js';
+
 import '../../prompt-line/index.js';
 import '@carbon/web-components/es/components/button/index.js';
 import Document16 from '@carbon/icons/es/document/16.js';

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 
 function fail(message) {
   throw new Error(`Flattened config manifest: ${message}`);
@@ -324,16 +324,75 @@ function normalizeReactiveMetadata(declaration, properties) {
   }
 }
 
-function projectHost(manifest, host, typeModule, reactiveNames, stateNames) {
-  const source = manifest.modules.find(
-    (module) => resolve(module.path) === resolve(host.source)
+function moduleKey(path) {
+  return resolve(path).replace(/\.[cm]?[jt]sx?$/, '');
+}
+
+function moduleAt(manifest, source) {
+  return manifest.modules.find(
+    (module) => moduleKey(module.path) === moduleKey(source)
   );
+}
+
+function importsRegistration(
+  source,
+  registrationSource,
+  imports,
+  visited = new Set()
+) {
+  const key = moduleKey(source);
+  if (key === moduleKey(registrationSource)) {
+    return true;
+  }
+  if (visited.has(key)) {
+    return false;
+  }
+  visited.add(key);
+  return (imports.get(key) ?? []).some((target) =>
+    [target, `${target}/index`].some((candidate) =>
+      importsRegistration(candidate, registrationSource, imports, visited)
+    )
+  );
+}
+
+function validateRegistration(manifest, host, tagName, imports) {
+  const source = host.registrationSource ?? host.barrel?.source ?? host.source;
+  const registration = moduleAt(manifest, source)?.exports?.find(
+    (entry) =>
+      entry.kind === 'custom-element-definition' &&
+      entry.name === tagName &&
+      entry.declaration.name === host.name &&
+      moduleKey(entry.declaration.module ?? source) === moduleKey(host.source)
+  );
+  if (!registration) {
+    fail(`missing registration for "${host.name}" in "${source}".`);
+  }
+  if (
+    host.barrel &&
+    !importsRegistration(host.barrel.source, source, imports)
+  ) {
+    fail(
+      `public barrel "${host.barrel.source}" does not load registration for "${host.name}".`
+    );
+  }
+}
+
+function projectHost(
+  manifest,
+  host,
+  typeModule,
+  reactiveNames,
+  stateNames,
+  imports
+) {
+  const source = moduleAt(manifest, host.source);
   const original = source?.declarations?.find(
     (declaration) => declaration.name === host.name
   );
   if (!original?.tagName) {
     fail(`missing tagged host "${host.name}".`);
   }
+  validateRegistration(manifest, host, original.tagName, imports);
   const declaration = structuredClone(original);
   const privateMembers = new Map(
     (declaration.members ?? [])
@@ -375,23 +434,62 @@ function projectHost(manifest, host, typeModule, reactiveNames, stateNames) {
     }
   }
   normalizeReactiveMetadata(declaration, reactiveNames);
-  return {
+  const reference = { name: host.name, module: host.module };
+  const definition = {
+    kind: 'custom-element-definition',
+    name: declaration.tagName,
+    declaration: reference,
+  };
+  const module = {
     kind: 'javascript-module',
     path: host.module,
     declarations: [declaration],
-    exports: [
-      {
-        kind: 'js',
-        name: 'default',
-        declaration: { name: host.name, module: host.module },
-      },
-      {
-        kind: 'custom-element-definition',
-        name: declaration.tagName,
-        declaration: { name: host.name, module: host.module },
-      },
-    ],
+    exports: [{ kind: 'js', name: 'default', declaration: reference }],
   };
+  if (!host.barrel) {
+    module.exports.push(definition);
+    return [module];
+  }
+  const barrel = moduleAt(manifest, host.barrel.source);
+  if (
+    !barrel?.exports?.some(
+      (entry) => entry.kind === 'js' && entry.name === 'default'
+    )
+  ) {
+    fail(`public barrel "${host.barrel.source}" does not export its host.`);
+  }
+  if (
+    source.exports?.some(
+      (entry) => entry.kind === 'js' && entry.name === host.name
+    )
+  ) {
+    module.exports.push({
+      kind: 'js',
+      name: host.name,
+      declaration: reference,
+    });
+  }
+  return [
+    module,
+    {
+      kind: 'javascript-module',
+      path: host.barrel.module,
+      declarations: [],
+      exports: [
+        ...barrel.exports
+          .filter(
+            (entry) =>
+              entry.kind === 'js' && ['default', host.name].includes(entry.name)
+          )
+          .map((entry) => ({
+            kind: 'js',
+            name: entry.name,
+            declaration: reference,
+          })),
+        definition,
+      ],
+    },
+  ];
 }
 
 function publishTypeReferences(value, typeModule) {
@@ -451,6 +549,7 @@ export function createFlattenedConfigPlugin({
   let reactiveMembers;
   let stateMembers;
   let hostInterfaces;
+  const imports = new Map();
   return {
     name: 'flattened-config',
     initialize() {
@@ -461,6 +560,40 @@ export function createFlattenedConfigPlugin({
       reactiveMembers = new Map();
       stateMembers = new Map();
       hostInterfaces = new Map();
+      imports.clear();
+    },
+    collectPhase({ ts, node }) {
+      if (!ts.isSourceFile(node)) {
+        return;
+      }
+      const edges = node.statements
+        .filter(
+          (statement) =>
+            (ts.isImportDeclaration(statement) ||
+              ts.isExportDeclaration(statement)) &&
+            statement.moduleSpecifier &&
+            ts.isStringLiteral(statement.moduleSpecifier) &&
+            statement.moduleSpecifier.text.startsWith('.') &&
+            !statement.isTypeOnly &&
+            !statement.importClause?.isTypeOnly &&
+            !(
+              statement.exportClause?.elements?.length &&
+              statement.exportClause.elements.every(
+                (binding) => binding.isTypeOnly
+              )
+            ) &&
+            !(
+              statement.importClause?.namedBindings?.elements?.length &&
+              !statement.importClause.name &&
+              statement.importClause.namedBindings.elements.every(
+                (binding) => binding.isTypeOnly
+              )
+            )
+        )
+        .map((statement) =>
+          resolve(dirname(node.fileName), statement.moduleSpecifier.text)
+        );
+      imports.set(moduleKey(node.fileName), edges);
     },
     analyzePhase({ ts, node, moduleDoc }) {
       const path = resolve(moduleDoc.path);
@@ -539,18 +672,16 @@ export function createFlattenedConfigPlugin({
           );
         }
       }
-      const modules = hosts.map((host) =>
-        projectHost(
+      customElementsManifest.modules = hosts.flatMap((host) => {
+        const modules = projectHost(
           customElementsManifest,
           host,
           typeModule,
           reactiveMembers.get(host.name) ?? new Map(),
-          stateMembers.get(host.name) ?? new Set()
-        )
-      );
-      for (const [index, module] of modules.entries()) {
-        const declaration = module.declarations[0];
-        const host = hosts[index];
+          stateMembers.get(host.name) ?? new Set(),
+          imports
+        );
+        const declaration = modules[0].declarations[0];
         addFields(
           declaration,
           fields,
@@ -560,8 +691,8 @@ export function createFlattenedConfigPlugin({
           host.attributesInterface?.name
         );
         addFields(declaration, synthetic, baseMembers, typeModule);
-      }
-      customElementsManifest.modules = modules;
+        return modules;
+      });
     },
   };
 }

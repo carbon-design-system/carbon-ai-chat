@@ -13,7 +13,7 @@ import {
   render as renderWithTestingLibrary,
   waitFor,
 } from '@testing-library/react';
-import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
+import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/aichat-markdown/utils/plugin-host-container.js';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
@@ -128,6 +128,41 @@ test.each([0, 1, 2])(
     outer.remove();
   }
 );
+
+test('gives an inline host the class the inline reset styles skip', () => {
+  const inlineMessage = message();
+  inlineMessage.input.display_content = {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'custom', attrs: { label: 'fallback' } }],
+      },
+    ],
+  };
+  store.dispatch(
+    actions.setAppStateValue('allMessagesByID', { message: inlineMessage })
+  );
+  let chip: HTMLSpanElement | null = null;
+  const view = render(
+    <InputNodePortalsContainer
+      chatWrapper={document.createElement('div')}
+      chatInstance={instance}
+      renderUserDefinedInputNode={() => (
+        <span
+          ref={(node) => {
+            chip = node;
+          }}>
+          custom
+        </span>
+      )}
+    />
+  );
+  expect(chip?.parentElement?.className).toBe(
+    'cds-aichat-markdown-inline-plugin'
+  );
+  view.unmount();
+});
 
 describe.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
   '%s input nodes',

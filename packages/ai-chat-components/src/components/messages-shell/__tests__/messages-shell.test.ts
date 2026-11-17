@@ -13,7 +13,7 @@ import prefix from '../../../globals/settings.js';
 import '../index.js';
 import type CDSAIChatMessagesShell from '../src/messages-shell.js';
 
-const blockClass = `${prefix}-messages-shell`;
+const blockClass = `${prefix}-aichat-messages-shell`;
 const scrollerSelector = `.${blockClass}__scroller`;
 const handleSelector = `.${blockClass}__scroll-handle`;
 const scrollEvent = `${blockClass}-scroll`;

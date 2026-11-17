@@ -21,7 +21,7 @@ import type {
   StartersConfig as _StartersConfig,
   SuggestionItem as _SuggestionItem,
   CustomListProps as _CustomListProps,
-} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+} from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 import type { ToolbarAction } from './HeaderConfig';
 
 /**

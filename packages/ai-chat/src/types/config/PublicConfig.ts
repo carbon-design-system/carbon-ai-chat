@@ -16,7 +16,7 @@ import type {
 import { LauncherConfig } from './LauncherConfig';
 import { PersistedStateConfig } from './PersistedStateConfig';
 import { DeepPartial } from '../utilities/DeepPartial';
-import type { MarkdownItPlugin as _MarkdownItPlugin } from '@carbon/ai-chat-components/es/components/markdown/index.js';
+import type { MarkdownItPlugin as _MarkdownItPlugin } from '@carbon/ai-chat-components/es/components/aichat-markdown/index.js';
 import type { KeyboardShortcuts } from './ShortcutConfig';
 import { CarbonTheme } from './CarbonTheme';
 import { DisclaimerPublicConfig } from './DisclaimerConfig';

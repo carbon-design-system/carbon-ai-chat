@@ -10,13 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAICarousel from '../components/carousel/src/carousel';
-import { withWebComponentBridge } from './utils/withWebComponentBridge';
+import { CDSAICarousel } from '../components/aichat-carousel/index.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const Carousel = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-carousel',
+    tagName: CDSAICarousel.is,
     elementClass: CDSAICarousel,
     react: React,
     events: {

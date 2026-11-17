@@ -10,13 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 
-// Export the actual class for the component that will *directly* be wrapped with React.
-import CDSAIChatAudioPlayer from '../components/audio-player/src/audio-player.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge';
+import { AudioPlayer as CDSAIChatAudioPlayer } from '../components/aichat-audio-player/index.js';
+import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const AudioPlayer = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-audio-player',
+    tagName: CDSAIChatAudioPlayer.is,
     elementClass: CDSAIChatAudioPlayer,
     react: React,
     events: {

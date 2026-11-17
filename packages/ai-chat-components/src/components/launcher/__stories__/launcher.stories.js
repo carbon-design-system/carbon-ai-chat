@@ -7,7 +7,8 @@
  *  @license
  */
 
-import '../src/launcher';
+import '../../aichat-launcher/index.js';
+
 import { html } from 'lit';
 import { fn } from 'storybook/test';
 import { ifDefined } from 'lit/directives/if-defined.js';

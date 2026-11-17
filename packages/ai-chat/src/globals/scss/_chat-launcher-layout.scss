@@ -47,14 +47,14 @@ $launcher-position-right: get-var(
      Uses logical properties for automatic RTL support
      ============================================================================ */
 
-  .#{$prefix}-launcher {
+  .#{$prefix}-aichat-launcher {
     position: fixed;
     z-index: chat-theme.$z-index;
     inset-block-end: $launcher-position-bottom;
     inset-inline-end: $launcher-position-right;
 
     @media (prefers-reduced-motion: no-preference) {
-      animation: #{$prefix}-launcher-in motion.$duration-moderate-01
+      animation: #{$prefix}-aichat-launcher-in motion.$duration-moderate-01
         motion.motion(entrance, expressive) both;
     }
   }
@@ -66,7 +66,7 @@ $launcher-position-right: get-var(
      may not reflect a dir="rtl" set on a sub-element of the page.
      ============================================================================ */
 
-  .#{$prefix}-launcher:dir(rtl) {
+  .#{$prefix}-aichat-launcher:dir(rtl) {
     right: unset;
     left: $launcher-position-right;
   }
@@ -77,7 +77,7 @@ $launcher-position-right: get-var(
      the entrance animation on remount)
      ============================================================================ */
 
-  .#{$prefix}-launcher--hidden {
+  .#{$prefix}-aichat-launcher--hidden {
     visibility: hidden;
   }
 
@@ -85,7 +85,7 @@ $launcher-position-right: get-var(
      LAUNCHER - KEYFRAME ANIMATIONS
      ============================================================================ */
 
-  @keyframes #{$prefix}-launcher-in {
+  @keyframes #{$prefix}-aichat-launcher-in {
     0% {
       opacity: 0;
     }

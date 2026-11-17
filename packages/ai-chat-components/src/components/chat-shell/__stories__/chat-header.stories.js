@@ -7,8 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import '../src/shell';
-import '../src/chat-header';
+import '../../aichat-shell/index.js';
+
 import '@carbon/web-components/es/components/ai-label/index.js';
 import '@carbon/web-components/es/components/button/index.js';
 import '@carbon/web-components/es/components/content-switcher/index.js';

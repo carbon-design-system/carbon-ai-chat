@@ -401,6 +401,25 @@ function addDefinition(module, tagName, declaration) {
   }
 }
 
+function staticIsValue(ts, staticIs, className) {
+  if (!staticIs) {
+    return undefined;
+  }
+  if (staticIs.initializer) {
+    return staticIs.initializer;
+  }
+  const statements = staticIs.body?.statements ?? [];
+  if (
+    ts.isGetAccessorDeclaration(staticIs) &&
+    statements.length === 1 &&
+    ts.isReturnStatement(statements[0]) &&
+    statements[0].expression
+  ) {
+    return statements[0].expression;
+  }
+  throw new Error(`Unsupported static is declaration for ${className}.`);
+}
+
 export function carbonElementTagPlugin({ prefix }) {
   const classes = [];
   const registrations = [];
@@ -487,9 +506,9 @@ export function carbonElementTagPlugin({ prefix }) {
           info.constants,
           prefix
         );
+      const staticValue = staticIsValue(ts, staticIs, node.name.text);
       const staticTag =
-        staticIs?.initializer &&
-        stringValue(ts, staticIs.initializer, info.constants, prefix);
+        staticValue && stringValue(ts, staticValue, info.constants, prefix);
       if (decoratorTag && staticTag && decoratorTag !== staticTag) {
         throw new Error(`Conflicting tag names for ${node.name.text}.`);
       }

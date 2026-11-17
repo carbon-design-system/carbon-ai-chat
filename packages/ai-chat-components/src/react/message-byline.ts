@@ -9,13 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import prefix from '../globals/settings.js';
-import CDSAIChatMessageByline from '../components/message-byline/src/message-byline.js';
+import { CDSAIChatMessageByline } from '../components/aichat-message-byline/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const MessageByline = withWebComponentBridge(
   createComponent({
-    tagName: `${prefix}-message-byline`,
+    tagName: CDSAIChatMessageByline.is,
     elementClass: CDSAIChatMessageByline,
     react: React,
   })

@@ -194,7 +194,9 @@ async function assertInlineStyleDeclarations(
       join(root, tree, 'components/markdown/index.d.ts'),
       `${name}: style imports must resolve to the installed packed declarations.`
     );
-    const styles = resolve('./src/inline-markdown.js', index);
+    // The legacy path forwards to the component folder, which owns the
+    // style declarations.
+    const styles = resolve('../aichat-markdown/inline-markdown.js', index);
     assert.ok(styles, `${name}: unresolved inline Markdown styles in ${tree}.`);
     pending.push(styles);
   }
@@ -376,7 +378,7 @@ export async function assertPackedResolution(consumer) {
     loadPaths: [join(consumer, 'node_modules')],
     quietDeps: true,
   });
-  assert.match(result.css, /--consumer-prefix: cds-aichat/);
+  assert.match(result.css, /--consumer-prefix: cds;/);
   await writeFile(join(consumer, 'resolution.css'), result.css);
   console.log('Styles: existing packed Sass exports compile.');
 }

@@ -7,6 +7,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import './src/message-byline.js';
-
-export { default as CDSAIChatMessageByline } from './src/message-byline.js';
+export * from '../aichat-message-byline/index.js';

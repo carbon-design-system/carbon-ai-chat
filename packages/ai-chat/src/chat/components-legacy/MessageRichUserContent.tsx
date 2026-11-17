@@ -20,7 +20,7 @@ import React, {
 
 import { createPortal } from 'react-dom';
 import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
-import { installInlineRunStyles } from '@carbon/ai-chat-components/es/components/markdown/src/utils/inline-run-projection.js';
+import { installInlineRunStyles } from '@carbon/ai-chat-components/es/components/aichat-markdown/utils/inline-run-projection.js';
 import {
   mountHost,
   bindProjectedOwner,
@@ -31,7 +31,7 @@ import {
 
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { InlineMarkdown } from '../components/helpers/InlineMarkdown/InlineMarkdown';
-import { renderTokenChip } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
+import { renderTokenChip } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 import type { JSONContent } from '@tiptap/core';
 import type { MessageRequest } from '../../types/messaging/Messages';
 
@@ -130,7 +130,7 @@ function ProjectedParagraph({
       return undefined;
     }
     host.slot = slotKey;
-    host.className = `${prefix}-markdown-inline-run ${prefix}-markdown-inline-run--reset`;
+    host.className = `${prefix}-aichat-markdown-inline-run ${prefix}-aichat-markdown-inline-run--reset`;
     mountHost(owner, host, slotKey, true);
     const releaseStyles = installInlineRunStyles(host);
     return () => {

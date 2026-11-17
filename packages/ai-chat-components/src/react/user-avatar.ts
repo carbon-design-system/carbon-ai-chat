@@ -9,13 +9,12 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import prefix from '../globals/settings.js';
-import CDSAIChatUserAvatar from '../components/user-avatar/src/user-avatar.js';
+import { CDSAIChatUserAvatar } from '../components/aichat-user-avatar/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const UserAvatar = withWebComponentBridge(
   createComponent({
-    tagName: `${prefix}-user-avatar`,
+    tagName: CDSAIChatUserAvatar.is,
     elementClass: CDSAIChatUserAvatar,
     react: React,
   })

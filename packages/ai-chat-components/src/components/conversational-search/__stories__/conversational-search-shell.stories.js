@@ -7,8 +7,9 @@
  *  @license
  */
 
-import '../src/conversational-search-shell';
-import '../../markdown/src/markdown';
+import '../../aichat-conversational-search/index.js';
+import '../../aichat-markdown/index.js';
+
 import { html, LitElement } from 'lit';
 import { useArgs } from 'storybook/preview-api';
 import { action } from 'storybook/actions';

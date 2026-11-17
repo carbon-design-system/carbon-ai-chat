@@ -7,7 +7,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import '../src/truncated-text';
+import '../../aichat-truncated-text/index.js';
+
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 

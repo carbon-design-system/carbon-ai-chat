@@ -12,7 +12,7 @@ import prefix from '../../../globals/settings.js';
 import '../index.js';
 import type CDSAIChatUserAvatar from '../src/user-avatar.js';
 
-const blockClass = `${prefix}-user-avatar`;
+const blockClass = `${prefix}-aichat-user-avatar`;
 const imageSelector = `.${blockClass}__image`;
 const initialSelector = `.${blockClass}__initial`;
 const iconSelector = `.${blockClass}__icon`;

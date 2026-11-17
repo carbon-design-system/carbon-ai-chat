@@ -20,7 +20,7 @@ Load this before writing findings. Choose the gates for this diff and check rule
 
 - **Logic trapped in a component**: parsing, formatting, validation, state changes, or timing/geometry math belong in a plain module. See [framework-agnostic logic](../../../../references/code-patterns.md#framework-agnostic-logic). Flag logic you could only test by rendering.
 - **New components added under `packages/ai-chat/src/chat/components-legacy/`**: that directory is closed to new components ([component placement](../../../../references/code-patterns.md#component-placement)).
-- **Prefix / SCSS violations**: hardcoded `cds--`, missing `#{$prefix}--`, descendant nesting, or physical properties instead of logical ones for RTL ([naming & prefix discipline](../../../../references/code-patterns.md#naming--prefix-discipline-build-breaking), [SCSS authoring](../../../../references/code-patterns.md#scss-authoring)).
+- **Prefix / SCSS violations**: hardcoded `cds--`, missing `#{$prefix}--`, descendant nesting, or physical properties instead of logical ones for RTL ([naming & prefix discipline](../../../../references/code-patterns.md#naming--prefix-discipline), [SCSS authoring](../../../../references/code-patterns.md#scss-authoring)).
 - **Accessibility** on UI changes: keyboard navigation, focus management, ARIA roles/labels, color contrast, and RTL behavior. Carbon is a design system, so a11y regressions are blockers.
 - **Dependencies**: new or upgraded packages need a reason. Flag peer-dep conflicts, duplicate functions in existing deps, or license conflicts.
 

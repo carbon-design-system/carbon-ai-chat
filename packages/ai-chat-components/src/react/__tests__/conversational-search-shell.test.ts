@@ -13,7 +13,7 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import ConversationalSearchShell from '@carbon/ai-chat-components/es/react/conversational-search-shell.js';
-import ConversationalSearchShellElement from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-shell.js';
+import ConversationalSearchShellElement from '@carbon/ai-chat-components/es/components/aichat-conversational-search/aichat-conversational-search-shell.js';
 
 let container: HTMLDivElement;
 let root: Root;

@@ -1,0 +1,19 @@
+/*
+ *  Copyright IBM Corp. 2025, 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '@carbon/layout';
+@use '../../globals/scss/vars' as *;
+@use '@carbon/styles/scss/utilities/convert' as *;
+
+:host(#{$prefix}-aichat-workspace-shell-body) {
+  display: block;
+  overflow: auto;
+  flex: 1;
+  padding: rem(24px) rem(32px);
+}

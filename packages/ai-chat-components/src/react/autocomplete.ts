@@ -9,7 +9,7 @@
 
 import { createComponent } from '@lit/react';
 import React from 'react';
-import AutocompleteElement from '../components/prompt-line/autocomplete/src/autocomplete.js';
+import { AutocompleteElement } from '../components/aichat-autocomplete/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 // TODO: Icon transformation for suggestion items is handled upstream in prompt-line-shell.tsx.
@@ -17,7 +17,7 @@ import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 // React-side transformation is needed here.
 const CDSAIChatAutocomplete = withWebComponentBridge(
   createComponent({
-    tagName: 'cds-aichat-autocomplete',
+    tagName: AutocompleteElement.is,
     elementClass: AutocompleteElement,
     react: React,
     events: {

@@ -16,6 +16,7 @@
         "src/aiChatEntry.tsx",
         "src/serverEntry.ts",
         "src/web-components/**/index.ts",
+        "src/web-components/cds-aichat-*/cds-aichat-*.ts",
         "tasks/rollup.aichat.js",
         "tests/**/*.{ts,tsx}"
       ],
@@ -25,6 +26,8 @@
       "entry": [
         "src/index.ts",
         "src/components/**/index.ts",
+        "src/components/**/src/**/*.ts",
+        "src/components/*/defs.ts",
         "src/react/**/*.{ts,tsx}",
         "src/globals/**/*.ts",
         "src/testing/**/*.ts",

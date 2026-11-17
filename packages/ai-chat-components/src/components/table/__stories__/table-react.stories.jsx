@@ -7,6 +7,8 @@
  *  @license
  */
 
+import '../../aichat-table/index.js';
+
 import React from 'react';
 import { createComponent } from '@lit/react';
 import '../index';

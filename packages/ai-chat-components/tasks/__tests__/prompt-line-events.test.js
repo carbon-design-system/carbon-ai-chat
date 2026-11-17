@@ -16,7 +16,7 @@ import { litPlugin } from '@custom-elements-manifest/analyzer/src/features/frame
 import config from '../../custom-elements-manifest.config.js';
 
 const packageRoot = fileURLToPath(new URL('../../', import.meta.url));
-const sourceDir = 'src/components/prompt-line/src';
+const sourceDir = 'src/components/aichat-prompt-line';
 
 function parse(file) {
   return ts.createSourceFile(
@@ -110,8 +110,12 @@ const unique = (names) => [...new Set(names)].sort();
 
 test('prompt line @fires tags match its dispatch sites and React wrapper', async () => {
   const files = await globby(
-    [`${sourceDir}/prompt-line*.ts`, `${sourceDir}/tiptap/*.ts`],
-    { cwd: packageRoot, ignore: [`${sourceDir}/prompt-line-shell.ts`] }
+    [
+      `${sourceDir}/aichat-prompt-line.ts`,
+      `${sourceDir}/prompt-line*.ts`,
+      `${sourceDir}/tiptap/*.ts`,
+    ],
+    { cwd: packageRoot }
   );
   const scans = files.map((file) => dispatchedEvents(parse(file)));
   assert.deepEqual(
@@ -122,7 +126,7 @@ test('prompt line @fires tags match its dispatch sites and React wrapper', async
   const dispatched = unique(scans.flatMap((scan) => scan.names));
 
   const manifest = create({
-    modules: [parse(`${sourceDir}/prompt-line.ts`)],
+    modules: [parse(`${sourceDir}/aichat-prompt-line.ts`)],
     plugins: [...litPlugin(), ...config.plugins],
   });
   const element = manifest.modules[0].declarations.find(

@@ -7,11 +7,9 @@
  *  @license
  */
 
-import '../src/chain-of-thought';
-import '../src/chain-of-thought-step';
-import '../src/tool-call-data';
-import '../src/chain-of-thought-toggle';
-import '../../markdown/src/markdown';
+import '../../aichat-chain-of-thought/index.js';
+import '../../aichat-markdown/index.js';
+
 import { html, nothing } from 'lit';
 
 const sampleSteps = [
