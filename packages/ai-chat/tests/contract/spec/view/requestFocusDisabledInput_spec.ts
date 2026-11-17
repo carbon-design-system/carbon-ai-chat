@@ -9,7 +9,9 @@
 
 import { act } from '@testing-library/react';
 
+import { PageObjectId } from '../../../../src/aiChatEntry';
 import {
+  byTestId,
   contractSetup,
   deepActiveElement,
   focusHostButton,
@@ -39,6 +41,8 @@ describe('requestFocus with a disabled input', () => {
     const { instance } = await openChat({ input: { isDisabled: true } });
     const editor = await act(async () => instance.input.getEditor());
     expect(editor.isEditable).toBe(false);
+    // The loaded editor is the input the chat shows.
+    expect(byTestId(PageObjectId.INPUT)).toBe(editor.view.dom);
     const button = focusHostButton();
     let result: boolean | void;
     await act(async () => {
