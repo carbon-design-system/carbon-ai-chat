@@ -337,5 +337,11 @@ it('seeds tracked send content and its length guard when React supplies the firs
   expect(control.disableSend).toBe(false);
   control.dispatchEvent(new CustomEvent('cds-aichat-input-send'));
   expect(props.onSendInput).toHaveBeenCalledTimes(1);
-  expect(props.onSendInput).toHaveBeenCalledWith('seeded draft', undefined);
+  // The staged draft is restored once into the first surface.
+  expect(props.onSendInput).toHaveBeenCalledWith('seeded draft', {
+    type: 'doc',
+    content: [
+      { type: 'paragraph', content: [{ type: 'text', text: 'seeded draft' }] },
+    ],
+  });
 });
