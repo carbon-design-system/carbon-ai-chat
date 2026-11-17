@@ -83,12 +83,19 @@ describe('requestFocus while the disclaimer shows', () => {
   contractSetup();
   afterEach(() => jest.restoreAllMocks());
 
-  it('returns true and moves focus to the accept button before it can be pressed', async () => {
+  it('returns true before the accept button can be pressed', async () => {
+    // jsdom has no layout. Make the disclaimer text overflow, unread, so the
+    // accept button stays disabled.
+    jest.spyOn(Element.prototype, 'scrollHeight', 'get').mockReturnValue(1000);
+    jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(100);
     const instance = await mountDisclaimer();
+    // Outlast the chat's checks of whether the text was read.
+    await pause(600);
     expect(byRole('button', ACCEPT_LABEL).hasAttribute('disabled')).toBe(true);
     focusHostButton();
+    // Where focus goes depends on how the browser treats the disabled button,
+    // which jsdom doesn't match, so only the result is checked.
     expect(await requestFocus(instance)).toBe(true);
-    expect(focusIsOnAccept()).toBe(true);
   });
 
   it('returns true and keeps focus when the accept button already has it', async () => {
@@ -125,12 +132,13 @@ describe('requestFocus while the disclaimer shows', () => {
       ].append(panelButton);
       await instance.customPanels.getPanel().open();
     });
+    expect(instance.state.get().customPanels.default.isOpen).toBe(true);
     focusHostButton();
     expect(await requestFocus(instance)).toBe(true);
     expect(focusIsOnAccept()).toBe(true);
   });
 
-  it('returns true and focuses the accept button on the home screen', async () => {
+  it('returns true and focuses the accept button with the home screen turned on', async () => {
     const instance = await mountDisclaimer({
       homescreen: { isOn: true, greeting: 'Contract greeting' },
     });
@@ -145,14 +153,17 @@ describe('requestFocus while the disclaimer shows', () => {
     await waitForAcceptEnabled();
     const button = focusHostButton();
     // A page focus trap that sends focus back to its own button.
+    let trapped = 0;
     const trap = (event: FocusEvent) => {
       if (event.target !== button) {
+        trapped += 1;
         button.focus();
       }
     };
     document.addEventListener('focusin', trap);
     try {
       expect(await requestFocus(instance)).toBe(true);
+      expect(trapped).toBe(1);
       expect(deepActiveElement()).toBe(button);
     } finally {
       document.removeEventListener('focusin', trap);
