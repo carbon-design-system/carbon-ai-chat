@@ -17,15 +17,16 @@ async function mount() {
   const { default: constructor } = customElement
     ? await import('@carbon/ai-chat/dist/TREE/web-components/cds-aichat-custom-element/index.js')
     : await import('@carbon/ai-chat/dist/TREE/web-components/cds-aichat-container/index.js');
-  const tag = customElement
-    ? 'PREFIX-aichat-custom-element'
-    : 'PREFIX-aichat-container';
+  const host = customElement ? 'custom-element' : 'container';
+  const tag = `PREFIX-aichat-${host}`;
   if (constructor.is !== tag) {
     throw new Error(`Host static is must match its registered tag: ${tag}`);
   }
   const attributes = constructor.observedAttributes;
   window.consumerState.hosts = [
     {
+      // The published manifest path; the generated build keeps the es layout.
+      module: `dist/es/web-components/cds-aichat-${host}/index.js`,
       tag,
       attributes,
       defaultExportRegistered: customElements.get(tag) === constructor,
@@ -34,6 +35,7 @@ async function mount() {
         .map(([name, options]) => ({
           name,
           attribute: options.attribute ?? true,
+          type: options.type?.name,
         })),
     },
   ];
