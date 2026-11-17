@@ -34,4 +34,19 @@ describe('requestFocus with a disabled input', () => {
     await pause();
     expect(deepActiveElement()).toBe(button);
   });
+
+  it('returns true while the rich editor input is disabled, and leaves focus where it is', async () => {
+    const { instance } = await openChat({ input: { isDisabled: true } });
+    const editor = await act(async () => instance.input.getEditor());
+    expect(editor.isEditable).toBe(false);
+    const button = focusHostButton();
+    let result: boolean | void;
+    await act(async () => {
+      result = instance.requestFocus();
+    });
+    expect(result).toBe(true);
+    await pause();
+    expect(deepActiveElement()).toBe(button);
+    expect(editor.isFocused).toBe(false);
+  });
 });
