@@ -2,8 +2,8 @@
 title: Server communication
 children:
   - ./MessageFormat.md
-  - ./AddMessageChunk.md
   - ./UpsertMessage.md
+  - ./AddMessageChunk.md
   - ./StructuredData.md
   - ./CustomHistory.md
   - ./StatePersistence.md
@@ -19,8 +19,8 @@ Connect the Carbon AI Chat to your own server. It supports streaming results, no
 Where you go next depends on what you build:
 
 - [Message format](./MessageFormat.md) — the shape of the requests you receive and responses you return (for server / API authors).
-- [Adding messages (legacy)](./AddMessageChunk.md) — the stable chunk-based streaming flow.
-- [Adding messages (experimental)](./UpsertMessage.md) — the preferred, experimental insert-or-update-by-ID flow.
+- [Adding messages](./UpsertMessage.md) — the recommended insert-or-update-by-ID flow.
+- [Adding messages (legacy)](./AddMessageChunk.md) — the older chunk-based streaming flow.
 - [Structured data](./StructuredData.md) — send typed fields and uploaded files alongside the user's text.
 - [Conversation history](./CustomHistory.md) — load and restore past conversations.
 - [Session state persistence](./StatePersistence.md) — own where the chat's session and UI state is stored.
@@ -47,10 +47,12 @@ If you do not return a promise, the chat does not queue your messages, and it sk
 
 ## Delivering responses
 
-When you have a response, or part of one, push it to the screen through {@link ChatInstanceMessaging | messaging}. You have two flows, and your assistant can return either format and switch between them:
+When you have a response, or part of one, push it to the screen through {@link ChatInstanceMessaging | messaging}. You have two flows:
 
-- **Stable flow** — use {@link ChatInstanceMessaging.addMessage | addMessage} for one-shot, non-streaming inserts, and {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} for chunked streaming. Both are fully supported, with no deprecation. See [Adding messages (legacy)](./AddMessageChunk.md).
-- **Preferred flow (experimental)** — {@link ChatInstanceMessaging.upsertMessage | upsertMessage} inserts or updates a message by ID through an updater function, covering streaming, regenerate, post-stream fixes, and optimistic updates with one method. It is the recommended path for new code, but experimental: its semantics and updater signature may still change. See [Adding messages (experimental)](./UpsertMessage.md).
+- **Recommended flow:** {@link ChatInstanceMessaging.upsertMessage | upsertMessage} inserts or updates a message by ID through an updater function. One method covers streaming, regenerate, post-stream fixes, and optimistic updates. Use it for new work, especially more complex UI. See [Adding messages](./UpsertMessage.md).
+- **Legacy flow:** {@link ChatInstanceMessaging.addMessage | addMessage} for one-shot, non-streaming inserts, and {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} for chunked streaming. Both are fully supported and not deprecated, and there are no plans to remove them. See [Adding messages (legacy)](./AddMessageChunk.md).
+
+Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
 
 For the data shape in either flow, see [Message format](./MessageFormat.md).
 
@@ -351,7 +353,7 @@ const input = useMemo(
 
 By default, if the homescreen is disabled, the chat sends a {@link MessageRequest | message request} the first time a user opens it, with `input.text` set to a blank string and `history.is_welcome_request` set to true. This lets you inject a hard-coded greeting. To skip it, set {@link PublicConfigMessaging.skipWelcome | skipWelcome} to `true`.
 
-To send your own welcome message, set {@link PublicConfigMessaging.skipWelcome | skipWelcome} to `true` and deliver the greeting yourself. For example, you might vary the text by user and respond in kind. Call {@link ChatInstanceMessaging.addMessage | addMessage} for a one-shot greeting, or {@link ChatInstanceMessaging.upsertMessage | upsertMessage} if you want to update that greeting later.
+To send your own welcome message, set {@link PublicConfigMessaging.skipWelcome | skipWelcome} to `true` and deliver the greeting yourself. For example, you might vary the text by user and respond in kind. Call {@link ChatInstanceMessaging.upsertMessage | upsertMessage} with `MessageState.COMPLETE`, which also lets you update the greeting later. If you use the legacy flow, call {@link ChatInstanceMessaging.addMessage | addMessage} instead.
 
 ## Message loading indicators
 
@@ -360,7 +362,7 @@ By default, the chat shows a loading indicator if no chunk or message arrives be
 ## Related
 
 - [Message format](./MessageFormat.md) — the shape of the requests you receive and responses you return.
-- [Adding messages (legacy)](./AddMessageChunk.md) — the chunk-based streaming flow.
-- [Adding messages (experimental)](./UpsertMessage.md) — insert or update a message by ID.
+- [Adding messages](./UpsertMessage.md) — insert or update a message by ID.
+- [Adding messages (legacy)](./AddMessageChunk.md) — the older chunk-based streaming flow.
 - [Structured data](./StructuredData.md) — send typed fields and uploaded files alongside the user's text.
 - [Conversation history](./CustomHistory.md) — load and restore past conversations.
