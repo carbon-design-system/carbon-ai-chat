@@ -235,7 +235,7 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
     const { declaration: host, module } = declarations(copy).find(
       ({ declaration }) => declaration.tagName
     );
-    change(host, module);
+    change(host, module, copy);
     assert.throws(
       () => assertHostParity(copy, runtime, publishedTypes),
       pattern
@@ -244,6 +244,20 @@ export function proveParityFailures(manifest, runtime, publishedTypes) {
   mutate((host, module) => {
     const other = runtime.find((entry) => entry.tag !== host.tagName);
     module.path = other.module.replace(/^dist\/es-custom\//, 'dist/es/');
+  }, /Published host module/);
+  mutate((host, module, copy) => {
+    // Moving the tag definition into the pure class module must fail.
+    const barrel = copy.modules.find((entry) =>
+      entry.exports?.some(
+        (item) =>
+          item.kind === 'custom-element-definition' &&
+          item.name === host.tagName
+      )
+    );
+    const index = barrel.exports.findIndex(
+      (item) => item.kind === 'custom-element-definition'
+    );
+    module.exports.push(...barrel.exports.splice(index, 1));
   }, /Published host module/);
   const first = publishedTypes.config.keys().next().value;
   mutate((host) => {
