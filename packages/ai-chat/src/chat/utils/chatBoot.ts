@@ -10,6 +10,7 @@
 import dayjs from 'dayjs';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
@@ -19,7 +20,6 @@ import actions from '../../shared/store/actions';
 import { selectInputIsReadonly } from '../../shared/store/selectors';
 
 import { ServiceManager } from '../../shared/services/ServiceManager';
-import { createAppConfig } from '../../shared/store/doCreateStore';
 import { setIntl } from '../../shared/utils/intlUtils';
 import {
   consoleDebug,
@@ -121,8 +121,7 @@ export async function initServiceManagerAndInstance(options: {
   dayjs.extend(LocalizedFormat);
 
   // Create service manager
-  const appConfig = createAppConfig(publicConfig);
-  const serviceManager = createServiceManager(appConfig);
+  const serviceManager = createServiceManager(publicConfig);
 
   // Set container + hosting information
   serviceManager.container = container;
@@ -316,9 +315,7 @@ export async function initServiceManagerAndInstance(options: {
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
-    updateCatastrophicErrorPanel: (
-      panelState: Partial<CatastrophicErrorPanelState>
-    ) => {
+    updateCatastrophicErrorPanel: (panelState: CatastrophicErrorPanelState) => {
       debugLog('Called instance.updateCatastrophicPanel');
 
       if (
@@ -369,6 +366,10 @@ export async function initServiceManagerAndInstance(options: {
         options: AddMessageOptions = {}
       ) => {
         debugLog('Called instance.messaging.addMessage', message, options);
+        // The chat writes its defaults onto the message, which a frozen one can't take.
+        if (Object.isFrozen(message)) {
+          message = cloneDeep(message);
+        }
         if (
           serviceManager.messageCoordinator.isRequestFromPreviousConversation(
             message.request_id

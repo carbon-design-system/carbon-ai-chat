@@ -18,9 +18,11 @@ import type { ChatSDKInstanceMessaging } from './ChatSDKInstanceMessaging';
  * it is never written onto a {@link MessageResponse}.
  *
  * `addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message
- * id without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks
- * the recorded state per id and fires those events only on the first transition to
- * {@link COMPLETE}.
+ * id. Carbon AI Chat records the state per id and fires `pre:receive` and `receive` each
+ * time the message moves into {@link COMPLETE} from another state, so a message that goes
+ * from COMPLETE to ERROR and back to COMPLETE fires them twice.
+ * {@link ChatInstanceMessaging.addMessage} on an id that an upsert already completed fires
+ * them again.
  *
  * @category Messaging
  * @category SDK
@@ -102,6 +104,10 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
    * Instructs the widget to process the given message as an incoming message received from the assistant. This will
    * fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
    *
+   * The chat writes its defaults onto the message you pass, including a generated `id` when it has none, and then
+   * freezes it, so don't change the object afterward. If the message is already frozen, the chat copies it first and
+   * stores the copy.
+   *
    * @param message A {@link MessageResponse} object.
    */
   addMessage: (message: MessageResponse) => Promise<void>;
@@ -124,15 +130,25 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
   removeMessages: (messageIDs: string[]) => Promise<void>;
 
   /**
-   * Clears the current conversation. This will trigger a restart of the conversation but will not start a new
-   * conversation (hydration). It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * Clears the current conversation: removes every message and cancels any outstanding messages. Unlike
+   * {@link ChatInstanceMessaging.restartConversation}, it fires no restart events, sends no new welcome request, and
+   * leaves a conversation with a human agent alone. Like a restart, it resets an open workspace without calling
+   * its close handlers or firing `workspace:pre:close` and `workspace:close`. It cancels each file upload still in
+   * progress: the upload's abort signal fires and its attachment leaves the input. It also clears loading indicators
+   * unless you have
+   * set {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. A clear before the chat's first open
+   * leaves loading to that open, which calls {@link PublicConfigMessaging.customLoadHistory}, sends the welcome, and
+   * fires {@link BusEventType.CHAT_READY} as usual.
    */
   clearConversation: () => Promise<void>;
 
   /**
    * Inserts the given messages into the chat window as part of the chat history. This will fire the history:begin
-   * and history:end events.
+   * and history:end events. These messages fire no "pre:receive" or "receive" events.
+   *
+   * The chat writes its defaults onto each item's message, including a generated `id` when it has none, and then
+   * freezes it, so don't change the object afterward. If a message is already frozen, the chat copies it first and
+   * stores the copy.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
 
@@ -140,7 +156,14 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
    * Restarts the conversation with the assistant. This does not make any changes to a conversation with a human agent.
    * This will clear all the current assistant messages from the main assistant view and cancel any outstanding
    * messages. It will also clear any loading indicators UNLESS you have set
-   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0.
+   * {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs} to 0. It also cancels each file upload still in
+   * progress: the upload's abort signal fires and its attachment leaves the input. It resets an open workspace
+   * without calling its close handlers or firing `workspace:pre:close` and `workspace:close`.
+   *
+   * If the main window is open and {@link PublicConfigMessaging.skipWelcome} isn't set, the chat then sends a new
+   * welcome request, and the promise resolves only after {@link PublicConfigMessaging.customSendMessage} finishes with
+   * that request. It sends no welcome request when {@link HomeScreenConfig.isOn} is set (it opens the home screen
+   * instead) or when the user has a conversation with a human agent, now or earlier in the session.
    */
   restartConversation: () => Promise<void>;
 }

@@ -15,7 +15,7 @@ flowchart LR
 - Keep `inbound/`, `outbound/` and `state/` data-only. Pass values and opaque tokens, not managers, stores or effect callbacks. Opaque callable host data can pass through unchanged. Allocate IDs and read clocks in core callers. Preserve each queue and lifetime domain.
 - Use the view port only for view work. With no adapter, preserve callback waits, public results, conversation data and lifecycle. View-only state can differ. Mounted reasoning keeps its component lifetime; headless reasoning uses the committed-state observer. Both use the shared event queue.
 - Keep human-agent writes and sends in their own path. Route shared UI metadata through `messageMetadataCommands`; its private store provenance selects C or the existing human-agent action. Do not trust speaker fields supplied by the caller.
-- Keep public types, event order, aliases and waits unchanged. Native snapshots freeze plain records and arrays. Special copies can stay mutable; opaque references and function state can remain shared. See [the snapshot contract when changing payload copies](../../../../docs/UpsertMessage.md).
+- Keep public types, event order, aliases and waits unchanged. That includes which payloads are copied, aliased or frozen. Before you change a payload copy, read the `cloneDeep`, `captureMessageEvent`, `copyNativeMessage`, `deepFreeze` and `Object.freeze` call sites under `src/chat`.
 
 Read these proofs when changing their boundary:
 
