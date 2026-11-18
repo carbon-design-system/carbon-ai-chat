@@ -22,6 +22,9 @@ import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { Image } from '../../../components-legacy/responseTypes/image/Image';
 import Button, { BUTTON_KIND, BUTTON_SIZE } from '../../carbon/Button';
 
+// The BEM block for every class this component sets.
+const blockClass = 'cds-aichat--button-item';
+
 interface BaseButtonComponentProps extends HasClassName {
   /**
    * The URL pointing to an image.
@@ -188,10 +191,10 @@ function BaseButtonItemComponent({
 
   const commonBtnProps = {
     'aria-pressed': selected,
-    className: cx('cds-aichat--button-item', className, {
-      'cds-aichat--button-item--selected': selected,
-      'cds-aichat--button-item--hidden-label': isLabelHidden,
-      [`cds-aichat--button-item--icon-${iconAlignment}`]: isLabelHidden,
+    className: cx(blockClass, className, {
+      [`${blockClass}--selected`]: selected,
+      [`${blockClass}--hidden-label`]: isLabelHidden,
+      [`${blockClass}--icon-${iconAlignment}`]: isLabelHidden,
     }),
     disabled,
     href: url,
@@ -218,7 +221,7 @@ function BaseButtonItemComponent({
     </>
   );
 
-  if (is === 'standard-button') {
+  if (isStandard) {
     return <Button {...commonBtnProps}>{body}</Button>;
   }
 
