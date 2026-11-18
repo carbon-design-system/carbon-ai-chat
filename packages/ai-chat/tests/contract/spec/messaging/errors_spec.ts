@@ -257,10 +257,14 @@ async function driverWithOnError(
 // @covers config.onError export.aiChatEntry.OnErrorType
 // @covers config.messaging.messageTimeoutSecs config.messaging.customSendMessage
 describeShared('onError for messaging failures', (makeDriver) => {
-  async function rejectSend(
+  // `main` reports a failed or timed-out send without a `messageID`. The
+  // approved addition gives it the sent request's ID.
+
+  /** Rejects one send; returns its rejection and the sent request's ID. */
+  async function rejectSendWithID(
     chat: ContractDriver,
     error: unknown
-  ): Promise<unknown> {
+  ): Promise<{ rejection: unknown; messageID: string }> {
     const started = await startSend(chat, 'hello');
     const outcome = outcomeOf(started);
     await act(async () => {
@@ -268,29 +272,44 @@ describeShared('onError for messaging failures', (makeDriver) => {
       await outcome;
     });
     const settled = await outcome;
-    return 'error' in settled ? settled.error : undefined;
+    return {
+      rejection: 'error' in settled ? settled.error : undefined,
+      messageID: started.sent.request.id,
+    };
+  }
+
+  async function rejectSend(
+    chat: ContractDriver,
+    error: unknown
+  ): Promise<unknown> {
+    return (await rejectSendWithID(chat, error)).rejection;
   }
 
   it('reports a string rejection as MESSAGE_COMMUNICATION with the string as otherData', async () => {
     const { chat, errors } = await driverWithOnError(makeDriver);
-    await rejectSend(chat, 'backend down');
+    const { messageID } = await rejectSendWithID(chat, 'backend down');
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: SEND_ERROR_MESSAGE,
         otherData: 'backend down',
+        messageID,
       },
     ]);
   });
 
   it('reports an Error rejection with its message as otherData and in the send rejection', async () => {
     const { chat, errors } = await driverWithOnError(makeDriver);
-    const rejection = await rejectSend(chat, new Error('backend down'));
+    const { rejection, messageID } = await rejectSendWithID(
+      chat,
+      new Error('backend down')
+    );
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: SEND_ERROR_MESSAGE,
         otherData: 'backend down',
+        messageID,
       },
     ]);
     expect((rejection as Error).message).toBe('backend down');
@@ -298,23 +317,25 @@ describeShared('onError for messaging failures', (makeDriver) => {
 
   it('uses the default failure text for an Error with an empty message', async () => {
     const { chat, errors } = await driverWithOnError(makeDriver);
-    const defaultRejection = await rejectSend(chat, undefined);
-    const fallback = (defaultRejection as Error).message;
+    const first = await rejectSendWithID(chat, undefined);
+    const fallback = (first.rejection as Error).message;
     expect(fallback).toEqual(expect.any(String));
     expect(fallback).not.toBe('');
 
-    const rejection = await rejectSend(chat, new Error(''));
-    expect((rejection as Error).message).toBe(fallback);
+    const second = await rejectSendWithID(chat, new Error(''));
+    expect((second.rejection as Error).message).toBe(fallback);
     expect(errors).toEqual([
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: SEND_ERROR_MESSAGE,
         otherData: fallback,
+        messageID: first.messageID,
       },
       {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: SEND_ERROR_MESSAGE,
         otherData: fallback,
+        messageID: second.messageID,
       },
     ]);
   });
@@ -348,6 +369,7 @@ describeShared('onError for messaging failures', (makeDriver) => {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: CancellationReason.TIMEOUT,
         otherData: undefined,
+        messageID: started.sent.request.id,
       },
     ]);
   });
@@ -387,6 +409,7 @@ describe('a failed welcome request', () => {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: SEND_ERROR_MESSAGE,
         otherData: 'welcome failed',
+        messageID: sent.request.id,
       },
     ]);
     expect(instance.getState().status).toBe('error');
