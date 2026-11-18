@@ -18,20 +18,20 @@ describe('ChatInstance.updateIsChatLoadingCounter', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('preserves the legacy reset behavior for the two loading counters', async () => {
+  it('resets only the chat loading counter on reset', async () => {
     const { instance, store } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());
     instance.updateIsChatLoadingCounter('increase');
     instance.updateIsMessageLoadingCounter('increase');
-    const hydrationCount = store.getState().view.isHydratingCounter;
-    expect(hydrationCount).toBeGreaterThan(0);
-    expect(store.getState().view.isMessageLoadingCounter).toBeGreaterThan(0);
+    expect(store.getState().view.isHydratingCounter).toBeGreaterThan(0);
+    const messageLoadingCount = store.getState().view.isMessageLoadingCounter;
+    expect(messageLoadingCount).toBeGreaterThan(0);
 
     instance.updateIsChatLoadingCounter('reset');
 
     const state = store.getState().view;
-    expect(state.isHydratingCounter).toBe(hydrationCount);
-    expect(state.isMessageLoadingCounter).toBe(0);
+    expect(state.isHydratingCounter).toBe(0);
+    expect(state.isMessageLoadingCounter).toBe(messageLoadingCount);
   });
 
   it('should increase chat loading counter in Redux state', async () => {

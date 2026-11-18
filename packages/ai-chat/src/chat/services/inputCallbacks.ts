@@ -16,13 +16,17 @@ import { createMessageRequestForText } from '../../shared/utils/messageUtils';
 import { shouldSendSilently } from '../../shared/utils/fileAttachments';
 import {
   BusEventType,
+  MainWindowCloseReason,
   MessageSendSource,
+  ViewChangeReason,
 } from '../../types/events/eventBusTypes';
+import { ViewType } from '../../types/instance/apiTypes';
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
 import { requestStopFromInput } from '../../shared/services/assistantInputCommands';
+import { fireUserEvent } from '../../shared/services/fireUserEvent';
 import { viewActions } from '../../view/state';
 import { chatStore } from './attachChatView';
 
@@ -77,9 +81,9 @@ export class InputCallbacks {
   };
 
   onClose = async () => {
-    await this.serviceManager.actions.changeView('launcher' as any, {
-      viewChangeReason: 'main_window_minimized' as any,
-      mainWindowCloseReason: 'default_minimize' as any,
+    await this.serviceManager.actions.changeView(ViewType.LAUNCHER, {
+      viewChangeReason: 'main_window_minimized' as ViewChangeReason,
+      mainWindowCloseReason: MainWindowCloseReason.DEFAULT_MINIMIZE,
     });
   };
 
@@ -98,7 +102,9 @@ export class InputCallbacks {
 
   onAcceptDisclaimer = () => {
     this.serviceManager.store.dispatch(viewActions.acceptDisclaimer());
-    this.serviceManager.fire({ type: BusEventType.DISCLAIMER_ACCEPTED });
+    fireUserEvent(this.serviceManager, {
+      type: BusEventType.DISCLAIMER_ACCEPTED,
+    });
   };
 }
 

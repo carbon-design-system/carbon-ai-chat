@@ -76,7 +76,8 @@ it('automatically delivers native reasoning from a public upsert without awaitin
     type: BusEventType.USER_DEFINED_RESPONSE,
     handler: (event: any) => {
       values.push(event.data.message.user_defined.value);
-      expect(Object.isFrozen(event.data.fullMessage)).toBe(true);
+      // An upserted message reaches its callback as a writable copy whose edits commit.
+      expect(Object.isFrozen(event.data.fullMessage)).toBe(false);
       return pending;
     },
   });

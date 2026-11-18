@@ -54,6 +54,7 @@ import {
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 
 import { WindowOpenState } from '../services/windowOpenState';
+import { fireUserEvent } from '../../shared/services/fireUserEvent';
 
 import { shallowEqual } from '../../shared/store/appStore';
 
@@ -310,7 +311,7 @@ export class ShellLifecycle {
         this.humanAgentCallbacks.confirmHumanAgentEndChat,
       hideConfirmEndChat: this.humanAgentCallbacks.hideConfirmEndChat,
       fireCustomPanelEvent: (type) => {
-        manager.eventBus.fire({ type }, manager.instance);
+        fireUserEvent(manager, { type });
       },
       resetCustomPanelOptions: () => {
         manager.store.dispatch(
@@ -718,7 +719,7 @@ export class ShellLifecycle {
               {
                 text: languagePack.history_new_chat,
                 handler: () => {
-                  serviceManager.fire({
+                  fireUserEvent(serviceManager, {
                     type: BusEventType.HISTORY_PANEL_NEW_CHAT,
                   });
                 },
@@ -726,7 +727,7 @@ export class ShellLifecycle {
               {
                 text: languagePack.history_view_chats,
                 handler: () => {
-                  serviceManager.fire({
+                  fireUserEvent(serviceManager, {
                     type: BusEventType.HISTORY_PANEL_PRE_OPEN,
                   });
                   serviceManager.store.dispatch(

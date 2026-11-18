@@ -809,7 +809,7 @@ describe('MessageService', () => {
         'local-first'
       );
       const rejectedFirstSend = expect(firstSend).rejects.toEqual(
-        new Error('{}')
+        new Error('failed')
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
@@ -851,7 +851,7 @@ describe('MessageService', () => {
         'local-first'
       );
       const rejectedFirstSend = expect(firstSend).rejects.toEqual(
-        new Error('{}')
+        new Error('failed')
       );
       await flushMessageQueue();
       messageService.markCurrentMessageAsStreaming('response-first');
@@ -1427,7 +1427,11 @@ it('uses retained stream metadata when controller aliases and queue membership a
   expect(metadata.requestId).toBe('request');
   expect(responseStopped).toHaveBeenCalledWith('response', 0);
   expect(service.inboundStreaming.getStreamingMeta('response')).toBeUndefined();
+  // A user stop still marks the owning request stopped, so its late partial chunks are dropped.
   expect(serviceManager.messageCoordinator.isRequestStopped('request')).toBe(
-    false
+    true
   );
+  expect(
+    serviceManager.messageCoordinator.isRequestStoppedByUser('request')
+  ).toBe(true);
 });

@@ -241,6 +241,7 @@ class FileUploadItemElement extends LitElement {
       changedProperties.has('readOnly') ||
       changedProperties.has('upload') ||
       changedProperties.has('errorDescription') ||
+      changedProperties.has('uploadingFileLabel') ||
       !this._syncedErrorState
     ) {
       this._syncErrorState();
@@ -294,9 +295,8 @@ class FileUploadItemElement extends LitElement {
       return;
     }
 
-    // Carbon draws the invalid icon in its own update, after ours; a failed upload
-    // usually also moves `state` from "uploading" to "edit", which swaps the whole
-    // status area. Wait for that render before looking for the icon.
+    // Carbon draws the invalid icon in its own update, after ours. Wait for that
+    // render before looking for the icon.
     await inner.updateComplete;
 
     const innerRoot = inner.shadowRoot;
@@ -318,6 +318,36 @@ class FileUploadItemElement extends LitElement {
         'data-error-icon': '',
       });
       warningIcon.replaceWith(template.content);
+    }
+
+    this._syncUploadingIndicator(innerRoot);
+  }
+
+  /**
+   * Carbon's uploading state shows a spinner and no remove button, so an
+   * uploading chip renders Carbon's editing state and adds the spinner ahead of
+   * its remove button. The marker finds the spinner again to update or remove
+   * it.
+   */
+  private _syncUploadingIndicator(innerRoot: ShadowRoot) {
+    const uploading = !this.readOnly && this._uploadStatus === 'uploading';
+    const button = innerRoot.querySelector(
+      '.cds--file__state-container .cds--file-close'
+    );
+    let spinner = innerRoot.querySelector('[data-uploading-indicator]');
+    if (!uploading || !button) {
+      spinner?.remove();
+      return;
+    }
+
+    if (!spinner) {
+      spinner = innerRoot.ownerDocument.createElement('cds-loading');
+      spinner.setAttribute('type', 'small');
+      spinner.setAttribute('data-uploading-indicator', '');
+    }
+    spinner.setAttribute('assistive-text', this.uploadingFileLabel);
+    if (spinner.nextElementSibling !== button) {
+      button.before(spinner);
     }
   }
 
@@ -565,18 +595,17 @@ class FileUploadItemElement extends LitElement {
 
     // An empty state falls through Carbon's status switch, rendering no
     // affordance. `_syncInjectedStyles` collapses the container it still reserves.
-    const state = this.readOnly ? '' : this._uploadStatus;
+    // An uploading file keeps its remove button, so the user can stop the upload;
+    // `_syncUploadingIndicator` adds the spinner.
+    const status = this.readOnly ? '' : this._uploadStatus;
+    const state = status === 'uploading' ? 'edit' : status;
     const error = this._uploadError;
 
     return html`
       <cds-file-uploader-item
         size="md"
         .state="${state}"
-        .iconDescription="${
-          state === 'uploading'
-            ? this.uploadingFileLabel
-            : this.removeFileNamedLabel || this.removeFileLabel
-        }"
+        .iconDescription="${this.removeFileNamedLabel || this.removeFileLabel}"
         .errorSubject="${error.message}"
         ?invalid="${!this.readOnly && error.isError}"
         @cds-file-uploader-item-deleted="${this._handleRemove}">
