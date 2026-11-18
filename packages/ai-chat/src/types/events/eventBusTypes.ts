@@ -591,9 +591,6 @@ export interface BusEventUserDefinedResponse extends BusEvent {
      * {@link ChatInstanceMessaging.upsertMessage}, {@link ChatInstanceMessaging.addMessage},
      * and the final-response transition of {@link ChatInstanceMessaging.addMessageChunk}.
      * See {@link MessageState} for the lifecycle values.
-     *
-     * @experimental Field is additive; its presence and semantics may evolve as the
-     * lifecycle model stabilizes.
      */
     state?: MessageState;
   };
