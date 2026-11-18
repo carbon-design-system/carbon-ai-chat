@@ -21,7 +21,7 @@ aichat-component-name/
 | `register.ts`, `settings.ts` | The registration helper and the tag prefix |
 | `scss/` | SCSS partials and tokens |
 | `utils/` | Every other shared helper |
-| `internal/` | Storybook-only code the manifest skips |
+| `internal/` | `storybook-cdn.ts`, which the build and manifest skip by name |
 
 The build keeps the source layout, so each helper in `utils/` ships under `@carbon/ai-chat-components/es/globals/utils/`. `@carbon/ai-chat` imports some helpers by that path, and moving a file breaks those imports.
 

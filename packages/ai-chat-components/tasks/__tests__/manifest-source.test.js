@@ -407,6 +407,7 @@ test('default discovery includes canonical source and ambient types without lega
   ];
   const excluded = [
     'src/components/example/src/legacy.ts',
+    'src/components/shared/helper.ts',
     'src/components/aichat-example/__stories__/example.ts',
     'src/components/aichat-example/__tests__/example.ts',
     'src/components/aichat-example/element.test.ts',
