@@ -85,6 +85,9 @@ The JSON is generated and ignored: never hand-edit or commit it. The wrappers ar
 - **Types are public docs**: follow [types/AGENTS.md](../../ai-chat/src/types/AGENTS.md) for their published surfaces and JSDoc rules; `@category` must match `categoryOrder` in [typedoc.json](../../ai-chat/typedoc.json).
 - **Deprecating or deleting**: mark `@deprecated` in JSDoc, ship a major version, then delete. Removing an exported element without a deprecation window breaks external consumers.
 - **React wrappers stay minimal** — no behavior beyond `createComponent`; behavior belongs in the Lit element.
+- **Everything under `es/` is public.** `./es/*` maps every built file, so removing or moving one is breaking. Test files stay out: `tsconfig.json` excludes `__tests__`.
+- **`es/react/*` is ours on purpose.** `@carbon/web-components` ships no React wrappers; Carbon's live in `@carbon/react`. This package publishes and supports its wrappers anyway.
+- **`dist/` is the CDN build**, uploaded by [publish-components-cdn.yml](../../../.github/workflows/publish-components-cdn.yml). It stays out of `files` and `exports`, as Carbon's does.
 
 ## Related guidance
 
