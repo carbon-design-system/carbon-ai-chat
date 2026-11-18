@@ -456,8 +456,9 @@ class UpsertWorkflow {
             (id) =>
               previousState.allMessageItemsByID[id]?.fullMessageID === messageID
           );
+    // Marked before the copy, so the slot events' message keeps the mark too.
+    this.keepTurnFailureMark(messageID, result);
     const ownedResult = this.incomingMessageService.copyNativeMessage(result);
-    this.keepTurnFailureMark(messageID, ownedResult);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
         ownedResult,
@@ -695,8 +696,8 @@ class UpsertWorkflow {
       const previousHoldFromIndex = pauseIndex;
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
+      this.keepTurnFailureMark(messageID, result);
       const ownedResult = this.incomingMessageService.copyNativeMessage(result);
-      this.keepTurnFailureMark(messageID, ownedResult);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
