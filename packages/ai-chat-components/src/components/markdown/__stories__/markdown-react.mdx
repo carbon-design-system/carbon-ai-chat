@@ -27,7 +27,7 @@ The `<Markdown>` component wraps `cds-aichat-markdown` to render rich markdown c
 Here's a quick example to get you started using the `markdown` prop (recommended):
 
 ```jsx
-import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
+import { Markdown } from '@carbon/ai-chat-components/react';
 
 function MarkdownExample({ content }) {
   return <Markdown highlight markdown={content} />;
@@ -39,7 +39,7 @@ function MarkdownExample({ content }) {
 You can also provide markdown via children, though the `markdown` prop is recommended for better performance, especially when streaming content:
 
 ```jsx
-import Markdown from '@carbon/ai-chat-components/es/react/markdown.js';
+import { Markdown } from '@carbon/ai-chat-components/react';
 
 function MarkdownExample({ content }) {
   return <Markdown highlight>{content}</Markdown>;

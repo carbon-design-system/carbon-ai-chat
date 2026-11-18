@@ -24,7 +24,7 @@ Use `MessageByline` to show who sent a message, with an optional avatar, timesta
 ### Without an avatar
 
 ```jsx
-import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+import { MessageByline } from '@carbon/ai-chat-components/react';
 
 function Sender() {
   return <MessageByline label="You" timestamp="10:42 AM" />;
@@ -39,11 +39,13 @@ The byline only holds the toggle. Render the `ReasoningSteps` panel at the top o
 
 ```jsx
 import { useState } from 'react';
-import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
-import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
-import ReasoningSteps from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
-import ReasoningStep from '@carbon/ai-chat-components/es/react/reasoning-step.js';
-import ReasoningStepsToggle from '@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js';
+import {
+  MessageByline,
+  MessageItemShell,
+  ReasoningSteps,
+  ReasoningStep,
+  ReasoningStepsToggle,
+} from '@carbon/ai-chat-components/react';
 
 function Message() {
   const [open, setOpen] = useState(false);
@@ -84,7 +86,7 @@ The `label` is the only place the sender name is read. Do not add a label to a s
 ## JSX (via import)
 
 ```jsx
-import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+import { MessageByline } from '@carbon/ai-chat-components/react';
 ```
 
 ## Feedback
