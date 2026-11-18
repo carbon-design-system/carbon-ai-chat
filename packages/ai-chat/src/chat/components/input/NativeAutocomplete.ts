@@ -12,6 +12,7 @@ import { property } from 'lit/decorators.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 import type Autocomplete from '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
+import type { AutocompleteSendEventDetail } from '@carbon/ai-chat-components/es/components/prompt-line/autocomplete/src/autocomplete.js';
 import type PromptLine from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
 import {
   AutocompleteController,
@@ -41,6 +42,12 @@ interface AutocompleteLifetime {
   active: boolean;
   retired: boolean;
   pendingError?: { error: unknown };
+  /** True while a chosen item that sends is reported to the host. */
+  reportingSent: boolean;
+  /** True while a chosen item is inserted into the input. */
+  selecting: boolean;
+  /** The host's `onSelect` throw from that insert, if it threw. */
+  insertError?: { error: unknown };
   configs: WeakMap<object, object>;
   failedResults: WeakMap<SuggestionItem[], unknown>;
 }
@@ -257,8 +264,8 @@ class NativeAutocomplete extends NativeChatView {
       list.slot = 'autocomplete-content';
       const select = (event: CustomEvent<{ item: SuggestionItem }>) =>
         this.selectItem(lifetime, event.detail.item);
-      const send = (event: CustomEvent<{ text: string }>) =>
-        this.sendItem(lifetime, event.detail?.text);
+      const send = (event: CustomEvent<AutocompleteSendEventDetail>) =>
+        this.sendItem(lifetime, event.detail?.text, event.detail?.item);
       const dismiss = () =>
         this.run(lifetime, () => lifetime.controller.dismiss());
       list.addEventListener('cds-aichat-autocomplete-select', select);
@@ -337,6 +344,8 @@ class NativeAutocomplete extends NativeChatView {
       report: this.captureErrorReporter(),
       active: true,
       retired: false,
+      reportingSent: false,
+      selecting: false,
       configs: new WeakMap<object, object>(),
       failedResults: new WeakMap<SuggestionItem[], unknown>(),
     } as AutocompleteLifetime;
@@ -394,8 +403,24 @@ class NativeAutocomplete extends NativeChatView {
         };
       }
       if (config.onSelect) {
-        wrapped.onSelect = (item) =>
-          this.run(lifetime, () => config.onSelect(item));
+        wrapped.onSelect = (item) => {
+          // The controller catches and logs a throw while it reports a sent
+          // item, so the send still happens.
+          if (lifetime.reportingSent) {
+            config.onSelect(item);
+          } else if (lifetime.selecting) {
+            try {
+              config.onSelect(item);
+            } catch (error) {
+              lifetime.insertError = { error };
+              throw error;
+            }
+          } else {
+            // Only select and reportSent call it today; any other caller keeps
+            // the view's guard.
+            this.run(lifetime, () => config.onSelect(item));
+          }
+        };
       }
       lifetime.configs.set(config, wrapped);
     }
@@ -438,17 +463,48 @@ class NativeAutocomplete extends NativeChatView {
   };
 
   private selectItem(lifetime: AutocompleteLifetime, item: SuggestionItem) {
+    let insertError: { error: unknown } | undefined;
     this.run(lifetime, () => {
-      lifetime.controller.select(item);
+      lifetime.selecting = true;
+      try {
+        lifetime.controller.select(item);
+      } catch (error) {
+        if (!lifetime.insertError || lifetime.insertError.error !== error) {
+          throw error;
+        }
+        insertError = lifetime.insertError;
+        return;
+      } finally {
+        lifetime.selecting = false;
+        lifetime.insertError = undefined;
+      }
       if (!lifetime.retired) {
         this.onSelectItem?.(item);
       }
     });
+    if (insertError) {
+      // The text is already inserted. As in the React input, the host's throw
+      // leaves the list open, reaches the page as an uncaught error, and the
+      // chat keeps running.
+      throw insertError.error;
+    }
   }
 
-  private sendItem(lifetime: AutocompleteLifetime, text: string) {
+  private sendItem(
+    lifetime: AutocompleteLifetime,
+    text: string,
+    item?: SuggestionItem
+  ) {
     this.run(lifetime, () => {
       if (text && !this.isSendDisabled) {
+        if (item) {
+          lifetime.reportingSent = true;
+          try {
+            lifetime.controller.reportSent(item);
+          } finally {
+            lifetime.reportingSent = false;
+          }
+        }
         lifetime.controller.dismiss(true);
         this.onSendItem?.(text);
       }

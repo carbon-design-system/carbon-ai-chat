@@ -110,6 +110,12 @@ interface ConversationState extends AppStateMessages {
   languagePack: LanguagePack;
 
   /**
+   * The locale the date library formats times with. It changes only once a new locale's data has loaded, so
+   * components that show times re-render with the new format instead of the old one.
+   */
+  loadedLocale: string;
+
+  /**
    * Volatile UI state related to the current human agent session. This is not persisted and is reset on reload.
    */
   humanAgentState: HumanAgentState;

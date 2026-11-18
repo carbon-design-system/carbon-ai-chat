@@ -78,8 +78,10 @@ export const screenShareHookWithSignal: ChatSDKServiceDeskConfig = {
 export const screenShareHookWithoutOptions: ChatSDKServiceDeskConfig = {
   onScreenShareRequest: async () => ScreenShareState.DECLINED,
 };
+// The prebuilt chat's config has no screen-share hook; it always shows its modal.
 export const prebuiltScreenShareHook: ServiceDeskPublicConfig = {
   skipConnectHumanAgentCard: true,
+  // @ts-expect-error onScreenShareRequest is SDK config only.
   onScreenShareRequest: async () => ScreenShareState.ACCEPTED,
 };
 export const sdkErrorFields: Record<keyof ChatSDKErrorData, true> = {
