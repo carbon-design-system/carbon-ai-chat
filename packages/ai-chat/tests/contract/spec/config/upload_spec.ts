@@ -144,11 +144,14 @@ describe('upload: the attach button', () => {
     expect(uploadErrors()).toEqual([]);
   });
 
+  // `main` logs an error for `onFileUpload` without `isOn`. The approved rule
+  // is that this is a valid config: `isOn` only draws the attach button, and
+  // `messaging.addFile` still uploads through `onFileUpload`.
   it.each([
     ['omitted', {}],
     ['false', { isOn: false }],
   ])(
-    'is absent when isOn is %s, even with onFileUpload set, and logs an error',
+    'is absent when isOn is %s, even with onFileUpload set, and logs no upload error',
     async (_label, isOn) => {
       const { instance } = await contractChat({
         strings: STRINGS,
@@ -157,8 +160,7 @@ describe('upload: the attach button', () => {
       });
       await changeView(instance, ViewType.MAIN_WINDOW);
       expect(attachButtons()).toHaveLength(0);
-      expect(uploadErrors()).toHaveLength(1);
-      expect(uploadErrors()[0]).toContain('isOn');
+      expect(uploadErrors()).toEqual([]);
     }
   );
 
