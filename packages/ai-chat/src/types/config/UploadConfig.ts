@@ -22,8 +22,8 @@ export interface UploadConfig extends ChatSDKUploadConfig {
    * Whether the input shows its file attachment button. Defaults to `false`.
    * {@link ChatInstanceMessaging.addFile} doesn't need it.
    *
-   * If `isOn` is `true` but `onFileUpload` is not provided, an error is logged and
-   * file upload is disabled.
+   * The button needs `onFileUpload` too. If `isOn` is `true` but `onFileUpload` isn't
+   * set, the chat logs an error and hides the attachment button.
    */
   isOn?: boolean;
 
@@ -73,8 +73,11 @@ export interface UploadConfig extends ChatSDKUploadConfig {
    *
    * @param file - The `File` object selected by the user.
    * @param abortSignal - Fires if the user removes the pending upload before it
-   *   completes, or with reason {@link CancellationReason.CHAT_REMOVED} if the chat
-   *   is removed from the page.
+   *   completes, if the conversation restarts or clears, or its session is
+   *   destroyed ({@link ChatInstanceMessaging.restartConversation},
+   *   {@link ChatInstanceMessaging.clearConversation},
+   *   {@link ChatInstance.destroySession}), or with reason
+   *   {@link CancellationReason.CHAT_REMOVED} if the chat is removed from the page.
    */
   onFileUpload?: (
     file: File,

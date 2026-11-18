@@ -29,6 +29,7 @@ import { useWriteableElementPresence } from './hooks/useWriteableElementPresence
 import { useChatViewStateInstance } from './hooks/useChatViewState';
 import { useIntl } from './hooks/useIntl';
 import { useSelector } from './hooks/useSelector';
+import { selectLoadedLocale } from '../sdk/store/selectors';
 import { useAppShellPanels } from './AppShellPanels';
 import AppShellErrorBoundary from './AppShellErrorBoundary';
 import MessagesComponent, {
@@ -141,6 +142,7 @@ function RetainedShellContent({
     (state: AppState) => state.allMessageItemsByID
   );
   const publicConfig = useSelector((state: AppState) => state.config.public);
+  const loadedLocale = useSelector(selectLoadedLocale);
   const carbonTheme = useSelector(
     (state: AppState) =>
       state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
@@ -172,7 +174,7 @@ function RetainedShellContent({
             assistantAvatarUrl={publicConfig.assistantAvatarUrl}
             intl={intl}
             onEndHumanAgentChat={content.showConfirmEndChat}
-            locale={publicConfig.locale || 'en'}
+            locale={loadedLocale}
             carbonTheme={carbonTheme}
           />
         </ShellMessages>

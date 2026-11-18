@@ -29,6 +29,7 @@ import type {
 import { WriteableElementName } from '../../../types/instance/WriteableElements';
 import type { BusEventHeaderMenuClick } from '../../../types/events/eventBusTypes';
 import { NativeChatView } from '../shared/NativeChatView';
+import { fireUserEvent } from '../../services/fireUserEvent';
 import { shallowEqual } from '../../../sdk/store/appStore';
 import { humanAgentDisplayStateOf } from '../../../sdk/store/selectors';
 import { isDirectionRTL } from '../../utils/domUtils';
@@ -88,7 +89,7 @@ class HeaderView extends NativeChatView implements HeaderProps {
   private navigationInputs?: unknown[];
   private navigation?: ReturnType<typeof deriveHeaderNavigation>;
   private readonly fireHeaderMenuClick = (event: BusEventHeaderMenuClick) => {
-    this.serviceManager.fire(event);
+    fireUserEvent(this.serviceManager, event);
   };
 
   protected onViewConnected() {
@@ -204,9 +205,10 @@ class HeaderView extends NativeChatView implements HeaderProps {
         restartButtonLabel: this.languagePack.buttons_restart,
       }).map((action) => ({
         ...action,
-        icon: this.transformIcon
-          ? this.transformIcon(action.icon)
-          : (action.icon as CarbonIcon),
+        icon:
+          action.icon && this.transformIcon
+            ? this.transformIcon(action.icon)
+            : (action.icon as CarbonIcon),
       }));
     }
     return this.actions;

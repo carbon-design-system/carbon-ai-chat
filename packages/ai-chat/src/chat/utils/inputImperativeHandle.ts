@@ -28,11 +28,15 @@ function createInputImperativeHandle(
   return {
     requestFocus: () => {
       const promptLine = getPromptLine();
-      // A hidden input has no surface, and a disabled one can't take focus.
-      if (!promptLine || promptLine.disabled) {
+      // A hidden input has no surface to focus.
+      if (!promptLine) {
         return false;
       }
-      promptLine.focus();
+      // A disabled input can't take focus but is still the place focus
+      // belongs, so it reports true without moving focus.
+      if (!promptLine.disabled) {
+        promptLine.focus();
+      }
       return true;
     },
     hasFocus: () => getPromptLine()?.hasFocus() ?? false,

@@ -35,7 +35,7 @@ const selectRecords = (snapshot: ExtensionHostsSnapshot) =>
  * Renders each user-defined response into the slot host the host service
  * keeps for it. When a user_defined item arrives, the chat fires an event with
  * a slot, and the service records it. A portal places the host's React
- * content there, in the page's light DOM.
+ * content there, in the container's light DOM.
  */
 function UserDefinedResponsePortalsContainer({
   chatInstance,

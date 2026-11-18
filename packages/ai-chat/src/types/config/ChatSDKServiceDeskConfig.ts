@@ -11,7 +11,8 @@ import type { ScreenShareState } from './ServiceDeskConfig';
 
 /**
  * The service desk settings a conversation uses with no interface. {@link ServiceDeskPublicConfig}
- * extends it with `skipConnectHumanAgentCard`, which only the prebuilt chat's connect card uses.
+ * extends it with `skipConnectHumanAgentCard`, which only the prebuilt chat's connect card uses,
+ * and leaves out `onScreenShareRequest`, because the prebuilt chat asks with its own modal.
  *
  * A `createChatSDK` function that starts a conversation with no interface arrives with the
  * `@carbon/ai-chat/sdk` entry point in a 2.x minor release.
@@ -42,9 +43,9 @@ export interface ChatSDKServiceDeskConfig {
    * with {@link ScreenShareState.ACCEPTED}, {@link ScreenShareState.DECLINED}, or
    * {@link ScreenShareState.CANCELLED}, and the chat passes that answer to the service desk.
    *
-   * When it's set, the prebuilt chat calls it instead of showing its consent modal. When it's not
-   * set, the prebuilt chat shows the modal, and a conversation with no interface answers
-   * {@link ScreenShareState.DECLINED}.
+   * Only a conversation with no interface calls it. The prebuilt chat's config has no such
+   * setting: it always shows its consent modal. With no hook, a conversation with no interface
+   * answers {@link ScreenShareState.DECLINED}.
    *
    * `signal` aborts when the request ends before you answer: the service desk cancels it, the
    * conversation with the agent ends, or the chat is removed. The service desk has already been told
