@@ -14,7 +14,7 @@ const APP = '@carbon/ai-chat';
 const COMPONENTS = '@carbon/ai-chat-components';
 const CARBON = '@carbon/web-components';
 
-async function exists(file) {
+export async function exists(file) {
   try {
     await fs.access(file);
     return true;
@@ -31,7 +31,7 @@ function relativeSpecifier(from, to) {
   return relative.startsWith('.') ? relative : `./${relative}`;
 }
 
-function inside(root, file) {
+export function inside(root, file) {
   const relative = path.relative(root, file);
   return (
     relative === '' ||
@@ -253,7 +253,7 @@ async function manifestPath(layer) {
   return source;
 }
 
-async function realOutputPath(file) {
+export async function realOutputPath(file) {
   try {
     return await fs.realpath(file);
   } catch (error) {
@@ -293,9 +293,15 @@ export async function assertSafeOutput(output, layers) {
 }
 
 export async function copyLayer(layer) {
-  await fs.cp(layer.source, layer.destination, { recursive: true });
+  await fs.cp(layer.source, layer.destination, {
+    recursive: true,
+    dereference: true,
+  });
   if (layer.types && (await exists(layer.types))) {
-    await fs.cp(layer.types, layer.destination, { recursive: true });
+    await fs.cp(layer.types, layer.destination, {
+      recursive: true,
+      dereference: true,
+    });
   }
   const license = path.join(layer.packageRoot, 'LICENSE');
   if (await exists(license)) {
