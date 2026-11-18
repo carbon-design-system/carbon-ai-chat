@@ -39,7 +39,6 @@
     "es/**/*",
     "scss/**/*",
     "custom-elements.json",
-    "package.json",
     "telemetry.yml",
     "bin/**/*"
   ],
