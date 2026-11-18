@@ -109,7 +109,11 @@ const parsedDtsTsConfig = parseJsonConfigFileContent(
 );
 
 async function runRollup() {
-  await fs.remove(path.join(paths.dist, 'es-custom'));
+  // Hashed chunks from an earlier build would otherwise stay beside the new
+  // ones, ship in a pack, and break the prefixed-build copier.
+  for (const output of ['es', 'types', 'es-custom']) {
+    await fs.remove(path.join(paths.dist, output));
+  }
   const extraWatch = path.resolve(__dirname, '../../ai-chat-components/es/**/*');
 
   const config = [
