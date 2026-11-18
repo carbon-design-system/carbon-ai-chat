@@ -11,7 +11,7 @@ import { CornerConfig, CornerStyle, CornerPosition } from './types.js';
 import {
   setVarsForSelector,
   clearVarsForSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 
 const CORNER_PROPS = [
   '--cds-aichat-border-radius-start-start-base',

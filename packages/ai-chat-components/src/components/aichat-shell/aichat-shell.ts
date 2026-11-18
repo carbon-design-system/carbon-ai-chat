@@ -25,7 +25,7 @@ import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 
 const INSTANCE_ATTR = 'data-cds-aichat-shell-id';
 let shellInstanceCounter = 0;

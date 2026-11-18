@@ -13,7 +13,7 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
 import isEqual from 'lodash-es/isEqual.js';
 
-import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
+import { setVarsForSelector } from '@carbon/ai-chat-components/es/globals/utils/dynamic-css-var-sheet.js';
 
 import { createServiceManager } from '../services/loadServices';
 import actions from '../store/actions';

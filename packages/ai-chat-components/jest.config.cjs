@@ -27,6 +27,8 @@ module.exports = {
     '/node_modules/',
     '/src/globals/__tests__/register\\.test\\.',
     '/src/globals/utils/__tests__/aria-announcer-manager\\.test\\.',
+    '/src/globals/utils/__tests__/dynamic-css-var-sheet\\.test\\.',
+    '/src/globals/utils/__tests__/root-styles\\.test\\.',
     '/src/globals/utils/__tests__/focus-utils\\.test\\.',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],

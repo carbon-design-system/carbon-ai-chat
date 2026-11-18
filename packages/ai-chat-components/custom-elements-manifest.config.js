@@ -19,7 +19,6 @@ export default {
   globs: [
     'src/index.ts',
     'src/components/aichat-*/**/*.ts',
-    'src/components/shared/**/*.ts',
     'src/globals/**/*.ts',
     'src/react/**/*.{ts,tsx}',
     'src/testing/**/*.ts',

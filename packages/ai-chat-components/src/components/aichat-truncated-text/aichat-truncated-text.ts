@@ -18,7 +18,7 @@ import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 
 const componentName = 'truncated-text';
 export const blockClass = `${prefix}-aichat--${componentName}`;

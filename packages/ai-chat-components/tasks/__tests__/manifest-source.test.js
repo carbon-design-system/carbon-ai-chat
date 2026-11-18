@@ -399,7 +399,7 @@ test('default discovery includes canonical source and ambient types without lega
   const included = [
     'src/index.ts',
     'src/components/aichat-example/element.ts',
-    'src/components/shared/helper.ts',
+    'src/globals/utils/helper.ts',
     'src/globals/settings.ts',
     'src/react/example.tsx',
     'src/testing/helper.ts',

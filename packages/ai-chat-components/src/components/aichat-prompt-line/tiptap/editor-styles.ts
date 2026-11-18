@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { setVarsForSelector } from '../../shared/dynamic-css-var-sheet.js';
+import { setVarsForSelector } from '../../../globals/utils/dynamic-css-var-sheet.js';
 import { PROMPT_LINE_MAX_BLOCK_SIZE } from '../prompt-line-constants.js';
 
 const PM_CONTENT_CLASS = 'cds-aichat--input-pm-content';

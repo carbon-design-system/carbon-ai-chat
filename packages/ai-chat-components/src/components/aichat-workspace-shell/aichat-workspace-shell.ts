@@ -16,7 +16,7 @@ import { HeaderCollapsibleManager } from './header-collapsible-manager.js';
 import {
   adoptOnRoot,
   setVarsForSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 
 /**
  * Workspace Shell.

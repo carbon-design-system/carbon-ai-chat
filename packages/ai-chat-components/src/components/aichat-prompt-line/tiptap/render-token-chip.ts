@@ -18,7 +18,7 @@
 
 import type { ReactNode } from 'react';
 
-import { setVarsForSelector } from '../../shared/dynamic-css-var-sheet.js';
+import { setVarsForSelector } from '../../../globals/utils/dynamic-css-var-sheet.js';
 import { renderInLightDom } from './render-in-light-dom.js';
 import type { SuggestionItem, TriggerSuggestionConfig } from './types.js';
 

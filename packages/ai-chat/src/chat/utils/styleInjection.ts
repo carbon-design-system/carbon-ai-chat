@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
+import { setVarsForSelector } from '@carbon/ai-chat-components/es/globals/utils/dynamic-css-var-sheet.js';
 
 let hostFillRuleInstalled = false;
 

@@ -14,7 +14,18 @@ aichat-component-name/
   aichat-component-name-part.ts   # pure child element class
 ```
 
-Shared pieces: [../src/components/shared/](../src/components/shared/); design tokens / utilities: [../src/globals/](../src/globals/); test helpers: [../src/testing/](../src/testing/); ambient types: [../src/typings/](../src/typings/).
+**A module no single family owns goes in [../src/globals/](../src/globals/), never under `src/components/`: SCSS in `scss/`, any other helper in `utils/`.** Stateful helpers, such as the shared CSS variable sheet, go in `utils/` too. Tests sit in the matching `__tests__/`.
+
+| Path under `src/globals/` | Holds |
+| --- | --- |
+| `register.ts`, `settings.ts` | The registration helper and the tag prefix |
+| `scss/` | SCSS partials and tokens |
+| `utils/` | Every other shared helper |
+| `internal/` | Storybook-only code the manifest skips |
+
+The build keeps the source layout, so each helper in `utils/` ships under `@carbon/ai-chat-components/es/globals/utils/`. `@carbon/ai-chat` imports some helpers by that path, and moving a file breaks those imports.
+
+Test helpers: [../src/testing/](../src/testing/); ambient types: [../src/typings/](../src/typings/).
 
 ### Registration belongs in the barrel
 

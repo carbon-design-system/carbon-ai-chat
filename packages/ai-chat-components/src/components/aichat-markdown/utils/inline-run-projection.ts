@@ -17,7 +17,10 @@ import {
 } from 'lit/directive.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import prefix from '../../../globals/settings.js';
-import { attachRootStyles, type RootStyles } from '../../shared/root-styles.js';
+import {
+  attachRootStyles,
+  type RootStyles,
+} from '../../../globals/utils/root-styles.js';
 import styles from '../inline-run-projection.scss?lit';
 import type {
   MarkdownCustomRendererMountDetail,

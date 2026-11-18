@@ -18,7 +18,7 @@
  */
 
 import { BaseProvider, ProviderConfig } from './base-provider.js';
-import { ScriptLoader } from '../../shared/media-utils/script-loader.js';
+import { ScriptLoader } from '../../../globals/utils/script-loader.js';
 
 const SDK_URL = 'https://w.soundcloud.com/player/api.js';
 

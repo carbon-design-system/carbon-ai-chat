@@ -13,6 +13,8 @@ Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs
 
 Registration helper browser tests live in `src/globals/__tests__/`. The WTR scripts include that folder; Jest excludes its browser test. Do not widen WTR to all `globals/`: other folders contain Jest tests.
 
+**A browser test in `src/globals/utils/__tests__/` runs only if you name it twice.** Add it to the file list in both WTR scripts, and to `testPathIgnorePatterns` in [jest.config.cjs](../jest.config.cjs). Miss the WTR list and it runs nowhere. Miss the Jest list and Jest fails on it.
+
 `npm test` runs both. Use the right runner for the file — a Lit element test under Jest (or vice versa) will fail to resolve its environment.
 
 ## Snapshots
