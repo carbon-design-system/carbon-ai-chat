@@ -30,9 +30,22 @@ import type { ServiceManager } from '../ServiceManager';
 
 const outgoing = new OutgoingMessageService();
 
+/**
+ * Per-chat send ordering. `sendStartingHydration` is the hydration a send started, and a promise that settles once
+ * that send is in the queue (or has failed). Sends made while that hydration runs wait on `queued` instead of the
+ * hydration, so they queue after it, in call order.
+ */
+interface SendOrder {
+  sendStartingHydration: {
+    hydration: Promise<void>;
+    queued: Promise<void>;
+  } | null;
+}
+
 async function coordinateSend(
   serviceManager: ServiceManager,
   presentation: MessagePresentationPort | undefined,
+  order: SendOrder,
   message: MessageRequest | string,
   source: MessageSendSource,
   options: SendOptions = {},
@@ -61,29 +74,68 @@ async function coordinateSend(
   presentation?.closeHomeScreenIfOpen();
   presentation?.closeResponsePanelIfOpen();
 
-  if (serviceManager.hydrationService.hydrationPromise || ignoreHydration) {
-    if (!ignoreHydration) {
-      await serviceManager.hydrationService.hydrationPromise;
+  const { hydrationService } = serviceManager;
+  let releaseLaterSends = () => {};
+  let sending: Promise<void>;
+  try {
+    if (hydrationService.hydrationPromise || ignoreHydration) {
+      if (!ignoreHydration) {
+        // Once the hydration has settled, the send that started it waits only on `chat:ready` handlers, which may
+        // themselves await this send, so this send waits on the hydration alone.
+        const starter = order.sendStartingHydration;
+        const queueAfterStarter =
+          starter?.hydration === hydrationService.hydrationPromise &&
+          hydrationService.isHydrating;
+        await (queueAfterStarter
+          ? starter.queued
+          : hydrationService.hydrationPromise);
+      }
+    } else {
+      // If no hydration has started, then we need to start the hydration and use this message as the alternate for
+      // the welcome node.
+      presentation?.closeHomeScreen();
+      const hydrated = hydrationService.hydrateChat(messageRequest, options);
+      let resolveQueued: () => void;
+      const starter = {
+        hydration: hydrationService.hydrationPromise,
+        queued: new Promise<void>((resolve) => {
+          resolveQueued = resolve;
+        }),
+      };
+      order.sendStartingHydration = starter;
+      releaseLaterSends = () => {
+        if (order.sendStartingHydration === starter) {
+          order.sendStartingHydration = null;
+        }
+        resolveQueued();
+      };
+      await hydrated;
     }
-  } else {
-    // If no hydration has started, then we need to start the hydration and use this message as the alternate for
-    // the welcome node.
-    presentation?.closeHomeScreen();
-    await serviceManager.hydrationService.hydrateChat(messageRequest, options);
+
+    // Re-check: an upload can begin while hydration is awaited above, and the
+    // message would otherwise go out without that file's contributed data.
+    assertNoInFlightUpload(serviceManager.store.getState());
+
+    // `doSend` queues the message before its first await.
+    sending = doSend(
+      serviceManager,
+      messageRequest,
+      source,
+      options,
+      useBuiltInData
+    );
+  } finally {
+    releaseLaterSends();
   }
-
-  // Re-check: an upload can begin while hydration is awaited above, and the
-  // message would otherwise go out without that file's contributed data.
-  assertNoInFlightUpload(serviceManager.store.getState());
-
-  await doSend(serviceManager, messageRequest, source, options, useBuiltInData);
+  await sending;
 }
 
 /**
  * Inner send: fires `pre:send` and `send`, then calls `customSendMessage` via
  * `MessageCoordinator`. Resolves when `customSendMessage` completes or the turn
- * is stopped; rejects when `customSendMessage` throws or the send path fails
- * terminally. Retries are handled upstream by `customSendMessage`.
+ * is stopped; rejects when `customSendMessage` or a `pre:send` or `send`
+ * handler throws, or the send path fails terminally. Retries are handled
+ * upstream by `customSendMessage`.
  */
 async function doSend(
   serviceManager: ServiceManager,
@@ -173,3 +225,4 @@ async function doSend(
 }
 
 export { coordinateSend };
+export type { SendOrder };

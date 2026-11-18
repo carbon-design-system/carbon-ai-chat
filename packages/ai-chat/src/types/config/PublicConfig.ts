@@ -75,7 +75,8 @@ export interface PublicConfig extends Omit<
   disableCustomElementMobileEnhancements?: boolean;
 
   /**
-   * Add a bunch of noisy console.log messages!
+   * Enables diagnostic console logs for every chat loaded from the same module on the page.
+   * In 1.x, logging stays enabled after that chat unmounts. A later chat with `debug: false` does not disable it.
    */
   debug?: boolean;
 
@@ -105,8 +106,10 @@ export interface PublicConfig extends Omit<
   aiEnabled?: boolean;
 
   /**
-   * This is a factory for producing custom implementations of service desks. If this value is set, then this will
-   * be used to create an instance of a {@link ServiceDesk} when the user attempts to connect to an agent.
+   * This is a factory for producing custom implementations of service desks. If this value is set, the chat calls it
+   * to create an instance of a {@link ServiceDesk} when it first loads its conversation (the first time it opens or
+   * sends), not when it mounts. Until then, a restored agent chat shows in `getState().humanAgent` with no desk
+   * behind it.
    *
    * A new factory never cuts off a live human agent conversation: the running service desk stays until that
    * conversation ends, and the new factory takes over after it. To switch desks at once, call
@@ -126,7 +129,9 @@ export interface PublicConfig extends Omit<
   serviceDesk?: ServiceDeskPublicConfig;
 
   /**
-   * If the Carbon AI Chat should grab focus if the chat is open on page load.
+   * Whether the chat's shared focus manager can move focus. Defaults to true.
+   * In 1.x, false blocks automatic transitions, focus after {@link ChatInstance.changeView}, and
+   * {@link ChatInstance.requestFocus}. A blocked focus request returns false. Direct user focus is unaffected.
    */
   shouldTakeFocusIfOpensAutomatically?: boolean;
 

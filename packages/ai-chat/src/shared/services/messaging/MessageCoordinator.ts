@@ -12,7 +12,7 @@ import { TerminationWorkflow } from './TerminationWorkflow';
 import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import { consoleError } from '../../utils/miscUtils';
 import type { ConversationConfig } from '../../../types/state/ConversationState';
-import { coordinateSend } from './coordinateSend';
+import { coordinateSend, type SendOrder } from './coordinateSend';
 import type {
   LoadingDirection,
   MessagePresentationPort,
@@ -540,6 +540,8 @@ class MessageCoordinator {
   private requestQueue = new RequestQueue();
   private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
+  private sendOrder: SendOrder = { sendStartingHydration: null };
+
   /**
    * The attached view's port, looked up on each call. `view?.` here and in the
    * observer and agent service: unit tests build these on partial managers.
@@ -562,8 +564,8 @@ class MessageCoordinator {
    * Sends the given message to the assistant. Fires `pre:send` then `send` on
    * the event bus before delegating to `customSendMessage`. Resolves when
    * `customSendMessage` completes or when the turn is stopped; rejects when
-   * `customSendMessage` throws, when the send path fails terminally, or when a
-   * file upload is still in progress.
+   * `customSendMessage` throws, when a `pre:send` or `send` handler throws, when
+   * the send path fails terminally, or when a file upload is still in progress.
    *
    * @param message The message to send.
    * @param source The source of the message.
@@ -579,6 +581,7 @@ class MessageCoordinator {
     return coordinateSend(
       this.serviceManager,
       this.presentation,
+      this.sendOrder,
       message,
       source,
       options,
@@ -872,8 +875,17 @@ class MessageCoordinator {
     }
   }
 
-  requestStopped(messageID: string, generation = this.currentGeneration) {
-    const responseIDs = this.state.requestStopped(messageID, generation);
+  /** `byUser` marks a stop the user asked for, not a failed send or a restart. */
+  requestStopped(
+    messageID: string,
+    generation = this.currentGeneration,
+    byUser = false
+  ) {
+    const responseIDs = this.state.requestStopped(
+      messageID,
+      generation,
+      byUser
+    );
     if (responseIDs === undefined) {
       return [];
     }
@@ -883,6 +895,14 @@ class MessageCoordinator {
 
   isRequestStopped(requestID?: string) {
     return this.state.isRequestStopped(requestID);
+  }
+
+  isRequestStoppedByUser(requestID?: string) {
+    return this.state.isRequestStoppedByUser(requestID);
+  }
+
+  isResponseStopped(messageID: string) {
+    return this.state.isResponseStopped(messageID);
   }
 
   responseRequestID(messageID: string) {

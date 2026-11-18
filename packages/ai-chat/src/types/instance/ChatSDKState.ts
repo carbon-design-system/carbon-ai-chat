@@ -14,7 +14,8 @@ import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
  *
- * - `loading`: history and the welcome are loading.
+ * - `loading`: the chat itself is loading history and the welcome. Calls to
+ *   {@link ChatInstance.updateIsChatLoadingCounter} don't set it.
  * - `submitted`: a send is waiting for its first associated response.
  * - `streaming`: a response is active, or its sender is still pending after a response arrives.
  *   This includes the gap after the response completes and before the sender settles.

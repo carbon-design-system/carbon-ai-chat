@@ -7,6 +7,8 @@
  *  @license
  */
 
+import { placeHosts } from '../utils/removeHostsOnUnmount';
+
 interface AutocompleteContentCallbacks {
   onReady(list: HTMLElement): void;
   onClear(): void;
@@ -185,7 +187,7 @@ class AutocompleteContent {
         request.anchor.appendChild(this.slot);
       }
       if (this.host.parentElement !== this.chatWrapper) {
-        this.chatWrapper.appendChild(this.host);
+        placeHosts(this.chatWrapper, [this.host]);
       }
     } else {
       // A consumer that adopted the borrowed element keeps it until this list

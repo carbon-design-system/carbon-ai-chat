@@ -7,6 +7,8 @@
  *  @license
  */
 
+import isEqual from 'lodash-es/isEqual.js';
+
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { AppStore } from '../../shared/store/appStore';
 import { loadSavedSession } from '../../shared/store/doCreateStore';
@@ -32,13 +34,18 @@ function chatStore(
 /**
  * Saves the session whenever either half of it changes. By default it goes to
  * session storage. When the host owns persistence (`config.persistedState`),
- * it goes to the host's `onStateChange` instead. A change to anything else,
- * such as input text, saves nothing.
+ * it goes to the host's `onStateChange` instead, once per change of the
+ * persistable values: a new slice with equal values, or a change to
+ * bookkeeping alone, isn't reported. A change to anything else, such as input
+ * text, saves nothing.
  */
 function saveSessionOnChange(serviceManager: ServiceManager) {
   const store = chatStore(serviceManager);
   let previousConversation = store.getState().persistedToBrowserStorage;
   let previousView = store.getState().view.persistedToBrowserStorage;
+  let previousPersistableState = toPersistableState(
+    joinPersistedState(previousConversation, previousView)
+  );
   store.subscribe(() => {
     const { persistedToBrowserStorage, view, config } = store.getState();
     if (
@@ -59,7 +66,11 @@ function saveSessionOnChange(serviceManager: ServiceManager) {
       persistedStateConfig?.initialState ||
       persistedStateConfig?.onStateChange
     ) {
-      persistedStateConfig.onStateChange?.(toPersistableState(saved));
+      const persistableState = toPersistableState(saved);
+      if (!isEqual(previousPersistableState, persistableState)) {
+        previousPersistableState = persistableState;
+        persistedStateConfig.onStateChange?.(persistableState);
+      }
     } else {
       serviceManager.userSessionStorageService?.persistSession(saved);
     }
