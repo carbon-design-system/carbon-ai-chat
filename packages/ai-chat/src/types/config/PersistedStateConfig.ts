@@ -17,8 +17,6 @@ import { PersistedState } from '../state/AppState';
  * {@link PersistedStateConfig.initialState} to restore a session.
  *
  * @category Config
- *
- * @experimental
  */
 export type PersistableState = Omit<
   PersistedState,
@@ -38,16 +36,17 @@ export type PersistableState = Omit<
  * re-prompts, an in-progress human-agent chat cannot reconnect, and the welcome message is re-sent.
  *
  * @category Config
- * @experimental
  */
 export interface PersistedStateConfig {
   /**
-   * The session state to boot from, used in place of reading `sessionStorage`. Resolve any
-   * asynchronous load (for example from your own backend) before constructing the chat and pass the
-   * resolved value here. When omitted, the chat starts a fresh session but still reports changes to
-   * {@link PersistedStateConfig.onStateChange}.
+   * The session state to boot from: a value you saved from {@link PersistedStateConfig.onStateChange},
+   * or one you build. When restoring, pass back the whole value you saved. The chat uses it in place of
+   * reading `sessionStorage`. Resolve any asynchronous load (for example from your own backend) before
+   * constructing the chat and pass the resolved value here. When omitted, the chat starts a fresh session
+   * but still reports changes to {@link PersistedStateConfig.onStateChange}.
    *
-   * @experimental
+   * In 1.x, passing any `initialState` counts as a restored session, so
+   * {@link PublicConfig.openChatByDefault} doesn't open the window.
    */
   initialState?: PersistableState;
 
@@ -56,8 +55,6 @@ export interface PersistedStateConfig {
    * (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write. The
    * argument is the complete {@link PersistableState}; persist it verbatim so it can later seed
    * {@link PersistedStateConfig.initialState}.
-   *
-   * @experimental
    */
   onStateChange?: (state: PersistableState) => void;
 }
