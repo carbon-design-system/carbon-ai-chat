@@ -26,7 +26,24 @@ Request and response rows use the same shell. Set `row-type` to `request` or `re
 
 The shell adds no screen reader announcements. Your slotted content decides what is announced, including file upload status.
 
+The `byline`, `attachment`, and `footer` areas take no space while their slot is empty. A slot is empty when it holds no element and no non-blank text. A forwarded `<slot>` with nothing assigned counts as empty.
+
+In a request row, the content, attachments, and footer share one column, so the footer's leading edge lines up with the content's.
+
 <Canvas of={Stories.Response} />
+
+## Custom properties
+
+| Custom property | Default | Effect |
+| --- | --- | --- |
+| `--cds-aichat-message-item-shell-inset-start` | `$spacing-09` | Start padding of the row body, on both row types. A response ignores it when `hide-avatar` is set. |
+| `--cds-aichat-message-item-shell-gap-block-start` | `$spacing-02` | Space between a response's byline and its content. Applies to a response with a byline only. |
+
+```css
+cds-aichat-message-item-shell {
+  --cds-aichat-message-item-shell-inset-start: 1rem;
+}
+```
 
 ## Examples
 

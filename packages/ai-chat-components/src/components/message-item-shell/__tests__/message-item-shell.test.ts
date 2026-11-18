@@ -81,7 +81,12 @@ describe('cds-aichat-message-item-shell', () => {
       });
 
       it('reflects hide-avatar without hiding the byline wrapper', async () => {
-        const el = await renderShell(rowType);
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType}>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+            </cds-aichat-message-byline>
+          </cds-aichat-message-item-shell>
+        `);
         const wrapper = el.shadowRoot!.querySelector<HTMLElement>(
           `.${blockClass}__byline`
         )!;
@@ -203,6 +208,321 @@ describe('cds-aichat-message-item-shell', () => {
       expect(getComputedStyle(body).paddingInlineStart).to.not.equal(
         withAvatar
       );
+    });
+  });
+
+  describe('empty slots', () => {
+    /** Lets `slotchange` fire and the resulting render settle. */
+    const settle = async (el: CDSAIChatMessageItemShell) => {
+      await new Promise((resolve) => setTimeout(resolve));
+      await el.updateComplete;
+    };
+
+    const height = (el: Element) => el.getBoundingClientRect().height;
+
+    /** Renders a shell whose footer and attachment slots forward a host slot. */
+    async function renderForwarded(rowType: (typeof rowTypes)[number]) {
+      const container = await fixture<HTMLElement>(
+        html`<div style="inline-size: 400px"></div>`
+      );
+      const host = document.createElement('div');
+      host.attachShadow({ mode: 'open' }).innerHTML = `
+        <cds-aichat-message-item-shell row-type="${rowType}">
+          <div style="block-size: 20px"></div>
+          <slot slot="attachment" name="attachment"></slot>
+          <slot slot="footer" name="footer"></slot>
+        </cds-aichat-message-item-shell>
+      `;
+      container.append(host);
+      const shell = host.shadowRoot!.querySelector(
+        'cds-aichat-message-item-shell'
+      ) as CDSAIChatMessageItemShell;
+      await settle(shell);
+      return { host, shell };
+    }
+
+    rowTypes.forEach((rowType) => {
+      describe(`row-type="${rowType}"`, () => {
+        it('adds no height for unfilled attachment and footer slots', async () => {
+          const contentOnly = await fixture<CDSAIChatMessageItemShell>(html`
+            <cds-aichat-message-item-shell row-type=${rowType}>
+              <div style="block-size: 20px"></div>
+            </cds-aichat-message-item-shell>
+          `);
+          await settle(contentOnly);
+
+          expect(height(contentOnly)).to.equal(20);
+        });
+
+        it('adds no height for forwarded slots with nothing assigned', async () => {
+          const { shell } = await renderForwarded(rowType);
+
+          expect(height(shell)).to.equal(20);
+        });
+
+        it('adds height once the forwarded slots are filled', async () => {
+          const { host, shell } = await renderForwarded(rowType);
+          host.insertAdjacentHTML(
+            'beforeend',
+            `<div slot="attachment" style="block-size: 10px"></div>
+             <div slot="footer" style="block-size: 10px"></div>`
+          );
+          await settle(shell);
+
+          expect(height(shell)).to.be.greaterThan(40);
+        });
+
+        it('adds height for an element in each slot', async () => {
+          const el = await fixture<CDSAIChatMessageItemShell>(html`
+            <cds-aichat-message-item-shell row-type=${rowType}>
+              <div style="block-size: 20px"></div>
+              <div slot="attachment" style="block-size: 10px"></div>
+              <div slot="footer" style="block-size: 10px"></div>
+            </cds-aichat-message-item-shell>
+          `);
+          await settle(el);
+
+          expect(height(el)).to.be.greaterThan(40);
+        });
+      });
+    });
+
+    describe('byline wrapper', () => {
+      const wrapperOf = (el: CDSAIChatMessageItemShell) =>
+        el.shadowRoot!.querySelector<HTMLElement>(`.${blockClass}__byline`)!;
+
+      (
+        [
+          ['request', false],
+          ['response', false],
+          ['response', true],
+        ] as const
+      ).forEach(([rowType, hideAvatar]) => {
+        const name = `${rowType}${hideAvatar ? ' hide-avatar' : ''}`;
+
+        it(`is display: none with no byline in a ${name} row`, async () => {
+          const el = await fixture<CDSAIChatMessageItemShell>(html`
+            <cds-aichat-message-item-shell
+              row-type=${rowType}
+              ?hide-avatar=${hideAvatar}>
+            </cds-aichat-message-item-shell>
+          `);
+          await settle(el);
+
+          expect(getComputedStyle(wrapperOf(el)).display).to.equal('none');
+        });
+
+        it(`is visible with a byline in a ${name} row`, async () => {
+          const el = await fixture<CDSAIChatMessageItemShell>(html`
+            <cds-aichat-message-item-shell
+              row-type=${rowType}
+              ?hide-avatar=${hideAvatar}>
+              <cds-aichat-message-byline slot="byline" label="Assistant">
+              </cds-aichat-message-byline>
+            </cds-aichat-message-item-shell>
+          `);
+          await settle(el);
+
+          expect(getComputedStyle(wrapperOf(el)).display).to.not.equal('none');
+        });
+      });
+
+      it('still hides an avatar when the byline is slotted after first render', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type="response" hide-avatar>
+          </cds-aichat-message-item-shell>
+        `);
+        await settle(el);
+        el.insertAdjacentHTML(
+          'beforeend',
+          `<cds-aichat-message-byline slot="byline" label="Assistant">
+             <span slot="avatar" id="late-avatar"></span>
+           </cds-aichat-message-byline>`
+        );
+        await settle(el);
+
+        expect(el.querySelector<HTMLElement>('#late-avatar')!.hidden).to.be
+          .true;
+      });
+    });
+  });
+
+  describe('custom properties', () => {
+    const bodyOf = (el: CDSAIChatMessageItemShell) =>
+      el.shadowRoot!.querySelector<HTMLElement>(`.${blockClass}__body`)!;
+    const inset = (el: CDSAIChatMessageItemShell) =>
+      getComputedStyle(bodyOf(el)).paddingInlineStart;
+
+    rowTypes.forEach((rowType) => {
+      it(`sets the start inset of a ${rowType} body`, async () => {
+        const unset = await renderShell(rowType);
+        expect(inset(unset)).to.equal('48px');
+
+        const set = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell
+            row-type=${rowType}
+            style="--cds-aichat-message-item-shell-inset-start: 16px">
+          </cds-aichat-message-item-shell>
+        `);
+        expect(inset(set)).to.equal('16px');
+      });
+    });
+
+    it('keeps the start inset of a full-width response', async () => {
+      const el = await fixture<CDSAIChatMessageItemShell>(html`
+        <cds-aichat-message-item-shell row-type="response">
+        </cds-aichat-message-item-shell>
+      `);
+      expect(inset(el)).to.equal('48px');
+
+      el.fullWidth = true;
+      await el.updateComplete;
+      expect(inset(el)).to.equal('48px');
+    });
+
+    it('applies the inset property to a full-width response', async () => {
+      const el = await fixture<CDSAIChatMessageItemShell>(html`
+        <cds-aichat-message-item-shell
+          row-type="response"
+          full-width
+          style="--cds-aichat-message-item-shell-inset-start: 16px">
+        </cds-aichat-message-item-shell>
+      `);
+
+      expect(inset(el)).to.equal('16px');
+    });
+
+    it('keeps the start inset of a full-width request', async () => {
+      const el = await fixture<CDSAIChatMessageItemShell>(html`
+        <cds-aichat-message-item-shell row-type="request" full-width>
+        </cds-aichat-message-item-shell>
+      `);
+
+      expect(inset(el)).to.equal('48px');
+    });
+
+    describe('byline gap', () => {
+      /** Space between the bottom of the byline and the top of the content. */
+      async function measureGap(rowType: string, style = '') {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type=${rowType} style=${style}>
+            <cds-aichat-message-byline slot="byline" label="Assistant">
+            </cds-aichat-message-byline>
+            <div id="content" style="block-size: 20px"></div>
+          </cds-aichat-message-item-shell>
+        `);
+        await new Promise((resolve) => setTimeout(resolve));
+        await el.updateComplete;
+        const byline = el.querySelector('cds-aichat-message-byline')!;
+        const content = el.querySelector('#content')!;
+        return {
+          el,
+          gap:
+            content.getBoundingClientRect().top -
+            byline.getBoundingClientRect().bottom,
+        };
+      }
+
+      it('is $spacing-02 between a response byline and its content', async () => {
+        expect((await measureGap('response')).gap).to.equal(4);
+      });
+
+      it('follows the gap property', async () => {
+        const { gap } = await measureGap(
+          'response',
+          '--cds-aichat-message-item-shell-gap-block-start: 12px'
+        );
+        expect(gap).to.equal(12);
+      });
+
+      it('adds no block-start padding to a request body', async () => {
+        const { el } = await measureGap(
+          'request',
+          '--cds-aichat-message-item-shell-gap-block-start: 12px'
+        );
+        const body = el.shadowRoot!.querySelector<HTMLElement>(
+          `.${blockClass}__body`
+        )!;
+
+        expect(getComputedStyle(body).paddingBlockStart).to.equal('0px');
+      });
+
+      it('adds no block-start padding to a response without a byline', async () => {
+        const el = await fixture<CDSAIChatMessageItemShell>(html`
+          <cds-aichat-message-item-shell row-type="response">
+            <div style="block-size: 20px"></div>
+          </cds-aichat-message-item-shell>
+        `);
+        await new Promise((resolve) => setTimeout(resolve));
+        await el.updateComplete;
+        const body = el.shadowRoot!.querySelector<HTMLElement>(
+          `.${blockClass}__body`
+        )!;
+
+        expect(getComputedStyle(body).paddingBlockStart).to.equal('0px');
+      });
+    });
+  });
+
+  describe('request footer edge', () => {
+    async function renderRequest(footerWidth: string) {
+      const container = await fixture<HTMLElement>(html`
+        <div style="inline-size: 400px">
+          <cds-aichat-message-item-shell row-type="request">
+            <div
+              id="content"
+              style="inline-size: 100px; block-size: 20px"></div>
+            <div
+              id="footer"
+              slot="footer"
+              style="inline-size: ${footerWidth}; block-size: 10px"></div>
+          </cds-aichat-message-item-shell>
+        </div>
+      `);
+      const shell = container.querySelector(
+        'cds-aichat-message-item-shell'
+      ) as CDSAIChatMessageItemShell;
+      await new Promise((resolve) => setTimeout(resolve));
+      await shell.updateComplete;
+      return { container, shell };
+    }
+
+    it("matches the footer's leading edge to the content's", async () => {
+      const { shell } = await renderRequest('40px');
+      const content = shell.querySelector('#content')!.getBoundingClientRect();
+      const footer = shell.querySelector('#footer')!.getBoundingClientRect();
+
+      expect(footer.left).to.equal(content.left);
+    });
+
+    it('keeps the content inside the column for a wider footer', async () => {
+      const { container, shell } = await renderRequest('600px');
+      const column = container.getBoundingClientRect();
+      const content = shell.querySelector('#content')!.getBoundingClientRect();
+      const body = shell
+        .shadowRoot!.querySelector(`.${blockClass}__body`)!
+        .getBoundingClientRect();
+
+      expect(content.right).to.be.at.most(column.right);
+      expect(body.right).to.be.at.most(column.right);
+      expect(body.left).to.be.at.least(column.left);
+    });
+
+    it('wraps a long request at the column width', async () => {
+      const container = await fixture<HTMLElement>(html`
+        <div style="inline-size: 400px">
+          <cds-aichat-message-item-shell row-type="request">
+            <div id="content">${'word '.repeat(200)}</div>
+          </cds-aichat-message-item-shell>
+        </div>
+      `);
+      const shell = container.querySelector('cds-aichat-message-item-shell')!;
+      await new Promise((resolve) => setTimeout(resolve));
+      const column = container.getBoundingClientRect();
+      const content = shell.querySelector('#content')!.getBoundingClientRect();
+
+      expect(content.right).to.be.at.most(column.right);
+      expect(content.height).to.be.greaterThan(40);
     });
   });
 

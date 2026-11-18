@@ -34,12 +34,25 @@ $block-class: #{$prefix}-message-item-shell;
   align-items: center;
 }
 
+// A wrapper whose slot is empty is `hidden`. Its own `display` rule would
+// override the browser's default `[hidden]` styling, so hide it explicitly.
+.#{$block-class}__byline,
+.#{$block-class}__attachment,
+.#{$block-class}__footer {
+  &[hidden] {
+    display: none;
+  }
+}
+
 .#{$block-class}__body {
   display: flex;
   flex-direction: column;
   inline-size: 100%;
   padding-inline-end: layout.$spacing-05;
-  padding-inline-start: layout.$spacing-09;
+  padding-inline-start: var(
+    --cds-aichat-message-item-shell-inset-start,
+    #{layout.$spacing-09}
+  );
 }
 
 .#{$block-class}__content,
@@ -72,7 +85,15 @@ $block-class: #{$prefix}-message-item-shell;
 
   .#{$block-class}__body {
     align-items: flex-start;
-    padding-block-start: layout.$spacing-02;
+  }
+
+  // The gap only opens below a byline. A row without one has nothing to
+  // separate from.
+  .#{$block-class}__body--has-byline {
+    padding-block-start: var(
+      --cds-aichat-message-item-shell-gap-block-start,
+      #{layout.$spacing-02}
+    );
   }
 
   .#{$block-class}__attachment,
@@ -81,6 +102,9 @@ $block-class: #{$prefix}-message-item-shell;
   }
 }
 
+// A request body shrinks to its content and stops at the column width. The
+// bubble, attachments, and footer then share one column, so the footer's
+// leading edge matches the bubble's.
 :host(#{$block-class}[row-type='request']) {
   align-items: flex-end;
 
@@ -89,12 +113,15 @@ $block-class: #{$prefix}-message-item-shell;
   }
 
   .#{$block-class}__body {
-    align-items: flex-end;
+    box-sizing: border-box;
+    align-items: stretch;
+    inline-size: auto;
+    max-inline-size: 100%;
   }
 
   .#{$block-class}__attachment,
   .#{$block-class}__footer {
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 }
 
