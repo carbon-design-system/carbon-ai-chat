@@ -1345,59 +1345,23 @@ function rawActionProperties(node: ts.Expression | undefined) {
   return properties;
 }
 
-function rawActionConstant(
-  typeChecker: ts.TypeChecker,
-  value: ts.Expression | undefined,
-  file: string,
-  text: string
-) {
-  if (!value || !ts.isIdentifier(value)) {
-    return false;
-  }
-  let symbol = typeChecker.getSymbolAtLocation(value);
-  if (symbol?.flags & ts.SymbolFlags.Alias) {
-    symbol = typeChecker.getAliasedSymbol(symbol);
-  }
-  const declaration = symbol?.valueDeclaration;
-  return Boolean(
-    declaration &&
-    ts.isVariableDeclaration(declaration) &&
-    declaration.getSourceFile().fileName === file &&
-    declaration.initializer &&
-    ts.isStringLiteralLike(declaration.initializer) &&
-    declaration.initializer.text === text
-  );
-}
-
-function allowedRawAction(
-  typeChecker: ts.TypeChecker,
-  file: string,
-  node: ts.Expression | undefined,
-  actionsFile: string
-) {
+function allowedRawAction(file: string, node: ts.Expression | undefined) {
   const properties = rawActionProperties(node);
   if (!properties) {
     return false;
   }
   const type = properties.get('type');
-  if (file === 'src/chat/utils/chatBoot.ts') {
-    const key = properties.get('key');
-    return (
-      properties.size === 3 &&
-      type &&
-      ts.isStringLiteralLike(type) &&
-      type.text === 'SET_APP_STATE_VALUE' &&
-      key &&
-      ts.isStringLiteralLike(key) &&
-      key.text === 'catastrophicErrorType' &&
-      properties.get('value')?.kind === ts.SyntaxKind.TrueKeyword
-    );
-  }
-  return (
-    file === 'src/chat/services/ThemeWatcherService.ts' &&
-    properties.size === 2 &&
-    properties.has('themeState') &&
-    rawActionConstant(typeChecker, type, actionsFile, 'UPDATE_THEME_STATE')
+  const key = properties.get('key');
+  return Boolean(
+    file === 'src/chat/utils/chatBoot.ts' &&
+    properties.size === 3 &&
+    type &&
+    ts.isStringLiteralLike(type) &&
+    type.text === 'SET_APP_STATE_VALUE' &&
+    key &&
+    ts.isStringLiteralLike(key) &&
+    key.text === 'catastrophicErrorType' &&
+    properties.get('value')?.kind === ts.SyntaxKind.TrueKeyword
   );
 }
 
@@ -1426,12 +1390,7 @@ it('rejects raw store writes throughout the package except exact existing view s
     const argument = call.node.arguments[0];
     if (
       !rawActionValue(checker, argument, creatorFiles, ownershipFile) &&
-      !allowedRawAction(
-        checker,
-        relative(call.source.fileName),
-        argument,
-        actionsFile
-      )
+      !allowedRawAction(relative(call.source.fileName), argument)
     ) {
       issues.push(`${relative(call.source.fileName)}: ${argument?.getText()}`);
     }
@@ -1460,38 +1419,15 @@ it.each([
     "{type: 'SET_APP_STATE_VALUE', key: 'catastrophicErrorType', value: true}",
     false,
   ],
-  [
-    'src/chat/services/ThemeWatcherService.ts',
-    '{type: UPDATE_THEME_STATE, themeState: {}}',
-    true,
-  ],
-  [
-    'src/chat/services/ThemeWatcherService.ts',
-    "{type: 'UPDATE_THEME_STATE', themeState: {}}",
-    false,
-  ],
-  [
-    'src/chat/services/ThemeWatcherService.ts',
-    "{type: 'ADD_MESSAGE', message: {}}",
-    false,
-  ],
 ])(
   'allows only the exact raw state action at %s: %s',
   (file, expression, expected) => {
     const f = fixture({
-      'entry.ts': `import { UPDATE_THEME_STATE } from './actions'; export const action = ${expression};`,
-      'actions.ts': "export const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';",
+      'entry.ts': `export const action = ${expression};`,
     });
     const declaration = f.source().statements.find(ts.isVariableStatement)!
       .declarationList.declarations[0];
-    expect(
-      allowedRawAction(
-        f.checker,
-        file,
-        declaration.initializer,
-        f.source('actions.ts').fileName
-      )
-    ).toBe(expected);
+    expect(allowedRawAction(file, declaration.initializer)).toBe(expected);
   }
 );
 
