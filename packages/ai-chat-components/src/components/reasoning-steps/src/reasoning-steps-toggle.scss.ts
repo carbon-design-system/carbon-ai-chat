@@ -5,4 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-export { default } from '../../aichat-reasoning-steps/aichat-reasoning-steps-toggle.scss?lit';
+import type { CSSResult } from 'lit';
+import styles from '../../aichat-reasoning-steps/aichat-reasoning-steps-toggle.scss?lit';
+
+const legacyStyles: CSSResult = styles;
+export default legacyStyles;

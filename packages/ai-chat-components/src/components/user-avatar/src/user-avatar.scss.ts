@@ -5,4 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-export { default } from '../../aichat-user-avatar/aichat-user-avatar.scss?lit';
+import type { CSSResult } from 'lit';
+import styles from '../../aichat-user-avatar/aichat-user-avatar.scss?lit';
+
+const legacyStyles: CSSResult = styles;
+export default legacyStyles;

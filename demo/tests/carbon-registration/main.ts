@@ -171,7 +171,7 @@ async function mountWrapper(name: keyof typeof wrapperEntries) {
 
 async function run() {
   if (entry === 'missing') {
-    // Class-only imports deliberately leave the tag undefined in alpha.3.
+    // Class-only imports deliberately leave the tag undefined in alpha.5.
     await import('@carbon/web-components/es/components/button/button.js');
     root.appendChild(document.createElement('cds-button'));
   } else if (entry === 'ConversationalSearch') {
