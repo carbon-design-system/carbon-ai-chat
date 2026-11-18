@@ -67,3 +67,4 @@ export * from './video-player.js';
 export { default as WorkspaceShell } from './workspace-shell.js';
 export * from './workspace-shell.js';
 export * from './history/index.js';
+export * from './hooks/useChatAutocomplete.js';
