@@ -15,7 +15,7 @@ import {
   MessageResponseTypes,
   MessageState,
 } from '../../../src/aiChatEntry';
-import { synthesizeReasoningLocalMessageItem } from '../../../src/shared/utils/reasoningContent';
+import { synthesizeReasoningLocalMessageItem } from '../../../src/sdk/utils/reasoningContent';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

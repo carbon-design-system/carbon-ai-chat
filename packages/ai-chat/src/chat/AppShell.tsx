@@ -29,7 +29,7 @@ import { useWriteableElementPresence } from './hooks/useWriteableElementPresence
 import { useChatViewStateInstance } from './hooks/useChatViewState';
 import { useIntl } from './hooks/useIntl';
 import { useSelector } from './hooks/useSelector';
-import { selectLoadedLocale } from '../shared/store/selectors';
+import { selectLoadedLocale } from '../sdk/store/selectors';
 import { useAppShellPanels } from './AppShellPanels';
 import AppShellErrorBoundary from './AppShellErrorBoundary';
 import MessagesComponent, {

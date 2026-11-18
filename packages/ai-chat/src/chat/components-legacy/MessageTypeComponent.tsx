@@ -100,7 +100,7 @@ import {
 } from '../../types/messaging/Messages';
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { MessageRichUserContent } from './MessageRichUserContent';
-import { fireUserEvent } from '../../shared/services/fireUserEvent';
+import { fireUserEvent } from '../../sdk/services/fireUserEvent';
 import type { CDSAIChatChainOfThought } from '@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought.js';
 import Carousel from '@carbon/ai-chat-components/es/react/carousel.js';
 
