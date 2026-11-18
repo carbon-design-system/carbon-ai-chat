@@ -45,4 +45,6 @@ Use a dedicated output directory in your project. The command replaces that whol
 
 Each layer keeps its filenames. Types sit beside JavaScript, and manifests sit at each layer's root when the source package supplies them. Keep your app's normal Carbon theme stylesheet. Shared `--cds-*` tokens stay unchanged. React, Lit, and other external packages remain normal app dependencies.
 
+Install compatible external dependencies directly in the project that contains the output. This matters with nested installs, including pnpm, where a dependency available inside an installed package may be unavailable from the generated files. The command checks package visibility before replacing the output. If a copied import loses access to a package, the error names the package and its installed source version. Install that version directly, then rerun the command. Your bundler still selects package exports and checks the imported API against your chosen versions.
+
 The implementation copies [Carbon's alpha.3 generator](https://github.com/carbon-design-system/carbon/blob/659c96584a68027d391458b4d9c3dac479e1e357/packages/web-components/bin/create-prefixed-build.js). Local adapters preserve file references and redirect imports across the generated layers. [Consumer migration guidance](https://github.com/carbon-design-system/carbon-ai-chat/issues/1886) remains a separate task.

@@ -382,6 +382,154 @@ export { Constructor as __cds_local, provider as __cds_external };
   );
 });
 
+test('requires a nested external dependency to be visible from the output before replacing it', async () => {
+  const setup = await fixture();
+  const nested = path.join(setup.components, 'node_modules/@carbon/utilities');
+  await write(path.join(nested, 'package.json'), {
+    name: '@carbon/utilities',
+    version: '1.0.0',
+    type: 'module',
+    exports: { '.': { import: './index.js' } },
+  });
+  await write(
+    path.join(nested, 'index.js'),
+    'export const initCarousel = () => "ready";\n'
+  );
+  await write(
+    path.join(setup.components, 'es/index.js'),
+    'import { initCarousel } from "@carbon/utilities"; export const state = initCarousel();\n'
+  );
+  await write(path.join(setup.output, 'keep.txt'), 'existing output');
+  await fs.cp(
+    nested,
+    path.join(setup.output, 'node_modules/@carbon/utilities'),
+    { recursive: true }
+  );
+  const result = invoke(setup, ['--prefix', 'acme', '--out', setup.output]);
+  assert.equal(result.status, 1);
+  assert.match(
+    result.stderr,
+    /Add @carbon\/utilities@1\.0\.0 as a direct dependency/
+  );
+  assert.equal(
+    await fs.readFile(path.join(setup.output, 'keep.txt'), 'utf8'),
+    'existing output'
+  );
+  assert.equal(
+    (await import(pathToFileURL(path.join(setup.components, 'es/index.js'))))
+      .state,
+    'ready'
+  );
+
+  const direct = path.join(setup.root, 'node_modules/@carbon/utilities');
+  await fs.cp(nested, direct, { recursive: true });
+  const metadata = JSON.parse(
+    await fs.readFile(path.join(direct, 'package.json'), 'utf8')
+  );
+  metadata.version = '1.1.0';
+  await write(path.join(direct, 'package.json'), metadata);
+  successful(invoke(setup, ['--prefix', 'acme', '--out', setup.output]));
+  const generated = await import(
+    pathToFileURL(path.join(setup.output, 'ai-chat-components/index.js'))
+  );
+  assert.equal(generated.state, 'ready');
+});
+
+test('accepts external dependencies copied inside the source tree', async () => {
+  const setup = await fixture();
+  const included = path.join(
+    setup.components,
+    'es/node_modules/external-provider'
+  );
+  await write(path.join(included, 'package.json'), {
+    name: 'external-provider',
+    type: 'module',
+    exports: { '.': { import: './index.js' } },
+  });
+  await write(
+    path.join(included, 'index.js'),
+    'export const state = "included";\n'
+  );
+  await write(
+    path.join(setup.components, 'es/index.js'),
+    'export { state } from "external-provider";\n'
+  );
+  successful(invoke(setup, ['--prefix', 'acme', '--out', setup.output]));
+  const generated = await import(
+    pathToFileURL(path.join(setup.output, 'ai-chat-components/index.js'))
+  );
+  assert.equal(generated.state, 'included');
+});
+
+test('checks dependency visibility after resolving parent links and replacing an output link', async () => {
+  const setup = await fixture();
+  const provider = path.join(setup.root, 'node_modules/external-provider');
+  await write(path.join(provider, 'package.json'), {
+    name: 'external-provider',
+    type: 'module',
+    exports: { '.': { import: './index.js' } },
+  });
+  await write(
+    path.join(provider, 'index.js'),
+    'export const state = "visible";\n'
+  );
+  await write(
+    path.join(setup.components, 'es/index.js'),
+    'export { state } from "external-provider";\n'
+  );
+  const shared = await fs.realpath(
+    await fs.mkdtemp(path.join(os.tmpdir(), 'carbon-prefix-shared-'))
+  );
+  scratch.push(shared);
+  const parentLink = path.join(setup.root, 'vendor');
+  await fs.symlink(shared, parentLink, 'dir');
+  const missing = invoke(setup, [
+    '--prefix',
+    'acme',
+    '--out',
+    path.join(parentLink, 'acme'),
+  ]);
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /Add external-provider as a direct dependency/);
+
+  await write(path.join(shared, 'keep.txt'), 'linked directory');
+  await fs.symlink(shared, setup.output, 'dir');
+  successful(invoke(setup, ['--prefix', 'acme', '--out', setup.output]));
+  assert.equal((await fs.lstat(setup.output)).isSymbolicLink(), false);
+  assert.equal(
+    await fs.readFile(path.join(shared, 'keep.txt'), 'utf8'),
+    'linked directory'
+  );
+  const generated = await import(
+    pathToFileURL(path.join(setup.output, 'ai-chat-components/index.js'))
+  );
+  assert.equal(generated.state, 'visible');
+});
+
+test('preserves an already unresolved external dependency without replacing its import', async () => {
+  const setup = await fixture();
+  const content =
+    'import "unavailable-upstream-package"; export const tag = "cds-aichat-card";\n';
+  await write(path.join(setup.components, 'es/index.js'), content);
+  successful(invoke(setup, ['--prefix', 'acme', '--out', setup.output]));
+  assert.equal(
+    await fs.readFile(
+      path.join(setup.output, 'ai-chat-components/index.js'),
+      'utf8'
+    ),
+    content.replace('cds-aichat-card', 'acme-aichat-card')
+  );
+});
+
+test('warns when generating an output inside node_modules', async () => {
+  const setup = await fixture();
+  const output = path.join(setup.root, 'node_modules/prefixed-output');
+  const result = invoke(setup, ['--prefix', 'acme', '--out', output]);
+  successful(result);
+  assert.match(result.stderr, /Warning: --out is inside node_modules/);
+  await fs.access(path.join(output, 'ai-chat-components/index.js'));
+});
+
 test('protects declaration imports, import types, and triple-slash paths', async () => {
   const content = `/// <reference path="./cds-ambient.d.ts" />
 /// <reference types="@carbon/web-components/es" />
@@ -630,6 +778,17 @@ test('app invocation copies all three trees and colocates real declarations', as
   const loaded = await import(pathToFileURL(app.entry));
   assert.equal(loaded.host, 'acme-v2-aichat-container');
   assert.equal(loaded.ownTag, 'acme-v2-aichat-card');
+});
+
+test('generates an app build when the optional declarations directory is absent', async () => {
+  const setup = await fixture({ app: true });
+  await fs.rm(path.join(setup.packageRoot, 'dist/types'), { recursive: true });
+  successful(invoke(setup, ['--prefix', 'acme', '--out', setup.output]));
+  const generated = await import(
+    pathToFileURL(path.join(setup.output, 'ai-chat/aiChatEntry.js'))
+  );
+  assert.equal(generated.host, 'acme-aichat-container');
+  assert.equal(generated.ownTag, 'acme-aichat-card');
 });
 
 test('src overrides only the invoking ESM tree, keeping its installed child chain', async () => {
