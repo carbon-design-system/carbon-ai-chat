@@ -147,7 +147,7 @@ const html = await readFile(join(fixtureDirectory, 'fixture.html'), 'utf8');
 const source = await readFile(join(fixtureDirectory, 'fixture.js'), 'utf8');
 const variants = [
   { name: 'normal', prefix: 'cds' },
-  { name: 'custom', prefix: 'cds-custom' },
+  { name: 'custom', prefix: 'acme' },
 ];
 for (const { name, prefix } of variants) {
   await writeFile(
@@ -184,7 +184,7 @@ await runNpm([
   '--',
   'create-ai-chat-prefixed-build',
   '--prefix',
-  'cds-custom',
+  'acme',
   '--out',
   join(consumer, 'generated-custom'),
 ]);
@@ -391,7 +391,7 @@ try {
             ),
           `remounted ${label}`
         );
-        const tags = await page.evaluate(async () => {
+        const tags = await page.evaluate(async (prefix) => {
           const collect = (root) =>
             Array.from(root.querySelectorAll('*')).flatMap((element) => [
               element,
@@ -424,7 +424,11 @@ try {
             );
           }
           return collect(document)
-            .filter((element) => element.localName.startsWith('cds-'))
+            .filter(
+              (element) =>
+                element.localName.startsWith('cds-') ||
+                element.localName.startsWith(`${prefix}-`)
+            )
             .map((element) => {
               const constructor = customElements.get(element.localName);
               return {
@@ -434,7 +438,7 @@ try {
                 shadow: !!element.shadowRoot,
               };
             });
-        });
+        }, prefix);
         await writeFile(
           join(consumer, `${label}-runtime.json`),
           JSON.stringify({ tags, errors, messages, failedRequests }, null, 2)
@@ -465,9 +469,9 @@ try {
         );
         if (name === 'custom') {
           assert.deepEqual(
-            tags.filter((tag) => !tag.tag.startsWith('cds-custom-')),
+            tags.filter((tag) => tag.tag.startsWith('cds-')),
             [],
-            'The custom consumer must use prefixed tags throughout.'
+            'The custom consumer must render no default cds- tag.'
           );
         }
         assert.deepEqual(

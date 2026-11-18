@@ -128,6 +128,12 @@ export async function run({ packageRoot, argv = process.argv.slice(2) }) {
     );
     process.exit(1);
   }
+  if (prefix.startsWith('cds-')) {
+    process.stderr.write(
+      `Error: --prefix "${prefix}" starts with "cds-", which can reproduce the default tag names. Choose a different prefix.\n`
+    );
+    process.exit(1);
+  }
 
   const DEFAULT_SRC = path.resolve(
     packageRoot,

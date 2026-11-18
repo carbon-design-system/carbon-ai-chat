@@ -42,7 +42,7 @@ import './vendor/components-acme/ai-chat-components/components/aichat-card/index
 
 Use a dedicated output directory in your project. The command replaces that whole directory on each run. It refuses an output that holds the current directory or an installed package, or that sits inside a source tree.
 
-- The prefix is required. Use lowercase letters, digits, and hyphens, starting with a letter. The exact default `cds` is rejected.
+- The prefix is required. Use lowercase letters, digits, and hyphens, starting with a letter. The default `cds` is rejected, and so is any prefix that starts with `cds-`. A prefix such as `cds-icon` would turn `cds-button` into `cds-icon-button`, a tag Carbon already registers. `acme-cds` and `mycds` are fine.
 - Without an output option, the command writes to a directory named for the prefix and invoking package.
 - The source option overrides only the invoking package's ESM tree. Children still resolve from that installed package chain.
 - Use the help option to list flags and default paths.
