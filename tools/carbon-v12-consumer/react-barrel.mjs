@@ -6,57 +6,62 @@
  */
 
 import assert from 'node:assert/strict';
-import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  readFile,
+  readdir,
+  realpath,
+  writeFile,
+} from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { wrapperEntries } from './wrapper-entries.mjs';
 
 const packageName = '@carbon/ai-chat-components';
 const barrelSpecifier = `${packageName}/react`;
 
 /**
- * Maps each wrapper module to the names the React barrel gives it, read from
- * the packed barrel itself.
+ * Lists each module the packed React barrel re-exports from, with one
+ * re-exported binding to import it by: `local` in the module, `exported` in
+ * the barrel.
  */
-async function barrelNames(packageRoot) {
+async function barrelModules(packageRoot) {
   const source = await readFile(join(packageRoot, 'es/react/index.js'), 'utf8');
-  const names = new Map();
+  const modules = new Map();
   for (const [, list, file] of source.matchAll(
     /export\s*\{([^}]*)\}\s*from\s*['"]\.\/([^'"]+)['"]/g
   )) {
-    for (const part of list.split(',')) {
-      const [local, exported = local] = part.trim().split(/\s+as\s+/);
-      if (local) {
-        names.set(`${file}#${local}`, exported);
-      }
+    const [local, exported = local] = list
+      .split(',')[0]
+      .trim()
+      .split(/\s+as\s+/);
+    if (local && !modules.has(file)) {
+      modules.set(file, { local, exported });
     }
   }
-  const starred = [
-    ...source.matchAll(/export\s*\*\s*from\s*['"]\.\/([^'"]+)['"]/g),
-  ].map(([, file]) => file);
-  return { names, starred };
+  for (const [, file] of source.matchAll(
+    /export\s*\*\s*from\s*['"]\.\/([^'"]+)['"]/g
+  )) {
+    assert.fail(
+      `es/react/index.js re-exports ./${file} with export *, which this proof cannot name. Build the barrel with named re-exports.`
+    );
+  }
+  return modules;
 }
 
-function barrelBinding(entry, { names, starred }) {
-  const file = entry.path.slice(`${packageName}/es/react/`.length);
-  const named = entry.exports.find((name) => name !== 'default');
-  const mapped = names.get(`${file}#${named ?? 'default'}`);
-  if (mapped) {
-    return mapped;
+async function wrapperFiles(directory, root = directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (!['__tests__', 'utils'].includes(entry.name)) {
+        files.push(...(await wrapperFiles(path, root)));
+      }
+    } else if (entry.name.endsWith('.js') && entry.name !== 'index.js') {
+      files.push(relative(root, path).split('\\').join('/'));
+    }
   }
-  const throughStar =
-    starred.includes(file) ||
-    starred.some(
-      (barrel) =>
-        barrel.endsWith('/index.js') &&
-        file.startsWith(barrel.slice(0, -'index.js'.length))
-    );
-  assert.ok(
-    named && throughStar,
-    `${entry.path}: the React barrel must export ${entry.tag}'s wrapper.`
-  );
-  return named;
+  return files;
 }
 
 async function bundledModules(vite, consumer, packageRoot, name, source) {
@@ -80,22 +85,30 @@ async function bundledModules(vite, consumer, packageRoot, name, source) {
       },
     },
   });
-  const output = (Array.isArray(result) ? result[0] : result).output;
-  const modules = output
-    .filter((item) => item.type === 'chunk')
-    .flatMap((chunk) => chunk.moduleIds ?? Object.keys(chunk.modules));
-  return new Set(
-    modules
-      .filter((id) => id.startsWith(`${packageRoot}/`))
-      .map((id) => id.slice(packageRoot.length + 1))
-      .filter((id) => id !== 'es/react/index.js')
+  const chunks = (Array.isArray(result) ? result[0] : result).output.filter(
+    (item) => item.type === 'chunk'
   );
+  const modules = chunks
+    .flatMap((chunk) => chunk.moduleIds ?? Object.keys(chunk.modules))
+    .filter((id) => id.startsWith(`${packageRoot}/`))
+    .map((id) => id.slice(packageRoot.length + 1))
+    .filter((id) => id !== 'es/react/index.js');
+  // Carbon and other packages stay external, so compare what each bundle
+  // imports from them too.
+  const external = chunks.flatMap((chunk) => [
+    ...chunk.imports,
+    ...chunk.dynamicImports,
+  ]);
+  return {
+    modules: [...new Set(modules)].sort(),
+    external: [...new Set(external)].sort(),
+  };
 }
 
 /**
- * Importing one wrapper through `@carbon/ai-chat-components/react` must bundle
+ * Importing one binding through `@carbon/ai-chat-components/react` must bundle
  * exactly what its deep `es/react/*.js` import bundles: its own component and
- * registration, and no other wrapper's.
+ * registration, the same external imports, and no other wrapper.
  */
 export async function assertReactBarrelShaking({ consumer }) {
   const packageRoot = await realpath(
@@ -103,31 +116,38 @@ export async function assertReactBarrelShaking({ consumer }) {
   );
   const require = createRequire(join(consumer, 'package.json'));
   const vite = await import(pathToFileURL(require.resolve('vite')).href);
-  const barrel = await barrelNames(packageRoot);
-  for (const entry of wrapperEntries) {
-    const binding = barrelBinding(entry, barrel);
+  const modules = await barrelModules(packageRoot);
+  assert.deepEqual(
+    (await wrapperFiles(join(packageRoot, 'es/react'))).filter(
+      (file) => !modules.has(file)
+    ),
+    [],
+    `${barrelSpecifier} must re-export every React wrapper and hook module.`
+  );
+  for (const [file, { local, exported }] of modules) {
+    const deepPath = `${packageName}/es/react/${file}`;
     const deep = await bundledModules(
       vite,
       consumer,
       packageRoot,
-      `${binding}-deep`,
-      `import * as wrappers from '${entry.path}';\nglobalThis.wrapper = wrappers[${JSON.stringify(entry.exports.find((name) => name !== 'default') ?? 'default')}];\n`
+      `${exported}-deep`,
+      `import { ${local} as binding } from '${deepPath}';\nglobalThis.binding = binding;\n`
     );
     const shaken = await bundledModules(
       vite,
       consumer,
       packageRoot,
-      `${binding}-barrel`,
-      `import { ${binding} } from '${barrelSpecifier}';\nglobalThis.wrapper = ${binding};\n`
+      `${exported}-barrel`,
+      `import { ${exported} as binding } from '${barrelSpecifier}';\nglobalThis.binding = binding;\n`
     );
     assert.ok(
-      deep.has(entry.path.slice(`${packageName}/`.length)),
-      `${entry.path}: the deep import must bundle the wrapper module.`
+      deep.modules.includes(`es/react/${file}`),
+      `${deepPath}: the deep import must bundle its own module.`
     );
     assert.deepEqual(
-      [...shaken].sort(),
-      [...deep].sort(),
-      `${binding}: importing it from ${barrelSpecifier} must bundle the same modules as ${entry.path}.`
+      shaken,
+      deep,
+      `${exported}: importing it from ${barrelSpecifier} must bundle the same modules and external imports as ${deepPath}.`
     );
   }
 }
