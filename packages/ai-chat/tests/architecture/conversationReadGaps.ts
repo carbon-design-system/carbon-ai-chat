@@ -55,12 +55,6 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2693',
   },
   {
-    file: 'src/chat/AppShell.tsx',
-    read: 'selectLoadedLocale()',
-    count: 1,
-    owner: '#1833',
-  },
-  {
     file: 'src/chat/AppShellPanels.tsx',
     read: 'allMessagesByID',
     count: 1,
