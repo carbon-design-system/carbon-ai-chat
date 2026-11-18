@@ -340,7 +340,7 @@ context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMemb
 context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"ButtonItemType\""	de67172b1b37f87f3f6c788884cf9203ab806d00079f6804b930292346bb2734
 context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"CHAT_BUTTON_KIND\""	e0d266bcdc4b8bd027895315c129ee4d85e4084cf4180c94fd02887b92c26e30
 context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"CHAT_BUTTON_SIZE\""	b12c6d53763d7a7f771cbd6e48bf4cd49e6dcd645020c0cb8a505c1c388ec306
-context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"CancellationReason\""	258f61aca6b2ee0c7c34cbe94508ea38615501441aaa092a0a84a952dde11e61
+context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"CancellationReason\""	5e90ce585800f2e89c7a846b2dbba5a70ee1b2eb28921033c24f8bc67ca1e982
 context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"CarbonTheme\""	5e990a8e52ed62c863afb52838e445858a2ca47e1cafc089ca8b3cb8ebbe8839
 context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"ChainOfThoughtStepStatus\""	d7745254a0a8b9d824083e12ac733008770e0f46a850993f00da34c41602786e
 context	packages/ai-chat/tests/contract/spec/exports/enums_spec.ts	"call:pinMembers:\"CornersType\""	cce9458dee2869193ef9dedad5f80da6b4fda18242ff29ec748b99177c5361c4
