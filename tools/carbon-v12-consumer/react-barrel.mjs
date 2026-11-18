@@ -126,30 +126,44 @@ export async function assertReactBarrelShaking({ consumer }) {
     [],
     `${barrelSpecifier} must re-export every React wrapper and hook module.`
   );
-  for (const [file, { local, exported }] of modules) {
-    const deepPath = `${packageName}/es/react/${file}`;
-    const deep = await bundledModules(
-      vite,
-      consumer,
-      packageRoot,
-      `${exported}-deep`,
-      `import { ${local} as binding } from '${deepPath}';\nglobalThis.binding = binding;\n`
+  // vite.build sets process.env.NODE_ENV to production, and every npm the
+  // harness spawns later would inherit it and skip devDependencies.
+  const nodeEnv = process.env.NODE_ENV;
+  try {
+    for (const [file, { local, exported }] of modules) {
+      const deepPath = `${packageName}/es/react/${file}`;
+      const deep = await bundledModules(
+        vite,
+        consumer,
+        packageRoot,
+        `${exported}-deep`,
+        `import { ${local} as binding } from '${deepPath}';\nglobalThis.binding = binding;\n`
+      );
+      const shaken = await bundledModules(
+        vite,
+        consumer,
+        packageRoot,
+        `${exported}-barrel`,
+        `import { ${exported} as binding } from '${barrelSpecifier}';\nglobalThis.binding = binding;\n`
+      );
+      assert.ok(
+        deep.modules.includes(`es/react/${file}`),
+        `${deepPath}: the deep import must bundle its own module.`
+      );
+      assert.deepEqual(
+        shaken,
+        deep,
+        `${exported}: importing it from ${barrelSpecifier} must bundle the same modules and external imports as ${deepPath}.`
+      );
+    }
+    process.stdout.write(
+      `React barrel: ${modules.size} wrapper and hook modules bundle the same through ${barrelSpecifier} as through their deep paths.\n`
     );
-    const shaken = await bundledModules(
-      vite,
-      consumer,
-      packageRoot,
-      `${exported}-barrel`,
-      `import { ${exported} as binding } from '${barrelSpecifier}';\nglobalThis.binding = binding;\n`
-    );
-    assert.ok(
-      deep.modules.includes(`es/react/${file}`),
-      `${deepPath}: the deep import must bundle its own module.`
-    );
-    assert.deepEqual(
-      shaken,
-      deep,
-      `${exported}: importing it from ${barrelSpecifier} must bundle the same modules and external imports as ${deepPath}.`
-    );
+  } finally {
+    if (nodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = nodeEnv;
+    }
   }
 }
