@@ -13,7 +13,7 @@ import React from 'react';
 import { CDSmenuItem as CarbonMenuItemElement } from '@carbon/web-components/es/components/menu/index.js';
 
 const MenuItem = createComponent({
-  tagName: 'cds-menu-item',
+  tagName: CarbonMenuItemElement.is,
   elementClass: CarbonMenuItemElement,
   react: React,
 });

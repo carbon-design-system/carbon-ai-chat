@@ -12,7 +12,7 @@ import { createComponent } from '@lit/react';
 import React from 'react';
 
 const AISlug = createComponent({
-  tagName: 'cds-ai-label',
+  tagName: CDSAILabel.is,
   elementClass: CDSAILabel,
   react: React,
 });

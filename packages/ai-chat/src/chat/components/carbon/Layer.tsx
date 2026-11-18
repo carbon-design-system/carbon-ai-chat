@@ -13,7 +13,7 @@ import React from 'react';
 import { CDSLayer as CarbonLayerElement } from '@carbon/web-components/es/components/layer/index.js';
 
 const Layer = createComponent({
-  tagName: 'cds-layer',
+  tagName: CarbonLayerElement.is,
   elementClass: CarbonLayerElement,
   react: React,
 });

@@ -12,7 +12,7 @@ import React from 'react';
 
 import { CDSMenu as CarbonMenuElement } from '@carbon/web-components/es/components/menu/index.js';
 const Menu = createComponent({
-  tagName: 'cds-menu',
+  tagName: CarbonMenuElement.is,
   elementClass: CarbonMenuElement,
   react: React,
   events: {

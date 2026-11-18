@@ -13,7 +13,7 @@ import { createComponent } from '@lit/react';
 import React from 'react';
 
 const AILabelActionButton = createComponent({
-  tagName: 'cds-ai-label-action-button',
+  tagName: CDSAILabelActionButton.is,
   elementClass: CDSAILabelActionButton,
   react: React,
 });

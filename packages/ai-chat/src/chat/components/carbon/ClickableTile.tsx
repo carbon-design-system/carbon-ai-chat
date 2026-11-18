@@ -12,7 +12,7 @@ import React from 'react';
 import { CDSClickableTile as CarbonClickableTileElement } from '@carbon/web-components/es/components/tile/index.js';
 
 const ClickableTile = createComponent({
-  tagName: 'cds-clickable-tile',
+  tagName: CarbonClickableTileElement.is,
   elementClass: CarbonClickableTileElement,
   react: React,
 });

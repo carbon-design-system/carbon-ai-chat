@@ -13,7 +13,7 @@ import React from 'react';
 import { CDSLink as CarbonLinkElement } from '@carbon/web-components/es/components/link/index.js';
 
 const Link = createComponent({
-  tagName: 'cds-link',
+  tagName: CarbonLinkElement.is,
   elementClass: CarbonLinkElement,
   react: React,
 });
