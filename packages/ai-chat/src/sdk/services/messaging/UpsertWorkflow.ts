@@ -64,6 +64,27 @@ import { ServiceManager } from '../ServiceManager';
  * Whether an upserted item counts as content for the stream-start announcement. A text
  * item whose `text` isn't a string doesn't, and checking it would throw trimming it.
  */
+/**
+ * Whether `next` is the same version of `previous` with only its native upsert error mark
+ * changed. Marking an item errored writes a new local item, but its content is unchanged.
+ */
+function isOnlyUpsertErrorChange(
+  previous: LocalMessageItem | undefined,
+  next: LocalMessageItem
+): boolean {
+  if (!previous || previous.item !== next.item) {
+    return false;
+  }
+  const differs = <T extends object>(a: T, b: T, ignore: keyof T) =>
+    [...new Set([...Object.keys(a), ...Object.keys(b)] as (keyof T)[])].some(
+      (key) => key !== ignore && a[key] !== b[key]
+    );
+  return (
+    !differs(previous, next, 'ui_state') &&
+    !differs(previous.ui_state, next.ui_state, 'upsertError')
+  );
+}
+
 function isAnnounceableContent(item: GenericItem): boolean {
   if (
     item.response_type === MessageResponseTypes.TEXT &&
@@ -1036,7 +1057,8 @@ class UpsertWorkflow {
   /**
    * Reports each shown item of `messageID` that the chat can't draw and now shows an
    * error for: one the last write or settle replaced, that is no longer streaming. A
-   * reused local item was reported when it was written, so each version reports once.
+   * reused local item was reported when it was written, so each version reports once. An
+   * item whose only change is its native upsert error mark is the same version.
    *
    * Pass `false` for `reportErrors` when the settle is user-initiated (stop/cancel):
    * a malformed in-flight item that was never completed is not actionable host data.
@@ -1054,6 +1076,7 @@ class UpsertWorkflow {
         localItem?.fullMessageID !== messageID ||
         !cannotDraw ||
         refsBefore.get(localID) === localItem ||
+        isOnlyUpsertErrorChange(refsBefore.get(localID), localItem) ||
         isItemStillStreaming(localItem)
       ) {
         continue;
