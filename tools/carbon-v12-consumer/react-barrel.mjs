@@ -95,10 +95,12 @@ async function bundledModules(vite, consumer, packageRoot, name, source) {
     .filter((id) => id !== 'es/react/index.js');
   // Carbon and other packages stay external, so compare what each bundle
   // imports from them too.
-  const external = chunks.flatMap((chunk) => [
-    ...chunk.imports,
-    ...chunk.dynamicImports,
-  ]);
+  // imports and dynamicImports also name this build's own split chunks, whose
+  // hashes differ between the two entries; leave those out.
+  const emitted = new Set(chunks.map((chunk) => chunk.fileName));
+  const external = chunks
+    .flatMap((chunk) => [...chunk.imports, ...chunk.dynamicImports])
+    .filter((id) => !emitted.has(id));
   return {
     modules: [...new Set(modules)].sort(),
     external: [...new Set(external)].sort(),
