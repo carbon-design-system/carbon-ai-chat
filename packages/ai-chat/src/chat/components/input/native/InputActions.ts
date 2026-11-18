@@ -12,6 +12,7 @@ import { property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
+import '@carbon/web-components/es/components/button/button.js';
 import '@carbon/web-components/es/components/icon-button/icon-button.js';
 import '@carbon/web-components/es/components/menu/menu.js';
 import '@carbon/web-components/es/components/menu/menu-item.js';
@@ -143,23 +144,34 @@ class InputActions extends NativeChatView {
     if (close) {
       this.open = false;
     }
-    try {
-      if (action.href) {
-        window.open(action.href, action.target || '_self');
-      } else {
-        action.onClick?.();
-      }
-    } catch (error) {
-      this.reportFailure(error);
+    if (action.href) {
+      window.open(action.href, action.target || '_self');
+    } else {
+      action.onClick?.();
     }
   }
 
   private renderIcon(action: ToolbarAction, slot: string) {
+    if (!action.icon) {
+      return nothing;
+    }
     const icon = this.transformIcon?.(action.icon, 16);
     return icon ? iconLoader(icon, { slot }) : nothing;
   }
 
   private renderAction(action: ToolbarAction, fixed: boolean) {
+    // An action without an icon shows its text in a plain ghost button.
+    if (!action.icon) {
+      return html`<cds-button
+        kind="ghost"
+        size="sm"
+        ?disabled=${this.disabled || action.disabled}
+        data-testid=${ifDefined(action.testId)}
+        ?data-fixed=${fixed}
+        @click=${() => this.activate(action, false)}
+        >${action.text}</cds-button
+      >`;
+    }
     return html`<cds-icon-button
       kind="ghost"
       size="sm"
@@ -227,7 +239,12 @@ class InputActions extends NativeChatView {
                   .label=${action.text}
                   ?disabled=${action.disabled}
                   data-testid=${ifDefined(action.testId)}
-                  @click=${() => this.activate(action, true)}>
+                  @click=${() => {
+                    // A disabled menu item still gets mouse clicks.
+                    if (!action.disabled) {
+                      this.activate(action, true);
+                    }
+                  }}>
                   ${this.renderIcon(action, 'render-icon')}
                 </cds-menu-item>`
             )}

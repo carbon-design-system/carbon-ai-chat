@@ -315,25 +315,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
     originalMessage: Message,
     options?: Pick<StartConversationOptions, 'payload'>
   ): Promise<void> {
-    if (!this.serviceDesk) {
-      // No service desk connected.
-      throw new Error('A service desk has not been configured.');
-    }
-
-    if (
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .humanAgentState.isSuspended
-    ) {
-      // If the user is currently engaged in a conversation with an agent that is suspended and we start a new chat, we
-      // need to end the current conversation first. We do still want to generate the "agent left" message however but
-      // not the "bot return" message that occurs on a delay.
-      await this.endChat(true, true, false);
-    }
-
-    if (this.chatStarted) {
-      throw new Error(
-        'A chat is already running. A call to endChat must be made before a new chat can start.'
-      );
+    // The catch below reports a failed start to the user; a start that can't begin is only logged.
+    try {
+      await this.prepareToStartChat();
+    } catch (error) {
+      consoleError('[startChat] The agent chat could not start.', error);
+      throw error;
     }
 
     const { serviceManager } = this;
@@ -459,6 +446,32 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
+   * Checks that a new agent chat can start, ending a suspended one first. Throws when it can't.
+   */
+  private async prepareToStartChat() {
+    if (!this.serviceDesk) {
+      // No service desk connected.
+      throw new Error('A service desk has not been configured.');
+    }
+
+    if (
+      this.serviceManager.store.getState().persistedToBrowserStorage
+        .humanAgentState.isSuspended
+    ) {
+      // If the user is currently engaged in a conversation with an agent that is suspended and we start a new chat, we
+      // need to end the current conversation first. We do still want to generate the "agent left" message however but
+      // not the "bot return" message that occurs on a delay.
+      await this.endChat(true, true, false);
+    }
+
+    if (this.chatStarted) {
+      throw new Error(
+        'A chat is already running. A call to endChat must be made before a new chat can start.'
+      );
+    }
+  }
+
+  /**
    * Fires the {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} event. The event fired is returned which can contain information
    * added by a listener.
    */
@@ -544,17 +557,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.cancelHumanAgentJoinedTimer();
     this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
 
-    try {
-      await resolveOrTimeout(
-        this.serviceDesk.endChat({ endedByHumanAgent, preEndChatPayload }),
-        END_CHAT_TIMEOUT_MS
-      );
-    } catch (error) {
-      consoleError(
-        '[doEndChat] An error with the service desk occurred.',
-        error
-      );
-    }
+    await this.endServiceDeskChat(endedByHumanAgent, preEndChatPayload);
 
     if (isConnected && showHumanAgentLeftMessage) {
       const { responseUserProfile } = this.persistedHumanAgentState();
@@ -578,6 +581,27 @@ class HumanAgentServiceImpl implements HumanAgentService {
         BOT_RETURN_DELAY,
         wasSuspended,
         this.serviceManager
+      );
+    }
+  }
+
+  /**
+   * Tells the service desk the chat has ended, waiting at most {@link END_CHAT_TIMEOUT_MS}. An error is logged, not
+   * thrown.
+   */
+  private async endServiceDeskChat(
+    endedByHumanAgent: boolean,
+    preEndChatPayload: unknown
+  ) {
+    try {
+      await resolveOrTimeout(
+        this.serviceDesk.endChat({ endedByHumanAgent, preEndChatPayload }),
+        END_CHAT_TIMEOUT_MS
+      );
+    } catch (error) {
+      consoleError(
+        '[doEndChat] An error with the service desk occurred.',
+        error
       );
     }
   }
@@ -959,10 +983,10 @@ class HumanAgentServiceImpl implements HumanAgentService {
       config.public.serviceDesk?.skipConnectHumanAgentCard &&
       agentAvailability === HumanAgentsOnlineStatus.ONLINE
     ) {
-      this.serviceManager.humanAgentService.startChat(
-        localMessageItem,
-        fullMessage
-      );
+      // startChat logs every failure, and reports a failed start to the user and ends the request itself.
+      this.serviceManager.humanAgentService
+        .startChat(localMessageItem, fullMessage)
+        .catch(() => {});
     }
   }
 
@@ -990,8 +1014,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   /**
    * Sets the error state for the message with the given id.
    *
-   * @param messageID The ID of the message to set the state for. This will be the ID that was passed on the service
-   * desk as part of the {@link ServiceDesk#sendMessageToAgent} call.
+   * @param messageID The `id` of the message to set the state for.
    * @param errorState The state to set of the message.
    */
   setMessageErrorState(messageID: string, errorState: MessageErrorState) {
@@ -1683,8 +1706,14 @@ class ServiceDeskCallbackImpl<
         break;
       }
       case ErrorType.USER_MESSAGE: {
+        // The desk gets the item ID in sendMessageToAgent but may name the message's own ID instead.
+        const { messageID } = errorInfo;
+        const { allMessagesByID, allMessageItemsByID } = store.getState();
+        const fullMessageID = allMessagesByID[messageID]
+          ? messageID
+          : (allMessageItemsByID[messageID]?.fullMessageID ?? messageID);
         this.service.setMessageErrorState(
-          errorInfo.messageID,
+          fullMessageID,
           MessageErrorState.FAILED
         );
         break;

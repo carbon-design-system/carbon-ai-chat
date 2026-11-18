@@ -14,7 +14,7 @@ import ts from 'typescript';
 const ROOTS = new Set(['ConversationState', 'AppStateMessages']);
 
 /** Top-level fields that hold config, not conversation data. */
-const NOT_DATA = new Set(['config', 'languagePack']);
+const NOT_DATA = new Set(['config', 'languagePack', 'loadedLocale']);
 
 /**
  * The SDK instance's builder, as `file under src/: function`. Its verbs read
