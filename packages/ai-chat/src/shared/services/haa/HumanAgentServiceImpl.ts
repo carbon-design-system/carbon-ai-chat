@@ -1839,12 +1839,16 @@ class ServiceDeskCallbackImpl<
     if (!request) {
       request = resolvablePromise();
       this.service.screenShareRequestPromise = request;
-      // With no hook, a mounted chat asks with its modal and one with no view
-      // declines. A second request while this one waits gets the same answer.
-      const onScreenShareRequest =
-        this.serviceManager.store.getState().config.public.serviceDesk
-          ?.onScreenShareRequest;
+      // A mounted chat always asks with its modal, as before the hook existed. With no
+      // view, the hook answers, or the chat declines. A second request while this one
+      // waits gets the same answer.
       const hasView = Boolean(this.serviceManager.view?.current);
+      // `PublicConfig` leaves the hook out; it's SDK config.
+      const sdkServiceDesk = this.serviceManager.store.getState().config.public
+        .serviceDesk as ChatSDKServiceDeskConfig | undefined;
+      const onScreenShareRequest = hasView
+        ? undefined
+        : sdkServiceDesk?.onScreenShareRequest;
       if (!onScreenShareRequest && hasView) {
         this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
       }

@@ -17,6 +17,7 @@ import {
   ScreenShareState,
   type ServiceDesk,
   type ServiceDeskCallback,
+  type ServiceDeskPublicConfig,
 } from '../../../src/types/config/ServiceDeskConfig';
 import type { ChatSDKState } from '../../../src/types/instance/ChatSDKState';
 import {
@@ -455,7 +456,8 @@ describe('screen-share consent in the prebuilt chat', () => {
     const rendered = await renderChatAndGetInstanceWithStore({
       ...createBaseConfig(),
       serviceDeskFactory: mock.factory,
-      serviceDesk: { onScreenShareRequest },
+      // The prebuilt config's type has no hook; a plain JavaScript host can still pass one.
+      serviceDesk: { onScreenShareRequest } as ServiceDeskPublicConfig,
     });
     await rendered.instance.serviceDesk.startConversation();
     await mock.callback().agentJoined(AGENT);
@@ -476,22 +478,24 @@ describe('screen-share consent in the prebuilt chat', () => {
     await expect(request).resolves.toBe(ScreenShareState.ACCEPTED);
   });
 
-  it('calls the hook instead of showing the modal', async () => {
-    const answer = resolvablePromise<ScreenShareState>();
+  it('shows its consent modal and never calls a hook passed in its config', async () => {
     const hook = jest.fn<Promise<ScreenShareState>, [{ signal: AbortSignal }]>(
-      () => answer
+      async () => ScreenShareState.DECLINED
     );
-    const { store, instance, callback } = await connectedPrebuilt(hook);
+    const { store, instance, callback, serviceManager } =
+      await connectedPrebuilt(hook);
 
     const request = callback().screenShareRequest();
     await settle();
-    expect(hook).toHaveBeenCalledTimes(1);
-    // While the host decides, the modal stays closed.
-    expect(store.getState().humanAgentState.showScreenShareRequest).toBe(false);
-    answer.doResolve(ScreenShareState.ACCEPTED);
 
+    expect(hook).not.toHaveBeenCalled();
+    expect(store.getState().humanAgentState.showScreenShareRequest).toBe(true);
+    // The modal's buttons answer through this.
+    await serviceManager.humanAgentService.screenShareUpdateRequestState(
+      ScreenShareState.ACCEPTED
+    );
     await expect(request).resolves.toBe(ScreenShareState.ACCEPTED);
-    expect(store.getState().humanAgentState.showScreenShareRequest).toBe(false);
+    expect(hook).not.toHaveBeenCalled();
     expect(instance.state.get().humanAgent.isScreenSharing).toBe(true);
   });
 });
