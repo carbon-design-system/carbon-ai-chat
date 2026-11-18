@@ -798,6 +798,27 @@ test('copies a symlinked source module without changing its original target', as
   );
 });
 
+test('rewrites declaration imports nested in an external import type argument', async () => {
+  const content =
+    'export type Child = import("external-provider").Wrapper<import("@carbon/web-components/es").Button>;\n';
+  const result = await transformModule(
+    content,
+    'fixture.d.ts',
+    'acme',
+    async (specifier) =>
+      specifier === '@carbon/web-components/es'
+        ? '../web-components/index.js'
+        : specifier
+  );
+  assert.equal(
+    result,
+    content.replace(
+      '"@carbon/web-components/es"',
+      '"../web-components/index.js"'
+    )
+  );
+});
+
 if (process.env.CARBON_PREFIX_PARSE_ROOTS) {
   test('parses every selected published JavaScript and declaration file', async (context) => {
     const roots = JSON.parse(process.env.CARBON_PREFIX_PARSE_ROOTS);

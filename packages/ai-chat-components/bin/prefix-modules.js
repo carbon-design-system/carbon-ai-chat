@@ -77,7 +77,9 @@ function moduleRanges(ast) {
         end: argument.end,
         specifier: literalValue(argument),
       });
-      return;
+      if (node.type !== 'TSImportType') {
+        return;
+      }
     }
     for (const value of Object.values(node)) {
       if (Array.isArray(value)) {
