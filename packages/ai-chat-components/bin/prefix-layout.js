@@ -217,7 +217,7 @@ async function mapSpecifier(specifier, file, declaration, layers) {
   const generated = generatedPath(original, layers);
   if (!generated || !(await exists(generated))) {
     throw new Error(
-      `Cannot map ${specifier} from ${file} into the generated trees.`
+      `Cannot map ${specifier} from ${file} into the generated trees. If that file is left over from an earlier build, rebuild its package from a clean output.`
     );
   }
   const specifierTarget = declaration
