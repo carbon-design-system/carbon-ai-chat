@@ -14,7 +14,7 @@ import ts from 'typescript';
 const ROOTS = new Set(['ConversationState', 'AppStateMessages']);
 
 /** Top-level fields that hold config, not conversation data. */
-const NOT_DATA = new Set(['config', 'languagePack']);
+const NOT_DATA = new Set(['config', 'languagePack', 'loadedLocale']);
 
 /**
  * Counts each read of conversation data in `files`, keyed `file: read`. A

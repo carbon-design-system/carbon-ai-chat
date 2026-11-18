@@ -41,27 +41,8 @@ export interface ChatSDKInstanceMessaging {
    * message did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE
    * upserts do not fire these events.
    *
-   * Message data in user-defined response, custom message footer, and receive callbacks
-   * uses a snapshot. Plain objects and arrays are frozen. Cloneable special values,
-   * such as dates and typed arrays, remain mutable copies with their usual APIs.
-   * Copied typed arrays and DataViews use fixed bounds from their current offset and
-   * length. Copied backing buffers keep their resize or grow APIs, but the views do
-   * not expand when those buffers grow. Shrinking a copied buffer can put a view out
-   * of bounds.
-   * Opaque values, such as WeakMap, WeakSet, Promise, and Error objects, keep their
-   * original references and shared internal state. Functions keep their APIs, but
-   * closures, accessors, private state, and inherited prototype data remain shared. Calling
-   * these APIs can affect shared state. Edits to copied message fields do not write
-   * back. Use the updater or mutable {@link BusEventType.PRE_RECEIVE} data to change
-   * the message.
-   * Shared callback types stay unchanged; these runtime rules apply only to this method.
-   * Stable add-message, chunk, and human-agent paths are unchanged.
-   *
-   * This call keeps its existing callback and pause waits. Rejection from an awaited
-   * response or footer callback still rejects the upsert. Receive-handler errors are
-   * logged without rejecting it. Detached render notifications are not directly awaited.
-   * A later awaited callback of the same event type can still wait behind them in the
-   * shared queue. An attempted write to frozen data follows these same error rules.
+   * After the user stops a request, a STREAMING upsert of its response still updates the
+   * message, but the stop button doesn't show again.
    *
    * If the returned message has no `id`, Carbon AI Chat assigns `messageID`. The
    * cancellation contract for outbound messages is unchanged — see
@@ -72,9 +53,12 @@ export interface ChatSDKInstanceMessaging {
    * @param state The {@link MessageState} to record for this message once the updater
    *   resolves.
    * @param updater Function that produces the {@link MessageResponse} to store.
-   * @throws `TypeError` when the updater returns `null`/`undefined`, returns a message
-   *   whose `id` differs from `messageID`, or returns a non-assistant message (a request
-   *   or a human-agent message).
+   * @throws `TypeError` when `messageID` is the ID of a request, or when the updater
+   *   returns `null`/`undefined`, a message whose `id` differs from `messageID`, or a
+   *   non-assistant message (a request or a human-agent message). These cases reject
+   *   before any event fires, and store nothing. A {@link BusEventType.PRE_RECEIVE}
+   *   handler that changes the message's `id` also rejects the call with a `TypeError`,
+   *   and the message isn't stored.
    * @remarks A STREAMING sequence whose host simply stops calling `upsertMessage` without
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for

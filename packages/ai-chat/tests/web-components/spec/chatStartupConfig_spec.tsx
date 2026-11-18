@@ -25,6 +25,7 @@ import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { localeLoaders } from '../../../src/shared/utils/languageUtils';
+import actions from '../../../src/shared/store/actions';
 import { useIntl } from '../../../src/chat/hooks/useIntl';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -241,7 +242,8 @@ describe('config updates after startup', () => {
       await waitFor(() => expect(loadFrench).toHaveBeenCalled());
       expect(probe).toHaveTextContent('en');
 
-      // Only the load finishing may change the view: nothing else is sent.
+      // Only the load finishing may change the view: the store records the
+      // loaded locale and nothing else is sent.
       const dispatch = jest.spyOn(storeOf(instance), 'dispatch');
       await act(async () => {
         localeGate.doResolve(frLocaleData);
@@ -249,7 +251,9 @@ describe('config updates after startup', () => {
       });
 
       await waitFor(() => expect(probe).toHaveTextContent('fr'));
-      expect(dispatch).not.toHaveBeenCalled();
+      expect(dispatch.mock.calls).toEqual([
+        [actions.setAppStateValue('loadedLocale', 'fr')],
+      ]);
     } finally {
       dayjs.locale('en');
     }

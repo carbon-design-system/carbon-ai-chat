@@ -18,6 +18,7 @@ import {
   type InputNodeSlotEntry,
 } from '../utils/inputNodeSlots';
 import { LightDomHosts, type LightDomEntry } from './lightDomHosts';
+import { placeHosts } from '../utils/removeHostsOnUnmount';
 import type { AppState } from '../../types/state/AppState';
 import {
   EMPTY_SLOT_RECORDS,
@@ -43,7 +44,7 @@ interface ExtensionHostsSnapshot {
   >;
   /** Derived from the store's messages; stable while they are. */
   readonly inputNode: readonly InputNodeSlotEntry[];
-  /** Editor content placed in the page's light DOM. */
+  /** Editor content placed in the container's light DOM. */
   readonly lightDom: readonly LightDomEntry[];
 }
 
@@ -558,7 +559,7 @@ class ExtensionHosts {
       slot in this.snapshot[kind];
     if (shouldAttach && this.chatWrapper) {
       if (host.element.parentNode !== this.chatWrapper) {
-        this.chatWrapper.appendChild(host.element);
+        placeHosts(this.chatWrapper, [host.element]);
       }
     } else {
       this.detach(host);

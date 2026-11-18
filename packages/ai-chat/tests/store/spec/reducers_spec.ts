@@ -57,6 +57,7 @@ function createInitialAppState(): AppState {
   return {
     config,
     languagePack: buildLanguagePack(config.public.strings),
+    loadedLocale: 'en',
     allMessageItemsByID: {},
     allMessagesByID: {},
     assistantMessageState: DEFAULT_CHAT_MESSAGES_STATE,

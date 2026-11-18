@@ -61,6 +61,9 @@ function createInitialState(config: ConversationAppConfig): ConversationState {
     // Active language pack (defaults + host `strings`), kept off the config tree.
     languagePack: buildLanguagePack(config.public.strings),
 
+    // Boot loads this locale's data before the first render.
+    loadedLocale: config.public.locale || 'en',
+
     // Messaging state
     ...DEFAULT_MESSAGE_STATE,
 

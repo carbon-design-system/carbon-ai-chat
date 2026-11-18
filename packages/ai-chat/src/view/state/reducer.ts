@@ -207,7 +207,7 @@ const viewReducers: Record<string, ViewReducer> = {
 
   [UPDATE_CATASTROPHIC_ERROR_PANEL]: (
     state: ViewPartitionState,
-    action: { panelState: Partial<CatastrophicErrorPanelState> }
+    action: { panelState: CatastrophicErrorPanelState }
   ): ViewPartitionState => ({
     ...state,
     catastrophicErrorPanelState: {
@@ -591,10 +591,7 @@ function resetPanels(
     customPanelState: { ...DEFAULT_CUSTOM_PANEL_STATE },
     workspacePanelState: { ...DEFAULT_WORKSPACE_PANEL_STATE },
     catastrophicErrorType: null,
-    catastrophicErrorPanelState: {
-      ...state.catastrophicErrorPanelState,
-      isOpen: false,
-    },
+    catastrophicErrorPanelState: { isOpen: false },
   };
   // The store holds the host's whole config; the home screen is view config.
   const { homescreen } = after.config.public as {

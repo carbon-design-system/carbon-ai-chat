@@ -35,6 +35,9 @@ import { MessageState } from '../config/MessagingConfig';
 export enum BusEventType {
   /**
    * When a panel has been closed.
+   *
+   * @deprecated The chat never fires this event. Listen for {@link BusEventType.CUSTOM_PANEL_CLOSE} or
+   * {@link BusEventType.WORKSPACE_CLOSE} instead. Removed in 2.0.0.
    */
   CLOSE_PANEL_BUTTON_TOGGLED = 'closePanelButton:toggled',
 
@@ -105,7 +108,9 @@ export enum BusEventType {
   HISTORY_PANEL_NEW_CHAT = 'history:newChat',
 
   /**
-   * Fired before mobile chat history panel opens.
+   * Fired when the user picks "View chats" in the mobile header menu, before the history panel opens. Only that menu
+   * item fires it; `customPanels.getPanel(PanelType.HISTORY).open()` doesn't. The chat doesn't wait for handlers, so
+   * a handler can't delay or stop the open.
    */
   HISTORY_PANEL_PRE_OPEN = 'historyPanel:pre:open',
 
@@ -125,7 +130,8 @@ export enum BusEventType {
   CHAT_READY = 'chat:ready',
 
   /**
-   * Fired before a custom panel opens.
+   * Fired as the default custom panel starts to draw open. It fires after `open()` resolves, when
+   * `customPanels.default.isOpen` already reads `true`, so a handler can't run before the change.
    */
   CUSTOM_PANEL_PRE_OPEN = 'customPanel:pre:open',
 
@@ -135,7 +141,8 @@ export enum BusEventType {
   CUSTOM_PANEL_OPEN = 'customPanel:open',
 
   /**
-   * Fired before a custom panel closes.
+   * Fired as the default custom panel starts to draw closed. It fires after `close()` resolves, when
+   * `customPanels.default.isOpen` already reads `false`, so a handler can't run before the change.
    */
   CUSTOM_PANEL_PRE_CLOSE = 'customPanel:pre:close',
 
@@ -155,12 +162,15 @@ export enum BusEventType {
   WORKSPACE_OPEN = 'workspace:open',
 
   /**
-   * Fired before a workspace closes.
+   * Fired before an open workspace closes through its panel API. Closing a workspace that's already closed fires
+   * nothing. `restartConversation` and `clearConversation` reset an open workspace without firing its close events
+   * or calling its close handlers.
    */
   WORKSPACE_PRE_CLOSE = 'workspace:pre:close',
 
   /**
-   * Fired after a workspace closes.
+   * Fired after an open workspace closes through its panel API. Closing an already-closed workspace fires nothing.
+   * `restartConversation` and `clearConversation` reset an open workspace without this event.
    */
   WORKSPACE_CLOSE = 'workspace:close',
 
@@ -196,14 +206,16 @@ export enum BusEventType {
 
   /**
    * This event is fired before a chat with an agent is ended. This occurs after the user has selected "Yes" from the
-   * confirmation modal but it can also be fired if the chat is ended by the agent. Note that this is not fired if a
-   * request for an agent is cancelled. The human_agent:endChat event however is fired in that case.
+   * confirmation modal but it can also be fired if the chat is ended by the agent. This isn't fired when a page
+   * reload can't resume the chat; see {@link ServiceDeskPublicConfig.allowReconnect}. It also isn't fired if a request
+   * for an agent is canceled. The human_agent:endChat event is fired in that case.
    */
   HUMAN_AGENT_PRE_END_CHAT = 'human_agent:pre:endChat',
 
   /**
    * This event is fired after a chat with an agent has ended. This is fired after {@link BusEventType.HUMAN_AGENT_PRE_END_CHAT} but
-   * can be fired both from the user leaving the chat or the agent ending the chat.
+   * can be fired both from the user leaving the chat or the agent ending the chat. A reload that can't resume the
+   * chat ends it locally without this event.
    */
   HUMAN_AGENT_END_CHAT = 'human_agent:endChat',
 
@@ -266,7 +278,8 @@ export enum ViewChangeReason {
   LAUNCHER_CLICKED = 'launcherClicked',
 
   /**
-   * Indicates the user clicked on our built-in minimize button that closed the launcher.
+   * Indicates the user clicked the built-in minimize button in the chat header, which closed the main window.
+   * In 1.x, the button emits `main_window_minimized`; this enum retains `mainWindowMinimized`.
    */
   MAIN_WINDOW_MINIMIZED = 'mainWindowMinimized',
 
@@ -357,7 +370,8 @@ export interface BusEvent {
 }
 
 /**
- *
+ * @deprecated The chat never fires {@link BusEventType.CLOSE_PANEL_BUTTON_TOGGLED}. Listen for
+ * {@link BusEventType.CUSTOM_PANEL_CLOSE} or {@link BusEventType.WORKSPACE_CLOSE} instead. Removed in 2.0.0.
  *
  * @category Events
  */
@@ -371,9 +385,6 @@ export interface BusEventClosePanelButtonClicked extends BusEvent {
  */
 export interface BusEventPreReceive extends BusEvent {
   type: BusEventType.PRE_RECEIVE;
-  /**
-   * Mutable message data before acceptance, including for {@link ChatInstanceMessaging.upsertMessage}.
-   */
   data: MessageResponse;
 }
 
@@ -383,13 +394,6 @@ export interface BusEventPreReceive extends BusEvent {
  */
 export interface BusEventReceive extends BusEvent {
   type: BusEventType.RECEIVE;
-  /**
-   * For {@link ChatInstanceMessaging.upsertMessage}, a message snapshot with no
-   * callback writeback. Plain objects and arrays are frozen. Cloneable special values
-   * stay mutable copies; opaque values and function closure/private state remain shared.
-   * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content.
-   * These runtime rules do not change the shared type or other delivery paths.
-   */
   data: MessageResponse;
 }
 
@@ -530,7 +534,8 @@ export interface BusEventViewChange extends BusEvent {
   oldViewState: ViewState;
 
   /**
-   * The new view state that Carbon AI Chat has switched to. This new state can be changed by the event handler.
+   * The new view state that Carbon AI Chat has switched to. The object is frozen, so a handler can't edit it in place.
+   * To change the view, replace `newViewState` with a new object.
    */
   newViewState: ViewState;
 
@@ -589,12 +594,6 @@ export interface BusEventMessageItemCustom extends BusEvent {
  * Used to populate user_defined responses. Please see the React or web component documentation as usage of this
  * differs based on implementation.
  *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
- * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
- * opaque values and function closure/private state remain shared. Edits to copied
- * fields do not write back. Use the updater or {@link BusEventType.PRE_RECEIVE}
- * to change content. This runtime rule leaves shared types and other delivery paths unchanged.
- *
  * @category Events
  * @category SDK
  */
@@ -638,7 +637,8 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
   type: BusEventType.CHUNK_USER_DEFINED_RESPONSE;
   data: {
     /**
-     * The individual message item that is being displayed in this custom response.
+     * The item from this chunk alone (its `partial_item` or `complete_item`), not the item merged from earlier
+     * chunks.
      */
     messageItem: DeepPartial<GenericItem>;
 
@@ -656,12 +656,6 @@ export interface BusEventChunkUserDefinedResponse extends BusEvent {
 
 /**
  * Used to populate custom message footer slots.
- *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
- * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
- * opaque values and function closure/private state remain shared. Edits to copied
- * fields do not write back. Use the updater or {@link BusEventType.PRE_RECEIVE}
- * to change content. This runtime rule leaves shared types and other delivery paths unchanged.
  *
  * @category Events
  */
@@ -719,9 +713,8 @@ export interface BusEventCustomRequestFooterSlot extends BusEvent {
  * This event may be fired not only when the history is first loaded but it may be fired later during the life of
  * the widget if additional messages are loaded from history.
  *
- * This event is fired when this process begins. This is fired before all the "pre:receive" and "receive" events are
- * fired which means that the messages here are the original messages before any possible modifications by the event
- * handlers.
+ * This event is fired when this process begins, before {@link BusEventType.HISTORY_END}. Messages loaded from history
+ * fire no {@link BusEventType.PRE_RECEIVE} or {@link BusEventType.RECEIVE} events.
  *
  * @category Events
  * @category SDK
@@ -750,9 +743,8 @@ export interface BusEventHistoryBegin extends BusEvent {
  * This event may be fired not only when the history is first loaded but it may be fired later during the life of
  * the widget if additional messages are loaded from history.
  *
- * This event is fired when this process ends. This is fired after all the "pre:receive" and "receive" events are
- * fired which means that the messages here are the potentially modified messages after any possible modifications
- * by the event handlers.
+ * This event is fired when this process ends, after {@link BusEventType.HISTORY_BEGIN}. Messages loaded from history
+ * fire no {@link BusEventType.PRE_RECEIVE} or {@link BusEventType.RECEIVE} events.
  *
  * @category Events
  * @category SDK
@@ -807,7 +799,8 @@ export interface BusEventHistoryPanelNewChat extends BusEvent {
 }
 
 /**
- * Fired before the mobile chat history panel opens.
+ * Fired when the user picks "View chats" in the mobile header menu, before the history panel opens. The chat doesn't
+ * wait for handlers, so a handler can't delay or stop the open.
  *
  * @category Events
  */
@@ -985,7 +978,7 @@ export interface BusEventHumanAgentPreEndChat<
   preEndChatPayload: TPayloadType;
 
   /**
-   * This value may be set by a listener to indicate that the process of ending the chat should be cancelled.
+   * This value may be set by a listener to indicate that the process of ending the chat should be canceled.
    */
   cancelEndChat: boolean;
 }
@@ -1138,7 +1131,8 @@ export enum HeaderMenuClickType {
   OVERFLOW_MENU_OPENED = 'overflowMenuOpened',
 
   /**
-   * An item in the overflow menu was clicked.
+   * An item in the overflow menu was clicked. A link item, one with {@link CustomMenuOption.href}, navigates without
+   * firing this event.
    */
   OVERFLOW_MENU_ITEM = 'overflowMenuItem',
 }
