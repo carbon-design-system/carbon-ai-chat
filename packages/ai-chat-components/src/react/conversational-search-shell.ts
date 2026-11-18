@@ -10,7 +10,10 @@
 import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { ConversationalSearchShell as ConversationalSearchShellElement } from '../components/aichat-conversational-search/index.js';
-import { type CitationToggleEventDetail } from '../components/aichat-conversational-search/aichat-conversational-search-shell.js';
+import type {
+  CitationToggleEventDetail,
+  CitationsSelectEventDetail,
+} from '../components/aichat-conversational-search/index.js';
 
 const ConversationalSearchShell = createComponent({
   tagName: ConversationalSearchShellElement.is,
@@ -20,6 +23,10 @@ const ConversationalSearchShell = createComponent({
     onCitationsToggle:
       ConversationalSearchShellElement.eventCitationsToggle as EventName<
         CustomEvent<CitationToggleEventDetail>
+      >,
+    onCitationsSelect:
+      ConversationalSearchShellElement.eventCitationsSelect as EventName<
+        CustomEvent<CitationsSelectEventDetail>
       >,
   },
 });
