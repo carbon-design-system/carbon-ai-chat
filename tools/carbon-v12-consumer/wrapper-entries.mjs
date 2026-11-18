@@ -152,6 +152,17 @@ export const wrapperEntries = [
     },
   ],
   [
+    '@carbon/ai-chat-components/es/react/citation-card.js',
+    ['default', 'CitationCard'],
+    'cds-aichat-citation-card',
+    'CitationCard',
+    'aichat-conversational-search/aichat-citation-card.ts',
+    {
+      onCitationSelect: 'cds-aichat-citation-select',
+      onCitationExpand: 'cds-aichat-citation-expand',
+    },
+  ],
+  [
     '@carbon/ai-chat-components/es/react/conversational-search-shell.js',
     ['default', 'ConversationalSearchShell'],
     'cds-aichat-conversational-search-shell',
@@ -159,6 +170,7 @@ export const wrapperEntries = [
     'aichat-conversational-search/aichat-conversational-search-shell.ts',
     {
       onCitationsToggle: 'cds-aichat-citations-toggle',
+      onCitationsSelect: 'cds-aichat-citations-select',
     },
   ],
   [
@@ -513,6 +525,14 @@ export const wrapperEntries = [
     'cds-aichat-user-avatar',
     'CDSAIChatUserAvatar',
     'aichat-user-avatar/aichat-user-avatar.ts',
+    {},
+  ],
+  [
+    '@carbon/ai-chat-components/es/react/user-message-content.js',
+    ['default'],
+    'cds-aichat-user-message-content',
+    'CDSAIChatUserMessageContent',
+    'aichat-user-message-content/aichat-user-message-content.ts',
     {},
   ],
   [
