@@ -29,6 +29,10 @@
       "types": "./es/index.d.ts",
       "default": "./es/index.js"
     },
+    "./react": {
+      "types": "./es/react/index.d.ts",
+      "default": "./es/react/index.js"
+    },
     "./es/*": "./es/*",
     "./es/globals/*": "./es/globals/*",
     "./scss/*": "./scss/*",
