@@ -14,7 +14,7 @@ superseded-by:
 
 Hosts that collect dates or pace a reply need a migration path before the next major release. Removing those built-in behaviors can leave a working backend with a missing control or a reply that arrives too soon.
 
-Deprecate `date` and `pause` in 1.x, then remove them in 2.0.0. Render date picker controls through `user_defined`. Mock a pause with `upsertMessage` and a `user_defined` loading indicator, with timing owned by your host. The proposal to merge loading and reasoning steps may offer another pause alternative once its design is authored. Keep `iframe`, `image`, `button`, `carousel`, and `option` through 2.0.0.
+Deprecate `date` and `pause` in 1.x, then remove them in 2.0.0. Render date picker controls through `user_defined`. Planned support for A2UI, a protocol for interfaces described by agents, also includes date picker controls. Mock a pause with `upsertMessage` and a `user_defined` loading indicator, with timing owned by your host. The proposal to merge loading and reasoning steps may offer another pause alternative once its design is authored. Keep `iframe`, `image`, `button`, `carousel`, and `option` through 2.0.0.
 
 Feedback wanted
 
@@ -163,6 +163,8 @@ await instance.send({
 ```
 
 You can also offer a fixed set of dates as an `option` response. Your control owns selected and disabled states, accessibility, and restoration from history. Programmatic sends use `MessageSendSource.INSTANCE_SEND`, which replaces date-picker-specific event handling.
+
+Planned A2UI support also includes date picker controls. Its basic catalog defines `DateTimeInput` for date and time entry. The Carbon AI Chat integration and its release are still being explored. [A2UI integration #1526](https://github.com/carbon-design-system/carbon-ai-chat/issues/1526), [A2UI date and time input](https://a2ui.org/reference/components/#datetimeinput)
 
 ### Replace the pause item with host-driven updates
 
