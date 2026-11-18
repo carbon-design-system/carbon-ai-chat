@@ -777,6 +777,27 @@ test('handles absent metadata generically but fails advertised missing manifests
   );
 });
 
+test('copies a symlinked source module without changing its original target', async () => {
+  const setup = await fixture();
+  const source = path.join(setup.root, 'override');
+  const original = path.join(setup.root, 'shared.js');
+  const content = 'export const tag = "cds-aichat-card";\n';
+  await write(original, content);
+  await fs.mkdir(source);
+  await fs.symlink(original, path.join(source, 'index.js'));
+  successful(
+    invoke(setup, ['--prefix', 'acme', '--src', source, '--out', setup.output])
+  );
+  assert.equal(await fs.readFile(original, 'utf8'), content);
+  assert.match(
+    await fs.readFile(
+      path.join(setup.output, 'ai-chat-components/index.js'),
+      'utf8'
+    ),
+    /acme-aichat-card/
+  );
+});
+
 if (process.env.CARBON_PREFIX_PARSE_ROOTS) {
   test('parses every selected published JavaScript and declaration file', async (context) => {
     const roots = JSON.parse(process.env.CARBON_PREFIX_PARSE_ROOTS);

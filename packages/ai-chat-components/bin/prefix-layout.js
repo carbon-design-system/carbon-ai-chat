@@ -293,9 +293,15 @@ export async function assertSafeOutput(output, layers) {
 }
 
 export async function copyLayer(layer) {
-  await fs.cp(layer.source, layer.destination, { recursive: true });
+  await fs.cp(layer.source, layer.destination, {
+    recursive: true,
+    dereference: true,
+  });
   if (layer.types && (await exists(layer.types))) {
-    await fs.cp(layer.types, layer.destination, { recursive: true });
+    await fs.cp(layer.types, layer.destination, {
+      recursive: true,
+      dereference: true,
+    });
   }
   const license = path.join(layer.packageRoot, 'LICENSE');
   if (await exists(license)) {
