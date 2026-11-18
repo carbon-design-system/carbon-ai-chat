@@ -32,7 +32,7 @@ Status runs `proposed`, then `accepted` or `rejected`. An accepted ADR that a la
 
 1. **Draft it** in `.github/adr-drafts/`, which is git-ignored, from [template.md](template.md). Set `feedback-by`: the earliest date it can be decided. Ten working days is the usual minimum. Give a wide-reaching change, or one that spans a holiday, longer.
 2. **Open the PR**, titled `docs: ADR-NNNN <title>`. Merge it once it reads clearly, not once everyone agrees. It merges as `proposed`, so nothing is settled, but people can find it on `main`.
-3. **Open the RFC discussion** from the [RFC Discussions form](https://github.com/carbon-design-system/carbon-ai-chat/discussions/new?category=rfc-discussions), and set the ADR's `discussion` field to its URL in a follow-up PR. The discussion is where feedback happens.
+3. **Open the RFC discussion** from the [RFC Discussions form](https://github.com/carbon-design-system/carbon-ai-chat/discussions/new?category=rfc-discussions), and set the ADR's `discussion` field to its URL in a follow-up PR. The discussion is where feedback happens. For a Slack announcement, use the [RFC announcement template](templates/slack-announcement.md).
 4. **Decide it** on or after `feedback-by`. Someone on `@carbon-design-system/carbon-ai-chat-developers` sets the status, fills in the Decision section, and closes the discussion.
 
 > **Note**: Silence isn't agreement. A date passing doesn't accept an ADR; a person does. Until someone sets the status, the ADR is still `proposed`.
