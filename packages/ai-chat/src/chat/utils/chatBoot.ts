@@ -10,6 +10,7 @@
 import dayjs from 'dayjs';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat.js';
 import merge from 'lodash-es/merge.js';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 
 import { createChatSDK } from '../../sdk/createChatSDK';
@@ -287,9 +288,7 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
       serviceManager.view.current?.instance.scrollToMessage(messageID, animate);
     },
 
-    updateCatastrophicErrorPanel: (
-      panelState: Partial<CatastrophicErrorPanelState>
-    ) => {
+    updateCatastrophicErrorPanel: (panelState: CatastrophicErrorPanelState) => {
       debugLog('Called instance.updateCatastrophicPanel');
 
       if (
@@ -338,6 +337,10 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
         options: AddMessageOptions = {}
       ) => {
         debugLog('Called instance.messaging.addMessage', message, options);
+        // The chat writes its defaults onto the message, which a frozen one can't take.
+        if (Object.isFrozen(message)) {
+          message = cloneDeep(message);
+        }
         if (
           serviceManager.messageCoordinator.isRequestFromPreviousConversation(
             message.request_id

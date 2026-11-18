@@ -267,9 +267,40 @@ describe('mirrorInputValue', () => {
 
       mirrorInputValue({ ...args, sliceChanged, restoreDraft });
 
-      expect(promptLine.setContent).toHaveBeenCalledWith('next value');
+      expect(promptLine.setContent).toHaveBeenCalledWith({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'next value' }],
+          },
+        ],
+      });
     }
   );
+
+  it('mirrors HTML-looking text and edge newlines as a literal document', () => {
+    const { args, promptLine } = fixture();
+
+    mirrorInputValue({ ...args, rawValue: '\n<tag>\n\nlast\n' });
+
+    expect(promptLine.setContent).toHaveBeenCalledWith({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'hardBreak' },
+            { type: 'text', text: '<tag>' },
+            { type: 'hardBreak' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'last' },
+            { type: 'hardBreak' },
+          ],
+        },
+      ],
+    });
+  });
 
   it('leaves the surface alone when the local raw value already matches', () => {
     const { args, promptLine } = fixture();

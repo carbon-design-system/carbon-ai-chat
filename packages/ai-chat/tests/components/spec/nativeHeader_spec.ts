@@ -8,6 +8,7 @@
  */
 
 import { ContextProvider } from '@lit/context';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
 import { LitElement, nothing } from 'lit';
 import { waitFor } from '@testing-library/react';
 import type NativeChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
@@ -197,6 +198,35 @@ describe('native header', () => {
       `event:${HeaderMenuClickType.HOMESCREEN_BUTTON}`,
       'home',
     ]);
+  });
+
+  it('renders a configured action that has no icon', async () => {
+    const { view, base, manager } = await createHeader(
+      { actions: [{ text: 'Text only', onClick: jest.fn() }] },
+      (headerView) => {
+        headerView.transformIcon = transformReactIconToCarbonIcon;
+      }
+    );
+    await view.updateComplete;
+    expect(manager.actions.errorOccurred).not.toHaveBeenCalled();
+    expect(base().actions[0]).toEqual(
+      expect.objectContaining({ text: 'Text only', icon: undefined })
+    );
+  });
+
+  it('logs a header menu click handler that rejects and still runs the click', async () => {
+    const failure = new Error('header menu handler failed');
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const { view, base, fire } = await createHeader();
+    fire.mockImplementationOnce(() => Promise.reject(failure));
+    base().navigationBackOnClick();
+    expect(view.onToggleHomeScreen).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(BusEventType.HEADER_MENU_CLICK),
+        failure
+      )
+    );
   });
 
   it('keeps overflow events, inserted home indices, links, and callbacks wired in order', async () => {

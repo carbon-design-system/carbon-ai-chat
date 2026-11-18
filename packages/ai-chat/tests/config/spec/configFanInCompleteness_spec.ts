@@ -37,7 +37,7 @@ const SIDE_EFFECT_FIELDS = new Set<string>([
   'locale', // intl + dayjs rebuild via the localization subscription
   'homescreen', // open/close state transition
   'namespace', // ServiceManager.namespace swap
-  'messaging', // messageTimeoutSecs -> messageService.timeoutMS
+  'messaging', // messageTimeoutSecs -> messageCoordinator.timeoutMS
   'serviceDeskFactory', // human-agent service rebuild
   'disclaimer', // clears recorded acceptance when content changes
   'launcher', // showUnreadIndicator persisted runtime state

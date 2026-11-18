@@ -63,6 +63,14 @@ const PANEL_PRIORITY: Record<PanelName, number> = {
   history: 3,
 };
 
+/** The test ids the built-in panels carry, so tests and hosts can find them by `PageObjectId`. */
+const PANEL_TEST_ID: Partial<Record<PanelName, PageObjectId>> = {
+  error: PageObjectId.CATASTROPHIC_PANEL,
+  hydration: PageObjectId.HYDRATING_PANEL,
+  custom: PageObjectId.CUSTOM_PANEL,
+  disclaimer: PageObjectId.DISCLAIMER_PANEL,
+};
+
 type PanelLanguage = Pick<
   AppState['languagePack'],
   | 'aria_catastrophicErrorPanel'
@@ -406,7 +414,7 @@ class NativePanels extends NativeChatView {
     const open = this.frameOpen(name, options.open);
     return html`<cds-aichat-panel
       data-panel-name=${name}
-      data-testid=${name === 'disclaimer' ? PageObjectId.DISCLAIMER_PANEL : nothing}
+      data-testid=${PANEL_TEST_ID[name] ?? nothing}
       .panelAriaLabel=${options.label ?? 'Panel'}
       .open=${open}
       .priority=${PANEL_PRIORITY[name]}
