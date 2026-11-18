@@ -61,10 +61,6 @@ import { hasDisplayableContentForItem } from '../../utils/streamingUtils';
 import { ServiceManager } from '../ServiceManager';
 
 /**
- * Whether an upserted item counts as content for the stream-start announcement. A text
- * item whose `text` isn't a string doesn't, and checking it would throw trimming it.
- */
-/**
  * Whether `next` is the same version of `previous` with only its native upsert error mark
  * changed. Marking an item errored writes a new local item, but its content is unchanged.
  */
@@ -85,6 +81,10 @@ function isOnlyUpsertErrorChange(
   );
 }
 
+/**
+ * Whether an upserted item counts as content for the stream-start announcement. A text
+ * item whose `text` isn't a string doesn't, and checking it would throw trimming it.
+ */
 function isAnnounceableContent(item: GenericItem): boolean {
   if (
     item.response_type === MessageResponseTypes.TEXT &&
