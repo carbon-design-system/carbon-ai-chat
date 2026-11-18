@@ -84,6 +84,17 @@ async function joined(
 describe('state.humanAgent', () => {
   contractSetup();
 
+  // `main`'s state.humanAgent has only the first five fields. The approved
+  // additions report screen sharing, reconnecting, typing, availability and
+  // uploads too; with no agent chat they're all off.
+  const NO_AGENT_ACTIVITY = {
+    isScreenSharing: false,
+    isReconnecting: false,
+    isTyping: false,
+    availability: null as null,
+    isUploadingFile: false,
+  };
+
   it('starts with no agent chat', async () => {
     const { instance } = await deskChat(fakeDesk());
     expect(humanAgent(instance)).toEqual({
@@ -92,6 +103,7 @@ describe('state.humanAgent', () => {
       isSuspended: false,
       responseUserProfiles: {},
       responseUserProfile: null,
+      ...NO_AGENT_ACTIVITY,
     });
   });
 
@@ -147,6 +159,7 @@ describe('state.humanAgent', () => {
       isSuspended: false,
       responseUserProfiles: { [DANA.id]: DANA },
       responseUserProfile: null,
+      ...NO_AGENT_ACTIVITY,
     });
   });
 
