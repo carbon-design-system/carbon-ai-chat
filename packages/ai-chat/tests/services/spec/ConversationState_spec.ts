@@ -38,6 +38,26 @@ describe('ConversationState', () => {
     expect(service.requestStopped('stopped-request')).toEqual(['response']);
   });
 
+  it('marks user stops and stopped responses until restart', () => {
+    const generation = service.currentGeneration;
+    service.responseStreaming('user-response', generation, 'user-request');
+    service.responseStreaming('other-response', generation, 'other-request');
+
+    service.requestStopped('user-request', generation, true);
+    service.requestStopped('other-request', generation);
+
+    expect(service.isRequestStoppedByUser('user-request')).toBe(true);
+    expect(service.isRequestStoppedByUser('other-request')).toBe(false);
+    expect(service.isRequestStopped('other-request')).toBe(true);
+    expect(service.isResponseStopped('user-response')).toBe(true);
+    expect(service.isResponseStopped('other-response')).toBe(true);
+
+    service.restart(true);
+
+    expect(service.isRequestStoppedByUser('user-request')).toBe(false);
+    expect(service.isResponseStopped('user-response')).toBe(false);
+  });
+
   it('ignores writes, finishes, and stops from a previous generation', () => {
     const previousGeneration = service.currentGeneration;
     const generation = service.restart(true);

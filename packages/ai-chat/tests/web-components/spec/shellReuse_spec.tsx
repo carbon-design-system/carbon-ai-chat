@@ -211,6 +211,64 @@ describe('a remount inside the window keeps the conversation', () => {
     expect(shutdown).not.toHaveBeenCalled();
   });
 
+  it("drops the released mount's state listeners while the adopted mount keeps its listeners", async () => {
+    const namespace = freshNamespace();
+    const config = reuseConfig(namespace);
+    const first = await mountElement(config);
+    const oldSubscriber = jest.fn();
+    const oldSelector = jest.fn();
+    const stopOldSubscriber = first.instance.state.subscribe(oldSubscriber);
+    const stopOldSelector = first.instance.state.select(
+      (state) => state.messages.length,
+      oldSelector
+    );
+    await unmount(first);
+    oldSubscriber.mockClear();
+    oldSelector.mockClear();
+
+    const second = await mountElement(config);
+    const newSubscriber = jest.fn();
+    const newSelector = jest.fn();
+    second.instance.state.subscribe(newSubscriber);
+    second.instance.state.select((state) => state.messages.length, newSelector);
+    await addMessage(second.instance, 'adopted');
+
+    expect(oldSubscriber).not.toHaveBeenCalled();
+    expect(oldSelector).not.toHaveBeenCalled();
+    expect(newSubscriber).toHaveBeenCalled();
+    expect(newSelector).toHaveBeenLastCalledWith(
+      second.instance.state.get().messages.length
+    );
+    stopOldSubscriber();
+    stopOldSelector();
+    newSubscriber.mockClear();
+    await addMessage(second.instance, 'still-mounted');
+    expect(newSubscriber).toHaveBeenCalled();
+  });
+
+  it('ignores late state subscriptions through a mount released without listeners', async () => {
+    const namespace = freshNamespace();
+    const config = reuseConfig(namespace);
+    const first = await mountElement(config);
+    await unmount(first);
+    const second = await mountElement(config);
+    const oldSubscriber = jest.fn();
+    const oldSelector = jest.fn();
+    const stopSubscriber = first.instance.state.subscribe(oldSubscriber);
+    const stopSelector = first.instance.state.select(
+      (state) => state.messages.length,
+      oldSelector
+    );
+    await addMessage(second.instance, 'after-late-subscribe');
+
+    expect(oldSubscriber).not.toHaveBeenCalled();
+    expect(oldSelector).not.toHaveBeenCalled();
+    expect(() => {
+      stopSubscriber();
+      stopSelector();
+    }).not.toThrow();
+  });
+
   it('O2: keeps a live agent chat, on the same desk', async () => {
     const namespace = freshNamespace();
     const { desks, factory } = deskFactory();

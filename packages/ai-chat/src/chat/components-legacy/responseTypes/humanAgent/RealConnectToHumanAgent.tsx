@@ -108,6 +108,20 @@ const selectRealConnectStrings = (state: AppState) => ({
     state.languagePack.default_agent_unavailableMessage,
 });
 
+/**
+ * Starts the agent chat. startChat logs every failure, and a failed start is already shown to the user and ends the
+ * request, so the rejection is dropped here.
+ */
+function startChat(
+  serviceManager: RealConnectToHumanAgentProps['serviceManager'],
+  localMessage: RealConnectToHumanAgentProps['localMessage'],
+  originalMessage: RealConnectToHumanAgentProps['originalMessage']
+) {
+  serviceManager.humanAgentService
+    .startChat(localMessage, originalMessage)
+    .catch(() => {});
+}
+
 function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const languagePack = useSelector(selectRealConnectStrings, shallowEqual);
   const {
@@ -158,10 +172,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
           if (cardMounted.current) {
             setShowConfirmSuspended(false);
           }
-          serviceManager.humanAgentService.startChat(
-            localMessage,
-            originalMessage
-          );
+          startChat(serviceManager, localMessage, originalMessage);
           // Focus the card's button once it renders. With the card gone after
           // a remount, focus the chat instead, so focus isn't lost.
           setTimeout(() => {
@@ -210,7 +221,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
       setShowConfirmSuspended(true);
     } else {
       setShowConfirmSuspended(false);
-      serviceManager.humanAgentService.startChat(localMessage, originalMessage);
+      startChat(serviceManager, localMessage, originalMessage);
       // The connect button will become disabled. We need to move focus to the cancel button but do so in a timeout to
       // give it a chance to render.
       setTimeout(requestFocus);

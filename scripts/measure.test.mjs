@@ -9,9 +9,11 @@
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   renameSync,
   rmSync,
   symlinkSync,
@@ -22,6 +24,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { band, classify, parseNumstat } from './measure-lib.mjs';
+import {
+  coverageGaps,
+  fingerprint,
+  readVerifiedCoverage,
+} from './contract-coverage.mjs';
 
 const env = {
   ...process.env,
@@ -465,4 +472,472 @@ test('untracked binary and ignored files respect Git conventions', (context) => 
   assert.match(output, /binary: 1 file \(src\/picture.bin: code\)/);
   assert.match(output, /untracked: 1 file counted \(\+0\)/);
   assert.doesNotMatch(output, /ignored.ts/);
+});
+
+const RUNTIME_FILE = 'packages/ai-chat/src/runtime/index.ts';
+
+function istanbul(
+  file,
+  statementCounts = { 0: 1, 1: 0 },
+  branchCounts = [1, 0]
+) {
+  const loc = (line) => ({
+    start: { line, column: 0 },
+    end: { line, column: 20 },
+  });
+  return {
+    [file]: {
+      path: file,
+      statementMap: { 0: loc(1), 1: loc(2) },
+      s: statementCounts,
+      branchMap: {
+        0: { loc: loc(1), locations: [loc(1), loc(1)], type: 'cond-expr' },
+      },
+      b: { 0: branchCounts },
+    },
+  };
+}
+
+test('contract coverage lists an uncovered changed runtime index line and an untaken arm on a covered line', () => {
+  const rows = [1, 2, 3].map((line) => ({ file: RUNTIME_FILE, line }));
+  const result = coverageGaps(
+    rows,
+    istanbul(RUNTIME_FILE),
+    () => 'export const x = 1;\nexport const y = 2;\n}'
+  );
+  assert.deepEqual(result.gaps, [`${RUNTIME_FILE}:2`]);
+  assert.deepEqual(result.branches, [`${RUNTIME_FILE}:1 branch 0/1`]);
+  assert.deepEqual(result.nonExecutable, [`${RUNTIME_FILE}:3`]);
+  assert.deepEqual(result.unverified, []);
+});
+
+test('equivalent Istanbul producers give identical contract rows', () => {
+  const rows = [{ file: RUNTIME_FILE, line: 2 }];
+  const first = istanbul(RUNTIME_FILE);
+  const second = JSON.parse(JSON.stringify(first));
+  second[RUNTIME_FILE].fnMap = {};
+  second[RUNTIME_FILE].f = {};
+  assert.deepEqual(
+    coverageGaps(rows, first, () => ''),
+    coverageGaps(rows, second, () => '')
+  );
+});
+
+test('missing runtime file data is unverified while a type-only module is named separately', () => {
+  const rows = [{ file: RUNTIME_FILE, line: 1 }];
+  assert.deepEqual(
+    coverageGaps(rows, {}, () => 'export const x = 1;').unverified,
+    [`${RUNTIME_FILE}:1`]
+  );
+  assert.deepEqual(
+    coverageGaps(rows, {}, () => 'export interface Shape { x: number }')
+      .nonExecutable,
+    [`${RUNTIME_FILE}:1`]
+  );
+});
+
+test('contract coverage rejects missing reports and source mismatch', (context) => {
+  const root = fixture(context);
+  const report = join(root, 'coverage-final.json');
+  assert.throws(() => readVerifiedCoverage(report, 'fresh'), /ENOENT/);
+  writeFileSync(report, '{}');
+  writeFileSync(`${report}.meta.json`, JSON.stringify({ fingerprint: 'old' }));
+  assert.throws(() => readVerifiedCoverage(report, 'fresh'), /fingerprint/);
+  writeFileSync(
+    `${report}.meta.json`,
+    JSON.stringify({
+      fingerprint: 'fresh',
+      report: createHash('sha256').update('{}').digest('hex'),
+    })
+  );
+  assert.deepEqual(readVerifiedCoverage(report, 'fresh'), {});
+});
+
+test('coverage fingerprint changes for source, tests, configuration, and built dependencies', (context) => {
+  const root = fixture(context);
+  const paths = ['src', 'tests', 'jest.config.cjs', 'es'].map((path) =>
+    join(root, path)
+  );
+  ['src/a.ts', 'tests/a.ts', 'jest.config.cjs', 'es/a.js'].forEach((file) =>
+    write(root, file, 'original')
+  );
+  let previous = fingerprint(paths);
+  for (const file of ['src/a.ts', 'tests/a.ts', 'jest.config.cjs', 'es/a.js']) {
+    write(root, file, 'changed');
+    const next = fingerprint(paths);
+    assert.notEqual(next, previous, file);
+    previous = next;
+  }
+});
+
+function contractReport(root, source = 'worktree') {
+  const url = new URL('./contract-coverage.mjs', import.meta.url).href;
+  const code = `import { contractCoverage } from ${JSON.stringify(url)};
+    console.log(contractCoverage('HEAD', ${JSON.stringify(source)}));`;
+  const result = spawnSync(
+    process.execPath,
+    ['--input-type=module', '-e', code],
+    { cwd: root, env, encoding: 'utf8' }
+  );
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout;
+}
+
+test('contract row skips an unrelated diff without starting a producer', (context) => {
+  const root = fixture(context);
+  write(root, 'guide.md', 'Only prose changes.');
+  assert.match(
+    contractReport(root),
+    /skipped: no changed ai-chat runtime source lines/
+  );
+});
+
+test('contract row refuses head or index coverage when relevant source differs on disk', (context) => {
+  const root = fixture(context);
+  write(root, RUNTIME_FILE, 'export const x = 1;');
+  write(
+    root,
+    'packages/ai-chat-components/package.json',
+    '{"exports":{".":"./es/old.js"}}'
+  );
+  commit(root);
+  git(root, 'branch', 'before');
+  write(root, RUNTIME_FILE, 'export const x = 2;');
+  commit(root);
+  write(root, 'packages/ai-chat-components/package.json', '{"exports":{}}');
+  const url = new URL('./contract-coverage.mjs', import.meta.url).href;
+  for (const source of ['head', 'index']) {
+    const code = `import { contractCoverage } from ${JSON.stringify(url)};
+      console.log(contractCoverage('before', ${JSON.stringify(source)}));`;
+    const result = spawnSync(
+      process.execPath,
+      ['--input-type=module', '-e', code],
+      { cwd: root, env, encoding: 'utf8' }
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /unverified: worktree inputs differ/);
+    assert.doesNotMatch(result.stdout, /uncovered changed runtime lines: 0/);
+  }
+});
+
+test('an ignored runtime statement without an Istanbul mapping remains unverified', () => {
+  const data = istanbul(RUNTIME_FILE);
+  const rows = [
+    { file: RUNTIME_FILE, line: 3 },
+    { file: RUNTIME_FILE, line: 4 },
+  ];
+  const source =
+    'const a = 1;\n/* istanbul ignore next */\nexport const ignored = run();\ntype Only = string;';
+  const result = coverageGaps(rows, data, () => source);
+  assert.deepEqual(result.unverified, [`${RUNTIME_FILE}:3`]);
+  assert.deepEqual(result.nonExecutable, [`${RUNTIME_FILE}:4`]);
+});
+
+test('implicit else arms use the enclosing branch location when their own coordinates are absent', () => {
+  const data = istanbul(RUNTIME_FILE);
+  data[RUNTIME_FILE].branchMap[0].locations[1] = { start: {}, end: {} };
+  const result = coverageGaps(
+    [{ file: RUNTIME_FILE, line: 1 }],
+    data,
+    () => 'if (value) run();'
+  );
+  assert.deepEqual(result.branches, [`${RUNTIME_FILE}:1 branch 0/1`]);
+});
+
+test('coverage reuse includes runtime environment overrides', (context) => {
+  const root = fixture(context);
+  const file = join(root, 'source.ts');
+  writeFileSync(file, 'export const x = 1;');
+  const ordinary = fingerprint([file], {});
+  assert.notEqual(
+    ordinary,
+    fingerprint([file], { AICHAT_DISABLE_WEB_COMPONENT_BRIDGE: '1' })
+  );
+  assert.notEqual(
+    ordinary,
+    fingerprint([file], { NODE_OPTIONS: '--conditions=react-server' })
+  );
+  assert.notEqual(ordinary, fingerprint([file], { TZ: 'UTC' }));
+  assert.notEqual(ordinary, fingerprint([file], { TERM: 'dumb' }));
+  assert.equal(
+    ordinary,
+    fingerprint([file], {
+      npm_lifecycle_event: 'measure',
+      npm_lifecycle_script: 'node scripts/measure.mjs',
+    })
+  );
+});
+
+test('the coverage report selector does not invalidate its own reuse fingerprint', (context) => {
+  const root = fixture(context);
+  const file = join(root, 'source.ts');
+  writeFileSync(file, 'export const x = 1;');
+  assert.equal(
+    fingerprint([file], {}),
+    fingerprint([file], {
+      CONTRACT_COVERAGE_REPORT: '/tmp/existing-report.json',
+    })
+  );
+});
+
+test('the contract row produces and reuses a matching report, then rejects changed source', (context) => {
+  const root = fixture(context);
+  write(root, 'package.json', JSON.stringify({ workspaces: ['packages/*'] }));
+  write(
+    root,
+    'packages/ai-chat/package.json',
+    JSON.stringify({
+      name: '@carbon/ai-chat',
+      scripts: { test: 'node producer.cjs' },
+    })
+  );
+  write(
+    root,
+    'packages/ai-chat-components/package.json',
+    JSON.stringify({
+      name: '@carbon/ai-chat-components',
+      exports: { './package.json': './package.json' },
+    })
+  );
+  write(
+    root,
+    'packages/ai-chat-components/es/stub.js',
+    'export const built = true;'
+  );
+  write(root, RUNTIME_FILE, 'export const covered = 1;\n');
+  const source = JSON.stringify(istanbul(join(root, RUNTIME_FILE)));
+  write(
+    root,
+    'packages/ai-chat/producer.cjs',
+    `
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const directory = process.argv.find(arg => arg.startsWith('--coverageDirectory=')).split('=')[1];
+    fs.mkdirSync(directory, { recursive: true });
+    fs.appendFileSync(path.resolve('../../producer-calls'), 'run\\n');
+    fs.appendFileSync(path.resolve('../../producer-directories'), directory + '\\n');
+    const child = require('node:child_process');
+    if (process.env.COVERAGE_MOVE_INDEX) {
+      const file = path.resolve('src/runtime/index.ts');
+      const previous = fs.readFileSync(file);
+      fs.writeFileSync(file, 'export const changedInIndex = true;');
+      const result = child.spawnSync('git', ['add', '--', file], { cwd: path.resolve('../..') });
+      if (result.status !== 0) throw new Error('index mutation failed');
+      fs.writeFileSync(file, previous);
+    }
+    if (process.env.COVERAGE_MOVE_HEAD) {
+      const result = child.spawnSync('git', ['commit', '--allow-empty', '-m', 'concurrent commit'], { cwd: path.resolve('../..') });
+      if (result.status !== 0) throw new Error('head mutation failed');
+    }
+    fs.writeFileSync(path.join(directory, 'coverage-final.json'), ${JSON.stringify(source)});
+  `
+  );
+  mkdirSync(join(root, 'node_modules/@carbon'), { recursive: true });
+  symlinkSync(
+    join(root, 'packages/ai-chat-components'),
+    join(root, 'node_modules/@carbon/ai-chat-components')
+  );
+  commit(root);
+  const before = git(root, 'rev-parse', 'HEAD');
+  write(
+    root,
+    RUNTIME_FILE,
+    'export const covered = 2;\nexport const missed = 3;\n'
+  );
+  const url = new URL('./contract-coverage.mjs', import.meta.url).href;
+  const wrapper = join(root, 'measure-contract.mjs');
+  writeFileSync(
+    wrapper,
+    `import { contractCoverage } from ${JSON.stringify(url)}; console.log(contractCoverage(process.argv[3] ?? 'HEAD', process.argv[2] ?? 'worktree'));`
+  );
+  const run = (extra = {}, selected = 'worktree', base = 'HEAD') =>
+    spawnSync(process.execPath, [wrapper, selected, base], {
+      cwd: root,
+      env: { ...env, ...extra },
+      encoding: 'utf8',
+    });
+  const first = run();
+  assert.equal(first.status, 0, first.stderr);
+  assert.match(first.stdout, /uncovered changed runtime lines: 1/);
+  assert.match(first.stdout, /src\/runtime\/index.ts:2/);
+  const report = first.stdout.match(/report: (.+)/)?.[1];
+  assert.ok(report, first.stdout);
+  context.after(() =>
+    rmSync(dirname(report), { recursive: true, force: true })
+  );
+  const second = run({ CONTRACT_COVERAGE_REPORT: report });
+  assert.equal(second.status, 0, second.stderr);
+  assert.equal(second.stdout, first.stdout);
+  assert.equal(readFileSync(join(root, 'producer-calls'), 'utf8'), 'run\n');
+  write(
+    root,
+    RUNTIME_FILE,
+    'export const covered = 4;\nexport const missed = 3;\n'
+  );
+  const stale = run({ CONTRACT_COVERAGE_REPORT: report });
+  assert.match(stale.stdout, /unverified: coverage source fingerprint/);
+  assert.doesNotMatch(stale.stdout, /uncovered changed runtime lines: 0/);
+  git(root, 'add', RUNTIME_FILE);
+  const indexMoved = run({ COVERAGE_MOVE_INDEX: '1' }, 'index');
+  assert.match(indexMoved.stdout, /unverified: selected index changed/);
+  git(root, 'add', RUNTIME_FILE);
+  commit(root, 'selected head');
+  const headMoved = run({ COVERAGE_MOVE_HEAD: '1' }, 'head', before);
+  assert.match(headMoved.stdout, /unverified: selected head changed/);
+  const directories = readFileSync(join(root, 'producer-directories'), 'utf8')
+    .trim()
+    .split('\n');
+  context.after(() =>
+    directories.forEach((directory) =>
+      rmSync(directory, { recursive: true, force: true })
+    )
+  );
+});
+
+test('overwriting coverage bytes cannot reuse old contract metadata', (context) => {
+  const root = fixture(context);
+  const report = join(root, 'coverage-final.json');
+  writeFileSync(report, '{}');
+  writeFileSync(
+    `${report}.meta.json`,
+    JSON.stringify({
+      fingerprint: 'fresh',
+      report: createHash('sha256').update('{}').digest('hex'),
+    })
+  );
+  assert.deepEqual(readVerifiedCoverage(report, 'fresh'), {});
+  writeFileSync(
+    report,
+    JSON.stringify(istanbul(RUNTIME_FILE, { 0: 100, 1: 100 }, [100, 100]))
+  );
+  assert.throws(
+    () => readVerifiedCoverage(report, 'fresh'),
+    /coverage report digest/
+  );
+});
+
+test('type-only lines inside an executed runtime declaration stay non-executable', () => {
+  const source =
+    'export const fn = (input: {\n value: string;\n}) => input.value;';
+  const data = istanbul(RUNTIME_FILE);
+  data[RUNTIME_FILE].statementMap = {
+    0: { start: { line: 1, column: 0 }, end: { line: 3, column: 23 } },
+  };
+  data[RUNTIME_FILE].s = { 0: 1 };
+  data[RUNTIME_FILE].branchMap[0].loc.end.line = 3;
+  const result = coverageGaps(
+    [{ file: RUNTIME_FILE, line: 2 }],
+    data,
+    () => source
+  );
+  assert.deepEqual(result.nonExecutable, [`${RUNTIME_FILE}:2`]);
+  assert.deepEqual(result.gaps, []);
+  assert.deepEqual(result.branches, []);
+});
+
+test('deletion-only runtime edits name the attribution limit without starting a producer', (context) => {
+  const root = fixture(context);
+  write(
+    root,
+    RUNTIME_FILE,
+    'export const kept = 1;\nexport const removed = 2;\n'
+  );
+  commit(root);
+  write(root, RUNTIME_FILE, 'export const kept = 1;\n');
+  assert.match(
+    contractReport(root),
+    /skipped producer: 1 deleted source lines have no after-side runtime lines to attribute/
+  );
+  rmSync(join(root, RUNTIME_FILE));
+  assert.match(
+    contractReport(root),
+    /skipped producer: 2 deleted source lines have no after-side runtime lines to attribute/
+  );
+});
+
+test('class base expressions remain runtime while their type arguments are erased', () => {
+  const file = 'packages/ai-chat/src/derived.ts';
+  const location = {
+    start: { line: 2, column: 2 },
+    end: { line: 2, column: 24 },
+  };
+  const result = coverageGaps(
+    [
+      { file, line: 2 },
+      { file, line: 3 },
+    ],
+    {
+      [file]: {
+        path: file,
+        statementMap: { 0: location },
+        s: { 0: 0 },
+        branchMap: { 0: { loc: location, locations: [location, location] } },
+        b: { 0: [0, 0] },
+      },
+    },
+    () =>
+      'export class Derived extends\n  (flag ? BaseA : BaseB)<\n    Shape\n  > {}'
+  );
+  assert.deepEqual(result.gaps, [`${file}:2`]);
+  assert.deepEqual(result.nonExecutable, [`${file}:3`]);
+  assert.deepEqual(result.branches, [
+    `${file}:2 branch 0/0`,
+    `${file}:2 branch 0/1`,
+  ]);
+});
+
+test('standalone generic instantiation executes its expression while implements stays erased', () => {
+  const file = RUNTIME_FILE;
+  const source =
+    'export const fn =\n  getFn()<Shape>;\nexport class Empty implements\n  Shape {}';
+  const result = coverageGaps(
+    [
+      { file, line: 2 },
+      { file, line: 4 },
+    ],
+    istanbul(file, { 0: 1, 1: 0 }),
+    () => source
+  );
+  assert.deepEqual(result.gaps, [`${file}:2`]);
+  assert.deepEqual(result.nonExecutable, [`${file}:4`]);
+});
+
+test('a covered initializer cannot cover an ignored nested runtime statement', async () => {
+  const { createInstrumenter } = await import('istanbul-lib-instrument');
+  const source =
+    'export const fn = () => {\n  /* istanbul ignore next */\n  return missing();\n};';
+  const instrumenter = createInstrumenter({ esModules: true });
+  instrumenter.instrumentSync(source, RUNTIME_FILE);
+  const data = instrumenter.lastFileCoverage();
+  for (const id of Object.keys(data.s)) {
+    data.s[id] = 1;
+  }
+  const result = coverageGaps(
+    [{ file: RUNTIME_FILE, line: 3 }],
+    { [RUNTIME_FILE]: data },
+    () => source
+  );
+  assert.deepEqual(result.unverified, [`${RUNTIME_FILE}:3`]);
+  assert.deepEqual(result.gaps, []);
+});
+
+test('a parenthesized arrow header keeps its declaration mapping', async () => {
+  const { createInstrumenter } = await import('istanbul-lib-instrument');
+  const source = 'export const fn = () => (\n  calculate()\n);';
+  const instrumenter = createInstrumenter({ esModules: true });
+  instrumenter.instrumentSync(source, RUNTIME_FILE);
+  const data = instrumenter.lastFileCoverage();
+  for (const [id, location] of Object.entries(data.statementMap)) {
+    data.s[id] = location.start.line === 1 ? 1 : 0;
+  }
+  const result = coverageGaps(
+    [
+      { file: RUNTIME_FILE, line: 1 },
+      { file: RUNTIME_FILE, line: 2 },
+    ],
+    { [RUNTIME_FILE]: data },
+    () => source
+  );
+  assert.deepEqual(result.gaps, [`${RUNTIME_FILE}:2`]);
+  assert.deepEqual(result.unverified, []);
 });

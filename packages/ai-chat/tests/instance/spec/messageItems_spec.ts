@@ -184,8 +184,7 @@ describe('state.messageItems', () => {
         'response-1:i:0',
         // A stream ID of "0" and position 0 stay apart.
         'response-1:s:0',
-        // Pauses keep their positions in output.generic. History draws a hidden item, so it's listed.
-        'response-1:i:3',
+        // Pauses and silent items keep their raw positions without being listed.
         'response-1:i:4',
         'response-1:i:5',
         'response-1:i:5:i:0',
@@ -205,8 +204,79 @@ describe('state.messageItems', () => {
         'response-1:i:7:i:0.0.1',
         'response-1:i:7:i:0.1.0',
       ]);
-      expect(new Set(ids(chat.state.get())).size).toBe(22);
+      expect(new Set(ids(chat.state.get())).size).toBe(21);
     });
+
+    it.each(['history', 'live'])(
+      'uses raw source positions after unsupported nested children in %s',
+      async (origin) => {
+        const nestedCard = {
+          response_type: MessageResponseTypes.CARD,
+          body: [button('Unsupported body button'), text('Kept body')],
+        } as GenericItem;
+        const panelButton = {
+          response_type: MessageResponseTypes.BUTTON,
+          button_type: 'show_panel',
+          label: 'Nested panel',
+          panel: { title: 'Nested', body: [] },
+        } as GenericItem;
+        const containers = [
+          nestedCard,
+          {
+            response_type: MessageResponseTypes.CAROUSEL,
+            items: [text('Unsupported slide'), nestedCard],
+          },
+          {
+            response_type: MessageResponseTypes.BUTTON,
+            button_type: 'show_panel',
+            label: 'Outer panel',
+            panel: { body: [], footer: [panelButton, button('Kept footer')] },
+          },
+          {
+            response_type: MessageResponseTypes.GRID,
+            columns: [{ width: '1' }],
+            rows: [
+              {
+                cells: [
+                  { items: [card('Unsupported grid card'), text('Kept cell')] },
+                ],
+              },
+            ],
+          },
+        ] as GenericItem[];
+        const errors = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+        try {
+          const chat =
+            origin === 'history'
+              ? await chatWithHistory(
+                  history(response('raw-nested', containers))
+                )
+              : await sdkChat();
+          if (origin === 'live') {
+            await chat.messaging.upsertMessage(
+              'raw-nested',
+              MessageState.COMPLETE,
+              () => response('raw-nested', containers)
+            );
+          }
+          expect(ids(chat.state.get())).toEqual([
+            'raw-nested:i:0',
+            'raw-nested:i:0:i:1',
+            'raw-nested:i:1',
+            'raw-nested:i:1:i:1',
+            'raw-nested:i:1:i:1:i:1',
+            'raw-nested:i:2',
+            'raw-nested:i:2:f:1',
+            'raw-nested:i:3',
+            'raw-nested:i:3:i:0.0.1',
+          ]);
+        } finally {
+          errors.mockRestore();
+        }
+      }
+    );
 
     it('gives nested items their parent and the content they draw', async () => {
       const chat = await chatWithHistory();
@@ -281,6 +351,43 @@ describe('state.messageItems', () => {
       );
       expect(messageIDs.has('silent')).toBe(true);
     });
+
+    it.each(['history', 'live'])(
+      'leaves out silent nested items from %s without removing their source data',
+      async (origin) => {
+        const silent: GenericItem = {
+          response_type: MessageResponseTypes.USER_DEFINED,
+          user_defined: { silent: true, marker: 'quiet' },
+        };
+        const container = {
+          response_type: MessageResponseTypes.CARD,
+          body: [silent, text('Shown')],
+        } as GenericItem;
+        const chat =
+          origin === 'history'
+            ? await chatWithHistory(
+                history(response('silent-nested', [container]))
+              )
+            : await sdkChat();
+        if (origin === 'live') {
+          await chat.messaging.upsertMessage(
+            'silent-nested',
+            MessageState.COMPLETE,
+            () => response('silent-nested', [container])
+          );
+        }
+        const state = chat.state.get();
+        expect(ids(state)).toEqual([
+          'silent-nested:i:0',
+          'silent-nested:i:0:i:1',
+        ]);
+        expect(
+          state.messages.find((message) => message.id === 'silent-nested')
+        ).toMatchObject({
+          output: { generic: [{ body: [silent, text('Shown')] }] },
+        });
+      }
+    );
 
     it('lists a request with the text its bubble shows', async () => {
       const chat = await chatWithHistory(
@@ -412,6 +519,84 @@ describe('state.messageItems', () => {
       expect(chat.state.get().messageItems[2].item).toMatchObject({
         text: 'so far, and done',
       });
+    });
+
+    it('projects native ERROR without changing conversation state or an older snapshot', async () => {
+      const chat = await sdkChat();
+      const payload = response('native-error', [card('answer')]);
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.ERROR,
+        () => payload
+      );
+      const failed = chat.state.get();
+      expect(failed.messageItems).toHaveLength(4);
+      expect(failed.messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('error')
+      );
+      expect(failed.status).toBe('ready');
+      expect(failed.error).toBeNull();
+      expect(failed.messages[0]).not.toHaveProperty('history.error_state');
+      expect(failed.messages[0]).not.toHaveProperty('state');
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.ERROR,
+        (previous) => previous
+      );
+      expect(chat.state.get().messageItems).toBe(failed.messageItems);
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.COMPLETE,
+        (previous) => previous
+      );
+      expect(chat.state.get().messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('complete')
+      );
+      expect(failed.messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('error')
+      );
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.ERROR,
+        (previous) => previous
+      );
+      await chat.messaging.upsertMessage(
+        'native-error',
+        MessageState.STREAMING,
+        (previous) => previous
+      );
+      expect(chat.state.get().messageItems.map(({ status }) => status)).toEqual(
+        Array(4).fill('streaming')
+      );
+    });
+
+    it('projects native ERROR on the items a pause reveals', async () => {
+      const chat = await sdkChat();
+      await chat.messaging.upsertMessage(
+        'paused-error',
+        MessageState.ERROR,
+        () =>
+          response('paused-error', [
+            text('before'),
+            {
+              response_type: MessageResponseTypes.PAUSE,
+              time: 0,
+            } as GenericItem,
+            text('after'),
+          ])
+      );
+      expect(
+        chat.state
+          .get()
+          .messageItems.map(({ id, status, item }) => [
+            id,
+            status,
+            (item as { text?: string }).text,
+          ])
+      ).toEqual([
+        ['paused-error:i:0', 'error', 'before'],
+        ['paused-error:i:2', 'error', 'after'],
+      ]);
     });
 
     it('marks a turn failed while streaming as an error', async () => {

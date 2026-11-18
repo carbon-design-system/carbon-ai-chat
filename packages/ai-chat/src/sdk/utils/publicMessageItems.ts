@@ -90,6 +90,7 @@ function kindOf(message: Message): Kind {
 function statusOf(message: Message, local: LocalMessageItem): Status {
   const errorState = message.history?.error_state;
   if (
+    local.ui_state.upsertError ||
     errorState === MessageErrorState.FAILED ||
     errorState === MessageErrorState.FAILED_WHILE_STREAMING
   ) {
@@ -249,6 +250,9 @@ function addPlans(
   parentID?: string
 ) {
   const { message } = owner;
+  if (isResponse(message) && isHiddenOutputItem(message, local.item)) {
+    return;
+  }
   const internal = message.ui_state_internal;
   const isConnectToAgent = isConnectToHumanAgent(local.item);
   plans.push({
@@ -276,7 +280,7 @@ function addPlans(
           plans,
           allMessageItemsByID,
           owner,
-          `${id}:${part(index)}`,
+          `${id}:${part(nested.ui_state.nestedSourceIndex ?? index)}`,
           nested,
           id
         );
