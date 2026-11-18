@@ -198,19 +198,18 @@ class OutboundMessageCoordinator {
 
     const resultText = getSendErrorText(error, false);
     this.addErrorMessageIfSilent(pendingRequest);
-    const sendError = {
+    const handlerError = {
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
       otherData: resultText,
-      messageID: pendingRequest.message.id,
     };
     if (pendingRequest.source === MessageSendSource.WELCOME_REQUEST) {
       this.serviceManager.messageCoordinator.fail(
-        sendError,
+        { ...handlerError, messageID: pendingRequest.message.id },
         pendingRequest.generation
       );
     }
-    this.serviceManager.actions.errorOccurred(sendError);
+    this.serviceManager.actions.errorOccurred(handlerError);
     this.rejectFinalErrorOnMessage(pendingRequest, resultText, true, error);
   }
 
