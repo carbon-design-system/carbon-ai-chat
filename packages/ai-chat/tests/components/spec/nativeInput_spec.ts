@@ -950,11 +950,20 @@ it('seeds tracked raw value when the first props arrive after connection', async
     true
   );
   expect(control.hasValidInput).toBe(true);
+  // The staged draft is restored once into the first surface.
+  expect(
+    view.querySelector<PromptLineElement>('cds-aichat-prompt-line').getValue()
+  ).toBe('prefilled tracked value');
   send(control);
-  expect(onSendInput).toHaveBeenCalledWith(
-    'prefilled tracked value',
-    undefined
-  );
+  expect(onSendInput).toHaveBeenCalledWith('prefilled tracked value', {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'prefilled tracked value' }],
+      },
+    ],
+  });
   await update(view, { trackInputState: false });
   const prompt = view.querySelector<PromptLineElement>(
     'cds-aichat-prompt-line'

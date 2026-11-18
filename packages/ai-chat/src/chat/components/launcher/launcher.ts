@@ -192,7 +192,11 @@ class LauncherView extends NativeChatView {
         '.cds-aichat--launcher-extended__text-holder'
       ),
     });
-    if (this.isMainWindowOpen && this.launcherIsExpanded) {
+    if (
+      this.isLauncherVisible &&
+      this.isMainWindowOpen &&
+      this.launcherIsExpanded
+    ) {
       owner.close();
     }
     const focusInputs = [

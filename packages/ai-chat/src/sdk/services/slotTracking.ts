@@ -122,6 +122,9 @@ function attachSlotTracking(serviceManager: ServiceManager): SlotStores {
     {
       type: BusEventType.USER_DEFINED_RESPONSE,
       handler: ({ data }: BusEventUserDefinedResponse) => {
+        if (!data.slot) {
+          return;
+        }
         setSlot(userDefinedResponse, data.slot, {
           fullMessage: data.fullMessage,
           messageItem: data.message,
@@ -133,6 +136,9 @@ function attachSlotTracking(serviceManager: ServiceManager): SlotStores {
       type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
       handler: ({ data }: BusEventChunkUserDefinedResponse) => {
         const { slot, chunk } = data;
+        if (!slot) {
+          return;
+        }
         if ('complete_item' in chunk) {
           setSlot(userDefinedResponse, slot, {
             messageItem: chunk.complete_item,
