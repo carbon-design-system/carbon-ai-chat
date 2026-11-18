@@ -29,7 +29,7 @@ import type {
 import { WriteableElementName } from '../../../types/instance/WriteableElements';
 import type { BusEventHeaderMenuClick } from '../../../types/events/eventBusTypes';
 import { NativeChatView } from '../shared/NativeChatView';
-import { fireUserEvent } from '../../../sdk/services/fireUserEvent';
+import { fireUserEvent } from '../../services/fireUserEvent';
 import { shallowEqual } from '../../../sdk/store/appStore';
 import { humanAgentDisplayStateOf } from '../../../sdk/store/selectors';
 import { isDirectionRTL } from '../../utils/domUtils';

@@ -26,7 +26,7 @@ import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
 import { requestStopFromInput } from './assistantInputCommands';
-import { fireUserEvent } from '../../sdk/services/fireUserEvent';
+import { fireUserEvent } from './fireUserEvent';
 import { viewActions } from '../state';
 import { chatStore } from './attachChatView';
 

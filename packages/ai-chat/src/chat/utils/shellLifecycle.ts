@@ -54,7 +54,7 @@ import {
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 
 import { WindowOpenState } from '../services/windowOpenState';
-import { fireUserEvent } from '../../sdk/services/fireUserEvent';
+import { fireUserEvent } from '../services/fireUserEvent';
 
 import { shallowEqual } from '../../sdk/store/appStore';
 

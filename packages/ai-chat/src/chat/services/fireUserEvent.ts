@@ -8,8 +8,8 @@
  */
 
 import type { BusEvent } from '../../types/events/eventBusTypes';
-import { consoleError } from '../utils/miscUtils';
-import type { ServiceManager } from './ServiceManager';
+import { consoleError } from '../../sdk/utils/miscUtils';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 
 /**
  * Fires an event the user set off, such as a feedback click, or one the view fires as it draws, such as a custom
