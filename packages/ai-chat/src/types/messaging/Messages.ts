@@ -31,6 +31,12 @@ import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
  *
+ * A request can carry fields of your own, such as an ID from your back-end. The chat never reads them. It keeps
+ * them unchanged in event data, in {@link PublicConfigMessaging.customSendMessage}, in chat state, and on
+ * messages you load from history. To set them with type checking, declare them on your own type that extends
+ * this one. Messages the chat hands back are typed without your fields, so check that a field is there before
+ * you use it.
+ *
  * @category Messaging
  */
 interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
@@ -64,14 +70,20 @@ interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
   context?: unknown;
 
   /**
-   * The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
-   * responses.
+   * An ID for the thread this request belongs to. If you leave it out, the chat sets it to `"main"`. The chat
+   * doesn't use the value.
+   *
+   * @deprecated Removed in 2.0.0, and the chat stops setting it. Nothing replaces it, because the chat never used
+   * it. If you keep your own value here, you can go on setting it. From 2.0.0, the chat carries it like any field
+   * of your own, typed `unknown`.
    */
   thread_id?: string;
 
   /**
-   * The parent ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
-   * responses.
+   * An ID for the parent of the thread this request belongs to. The chat doesn't set or use it.
+   *
+   * @deprecated Removed in 2.0.0. Nothing replaces it, because the chat never used it. If you keep your own value
+   * here, you can go on setting it. From 2.0.0, the chat carries it like any field of your own, typed `unknown`.
    */
   parent_thread_id?: string;
 }
@@ -340,6 +352,11 @@ interface MessageInput extends BaseMessageInput {
  * This interface represents the main response content that is received by a client from an assistant. It is generally
  * in response to a previous message request.
  *
+ * A response can carry fields of your own, such as an ID from your back-end. The chat never reads them. It keeps
+ * them unchanged in event data, in chat state, and on messages you load from history. To set them with type
+ * checking, declare them on your own type that extends this one. Messages the chat hands back are typed without
+ * your fields, so check that a field is there before you use it.
+ *
  * @category Messaging
  */
 interface MessageResponse<TGenericType = GenericItem[]> {
@@ -368,8 +385,12 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   context?: unknown;
 
   /**
-   * The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
-   * responses.
+   * An ID for the thread this response belongs to. If you leave it out, the chat sets it to `"main"`. The chat
+   * doesn't use the value.
+   *
+   * @deprecated Removed in 2.0.0, and the chat stops setting it. Nothing replaces it, because the chat never used
+   * it. If you keep your own value here, you can go on setting it. From 2.0.0, the chat carries it like any field
+   * of your own, typed `unknown`.
    */
   thread_id?: string;
 
@@ -662,8 +683,11 @@ export interface ItemStreamingMetadata {
   cancellable?: boolean;
 
   /**
-   * Indicates if the stream has stopped which will trigger the UI to respond with appropriate a11y states
-   * and messaging.
+   * Marks the item as stopped before it finished, for example after the user clicks the stop
+   * streaming button. Set it on the last version of the item you send, including its copy in a
+   * final response. The chat shows a "Response stopped" line below every item that carries the
+   * flag, so set it on one item per response. Version 2.0.0 removes the line; render your own
+   * indicator from this flag instead.
    */
   stream_stopped?: boolean;
 }
