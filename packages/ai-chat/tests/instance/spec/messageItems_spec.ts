@@ -570,6 +570,35 @@ describe('state.messageItems', () => {
       );
     });
 
+    it('projects native ERROR on the items a pause reveals', async () => {
+      const chat = await sdkChat();
+      await chat.messaging.upsertMessage(
+        'paused-error',
+        MessageState.ERROR,
+        () =>
+          response('paused-error', [
+            text('before'),
+            {
+              response_type: MessageResponseTypes.PAUSE,
+              time: 0,
+            } as GenericItem,
+            text('after'),
+          ])
+      );
+      expect(
+        chat.state
+          .get()
+          .messageItems.map(({ id, status, item }) => [
+            id,
+            status,
+            (item as { text?: string }).text,
+          ])
+      ).toEqual([
+        ['paused-error:i:0', 'error', 'before'],
+        ['paused-error:i:2', 'error', 'after'],
+      ]);
+    });
+
     it('marks a turn failed while streaming as an error', async () => {
       const hold = resolvablePromise<void>();
       const chat = await sdkChat({
