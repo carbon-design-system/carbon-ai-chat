@@ -337,6 +337,24 @@ class EventBus {
   }
 
   /**
+   * Adds a wrapper made outside the bus that runs `source` once and removes itself. {@link off} finds it from
+   * `source`, as it finds a wrapper {@link once} adds.
+   *
+   * @param type The event type to listen for.
+   * @param wrapper The handler to add.
+   * @param source The function the wrapper runs, as given to `once`.
+   * @returns The instance for method chaining.
+   */
+  onceWrapper(
+    type: BusEventType,
+    wrapper: EventBusHandler,
+    source: EventBusHandler
+  ) {
+    this.onceHandlerSources.set(wrapper, source);
+    return this.on({ type, handler: wrapper });
+  }
+
+  /**
    * Outputs debug information for all of the currently registered event bus listeners.
    */
   logListeners() {
