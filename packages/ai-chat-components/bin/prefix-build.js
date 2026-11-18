@@ -17,6 +17,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { assertExternalDependencies } from './prefix-dependencies.js';
 import {
   assertSafeOutput,
   copyLayer,
@@ -50,8 +51,9 @@ Example:
 
 The output contains web-components/ and ai-chat-components/${name === 'ai-chat' ? ', plus ai-chat/' : ''}.
 Each tree keeps its source filenames. The command prints its available entries.
-Shared --cds design tokens remain unchanged. React, Lit, and other external
-packages remain normal dependencies of your project.
+Shared --cds design tokens remain unchanged. Install compatible React, Lit,
+and other external packages as direct dependencies of your project. The command
+checks that generated modules can find the packages their source modules use.
 
 Note: write to your project (not node_modules — it is ephemeral and read-only
 under pnpm / Yarn PnP). Regenerate it as part of your build if not committed.
@@ -147,6 +149,12 @@ export async function run({ packageRoot, argv = process.argv.slice(2) }) {
   );
 
   await assertSafeOutput(dest, layers);
+  await assertExternalDependencies(layers);
+  if (dest.split(path.sep).includes('node_modules')) {
+    process.stderr.write(
+      'Warning: --out is inside node_modules. Regenerate this output after installing dependencies.\n'
+    );
+  }
   await fs.rm(dest, { recursive: true, force: true });
   for (const layer of layers) {
     await copyLayer(layer);
