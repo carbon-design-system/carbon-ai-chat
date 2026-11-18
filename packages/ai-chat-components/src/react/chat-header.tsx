@@ -46,6 +46,13 @@ export interface ChatHeaderProps {
     href?: string;
     target?: string;
     disabled?: boolean;
+    /**
+     * A `data-testid` attribute for the menu item, so tests can find it.
+     *
+     * @experimental
+     * @deprecated In tests, select the menu item by its visible text instead.
+     * Removed in a 2.x minor release.
+     */
     testId?: string;
   }>;
 

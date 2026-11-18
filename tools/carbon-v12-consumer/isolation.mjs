@@ -31,6 +31,7 @@ const requiredChildren = {
   ],
   'aichat-carousel': ['cds-icon-button'],
   'aichat-chain-of-thought': ['cds-inline-loading'],
+  'aichat-conversational-search': ['cds-aichat-card'],
   'aichat-history': [
     'cds-search',
     'cds-icon-button',
@@ -75,6 +76,7 @@ const requiredChildren = {
     'cds-menu-item',
   ],
   'aichat-truncated-text': ['cds-tooltip', 'cds-tooltip-content'],
+  'aichat-user-message-content': ['cds-aichat-markdown'],
   'aichat-workspace-shell': ['cds-aichat-truncated-text', 'cds-button'],
 };
 
@@ -239,7 +241,7 @@ export async function prepareIsolationProofs({ consumer, manifest, runNpm }) {
         path: module.path,
       }))
   );
-  assert.equal(actual.length, 58);
+  assert.equal(actual.length, 60);
   for (const expected of componentEntries) {
     const declaration = actual.find(({ tag }) => tag === expected.tag);
     assert.deepEqual(

@@ -7,9 +7,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import '../aichat-card/index.js';
 import { defineCustomElement } from '../../globals/register.js';
+import CitationCard from './aichat-citation-card.js';
 import ConversationalSearchShell from './aichat-conversational-search-shell.js';
 
-export { ConversationalSearchShell };
+export { CitationCard, ConversationalSearchShell };
 
 defineCustomElement(ConversationalSearchShell);
+defineCustomElement(CitationCard);

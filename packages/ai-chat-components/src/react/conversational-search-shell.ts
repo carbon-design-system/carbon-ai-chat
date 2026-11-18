@@ -10,7 +10,10 @@
 import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { ConversationalSearchShell as ConversationalSearchShellElement } from '../components/aichat-conversational-search/index.js';
-import { type CitationToggleEventDetail } from '../components/aichat-conversational-search/aichat-conversational-search-shell.js';
+import {
+  type CitationToggleEventDetail,
+  type CitationsSelectEventDetail,
+} from '../components/aichat-conversational-search/aichat-conversational-search-shell.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
 const ConversationalSearchShell = withWebComponentBridge(
@@ -22,6 +25,10 @@ const ConversationalSearchShell = withWebComponentBridge(
       onCitationsToggle:
         ConversationalSearchShellElement.eventCitationsToggle as EventName<
           CustomEvent<CitationToggleEventDetail>
+        >,
+      onCitationsSelect:
+        ConversationalSearchShellElement.eventCitationsSelect as EventName<
+          CustomEvent<CitationsSelectEventDetail>
         >,
     },
   })

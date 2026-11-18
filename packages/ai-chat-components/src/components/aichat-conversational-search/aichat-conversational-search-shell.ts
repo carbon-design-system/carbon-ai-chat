@@ -15,6 +15,7 @@ import { ChevronDown16, ChevronUp16 } from '@carbon/icons';
 import '@carbon/web-components/es/components/tag/index.js';
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import { prefix } from '../../globals/settings.js';
+import { applyCitationSelection } from './citation-utils.js';
 import styles from './aichat-conversational-search-shell.scss?lit';
 
 const blockClass = `${prefix}-aichat-conversational-search-shell`;
@@ -23,6 +24,12 @@ const blockClass = `${prefix}-aichat-conversational-search-shell`;
 export interface CitationToggleEventDetail {
   /** Whether the host should show the citations region. */
   open: boolean;
+}
+
+/** The citation a host should select. */
+export interface CitationsSelectEventDetail {
+  /** The citation's index, which the host passes back as `selectedCitationIndex`. */
+  index: number;
 }
 
 /**
@@ -35,6 +42,7 @@ export interface CitationToggleEventDetail {
  * @slot citations - Citation content, including loading or error states.
  * @csspart answer - The answer and toggle container.
  * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests a citation state change.
+ * @fires {CustomEvent<CitationsSelectEventDetail>} cds-aichat-citations-select - Requests a new selected citation when a slotted card is focused or clicked, or the slotted carousel changes slides.
  */
 class ConversationalSearchShell extends LitElement {
   static get is() {
@@ -56,6 +64,95 @@ class ConversationalSearchShell extends LitElement {
   /** Accessible name of the citation toggle. */
   @property({ attribute: 'toggle-label' })
   toggleLabel = 'Toggle citations';
+
+  /**
+   * Host-controlled index of the selected citation. The shell marks the
+   * slotted `cds-aichat-citation-card` with this `index` as selected and shows
+   * its slide in the slotted `cds-aichat-carousel`. Leave it unset to leave
+   * slotted cards and carousels alone.
+   */
+  @property({ type: Number, attribute: 'selected-citation-index' })
+  selectedCitationIndex?: number;
+
+  // Cards can mount inside a slotted wrapper, which slotchange doesn't report.
+  private _citationsObserver = new MutationObserver(() =>
+    this._applySelection()
+  );
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.hasUpdated) {
+      this._observeCitations();
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._citationsObserver.disconnect();
+  }
+
+  updated(changed: Map<string, unknown>) {
+    if (changed.has('selectedCitationIndex')) {
+      this._applySelection();
+    }
+  }
+
+  private get _citations() {
+    return (
+      this.renderRoot
+        .querySelector<HTMLSlotElement>('slot[name="citations"]')
+        ?.assignedElements({ flatten: true }) ?? []
+    );
+  }
+
+  private _observeCitations() {
+    this._citationsObserver.disconnect();
+    for (const element of this._citations) {
+      this._citationsObserver.observe(element, {
+        childList: true,
+        subtree: true,
+      });
+    }
+    this._applySelection();
+  }
+
+  // Runs synchronously so a new carousel gets its index before it starts.
+  private _applySelection() {
+    if (this.selectedCitationIndex === undefined) {
+      return;
+    }
+    applyCitationSelection(
+      this._citations,
+      this.selectedCitationIndex,
+      `${prefix}-aichat-citation-card`,
+      `${prefix}-aichat-carousel`
+    );
+  }
+
+  private _requestSelect(index: number) {
+    if (index === this.selectedCitationIndex) {
+      return;
+    }
+    this.dispatchEvent(
+      new CustomEvent<CitationsSelectEventDetail>(
+        ConversationalSearchShell.eventCitationsSelect,
+        {
+          detail: { index },
+          bubbles: true,
+          composed: true,
+        }
+      )
+    );
+  }
+
+  private _handleCardSelect(event: CustomEvent<{ index: number }>) {
+    event.stopPropagation();
+    this._requestSelect(event.detail.index);
+  }
+
+  private _handleSlideChange(event: CustomEvent<{ currentIndex: number }>) {
+    this._requestSelect(event.detail.currentIndex);
+  }
 
   private _handleToggle() {
     const open = !this.citationsOpen;
@@ -104,14 +201,20 @@ class ConversationalSearchShell extends LitElement {
       <div
         id="citations"
         class="${blockClass}__citations"
-        ?hidden=${!this.citationsOpen}>
-        <slot name="citations"></slot>
+        ?hidden=${!this.citationsOpen}
+        @cds-aichat-citation-select=${this._handleCardSelect}
+        @cds-aichat-carousel-onchange=${this._handleSlideChange}>
+        <slot name="citations" @slotchange=${this._observeCitations}></slot>
       </div>
     `;
   }
 
   static get eventCitationsToggle() {
     return `${prefix}-aichat-citations-toggle`;
+  }
+
+  static get eventCitationsSelect() {
+    return `${prefix}-aichat-citations-select`;
   }
 
   static styles = styles;
