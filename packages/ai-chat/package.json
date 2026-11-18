@@ -46,10 +46,6 @@
       "import": "./dist/es/web-components/cds-aichat-custom-element/cds-aichat-custom-element.js"
     },
     "./es/*": "./dist/es/*",
-    "./es-custom": {
-      "types": "./dist/types/aiChatEntry.d.ts",
-      "import": "./dist/es-custom/aiChatEntry.js"
-    },
     "./server": {
       "types": "./dist/types/serverEntry.d.ts",
       "import": "./dist/es/serverEntry.js"
@@ -73,15 +69,11 @@
     "./scss/*": "./dist/scss/*",
     "./css/*": "./dist/css/*",
     "./dist/es/*": "./dist/es/*",
-    "./dist/es-custom/*": "./dist/es-custom/*",
     "./custom-elements.json": "./custom-elements.json"
   },
   "typesVersions": {
     "*": {
       "es": [
-        "dist/types/aiChatEntry.d.ts"
-      ],
-      "es-custom": [
         "dist/types/aiChatEntry.d.ts"
       ],
       "server": [
@@ -100,7 +92,6 @@
   },
   "files": [
     "dist/es",
-    "dist/es-custom",
     "dist/types",
     "dist/scss",
     "dist/css",
@@ -154,7 +145,6 @@
     "babel-jest": "^30.5.2",
     "concurrently": "^10.0.0",
     "fs-extra": "^11.3.2",
-    "globby": "^16.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",

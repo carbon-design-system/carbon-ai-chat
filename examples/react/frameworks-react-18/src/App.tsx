@@ -44,14 +44,8 @@ const config: PublicConfig = {
 const showCustomElement =
   new URLSearchParams(window.location.search).get('wrapper') === 'custom';
 
-// `?choice-tree=es-custom` loads the fixed-prefix wrapper, so one probe covers both published trees.
-const choiceTree = new URLSearchParams(window.location.search).get(
-  'choice-tree'
-);
-const ChatButton = React.lazy(() =>
-  choiceTree === 'es-custom'
-    ? import('@carbon/ai-chat-components/es-custom/react/chat-button.js')
-    : import('@carbon/ai-chat-components/es/react/chat-button.js')
+const ChatButton = React.lazy(
+  () => import('@carbon/ai-chat-components/es/react/chat-button.js')
 );
 
 /** The query-only fixture checks Boolean choice selection against this example's React version. */

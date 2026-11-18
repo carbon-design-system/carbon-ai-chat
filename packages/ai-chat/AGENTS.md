@@ -10,7 +10,7 @@ Carbon AI Chat ships as:
 - Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
 - A server entry ([src/serverEntry.ts](src/serverEntry.ts)) exposing SSR-safe types/utilities only.
 
-All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` (`cds--` prefix) and `dist/es-custom/` (`cds--custom` prefix, avoiding `@carbon/angular-components` collisions). TypeDoc emits to `dist/docs/`.
+All entries compile via [tasks/rollup.aichat.js](tasks/rollup.aichat.js) to `dist/es/` with the default `cds` prefix. For custom prefixes, use the [build-time prefix commands](../../docs/prefix-build.md). They copy the installed chat, components, and Carbon trees. The package no longer ships `dist/es-custom/`. TypeDoc emits to `dist/docs/`.
 
 **Carbon flavor**: use `@carbon/web-components` through `@lit/react`; see [code-patterns.md](../../references/code-patterns.md#carbon-flavor-by-area) for the area rules and skill override.
 

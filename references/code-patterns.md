@@ -52,7 +52,7 @@ The vendored `carbon-builder` skill instructs "Default to **React** unless the u
 
 ## Naming & prefix discipline
 
-Never hardcode `cds--` in SCSS or TSX class strings. The prefixed builds turn `cds--` into `<prefix>--` by rewriting every bare `cds` in the output, so a literal works only because of that blanket rewrite. Building names from the prefix keeps the source correct without it.
+Never hardcode `cds--` in SCSS or TSX class strings. The build-time prefix commands rewrite every bare `cds` in the compiled output across Carbon and both chat packages, so a literal works only because of that blanket rewrite. Building names from the prefix keeps the source correct without it.
 
 - **SCSS**: use `#{$prefix}--` (resolves to `cds--`), never the literal.
 - **TS/TSX**: use the prefix helpers, never a literal class string.

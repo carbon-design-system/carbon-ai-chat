@@ -22,14 +22,12 @@ export const MARKDOWN_SLOT_PREFIX = 'cds-aichat-markdown-renderer';
 /**
  * Key the per-page instance sequence is parked under. It lives on `globalThis`
  * rather than in a module-scoped `let` so every copy of this module loaded on
- * the page advances one sequence — the `es` and `es-custom` builds are separate
- * module scopes with separate class definitions. Without `globalThis`, each
- * build would start counting from zero.
+ * the page advances one sequence for its slot prefix. Without `globalThis`,
+ * separate module copies would each start counting from zero.
  *
- * The name is deliberately underscore-prefixed and camelCase: the `es-custom`
- * build rewrites the bare tokens `cds` and `cds-aichat` in every emitted file
- * (`tasks/build.js`), and neither word-boundary regex can match inside
- * `__cdsAIChat…`, so both builds agree on the key.
+ * The prefix build rewrites this key and `MARKDOWN_SLOT_PREFIX` together.
+ * Copies with the same prefix share a counter; different prefixes produce
+ * distinct slot names even when their counters start at the same value.
  *
  * @internal
  */

@@ -25,7 +25,7 @@ for (const entry of Object.keys(elementEntries)) {
     const report = await inspectUpgrades(page);
     expect(report.tags.length).toBeGreaterThan(0);
     expect(report.failures).toEqual([]);
-    const custom = entry.startsWith('es-custom/');
+    const custom = entry.startsWith('generated/');
     const prefix = custom ? 'cds-custom' : 'cds';
     const host = page.locator('#root > *').first();
     await expect(host).toBeVisible();
@@ -191,13 +191,13 @@ test('isolated conversational search upgrades its lazy citation skeleton', async
   expect(errors).toEqual([]);
 });
 
-for (const variant of ['es', 'es-custom']) {
+for (const variant of ['es', 'generated']) {
   test(`${variant} header menu opens a new tab without an opener`, async ({
     page,
     context,
   }) => {
     const errors = await openEntry(page, `${variant}/chat-header`);
-    const prefix = variant === 'es-custom' ? 'cds-custom' : 'cds';
+    const prefix = variant === 'generated' ? 'cds-custom' : 'cds';
     const trigger = page.locator(`${prefix}-overflow-menu`).first();
     await trigger.click();
     await expect(trigger.getByRole('menu')).toBeVisible();

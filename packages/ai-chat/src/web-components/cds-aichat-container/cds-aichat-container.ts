@@ -53,9 +53,8 @@ import type {
 } from '../../types/component/ChatContainer';
 import type { ComponentType, ReactNode } from 'react';
 
-// Derived rather than written out: the es-custom build rewrites lowercase
-// `cds-aichat` text in its output, so an uppercase literal would never match
-// there.
+// The prefix build rewrites lowercase tag text; derive uppercase after that
+// rewrite so comparisons still match the registered host.
 const OUTER_CHAT_TAG_NAME = 'cds-aichat-custom-element'.toUpperCase();
 
 /** Everything one mount holds, from startup until it detaches. */

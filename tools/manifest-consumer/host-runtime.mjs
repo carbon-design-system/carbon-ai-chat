@@ -20,7 +20,7 @@ export async function checkPackedHosts(consumer) {
   );
   const publishedTypes = await readPublishedHostTypes(root, packageJson);
   const runtime = await collectHostRuntime(consumer);
-  for (const tree of ['es', 'es-custom']) {
+  for (const tree of ['es']) {
     assertHostParity(manifest, runtime[tree], publishedTypes);
     proveParityFailures(manifest, runtime[tree], publishedTypes);
     console.log(

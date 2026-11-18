@@ -2,6 +2,10 @@
 
 The Carbon AI Chat 2.0 stack adds two build commands. Use them before bundling your app. Each command copies the installed ESM files and changes tag names, styles, and events to your prefix.
 
+## 2.0 removes the fixed-prefix exports
+
+Both chat packages no longer publish `es-custom`. Old root and deep imports fail with `ERR_PACKAGE_PATH_NOT_EXPORTED`. Generate a build with the commands below and import its files. [#1886](https://github.com/carbon-design-system/carbon-ai-chat/issues/1886) tracks the migration guide, Angular guidance, and consumer rollout.
+
 ## For chat
 
 This command builds chat, chat components, and their Carbon web-component children with one prefix.

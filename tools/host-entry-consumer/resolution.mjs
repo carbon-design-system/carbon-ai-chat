@@ -14,19 +14,16 @@ import { pathToFileURL } from 'node:url';
 import * as sass from 'sass';
 import ts from 'typescript';
 
-// Both packed packages publish these two trees.
-const trees = ['es', 'es-custom'];
+const trees = ['es'];
 const source = `
 import type { CSSResult } from 'lit';
 import { createElement, type ComponentType } from 'react';
 import { ChatContainer, ChatCustomElement } from '@carbon/ai-chat';
-import { ChatContainer as CustomChatContainer } from '@carbon/ai-chat/es-custom';
 import ContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import CustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import type { ChatInstance, PublicConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js';
 import type { ChatInstance as OuterInstance, PublicConfig as OuterConfig } from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 import { inlineMarkdownStyles } from '@carbon/ai-chat-components/es/components/markdown/index.js';
-import { inlineMarkdownStyles as customInlineMarkdownStyles } from '@carbon/ai-chat-components/es-custom/components/markdown/index.js';
 const containerConstructor: CustomElementConstructor = ContainerHost;
 const outerConstructor: CustomElementConstructor = CustomElementHost;
 const container = new ContainerHost();
@@ -39,7 +36,6 @@ outer.openChatByDefault = true;
 outer.header = { title: 'Packed host' };
 createElement(ChatContainer, { openChatByDefault: true });
 createElement(ChatCustomElement, { className: 'packed-host', openChatByDefault: true });
-createElement(CustomChatContainer, { openChatByDefault: true });
 // @ts-expect-error Hosts are HTMLElement constructors rather than React components.
 const containerAsReact: ComponentType<any> = ContainerHost;
 // @ts-expect-error Hosts are HTMLElement constructors rather than React components.
@@ -54,18 +50,14 @@ outer.openChatByDefault = 'yes';
 const hostConfig: PublicConfig = { openChatByDefault: true };
 const outerConfig: OuterConfig = hostConfig;
 type HostInstances = [ChatInstance, OuterInstance];
-// Both trees publish inline Markdown styles as a resolvable CSSResult.
+// The package publishes inline Markdown styles as a resolvable CSSResult.
 const regularStyles: CSSResult = inlineMarkdownStyles;
-const customStyles: CSSResult = customInlineMarkdownStyles;
 type IsAny<T> = 0 extends 1 & T ? true : false;
 const regularIsAny: IsAny<typeof inlineMarkdownStyles> = false;
-const customIsAny: IsAny<typeof customInlineMarkdownStyles> = false;
 // @ts-expect-error The regular style value is not a number.
 const regularNumber: number = inlineMarkdownStyles;
-// @ts-expect-error The custom style value is not a number.
-const customNumber: number = customInlineMarkdownStyles;
 export { containerConstructor, outerConstructor, container, outer, outerConfig };
-export { regularStyles, customStyles, regularIsAny, customIsAny };
+export { regularStyles, regularIsAny };
 export type { HostInstances };
 `;
 
@@ -342,7 +334,7 @@ export async function assertPackedResolution(consumer) {
       await realpath(join(consumer, 'node_modules/@carbon/ai-chat', types))
     );
 
-    for (const tree of trees) {
+    for (const tree of ['es']) {
       const specifier = `@carbon/ai-chat/dist/${tree}/web-components/${host}/index.js`;
       const url = execFileSync(
         process.execPath,

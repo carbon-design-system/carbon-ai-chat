@@ -184,7 +184,7 @@ export async function collectHostRuntime(consumer) {
   const browser = await chromium.launch();
   try {
     const results = {};
-    for (const tree of ['es', 'es-custom']) {
+    for (const tree of ['es']) {
       results[tree] = [];
       for (const host of ['container', 'custom-element']) {
         results[tree].push(await checkHost(consumer, browser, tree, host));
