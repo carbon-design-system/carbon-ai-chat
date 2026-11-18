@@ -70,6 +70,17 @@ export async function propsFor(tag) {
       ],
     },
     transcript: { text: 'Isolated transcript', expanded: true },
+    'user-message-content': {
+      content: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Isolated message' }],
+          },
+        ],
+      },
+    },
     markdown: {
       markdown:
         'Isolated markdown\n\n```js\nconst isolated = true;\n```\n\n| Column |\n| --- |\n| Value |',

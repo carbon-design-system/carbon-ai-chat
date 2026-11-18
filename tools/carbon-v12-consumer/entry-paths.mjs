@@ -223,6 +223,14 @@ export const componentEntries = [
     'chat-shell/index.js',
   ],
   [
+    'cds-aichat-citation-card',
+    'CitationCard',
+    'aichat-conversational-search/aichat-citation-card.js',
+    'conversational-search/src/citation-card.js',
+    'aichat-conversational-search/index.js',
+    'conversational-search/index.js',
+  ],
+  [
     'cds-aichat-code-snippet',
     'CDSAIChatCodeSnippet',
     'aichat-code-snippet/aichat-code-snippet.js',
@@ -429,6 +437,14 @@ export const componentEntries = [
     'user-avatar/src/user-avatar.js',
     'aichat-user-avatar/index.js',
     'user-avatar/index.js',
+  ],
+  [
+    'cds-aichat-user-message-content',
+    'CDSAIChatUserMessageContent',
+    'aichat-user-message-content/aichat-user-message-content.js',
+    'user-message-content/src/user-message-content.js',
+    'aichat-user-message-content/index.js',
+    'user-message-content/index.js',
   ],
   [
     'cds-aichat-video-player',

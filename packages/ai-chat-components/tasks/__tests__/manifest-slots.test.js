@@ -663,3 +663,74 @@ test('validates the canonical graph and rejects real missing property prose and 
     /canonical owner of named slot new-public/
   );
 });
+
+const hostPatterned = `
+  import { LitElement, html } from 'lit';
+  import { property } from 'lit/decorators.js';
+  /**
+   * @element fixture-aichat-example
+   * @slot \${slot-prefix}::\${path} - Host content for the node at path.
+   */
+  export default class Example extends LitElement {
+    static get is() { return 'fixture-aichat-example'; }
+    @property({ type: String, attribute: 'slot-prefix' })
+    slotPrefix = '';
+    @property({ attribute: false })
+    items: string[] = [];
+    private node(path: string) { return html\`<slot name="\${this.slotPrefix}::\${path}"></slot>\`; }
+    render() { return html\`\${this.items.map((item, index) => this.node(\`\${index}\`))}<slot></slot>\`; }
+  }
+`;
+
+test('accepts public slot names patterned on a host attribute and checks them in both directions', () => {
+  const input = fixture(hostPatterned);
+  assert.ok(
+    input.declaration.slots.some(
+      (slot) => slot.name === '${slot-prefix}::${path}'
+    )
+  );
+  assert.ok(
+    validate(input).some((slot) => slot.pattern === '${slot-prefix}::${*}')
+  );
+  rejects(
+    fixture(
+      hostPatterned.replace(
+        ' * @slot ${slot-prefix}::${path} - Host content for the node at path.\n',
+        ''
+      )
+    ),
+    /slot \$\{slot-prefix\}::\$\{\*\} needs one @slot declaration/
+  );
+  rejects(
+    fixture(
+      hostPatterned.replace(
+        '@slot ${slot-prefix}::${path}',
+        '@slot ${prefix}::${path}'
+      )
+    ),
+    /slot \$\{prefix\}::\$\{path\} needs a placeholder for a host attribute/
+  );
+  rejects(
+    fixture(
+      hostPatterned.replace(
+        '<slot name="${this.slotPrefix}::${path}"></slot>',
+        ''
+      )
+    ),
+    /Unrendered named slot fixture-aichat-example.\$\{slot-prefix\}::\$\{path\}/
+  );
+  input.declaration.slots = [];
+  rejects(input, /slot \$\{slot-prefix\}::\$\{path\} needs one manifest entry/);
+});
+
+test('does not pattern names whose dynamic parts have no host attribute', () => {
+  rejects(
+    fixture(
+      hostPatterned.replace(
+        "@property({ type: String, attribute: 'slot-prefix' })",
+        '@property({ type: String, attribute: false })'
+      )
+    ),
+    /Unresolved named slot.*Unresolved contract expression/
+  );
+});

@@ -10,7 +10,7 @@ export function eventContractSource(root, prefix = 'cds') {
 import type { AudioPlayerErrorEventDetail, TranscriptToggleEventDetail } from '${root}/components/aichat-audio-player/index.js';
 import type { VideoPlayerErrorEventDetail } from '${root}/components/aichat-video-player/index.js';
 import type { CodeSnippetChangeEventDetail } from '${root}/components/aichat-code-snippet/index.js';
-import type { CitationToggleEventDetail } from '${root}/components/aichat-conversational-search/index.js';
+import type { CitationCardEventDetail, CitationToggleEventDetail, CitationsSelectEventDetail } from '${root}/components/aichat-conversational-search/index.js';
 import type { WorkspaceHeaderToggleEventDetail, Action as WorkspaceAction } from '${root}/components/aichat-workspace-shell/index.js';
 import type { PanelOpenEndEventDetail, PanelBodyScrollEventDetail } from '${root}/components/aichat-shell/index.js';
 import type { ReasoningStepToggleEventDetail, ReasoningStepsToggleEventDetail } from '${root}/components/aichat-reasoning-steps/index.js';
@@ -24,6 +24,7 @@ import type { MessagesShellScrollDetail } from '${root}/components/aichat-messag
 export type PublishedEventDetails = [
   AudioPlayerErrorEventDetail, TranscriptToggleEventDetail,
   VideoPlayerErrorEventDetail, CodeSnippetChangeEventDetail, CitationToggleEventDetail,
+  CitationsSelectEventDetail, CitationCardEventDetail,
   WorkspaceHeaderToggleEventDetail, WorkspaceAction,
   PanelOpenEndEventDetail, PanelBodyScrollEventDetail,
   ReasoningStepToggleEventDetail, ReasoningStepsToggleEventDetail,
