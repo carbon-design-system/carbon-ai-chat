@@ -31,6 +31,7 @@ import TranscriptDefault, { Transcript } from '@carbon/ai-chat-components/es/rea
 import AudioPlayerDefault, { AudioPlayer } from '@carbon/ai-chat-components/es/react/audio-player.js';
 import CardDefault, { Card, CardFooter, CardSteps } from '@carbon/ai-chat-components/es/react/card.js';
 import Autocomplete from '@carbon/ai-chat-components/es/react/autocomplete.js';
+import { Card as ReactBarrelCard, Autocomplete as ReactBarrelAutocomplete, HistoryShell as ReactBarrelHistoryShell, type ToolbarProps } from '@carbon/ai-chat-components/react';
 import { HistoryShell, HistoryHeader, HistoryToolbar, HistoryContent, HistoryLoading, HistoryPanel, HistoryPanelMenu, HistoryPanelItem, HistoryPanelItems, HistorySearchItem, HistoryPanelItemInput, HistoryDeletePanel } from '@carbon/ai-chat-components/es/react/history/index.js';
 import prefix, { prefix as namedPrefix } from '@carbon/ai-chat-components/es/globals/settings.js';
 import { defineCustomElement, type DefineCustomElementOptions, type CarbonCustomElementConstructor } from '@carbon/ai-chat-components/es/globals/register.js';
@@ -47,6 +48,10 @@ import OriginalContainerHost from '@carbon/ai-chat/dist/es/web-components/cds-ai
 import OriginalCustomElementHost from '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js';
 
 const canonical: typeof CardElement = CanonicalCard;
+const reactBarrelCard: typeof Card = ReactBarrelCard;
+const reactBarrelAutocomplete: typeof Autocomplete = ReactBarrelAutocomplete;
+const reactBarrelHistoryShell: typeof HistoryShell = ReactBarrelHistoryShell;
+const toolbarProps: ToolbarProps = { actions: [] };
 const barrel: typeof CardElement = BarrelCard;
 const pureContainer: typeof ContainerHost = PureContainerHost;
 const pureOuter: typeof CustomElementHost = PureOuterHost;
@@ -121,7 +126,7 @@ const aggregateAsReact: ComponentType<any> = AggregateCard;
 // @ts-expect-error Host instance properties retain their Boolean contract.
 outer.aiEnabled = 'yes';
 
-export { canonical, barrel, pureContainer, pureOuter, card, aggregateCard, audio, transcript, wrappers, constructor, registered, defaultPrefix, namedPrefixType, defaultPrefixType, componentSchema, chatSchema, rootApi, esApi, entryApi, serverApi, containerConstructor, outerConstructor, oldContainer, oldOuter, container, outer, containerTag, outerTag };
+export { reactBarrelCard, reactBarrelAutocomplete, reactBarrelHistoryShell, toolbarProps, canonical, barrel, pureContainer, pureOuter, card, aggregateCard, audio, transcript, wrappers, constructor, registered, defaultPrefix, namedPrefixType, defaultPrefixType, componentSchema, chatSchema, rootApi, esApi, entryApi, serverApi, containerConstructor, outerConstructor, oldContainer, oldOuter, container, outer, containerTag, outerTag };
 `;
 
 async function assertPackageAliases(consumer) {
