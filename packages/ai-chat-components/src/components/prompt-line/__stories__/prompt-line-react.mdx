@@ -37,7 +37,7 @@ Additional components used with the prompt line:
 
 - `<Autocomplete>` - suggestion list overlay rendered by the `useChatAutocomplete` hook in the `autocomplete-content` slot.
 - `<FileUploads>` — container of file attachment chips rendered in the `file-uploads` slot.
-- `<CDSAIChatErrorMessage>` — error message rendered in the `field-messaging` slot.
+- `<ErrorMessage>` — error message rendered in the `field-messaging` slot.
 
 ### Getting started
 
@@ -88,8 +88,8 @@ import {
   PromptLine,
   PromptLineShell,
   InputSendControl,
+  useChatAutocomplete,
 } from '@carbon/ai-chat-components/react';
-import { useChatAutocomplete } from '@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js';
 import { buildCarbonExtensions } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 const ALL_ITEMS = [
@@ -317,7 +317,7 @@ import { AutocompleteController } from '@carbon/ai-chat-components/react';
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatFileUploadsArgTypes} />
 
-### `<CDSAIChatErrorMessage>`
+### `<ErrorMessage>`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatErrorMessageArgTypes} />
 

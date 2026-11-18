@@ -9,7 +9,8 @@ differences, and only three:
      it documents the wrapper's camelCase props and `on*` handlers.
   2. Code blocks are `jsx`, using the wrapper components and camelCase props
      (`isFlush`, not `is-flush`).
-  3. The import block pulls from `es/react/`, not `es/components/`.
+  3. The import block pulls from `@carbon/ai-chat-components/react`, not
+     `es/components/`, using the barrel's export names.
 
 Copy this file into the component's `__stories__/` folder, rename it, delete
 this comment, and replace every placeholder:
@@ -73,7 +74,7 @@ that's what a React consumer copies. */}
 <One sentence: what this shows and when to use it.>
 
 ```jsx
-import { <Component>, <Part> } from "@carbon/ai-chat-components/es/react/<name>.js";
+import { <Component>, <Part> } from "@carbon/ai-chat-components/react";
 
 function <Composition>() {
   const handle<Verb> = (event) => {
@@ -107,7 +108,7 @@ sub-component needs its own story export to point at. */}
 {/* REQUIRED. */}
 
 ```jsx
-import <Component> from "@carbon/ai-chat-components/es/react/<name>.js";
+import { <Component> } from "@carbon/ai-chat-components/react";
 ```
 
 ## Feedback
