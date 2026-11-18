@@ -126,7 +126,7 @@ describe('request identity in public status', () => {
         event.data.id = `host-request-${++count}`;
       },
     });
-    await expect(instance.send('first')).rejects.toThrow('{}');
+    await expect(instance.send('first')).rejects.toThrow('failed');
     expect(instance.state.get().status).toBe('error');
     await instance.send('second');
     expect(instance.state.get().status).toBe('ready');
@@ -159,7 +159,7 @@ describe('request identity in public status', () => {
         event.data.id = `streaming-host-request-${++count}`;
       },
     });
-    await expect(instance.send('first')).rejects.toThrow('{}');
+    await expect(instance.send('first')).rejects.toThrow('failed');
     expect(instance.state.get().status).toBe('error');
     await instance.send('second');
     expect(instance.state.get().status).toBe('ready');

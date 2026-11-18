@@ -12,29 +12,47 @@ import { asArray } from '../../sdk/utils/lang/arrayUtils';
 import type { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 
-/** Removes what each mount's instance added to its chat's event bus. */
+/** Removes the listeners each mount added to its chat. */
 const drops = new WeakMap<ChatInstance, () => void>();
+const released = new WeakSet<ChatInstance>();
 
-/**
- * The `on`, `once`, and `off` of one mount's {@link ChatInstance}. They act on
- * the chat's event bus as before, and record what they add, so
- * {@link dropSubscriptions} can remove it when a reused chat outlives the
- * mount.
- */
-function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
+/** Tracks one mount's listeners while a reused chat outlives that mount. */
+function mountSubscriptions(
+  eventBus: EventBus,
+  state: ChatInstance['state'],
+  self: () => ChatInstance
+) {
   const own = new Set<TypeAndHandler>();
-  // Once dropped, the mount is gone and the chat belongs to the next one, so
-  // a late subscription through this instance adds nothing.
-  let dropped = false;
+  const unsubscribes = new Set<() => void>();
   const record = () =>
     drops.set(self(), () => {
-      dropped = true;
       eventBus.off([...own]);
       own.clear();
+      unsubscribes.forEach((unsubscribe) => unsubscribe());
+      unsubscribes.clear();
     });
+  const track = (subscribe: () => () => void) => {
+    if (released.has(self())) {
+      return () => {};
+    }
+    record();
+    const unsubscribe = subscribe();
+    unsubscribes.add(unsubscribe);
+    return () => {
+      unsubscribes.delete(unsubscribe);
+      unsubscribe();
+    };
+  };
+  const mountedState: ChatInstance['state'] = {
+    get: state.get,
+    subscribe: (listener) => track(() => state.subscribe(listener)),
+    select: (selector, listener, options) =>
+      track(() => state.select(selector, listener, options)),
+  };
   return {
+    state: mountedState,
     on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      if (dropped) {
+      if (released.has(self())) {
         return self();
       }
       record();
@@ -48,7 +66,7 @@ function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
     },
 
     once: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      if (dropped) {
+      if (released.has(self())) {
         return self();
       }
       record();
@@ -59,6 +77,8 @@ function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
           return;
         }
         // The bus's own `once`, with the wrapper recorded so a drop finds it.
+        // The bus knows it as a once wrapper for `handler`, so `off` with
+        // that function removes it, as it does on the bus.
         const entry: TypeAndHandler = {
           type,
           handler: (event, instance) => {
@@ -68,7 +88,7 @@ function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
           },
         };
         own.add(entry);
-        eventBus.on(entry);
+        eventBus.onceWrapper(type, entry.handler, handler);
       });
       return self();
     },
@@ -93,12 +113,12 @@ function mountSubscriptions(eventBus: EventBus, self: () => ChatInstance) {
 }
 
 /**
- * Removes every handler added through a mount's instance, once that mount is
- * gone and its chat keeps running for the next one. Handlers added through
- * another mount's instance stay.
+ * Removes event and state listeners added through a released mount's instance.
+ * Listeners added through another mount's instance stay.
  */
 function dropSubscriptions(instance: ChatInstance | undefined) {
   if (instance) {
+    released.add(instance);
     drops.get(instance)?.();
   }
 }

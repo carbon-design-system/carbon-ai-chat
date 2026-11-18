@@ -111,7 +111,7 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/components/input/ChatInput.ts',
     read: 'selectInputState()',
-    count: 2,
+    count: 3,
     owner: '#2824',
   },
   {

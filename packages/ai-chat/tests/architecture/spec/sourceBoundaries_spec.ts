@@ -114,6 +114,7 @@ const chatServices = [
   'chatMountState.ts',
   'createViewBindings.ts',
   'extensionHosts.ts',
+  'fireUserEvent.ts',
   'humanAgentCallbacks.ts',
   'inputCallbacks.ts',
   'inputExtensions.ts',

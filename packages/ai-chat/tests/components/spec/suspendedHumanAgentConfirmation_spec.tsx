@@ -47,7 +47,7 @@ function flushMicrotasks() {
 }
 
 function renderSuspendedCard() {
-  const startChat = jest.fn();
+  const startChat = jest.fn(() => Promise.resolve());
   const requestFocus = jest.fn();
   const focusChat = jest.fn();
   const props = {
