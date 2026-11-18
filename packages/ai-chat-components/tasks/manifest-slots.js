@@ -88,6 +88,56 @@ function expressionBinding(model, element, expression, node, protocols) {
   }
 }
 
+function propertyAttribute(model, element, name) {
+  const { ts } = model;
+  const member = element?.node.members?.find(
+    (entry) => ts.isPropertyDeclaration(entry) && entry.name.getText() === name
+  );
+  const decorator = member?.modifiers?.find(
+    (entry) =>
+      ts.isDecorator(entry) &&
+      ts.isCallExpression(entry.expression) &&
+      entry.expression.expression.getText() === 'property'
+  );
+  if (!decorator) {
+    return undefined;
+  }
+  const options = decorator.expression.arguments[0];
+  const attribute =
+    options &&
+    ts.isObjectLiteralExpression(options) &&
+    options.properties.find(
+      (entry) =>
+        ts.isPropertyAssignment(entry) && entry.name.getText() === 'attribute'
+    )?.initializer;
+  if (!attribute) {
+    return name.toLowerCase();
+  }
+  return ts.isStringLiteralLike(attribute) ? attribute.text : undefined;
+}
+
+// A host pattern names slots from a host-set attribute plus opaque parts,
+// such as `${slot-prefix}::${path}`. The host property owns the namespace.
+function hostPattern(model, element, attribute, parts, expressions) {
+  const { ts } = model;
+  let pattern = '';
+  let offset = 0;
+  let owned = false;
+  for (const part of parts) {
+    pattern += attribute.slice(offset, part.index);
+    const expression = expressions[Number(part[1])];
+    const name =
+      ts.isPropertyAccessExpression(expression) &&
+      expression.expression.kind === ts.SyntaxKind.ThisKeyword
+        ? propertyAttribute(model, element, expression.name.text)
+        : undefined;
+    owned ||= Boolean(name);
+    pattern += name ? `\${${name}}` : '${*}';
+    offset = part.index + part[0].length;
+  }
+  return owned ? pattern + attribute.slice(offset) : undefined;
+}
+
 function attributeBindings(model, element, template, attribute, protocols) {
   const { expressions, marker } = template;
   const token = new RegExp(`${marker}(\\d+)${marker}`, 'g');
@@ -123,14 +173,15 @@ function attributeBindings(model, element, template, attribute, protocols) {
         location: model.location(template.node),
       }));
   } catch (error) {
+    const pattern = hostPattern(model, element, attribute, parts, expressions);
     return [
-      {
-        element,
-        node: template.node,
-        error: error.message,
-        location: model.location(template.node),
-      },
-    ];
+      pattern
+        ? { element, pattern, node: template.node }
+        : { element, node: template.node, error: error.message },
+    ].map((binding) => ({
+      ...binding,
+      location: model.location(template.node),
+    }));
   }
 }
 
@@ -520,17 +571,98 @@ function validateSlotName(element, name, { tags, rendered, rows }, add) {
   }
 }
 
-function validateElementSlots(model, element, declaration, slots, add) {
-  const tags = namedTags(model, element);
-  const rendered = slots.filter(
-    (slot) => slot.element === element && slot.name
+const placeholder = /\$\{([^{}]+)\}/g;
+
+function isPattern(name) {
+  return /\$\{[^{}]+\}/.test(name);
+}
+
+// Declared placeholders that aren't attributes of the element are opaque parts.
+function canonicalPattern(model, element, name) {
+  const attributes = new Set(
+    (element.node.members ?? []).flatMap((member) => {
+      const attribute =
+        model.ts.isPropertyDeclaration(member) &&
+        propertyAttribute(model, element, member.name.getText());
+      return attribute ? [attribute] : [];
+    })
   );
-  const rows = (declaration.slots ?? []).filter((slot) => slot.name);
+  return name.replace(placeholder, (match, key) =>
+    attributes.has(key) ? match : '${*}'
+  );
+}
+
+function validatePatterns(model, element, { tags, rendered, rows }, add) {
+  const declared = tags
+    .filter((tag) => isPattern(tag.name))
+    .map((tag) => ({
+      ...tag,
+      canonical: canonicalPattern(model, element, tag.name),
+    }));
+  for (const tag of declared) {
+    if (!/\$\{(?!\*\})[^{}]+\}/.test(tag.canonical)) {
+      add(
+        tag.node,
+        `${element.tagName} slot ${tag.name} needs a placeholder for a host attribute.`
+      );
+    }
+  }
+  const patterns = new Set([
+    ...declared.map((tag) => tag.canonical),
+    ...rendered.map((slot) => slot.pattern),
+  ]);
+  for (const pattern of patterns) {
+    const matching = declared.filter((tag) => tag.canonical === pattern);
+    const name = matching[0]?.name ?? pattern;
+    if (!rendered.some((slot) => slot.pattern === pattern)) {
+      add(element.node, `Unrendered named slot ${element.tagName}.${name}.`);
+    }
+    if (matching.length !== 1) {
+      add(
+        rendered.find((slot) => slot.pattern === pattern)?.node ?? element.node,
+        `${element.tagName} slot ${name} needs one @slot declaration.`
+      );
+      continue;
+    }
+    if (rows.filter((row) => row.name === name).length !== 1) {
+      add(
+        element.node,
+        `${element.tagName} slot ${name} needs one manifest entry.`
+      );
+    }
+  }
+}
+
+function validateElementSlots(model, element, declaration, slots, add) {
+  const allTags = namedTags(model, element);
+  const tags = allTags.filter((tag) => !isPattern(tag.name));
+  const own = slots.filter((slot) => slot.element === element);
+  const rendered = own.filter((slot) => slot.name);
+  const allRows = (declaration.slots ?? []).filter((slot) => slot.name);
+  const rows = allRows.filter((row) => !isPattern(row.name));
   const names = new Set(
     [...tags, ...rendered, ...rows].map((slot) => slot.name)
   );
   for (const name of names) {
     validateSlotName(element, name, { tags, rendered, rows }, add);
+  }
+  validatePatterns(
+    model,
+    element,
+    {
+      tags: allTags,
+      rendered: own.filter((slot) => slot.pattern),
+      rows: allRows,
+    },
+    add
+  );
+  for (const row of allRows.filter((entry) => isPattern(entry.name))) {
+    if (!allTags.some((tag) => tag.name === row.name)) {
+      add(
+        element.node,
+        `Unrendered named slot ${element.tagName}.${row.name}.`
+      );
+    }
   }
 }
 

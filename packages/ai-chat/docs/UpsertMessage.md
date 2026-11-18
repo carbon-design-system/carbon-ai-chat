@@ -1,12 +1,14 @@
 ---
-title: Adding messages (experimental)
+title: Adding messages
 ---
 
 ## Overview
 
 {@link ChatInstanceMessaging.upsertMessage | upsertMessage} inserts or updates one message by a stable `messageID`. One method covers inserting, streaming, correcting, and regenerating — you pass an updater that receives the current message and returns what replaces it.
 
-Prefer this flow for new code, but note it's experimental. Its behavior and the updater signature may still change. For a settled API, the stable {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} flow is still fully supported. See [Adding messages (legacy)](./AddMessageChunk.md).
+Use this flow for new work, especially for more complex UI such as streaming, corrections, and regenerated responses. The older {@link ChatInstanceMessaging.addMessage | addMessage} and {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk} methods are the legacy flow. They're fully supported and not deprecated, and there are no plans to remove them. See [Adding messages (legacy)](./AddMessageChunk.md).
+
+> **Note:** Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
 
 The examples below call `instance.messaging`, so get a {@link ChatInstance | ChatInstance} from the `onBeforeRender` prop first.
 
@@ -209,7 +211,7 @@ When the abort signal fires, stop your stream. If the user clicked "stop streami
 
 ## Related
 
-- [Adding messages (legacy)](./AddMessageChunk.md) — the stable chunk-based streaming flow.
+- [Adding messages (legacy)](./AddMessageChunk.md) — the older chunk-based streaming flow.
 - [Server communication](./CustomServer.md) — wiring up {@link PublicConfigMessaging.customSendMessage | customSendMessage} and cancellation.
 - React example: [examples/react/upsert-message-user-defined](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/react/upsert-message-user-defined) — a stateful steps-card widget updated in place over time.
 - Web component example: [examples/web-components/upsert-message-user-defined](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/examples/web-components/upsert-message-user-defined) — the same flow with `cds-aichat-custom-element`.

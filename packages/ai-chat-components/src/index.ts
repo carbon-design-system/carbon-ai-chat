@@ -29,6 +29,7 @@ import './components/aichat-table/index.js';
 import './components/aichat-toolbar/index.js';
 import './components/aichat-truncated-text/index.js';
 import './components/aichat-user-avatar/index.js';
+import './components/aichat-user-message-content/index.js';
 import './components/aichat-video-player/index.js';
 import './components/aichat-workspace-shell/index.js';
 
@@ -60,6 +61,7 @@ export { default as CdsAiChatChatHeader } from './components/aichat-shell/aichat
 export { default as CDSAIChatPanel } from './components/aichat-shell/aichat-panel.js';
 export { default as CDSAIChatShell } from './components/aichat-shell/aichat-shell.js';
 export { default as CDSAIChatCodeSnippet } from './components/aichat-code-snippet/aichat-code-snippet.js';
+export { default as CitationCard } from './components/aichat-conversational-search/aichat-citation-card.js';
 export { default as ConversationalSearchShell } from './components/aichat-conversational-search/aichat-conversational-search-shell.js';
 export { default as CDSAIChatFeedbackButtons } from './components/aichat-feedback/aichat-feedback-buttons.js';
 export { default as CDSAIChatFeedback } from './components/aichat-feedback/aichat-feedback.js';
@@ -85,6 +87,7 @@ export { default as CDSAIChatTable } from './components/aichat-table/aichat-tabl
 export { default as CDSAIChatToolbar } from './components/aichat-toolbar/aichat-toolbar.js';
 export { default as CDSAIChatTruncatedText } from './components/aichat-truncated-text/aichat-truncated-text.js';
 export { default as CDSAIChatUserAvatar } from './components/aichat-user-avatar/aichat-user-avatar.js';
+export { default as CDSAIChatUserMessageContent } from './components/aichat-user-message-content/aichat-user-message-content.js';
 export { default as VideoPlayer } from './components/aichat-video-player/aichat-video-player.js';
 export { default as CDSAIChatWorkspaceShellBody } from './components/aichat-workspace-shell/aichat-workspace-shell-body.js';
 export { default as CDSAIChatWorkspaceShellFooter } from './components/aichat-workspace-shell/aichat-workspace-shell-footer.js';
