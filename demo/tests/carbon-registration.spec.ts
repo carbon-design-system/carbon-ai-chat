@@ -26,13 +26,11 @@ for (const entry of Object.keys(elementEntries)) {
     expect(report.tags.length).toBeGreaterThan(0);
     expect(report.failures).toEqual([]);
     const custom = entry.startsWith('generated/');
-    const prefix = custom ? 'cds-custom' : 'cds';
+    const prefix = custom ? 'acme' : 'cds';
     const host = page.locator('#root > *').first();
     await expect(host).toBeVisible();
     if (custom) {
-      expect(report.tags.every((tag) => tag.startsWith('cds-custom-'))).toBe(
-        true
-      );
+      expect(report.tags.filter((tag) => tag.startsWith('cds-'))).toEqual([]);
     }
     const name = entry.split('/')[1];
     if (name === 'card-footer' || name === 'workspace-shell-footer') {
@@ -197,7 +195,7 @@ for (const variant of ['es', 'generated']) {
     context,
   }) => {
     const errors = await openEntry(page, `${variant}/chat-header`);
-    const prefix = variant === 'generated' ? 'cds-custom' : 'cds';
+    const prefix = variant === 'generated' ? 'acme' : 'cds';
     const trigger = page.locator(`${prefix}-overflow-menu`).first();
     await trigger.click();
     await expect(trigger.getByRole('menu')).toBeVisible();

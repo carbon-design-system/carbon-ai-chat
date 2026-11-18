@@ -109,10 +109,12 @@ const parsedDtsTsConfig = parseJsonConfigFileContent(
 );
 
 async function runRollup() {
-  // Hashed chunks from an earlier build would otherwise stay beside the new
-  // ones, ship in a pack, and break the prefixed-build copier.
-  for (const output of ['es', 'types', 'es-custom']) {
-    await fs.remove(path.join(paths.dist, output));
+  // Modules removed since the last build would otherwise stay in dist/es, ship
+  // in a pack, and break the prefixed-build copier. Watch mode keeps the old
+  // tree so the demo can load it until the first rebuild lands.
+  await fs.remove(path.join(paths.dist, 'es-custom'));
+  if (process.env.ROLLUP_WATCH !== 'true') {
+    await fs.remove(path.join(paths.dist, 'es'));
   }
   const extraWatch = path.resolve(__dirname, '../../ai-chat-components/es/**/*');
 
@@ -268,6 +270,7 @@ async function runRollup() {
       external,
       plugins: [
         json(),
+        clearTypesPlugin(),
         dts({
           compilerOptions: parsedDtsTsConfig.compilerOptions,
         }),
@@ -310,6 +313,18 @@ async function postBuild() {
   }
 }
 
+
+// rollup-plugin-dts names shared chunks by hash, so each rebuild that changes
+// one leaves the old file behind. Nothing reads dist/types at runtime, so it
+// is cleared on every build, watch rebuilds included.
+function clearTypesPlugin() {
+  return {
+    name: "clear-types-plugin",
+    async buildStart() {
+      await fs.remove(path.join(paths.dist, "types"));
+    },
+  };
+}
 
 function postBuildPlugin() {
   return {

@@ -39,7 +39,7 @@ export async function inspectUpgrades(page: Page) {
       }
     }
     const tags = walk(document).filter((element) =>
-      element.localName.startsWith('cds-')
+      element.localName.includes('-')
     );
     return {
       tags: [...new Set(tags.map((element) => element.localName))],
