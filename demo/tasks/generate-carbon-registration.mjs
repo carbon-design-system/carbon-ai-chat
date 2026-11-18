@@ -16,7 +16,7 @@ execFileSync(
     '--',
     'create-ai-chat-components-prefixed-build',
     '--prefix',
-    'cds-custom',
+    'acme',
     '--out',
     fileURLToPath(
       new URL('../.generated/carbon-registration', import.meta.url)

@@ -14,8 +14,8 @@ const root = document.getElementById('root')!;
 const params = new URLSearchParams(location.search);
 const entry = params.get('entry')!;
 const custom = entry.startsWith('generated/');
-const carbonPrefix = custom ? 'cds-custom' : 'cds';
-const chatPrefix = custom ? 'cds-custom-aichat' : 'cds-aichat';
+const carbonPrefix = custom ? 'acme' : 'cds';
+const chatPrefix = custom ? 'acme-aichat' : 'cds-aichat';
 let actions = 0;
 const activate = () => {
   document.getElementById('actions')!.textContent = String(++actions);
