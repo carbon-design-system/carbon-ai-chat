@@ -81,7 +81,7 @@ The check does not cover all props, events, slots, or style hooks. Broader guard
    npm run test:manifest-consumer
    ```
 
-The JSON is generated and ignored: never hand-edit or commit it. The wrappers are checked in and hand-authored. After adding components, regenerate telemetry with `npm run telemetry:config --workspace=@carbon/ai-chat-components`; do not hand-edit `telemetry.yml`.
+The JSON is generated and ignored: never hand-edit or commit it. The wrappers are checked in and hand-authored. Leave `telemetry.yml` alone when adding components: each full release runs `npm run telemetry:config` and commits the result. Never hand-edit it.
 
 ## Naming
 
