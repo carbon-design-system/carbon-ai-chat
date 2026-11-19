@@ -51,6 +51,7 @@ export interface Action {
  * Chat History panel item.
  *
  * @element cds-aichat-history-panel-item
+ * @slot actions - Overrides the row action controls.
 
  *
  * @fires {CustomEvent<HistoryRenameChangeEventDetail>} history-panel-item-input-change - The rename input value changes.
@@ -133,7 +134,8 @@ class CDSAIChatHistoryPanelItem extends HostListenerMixin(
   @property({ type: Boolean, reflect: true, attribute: 'parent-menu-expanded' })
   parentMenuExpanded = true;
 
-  @query(`${prefix}-aichat-history-panel-item-input`) input!: HTMLElement;
+  @query(`${prefix}-aichat-history-panel-item-input`)
+  private input!: HTMLElement;
 
   @query('cds-overflow-menu') private _overflowMenu?: HTMLElement & {
     open: boolean;

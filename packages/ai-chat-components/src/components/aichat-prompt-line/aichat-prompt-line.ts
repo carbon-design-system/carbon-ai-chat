@@ -71,6 +71,7 @@ import styles from './aichat-prompt-line.scss?lit';
  * @fires {CustomEvent<null>} cds-aichat-prompt-send-intent - Fired when the user presses Enter in a non-empty field, or Cmd+Enter (Ctrl+Enter on Windows and Linux) even when the field is empty.
  * @fires {CustomEvent<TriggerChangeEventDetail | null>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends. Rich mode only.
  * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM. Rich mode only.
+ * @slot editor - Editor content.
  *
  * @experimental
  */

@@ -17,6 +17,7 @@ import { createRequire, isBuiltin } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { eventContractSource } from './event-contracts.mjs';
+import { propertyContractSource } from './property-contracts.mjs';
 import { reactContractSource } from './react-contracts.mjs';
 import { readSource } from '../../packages/ai-chat-components/tasks/manifest-source.js';
 import { readWrappers } from '../../packages/ai-chat-components/tasks/manifest-wrappers.js';
@@ -447,7 +448,9 @@ createElement(Transcript, { text: 'Generated transcript', expanded: true });
 // @ts-expect-error Generated precise React props retain their Boolean type.
 createElement(Transcript, { expanded: 'yes' });
 export { host, constructor, card };
-` + eventContractSource(`${root}/ai-chat-components`, receipt.prefix)
+` +
+      eventContractSource(`${root}/ai-chat-components`, receipt.prefix) +
+      propertyContractSource(`${root}/ai-chat-components`)
   );
   for (const [name, module, moduleResolution] of [
     ['node16', ts.ModuleKind.Node16, ts.ModuleResolutionKind.Node16],

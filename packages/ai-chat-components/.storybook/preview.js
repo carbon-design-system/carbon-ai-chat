@@ -14,9 +14,11 @@ import containerStyles from './_container.scss?inline';
 import { white, g10, g90, g100 } from '@carbon/themes';
 import { breakpoints } from '@carbon/layout';
 import { setCustomElementsManifest } from '@storybook/web-components-vite';
+import { parameters as webComponentsParameters } from '@storybook/web-components/entry-preview-argtypes';
 import customElements from '../custom-elements.json';
 import prettier from 'prettier/standalone';
 import { docsTheme } from './docs-theme.js';
+import { createDocsManifest } from './docs-manifest.js';
 
 if (typeof document !== 'undefined') {
   const existing = document.head.querySelector(
@@ -30,23 +32,10 @@ if (typeof document !== 'undefined') {
   }
 }
 
-function filterPublicInstanceMembers(manifest) {
-  const filtered = JSON.parse(JSON.stringify(manifest)); // Deep clone
-
-  filtered.modules.forEach((module) => {
-    (module.declarations || []).forEach((declaration) => {
-      if (declaration.members) {
-        declaration.members = declaration.members.filter(
-          (member) => member.privacy !== 'private' && !member.static
-        );
-      }
-    });
-  });
-
-  return filtered;
-}
-
-const filteredManifest = filterPublicInstanceMembers(customElements);
+const { manifest: filteredManifest, extractArgTypes } = createDocsManifest(
+  customElements,
+  webComponentsParameters.docs.extractArgTypes
+);
 setCustomElementsManifest(filteredManifest);
 
 export const globalTypes = {
@@ -132,6 +121,7 @@ export const parameters = {
     current: 'light',
   },
   docs: {
+    extractArgTypes,
     theme: docsTheme,
     codePanel: true,
     defaultName: 'Overview',

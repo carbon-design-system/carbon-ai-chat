@@ -9,6 +9,8 @@ import { readFileSync } from 'node:fs';
 import { readSource } from './manifest-source.js';
 import { readWrappers, validateWrapperEvents } from './manifest-wrappers.js';
 import { validateEvents } from './manifest-events.js';
+import { validateProperties } from './manifest-properties.js';
+import { validateSlots } from './manifest-slots.js';
 
 const model = readSource();
 const manifest = JSON.parse(
@@ -17,6 +19,8 @@ const manifest = JSON.parse(
 const wrappers = readWrappers(model);
 const { pairs, producers } = validateEvents(model, manifest, wrappers);
 validateWrapperEvents(model, wrappers, pairs);
+validateProperties(model, manifest);
+validateSlots(model, manifest);
 console.info(
   `Validated ${pairs.length} element/event pairs and ${producers.filter((producer) => producer.protocol).length} helper protocol dispatches.`
 );

@@ -29,6 +29,8 @@ import {
 } from './utils/inline-run-projection.js';
 
 export { InlineMarkdownError } from './utils/inline-validation.js';
+
+const INLINE_MARKDOWN_SLOT_PREFIX = `${prefix}-aichat-inline-markdown-plugin`;
 /**
  * Styles for {@link renderInlineMarkdown} output. Install them in each root
  * that renders the result.
@@ -133,9 +135,11 @@ function renderInlineSource(
   const leading = edgeSource.match(/^[\t ]*/)?.[0] ?? '';
   const trailing = edgeSource.match(/[\t ]*$/)?.[0] ?? '';
   const prepared = html`${leading}${content}${trailing}`;
+  /** @slotNameProtocol {INLINE_MARKDOWN_SLOT_PREFIX} */
+  const slotName = `${INLINE_MARKDOWN_SLOT_PREFIX}-${namespace}`;
   const output = hasPlugin
     ? projectInlineRun(prepared, {
-        slotName: `${prefix}-aichat-inline-markdown-plugin-${namespace}`,
+        slotName,
         resetInlineStyles: true,
       })
     : prepared;

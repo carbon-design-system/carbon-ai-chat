@@ -15,6 +15,7 @@ import * as sass from 'sass';
 import ts from 'typescript';
 import { componentEntries } from './entry-paths.mjs';
 import { eventContractSource } from './event-contracts.mjs';
+import { propertyContractSource } from './property-contracts.mjs';
 
 const consumerSource = `
 import { createElement, type ComponentProps, type ComponentType, type ReactElement } from 'react';
@@ -450,7 +451,8 @@ export { canonical${index}, legacy${index}, constructor${index} };
     join(consumer, 'resolution.ts'),
     consumerSource +
       classAliases +
-      eventContractSource('@carbon/ai-chat-components/es')
+      eventContractSource('@carbon/ai-chat-components/es') +
+      propertyContractSource('@carbon/ai-chat-components/es')
   );
   await compileConsumerTypes(
     consumer,

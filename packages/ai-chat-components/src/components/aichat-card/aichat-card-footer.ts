@@ -59,9 +59,11 @@ class CardFooter extends LitElement {
   @property({ type: Array })
   actions: Action[] = [];
 
+  /** Size of the footer action buttons. */
   @property({ type: String })
   size?: BUTTON_SIZE = BUTTON_SIZE.LARGE;
 
+  /** Renders actions as icon buttons. Recomputed when the actions change. */
   @property({ type: Boolean, attribute: 'is-icon-button', reflect: true })
   isIconButton = false;
 

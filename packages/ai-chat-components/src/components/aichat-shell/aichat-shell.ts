@@ -32,6 +32,16 @@ let shellInstanceCounter = 0;
 
 /**
  * @fires {CustomEvent<null>} cds-aichat-shell-panel-focus-fallback - A closed panel has no focusable trigger or active panel. Focus an appropriate fallback.
+ * @slot header - Chat header content.
+ * @slot header-after - Content directly below the chat header.
+ * @slot messages - Conversation content.
+ * @slot input-before - Content before the prompt.
+ * @slot input - Prompt editor and its controls.
+ * @slot input-after - Content after the prompt.
+ * @slot history - Chat history content.
+ * @slot footer - Chat footer content.
+ * @slot workspace - Workspace content shown inline or in its panel.
+ * @slot panels - Additional overlay panels.
  */
 class CDSAIChatShell extends LitElement {
   static get is() {

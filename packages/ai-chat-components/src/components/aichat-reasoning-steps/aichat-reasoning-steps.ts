@@ -30,9 +30,11 @@ class CDSAIChatReasoningSteps extends LitElement {
 
   static styles = [commonStyles, styles];
 
+  /** Whether the steps are expanded. */
   @property({ type: Boolean, attribute: 'open', reflect: true })
   open = false;
 
+  /** Lets the parent control the open state instead of toggling it internally. */
   @property({ type: Boolean, attribute: 'controlled', reflect: true })
   controlled = false;
 

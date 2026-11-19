@@ -179,8 +179,18 @@ class CDSAIChatMessagesShell extends LitElement {
   // and avoids allocating a separate object.
   // --------------------------------------------------------------------------
 
+  /**
+   * The scroll container the engine measures.
+   *
+   * @internal
+   */
   getScrollContainer = (): HTMLElement | null => this._scroller ?? null;
 
+  /**
+   * The bottom spacer the engine grows to keep the pin reachable.
+   *
+   * @internal
+   */
   getSpacer = (): HTMLElement | null => this._spacer ?? null;
 
   /**
@@ -190,6 +200,8 @@ class CDSAIChatMessagesShell extends LitElement {
    * The selector targets the spacer element by its class name, scoped to the
    * per-instance attribute on `.__scroller`. This keeps the rule inside the
    * shadow tree where the adopted sheet's selectors apply.
+   *
+   * @internal
    */
   setSpacerHeight = (px: number): void => {
     if (px === 0) {
@@ -203,6 +215,8 @@ class CDSAIChatMessagesShell extends LitElement {
    * Write a min-block-size floor on the content container so the scroll range
    * stays reachable through transient content collapse (e.g. a reasoning step
    * that collapses and then regrows before ResizeObserver fires).
+   *
+   * @internal
    */
   setScrollHeightFloor = (px: number): void => {
     if (px === 0) {
@@ -212,12 +226,26 @@ class CDSAIChatMessagesShell extends LitElement {
     }
   };
 
+  /**
+   * The message rows in document order, with their flags.
+   *
+   * @internal
+   */
   getMessages = (): PortableMessage[] => this._portableMessages;
 
+  /**
+   * Whether a message exists, even before its rows mount.
+   *
+   * @internal
+   */
   hasMessage = (messageId: string): boolean =>
     this._portableMessages.some((m) => m.messageId === messageId);
 
-  /** Called by the engine whenever scroll geometry changes. Updates button visibility. */
+  /**
+   * Called by the engine whenever scroll geometry changes. Updates button visibility.
+   *
+   * @internal
+   */
   onScrollGeometryChanged = (): void => {
     this._updateScrollDownButton();
   };

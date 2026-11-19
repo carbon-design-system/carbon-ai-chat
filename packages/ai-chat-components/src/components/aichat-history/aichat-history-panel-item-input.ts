@@ -103,7 +103,7 @@ class CDSAIChatHistoryPanelItemInput extends HostListenerMixin(
   @property({ type: String, attribute: 'item-id' })
   itemId;
 
-  @query('input') input!: HTMLInputElement;
+  @query('input') private input!: HTMLInputElement;
 
   /**
    * Flag to track if an action has been triggered to prevent focusout from executing an additional action

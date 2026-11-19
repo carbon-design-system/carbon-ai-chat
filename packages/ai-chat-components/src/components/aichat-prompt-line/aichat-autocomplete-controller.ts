@@ -90,6 +90,7 @@ class AutocompleteControllerElement extends LitElement {
   /**
    * Returns `true` while the user is navigating inside the autocomplete list.
    * Consumers can use this to disable their send control.
+   * @public
    */
   get listNavigated(): boolean {
     return this._listNavigated;

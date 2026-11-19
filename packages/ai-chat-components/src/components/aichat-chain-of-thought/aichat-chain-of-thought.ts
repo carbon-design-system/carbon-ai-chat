@@ -84,6 +84,10 @@ class CDSAIChatChainOfThought extends LitElement {
     super.disconnectedCallback();
   }
 
+  /**
+   * Descendant thought steps, in DOM order.
+   * @public
+   */
   get steps(): NodeListOf<CDSAIChatChainOfThoughtStep> {
     return this.querySelectorAll<CDSAIChatChainOfThoughtStep>(stepSelector);
   }

@@ -53,7 +53,7 @@ const CHIP_NODE_TYPES = new Set(['mention', 'command']);
  * @experimental
  * @element cds-aichat-user-message-content
  *
- * @slot {slot-prefix}::{path} - Host content for the node at `path`. The element creates one slot per mention, command, or other custom node. Unfilled slots show the node's fallback.
+ * @slot ${slot-prefix}::${path} - Host content for the node at `path`. The element creates one slot per mention, command, or other custom node. Unfilled slots show the node's fallback.
  */
 class CDSAIChatUserMessageContent extends LitElement {
   static get is() {

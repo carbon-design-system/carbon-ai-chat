@@ -406,7 +406,9 @@ function CustomReactNodePortal({
       return undefined;
     }
 
-    const slotName = `cds-aichat-autocomplete-${++autocompletePortalCounter}`;
+    const slotPrefix = 'cds-aichat-autocomplete';
+    /** @slotNameProtocol {slotPrefix} */
+    const slotName = `${slotPrefix}-${++autocompletePortalCounter}`;
     const slotEl = document.createElement('slot');
     slotEl.setAttribute('name', slotName);
     container.appendChild(slotEl);

@@ -76,6 +76,12 @@ import styles from './aichat-prompt-line-shell.scss?lit';
  * The focus outline and error outline are not affected by either hook.
  *
  * @element cds-aichat-prompt-line-shell
+ * @slot editor - Prompt editor content.
+ * @slot message-actions - Actions beside the prompt editor.
+ * @slot file-uploads - Attached files and upload controls.
+ * @slot autocomplete-content - Autocomplete suggestion content.
+ * @slot field-messaging - Help or validation content for the prompt.
+ * @slot send-control - Send or stop control.
  * @fires {CustomEvent<AutocompleteNavigatedEventDetail>} cds-aichat-autocomplete-navigated - The active autocomplete list enters or leaves keyboard navigation, including cleanup after its removal.
  */
 class PromptLineShellElement extends LitElement {

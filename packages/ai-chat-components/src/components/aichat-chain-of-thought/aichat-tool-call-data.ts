@@ -18,6 +18,9 @@ const baseClass = `${prefix}-aichat--tool-call-data`;
 /**
  * Tool call data component
  * @element cds-aichat-tool-call-data
+ * @slot description - Description of the tool call.
+ * @slot input - Input sent to the tool.
+ * @slot output - Output returned by the tool.
  */
 class CDSAIChatToolCallData extends LitElement {
   static get is() {
