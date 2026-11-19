@@ -161,13 +161,16 @@ describe('InputActionsService plain-text draft writes', () => {
     store.dispatch(
       actions.updateInputState({ rawValue: 'old', content: richDoc }, false)
     );
+    const agentContent = store.getState().humanAgentState.inputState.content;
 
     service.updateRawInputValue(() => 'hi\n\nthere');
 
     const { rawValue, content } = store.getState().assistantInputState;
     expect(rawValue).toBe('hi\n\nthere');
     expect(content).toEqual(textToDoc('hi\n\nthere'));
-    expect(store.getState().humanAgentState.inputState.content).toEqual([]);
+    expect(store.getState().humanAgentState.inputState.content).toBe(
+      agentContent
+    );
   });
 
   it('writes the agent draft document while the input is routed to an agent', () => {
