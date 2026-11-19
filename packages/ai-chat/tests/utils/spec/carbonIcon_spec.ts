@@ -9,7 +9,10 @@
 
 import { render } from '@testing-library/react';
 import { createElement } from 'react';
-import { carbonIconToReact } from '../../../src/chat/utils/carbonIcon';
+import {
+  carbonIconToReact,
+  customIconToReact,
+} from '../../../src/chat/utils/carbonIcon';
 
 const mockIcon = {
   elem: 'svg' as const,
@@ -116,5 +119,23 @@ describe('carbonIconToReact', () => {
     expect(svg?.getAttribute('width')).toBe('32');
     expect(svg?.getAttribute('height')).toBe('32');
     expect(svg?.getAttribute('fill')).toBe('red');
+  });
+});
+
+describe('customIconToReact', () => {
+  it('returns undefined when no icon is provided', () => {
+    expect(customIconToReact(undefined)).toBeUndefined();
+  });
+
+  it('returns the same component for the same icon so React does not remount it', () => {
+    expect(customIconToReact(mockIcon as any)).toBe(
+      customIconToReact(mockIcon as any)
+    );
+  });
+
+  it('returns a different component for a different icon', () => {
+    expect(customIconToReact(mockIcon as any)).not.toBe(
+      customIconToReact({ ...mockIcon } as any)
+    );
   });
 });
