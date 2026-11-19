@@ -368,7 +368,7 @@ test('rejects an untyped producer even if its metadata declares a type', () => {
 
 test('checks exported caller-targeted protocols without inventing an element owner', () => {
   const input = fixture('', {
-    'src/components/shared/portal.ts': `
+    'src/globals/utils/portal.ts': `
       export interface PortalDetail { value: string; }
       /**
        * @eventProtocol
@@ -401,13 +401,13 @@ test('rejects unclassified caller-targeted helpers and private protocol suppress
     }
   `;
   rejects(
-    () => fixture('', { 'src/components/shared/portal.ts': helper }),
+    () => fixture('', { 'src/globals/utils/portal.ts': helper }),
     /Unresolved public event owner/
   );
   rejects(
     () =>
       fixture('', {
-        'src/components/shared/portal.ts': helper
+        'src/globals/utils/portal.ts': helper
           .replace('* @fires', '* @eventProtocol\n     * @fires')
           .replace('export function', 'function'),
       }),

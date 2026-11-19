@@ -23,7 +23,7 @@ import {
   adoptOnRoot,
   clearSelector,
   setVarsForSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 
 const blockClass = `${prefix}-aichat-messages-shell`;
 const focusClass = `${blockClass}__scroller--handle-focused`;

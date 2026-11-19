@@ -31,7 +31,7 @@ import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 import { StreamingManager } from './streaming-manager.js';
 import { defaultLineCountText, type LineCountFormatter } from './formatters.js';
 import type { EditorView } from '@codemirror/view';

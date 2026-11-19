@@ -24,7 +24,7 @@ import {
   adoptOnRoot,
   setVarsForSelector,
   clearSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 
 const LOADING_TIMEOUT_MS = 10000; // 10 seconds
 

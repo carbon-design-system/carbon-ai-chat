@@ -19,7 +19,10 @@ import { property, state } from 'lit/decorators.js';
 
 import { isBrowser } from '../../globals/utils/browser-utils.js';
 import { prefix } from '../../globals/settings.js';
-import { attachRootStyles, type RootStyles } from '../shared/root-styles.js';
+import {
+  attachRootStyles,
+  type RootStyles,
+} from '../../globals/utils/root-styles.js';
 
 import '@carbon/web-components/es/components/file-uploader/index.js';
 

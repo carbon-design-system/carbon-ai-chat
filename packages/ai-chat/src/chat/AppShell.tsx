@@ -87,7 +87,7 @@ import { SCROLLBAR_WIDTH } from './utils/domUtils';
 import {
   adoptOnRoot,
   setVarsForSelector,
-} from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
+} from '@carbon/ai-chat-components/es/globals/utils/dynamic-css-var-sheet.js';
 
 const SCROLLBAR_WIDTH_ATTR = 'data-cds-aichat-widget-id';
 let scrollbarWidthCounter = 0;

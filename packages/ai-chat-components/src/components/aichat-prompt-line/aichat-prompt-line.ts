@@ -20,7 +20,7 @@ import { css, html, LitElement, unsafeCSS } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { prefix } from '../../globals/settings.js';
-import { adoptOnRoot } from '../shared/dynamic-css-var-sheet.js';
+import { adoptOnRoot } from '../../globals/utils/dynamic-css-var-sheet.js';
 import type {
   PromptLineController,
   PromptLineControllerInit,

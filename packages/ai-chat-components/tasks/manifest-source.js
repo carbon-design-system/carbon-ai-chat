@@ -25,7 +25,6 @@ const compilerOptions = {
 const sourceIncludes = [
   'index.ts',
   'components/aichat-*/**/*',
-  'components/shared/**/*',
   'globals/**/*',
   'react/**/*',
   'testing/**/*',

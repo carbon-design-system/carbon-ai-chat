@@ -25,10 +25,10 @@ import {
   adoptOnRoot,
   clearSelector,
   setVarsForSelector,
-} from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
+} from '@carbon/ai-chat-components/es/globals/utils/dynamic-css-var-sheet.js';
 
 jest.mock(
-  '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js',
+  '@carbon/ai-chat-components/es/globals/utils/dynamic-css-var-sheet.js',
   () => ({
     adoptOnRoot: jest.fn(),
     clearSelector: jest.fn(),

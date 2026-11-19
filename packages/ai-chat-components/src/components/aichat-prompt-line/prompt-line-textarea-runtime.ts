@@ -36,7 +36,7 @@ import { IS_PHONE } from '../../globals/utils/browser-utils.js';
 import {
   adoptOnRoot,
   setVarsForSelector,
-} from '../shared/dynamic-css-var-sheet.js';
+} from '../../globals/utils/dynamic-css-var-sheet.js';
 import {
   PROMPT_LINE_MAX_BLOCK_SIZE,
   TYPING_TIMEOUT_MS,
