@@ -568,7 +568,7 @@ function isAllowedStateField(
       'chatWidthBreakpoint',
     ],
     'src/chat/services/createViewBindings.ts': ['catastrophicErrorType'],
-    // The one config update path (#1833).
+    // Config changes use the shared update path.
     'src/shared/services/applyConfig.ts': ['languagePack'],
     'src/shared/utils/intlUtils.ts': ['loadedLocale'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
