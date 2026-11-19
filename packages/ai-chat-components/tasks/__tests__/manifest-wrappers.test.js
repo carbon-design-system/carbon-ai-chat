@@ -373,6 +373,12 @@ test('checks the resolved event type rather than its source text', () => {
       type Opaque = CustomEvent<unknown>;
       interface Keyed { any: string; unknown: number }
       interface Payload { value: string; meta?: unknown }
+      interface Nested { item: { meta: Record<string, any> } }
+      interface Framework {
+        node: React.ReactNode;
+        icon: React.ComponentType<{ size: number }>;
+        element: HTMLElement;
+      }
       export default createComponent({
         tagName: Example.is, elementClass: Example, react: React,
         events: { onChange: Example.eventChange as EventName<${cast}> },
@@ -383,6 +389,9 @@ test('checks the resolved event type rather than its source text', () => {
     'Opaque',
     'CustomEvent<unknown>',
     'CustomEvent<{ value: any }>',
+    'CustomEvent<Nested>',
+    'CustomEvent<{ icon: React.ComponentType<any> }>',
+    'CustomEvent<{ handle: (value: any) => void }>',
   ]) {
     assert.throws(
       () => readWrappers(source(cast), { requireEventTypes: true }),
@@ -394,6 +403,7 @@ test('checks the resolved event type rather than its source text', () => {
     'CustomEvent<Keyed>',
     'CustomEvent<{ any: string }>',
     'CustomEvent<Payload>',
+    'CustomEvent<Framework>',
     'MouseEvent',
   ]) {
     assert.doesNotThrow(
