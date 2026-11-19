@@ -18,19 +18,18 @@
  * `renderTokenChip` is a thin token-specific wrapper over this primitive.
  */
 
-import type { ReactNode } from 'react';
-
 /** Wire event for the generic light-DOM portal handshake. */
 export const LIGHT_DOM_PORTAL_EVENT = 'cds-aichat-light-dom-portal';
 
 export interface RenderInLightDomArgs {
   /**
    * Content to render in the page's light DOM. An `HTMLElement` is appended
-   * directly. A `ReactNode` is `createPortal`-ed by the chat's React tree —
-   * the same path the token `renderCustomToken` ReactNode case uses; it relies
-   * on the host and chat sharing a single React instance.
+   * directly. Anything else, such as a React node, goes to the chat's React
+   * tree, which portals it in. That is the same path a non-element
+   * `renderCustomToken` result takes, and it relies on the host and chat
+   * sharing a single React instance.
    */
-  content: HTMLElement | ReactNode;
+  content: unknown;
   /**
    * Where to dispatch the handshake event. A host `addNodeView` should pass
    * `editor.view.dom` so the event reaches the listener on the chat wrapper.
@@ -81,8 +80,11 @@ export interface LightDomPortalEventDetail {
   meta?: Record<string, unknown>;
   /** Set when the caller passed an `HTMLElement`. */
   htmlElement?: HTMLElement;
-  /** Set when the caller passed a `ReactNode`. */
-  reactNode?: ReactNode;
+  /**
+   * Set when the caller passed anything other than an `HTMLElement`, such as
+   * a React node. The chat's React listener renders it.
+   */
+  reactNode?: unknown;
   /** Tag the listener should use for the page-light-DOM `slot` host element. */
   hostTag?: 'span' | 'div';
 }
