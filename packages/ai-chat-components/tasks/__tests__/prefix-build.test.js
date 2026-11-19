@@ -242,6 +242,24 @@ test('matches upstream invalid-prefix and unknown-option errors', async () => {
   }
 });
 
+test('rejects a prefix that starts with cds- and keeps cds inside a prefix', async () => {
+  const setup = await fixture();
+  for (const prefix of ['cds-icon', 'cds-aichat']) {
+    const result = invoke(setup, ['--prefix', prefix]);
+    assert.equal(result.status, 1);
+    assert.equal(
+      result.stderr,
+      `Error: --prefix "${prefix}" starts with "cds-", which can reproduce the default tag names. Choose a different prefix.\n`
+    );
+    await assert.rejects(
+      fs.access(path.join(setup.root, `${prefix}-ai-chat-components`))
+    );
+  }
+  for (const prefix of ['acme-cds', 'mycds']) {
+    successful(invoke(setup, ['--prefix', prefix]));
+  }
+});
+
 test('retains help, defaults, missing-source errors, and replace-output behavior', async () => {
   const setup = await fixture();
   for (const flag of ['--help', '-h']) {
