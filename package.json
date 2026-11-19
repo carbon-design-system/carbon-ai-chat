@@ -245,9 +245,6 @@
     "serve": {
       "compression": "^1.8.2"
     },
-    "get-uri": {
-      "basic-ftp": "^6.2.3"
-    },
     "rollup-plugin-postcss": {
       "cssnano": "^7.1.9"
     },
