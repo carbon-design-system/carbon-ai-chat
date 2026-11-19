@@ -84,7 +84,7 @@ export interface ChatSDKInstanceMessaging {
 
   /**
    * Inserts the given messages into the conversation as history. Fires the `history:begin` and
-   * `history:end` events.
+   * `history:end` events. These messages fire no `pre:receive` or `receive` events.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
 
@@ -92,6 +92,12 @@ export interface ChatSDKInstanceMessaging {
    * Restarts the conversation with the assistant. Clears the current assistant messages, cancels any
    * outstanding messages, and clears the assistant session, so the next message starts a new one. A
    * conversation with a human agent is unchanged.
+   *
+   * In a prebuilt chat, if the main window is open and {@link ChatSDKConfigMessaging.skipWelcome}
+   * is not set, the chat sends a new welcome request. The promise resolves after
+   * {@link ChatSDKConfigMessaging.customSendMessage} finishes with that request. It sends no welcome
+   * request when {@link HomeScreenConfig.isOn} is set, or when the user has a conversation with a human
+   * agent, now or earlier in the session.
    */
   restartConversation: () => Promise<void>;
 }
