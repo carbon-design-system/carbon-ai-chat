@@ -254,9 +254,6 @@
     },
     "@mordech/vite-lit-loader": {
       "vite": "^8.0.16"
-    },
-    "nx": {
-      "undici": "^7.29.1"
     }
   }
 }
