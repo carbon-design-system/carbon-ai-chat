@@ -88,13 +88,8 @@ function getSettings() {
 
   let defaultConfig: PublicConfig = {
     ...config,
-    // Default to AI theme enabled; prefer explicit top-level value, otherwise map legacy theme.theme
-    aiEnabled:
-      typeof config.aiEnabled === 'boolean'
-        ? config.aiEnabled
-        : config.theme?.theme !== undefined
-          ? config.theme.theme === 'CarbonAI'
-          : true,
+    // The AI theme is off in the demo, even when a shared link turns it on.
+    aiEnabled: false,
     // Map legacy nested theme to top-level injectCarbonTheme; "inherit" => undefined
     injectCarbonTheme:
       config.injectCarbonTheme !== undefined
