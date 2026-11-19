@@ -8,3 +8,4 @@
  */
 
 import './src/conversational-search-shell.js';
+import './src/citation-card.js';

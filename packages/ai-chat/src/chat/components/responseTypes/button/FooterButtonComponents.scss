@@ -10,16 +10,64 @@
 @use '@carbon/styles/scss/utilities/convert' as *;
 @use '@carbon/styles/scss/components/button/tokens' as *;
 
-.cds-aichat--button-item--selected::part(button),
-.cds-aichat--clickable-image.cds-aichat--button-item--selected {
+// Selectors reused throughout this file.
+$button-item: '.cds-aichat--button-item';
+$footer: '.cds-aichat--footer-button-components';
+$footer-column: '#{$footer}--column';
+$overlay-panel: '.cds-aichat--overlay-panel';
+$widget: '.cds-aichat--widget';
+$widget-with-banner: '#{$widget}--with-branding-banner';
+$widget-without-rounding: '#{$widget}:not(#{$widget}--rounded, #{$widget}--with-branding-banner)';
+
+// The 1px line between footer buttons and above ghost buttons.
+$separator: rem(1px) solid theme.$chat-bubble-border;
+
+// Where `hide_label` buttons place their icon, keyed by the `icon_alignment` value.
+$icon-alignments: (
+  'start': flex-start,
+  'center': center,
+  'end': flex-end,
+);
+
+// The footer sits inside a 1px border, so its inner corners are one pixel tighter than the container's radius.
+@function inner-radius($radius) {
+  @return max(0px, calc(#{$radius} - rem(1px)));
+}
+
+#{$button-item}--selected::part(button),
+.cds-aichat--clickable-image#{$button-item}--selected {
   outline: rem(2px) solid currentColor;
   outline-offset: rem(-2px);
+}
+
+// A button that shows only its icon (`hide_label`). The label stays in the DOM, visually hidden, as the accessible
+// name, so `cds-button` keeps its full-width layout instead of collapsing to a square icon-only button. Only the icon
+// takes part in the flex layout, which lets `justify-content` place it. These rules sit outside the button's shadow
+// root, so they win over its own `justify-content: space-between` and the icon's absolute positioning.
+#{$button-item}--hidden-label {
+  &::part(button) {
+    padding-inline: var(
+      --cds-layout-density-padding-inline-local,
+      #{rem(16px)}
+    );
+  }
+
+  [slot='icon'] {
+    position: static;
+    margin: 0;
+  }
+
+  @each $alignment, $justify in $icon-alignments {
+    &#{$button-item}--icon-#{$alignment}::part(button) {
+      justify-content: $justify;
+    }
+  }
 }
 
 // Mixin to apply proper radius
 @mixin footer-button-radius($radius) {
   // Non-column layout
-  &:not(.cds-aichat--footer-button-components--column) {
+  &:not(#{$footer-column}) {
     gap: rem(1px);
 
     &:not(:has([kind='ghost'])) {
@@ -27,42 +75,42 @@
     }
 
     &:has([kind='ghost']) {
-      border-block-start: rem(1px) solid theme.$chat-bubble-border;
+      border-block-start: $separator;
     }
 
-    .cds-aichat--button-item {
+    #{$button-item} {
       &:first-child::part(button) {
-        border-end-start-radius: max(0px, calc(#{$radius} - rem(1px)));
+        border-end-start-radius: inner-radius($radius);
       }
 
       &:last-child::part(button) {
-        border-end-end-radius: max(0px, calc(#{$radius} - rem(1px)));
+        border-end-end-radius: inner-radius($radius);
       }
     }
   }
 
   // Column layout
-  &.cds-aichat--footer-button-components--column {
+  &#{$footer-column} {
     flex-direction: column;
 
-    .cds-aichat--button-item {
+    #{$button-item} {
       &[kind='ghost'] {
-        border-block-start: rem(1px) solid theme.$chat-bubble-border;
+        border-block-start: $separator;
       }
 
       &:last-child::part(button) {
-        border-end-end-radius: max(0px, calc(#{$radius} - rem(1px)));
-        border-end-start-radius: max(0px, calc(#{$radius} - rem(1px)));
+        border-end-end-radius: inner-radius($radius);
+        border-end-start-radius: inner-radius($radius);
       }
     }
   }
 }
 
-.cds-aichat--footer-button-components {
+#{$footer} {
   display: flex;
   inline-size: 100%;
 
-  cds-button.cds-aichat--button-item {
+  cds-button#{$button-item} {
     flex: auto;
   }
 
@@ -77,42 +125,33 @@
 
 // Footer button styles scoped to aichat-card
 cds-aichat-card {
-  .cds-aichat--footer-button-components {
+  #{$footer} {
     @include footer-button-radius(layout.$spacing-03);
   }
 }
 
 // Usage inside rounded widget panel, use CSS custom properties for rounded corners
-.cds-aichat--overlay-panel .cds-aichat--footer-button-components {
+#{$overlay-panel} #{$footer} {
   @include footer-button-radius(var(--cds-aichat-border-radius-end-end, 0));
 }
 // Corner rounding styles end
-.cds-aichat--widget--with-branding-banner
-  .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components,
-.cds-aichat--widget:not(
-    .cds-aichat--widget--rounded,
-    .cds-aichat--widget--with-branding-banner
-  )
-  .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components {
-  .cds-aichat--button-item:first-child::part(button) {
+#{$widget-with-banner} #{$overlay-panel} #{$footer},
+#{$widget-without-rounding} #{$overlay-panel} #{$footer} {
+  #{$button-item}:first-child::part(button) {
     border-end-start-radius: 0;
   }
 
-  .cds-aichat--button-item:last-child::part(button) {
+  #{$button-item}:last-child::part(button) {
     border-end-end-radius: 0;
   }
 }
 
-.cds-aichat--widget--with-branding-banner
-  .cds-aichat--overlay-panel
-  .cds-aichat--footer-button-components--column
-  .cds-aichat--button-item.cds-aichat--button-item:last-child::part(button),
-.cds-aichat--footer-button-components.cds-aichat--footer-button-components--column
-  .cds-aichat--button-item.cds-aichat--button-item:not(
-    :last-child::part(button)
-  ) {
+#{$widget-with-banner}
+  #{$overlay-panel}
+  #{$footer-column}
+  #{$button-item}#{$button-item}:last-child::part(button),
+#{$footer}#{$footer-column}
+  #{$button-item}#{$button-item}:not(:last-child::part(button)) {
   border-end-end-radius: 0;
   border-end-start-radius: 0;
 }
