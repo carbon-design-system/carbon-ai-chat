@@ -27,13 +27,12 @@
  *   payloads are read-only, the list can hand the entries.
  * - #2825: the response panel's message, which the app shell's panel hook
  *   looks up in the chat's own messages and hands to the panel.
- * - #2969: the custom panels' workspace events. They hand a host copies of
- *   the chat's own message and items, then write the host's edits back onto
- *   them. Boot builds the panel manager, and the manager builds the panels.
- *   For a reused chat, this also covers firing slot events again, with the
- *   chat's own message and items, for responses that came while the chat had
- *   no view. Once those payloads are read-only, these reads can use the
- *   SDK's entries.
+ * - #2969: the custom panels' workspace events, and, for a reused chat, the
+ *   slot events fired again for responses that came while the chat had no
+ *   view. Both hand a host copies of the chat's own message and items, then
+ *   write the host's edits back onto them. Boot builds the panel manager,
+ *   and the manager builds the panels. Once those payloads are read-only,
+ *   these reads can use the SDK's entries.
  * - #2824: everything else the prebuilt chat reads from the conversation
  *   partition in 1.x:
  *   - view state the partition still holds: which connect card is
