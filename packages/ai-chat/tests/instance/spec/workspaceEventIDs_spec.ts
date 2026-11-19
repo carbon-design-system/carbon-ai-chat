@@ -210,10 +210,21 @@ describe('workspace event message and item IDs', () => {
 
   it('drops the IDs after the conversation restarts', async () => {
     const chat = await chatWithCards();
-    await openFromCard(chat, 'plan');
-    await act(async () => {
-      await chat.instance.messaging.restartConversation();
+    // A restart resets the workspace state, so a workspace closed after it fires no
+    // events. Restart while the card's workspace opens instead: the open finishes
+    // after the restart, and every event from then on must drop the card's IDs.
+    chat.instance.once({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: () => chat.instance.messaging.restartConversation(),
     });
+    await openFromCard(chat, 'plan');
+    expect(chat.log.map(({ type }) => type)).toEqual([
+      BusEventType.WORKSPACE_PRE_OPEN,
+      BusEventType.WORKSPACE_OPEN,
+    ]);
+    expect(chat.log[0]).toMatchObject({ messageID: 'plan' });
+    expectNoIDs(chat.log[1]);
+
     chat.log.length = 0;
     await act(async () => {
       await chat.instance.customPanels.getPanel(PanelType.WORKSPACE).close();
