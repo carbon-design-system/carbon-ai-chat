@@ -48,13 +48,6 @@ import { MessageState } from '../config/MessagingConfig';
 /**
  * The user_defined message object passed into the renderUserDefinedResponse property on the main chat components.
  *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
- * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
- * opaque values and function closure/private state remain shared.
- * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content;
- * edits to copied fields do not write back. This runtime rule leaves shared types and other
- * delivery paths unchanged.
- *
  * @category React
  */
 interface RenderUserDefinedState {
@@ -89,13 +82,6 @@ interface RenderUserDefinedState {
 /**
  * The type of the render function that is used to render a custom footer. This function should return a
  * component that renders the custom message footer.
- *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
- * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
- * opaque values and function closure/private state remain shared.
- * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content;
- * edits to copied fields do not write back. This runtime rule leaves shared types and other
- * delivery paths unchanged.
  *
  * @param slotName The unique identifier for this footer slot.
  * @param message The assistant response object that contains the messageItem.
@@ -173,13 +159,6 @@ type WCRenderUserDefinedResponse = (
 /**
  * The accumulated state for one custom message footer slot, passed to the
  * web component {@link WCRenderCustomMessageFooter} callback.
- *
- * For {@link ChatInstanceMessaging.upsertMessage}, message data uses a snapshot.
- * Plain objects and arrays are frozen. Cloneable special values stay mutable copies;
- * opaque values and function closure/private state remain shared.
- * Use the updater or {@link BusEventType.PRE_RECEIVE} to change content;
- * edits to copied fields do not write back. This runtime rule leaves shared types and other
- * delivery paths unchanged.
  *
  * @category Web component
  */
@@ -710,6 +689,9 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
    * This is an opt-in observation hook. Unlike {@link ChatCustomElementProps},
    * the container has no wrapping element to size, so no default visibility
    * behavior runs when this prop is omitted.
+   *
+   * The chat reads this prop once, at mount, so a later change to it is
+   * ignored. It also runs at mount, for the chat's move to its first view.
    */
   onViewPreChange?: (
     event: BusEventViewPreChange,
@@ -722,6 +704,9 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
    * This is an opt-in observation hook. Unlike {@link ChatCustomElementProps},
    * the container has no wrapping element to size, so no default visibility
    * behavior runs when this prop is omitted.
+   *
+   * The chat reads this prop once, at mount, so a later change to it is
+   * ignored. It also runs at mount, for the chat's move to its first view.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
@@ -733,25 +718,33 @@ interface ChatContainerProps extends Omit<PublicConfig, 'markdown'> {
   /**
    * This is the function that this component will call when a footer below a user message should be rendered.
    * Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this prop is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   renderCustomRequestFooter?: RenderCustomRequestFooter;
 
   /**
-   * This is the function that this component will call when a user defined response should be rendered.
+   * Renders a user-defined response in page DOM, where page CSS reaches it. Both React hosts use this placement.
+   * The standalone custom element keeps this callback's output inside its shadow root.
    */
   renderUserDefinedResponse?: RenderUserDefinedResponse;
 
   /**
    * Renderer for nodes inside sent user message bubbles (rich user message
-   * content). Invoked once per `mention` chip, `command` chip, and custom
+   * content). Invoked for each `mention` chip, `command` chip, and custom
    * TipTap node in a user message's `display_content`; returned React content
    * mounts into light DOM. Return `null` for a node you don't render: a chip
    * keeps its default look, and a custom node shows its `label` or `value`.
+   *
+   * The chat may call it more than once for the same node, for example while
+   * the message is sending. Return the same output for the same node.
    */
   renderUserDefinedInputNode?: RenderUserDefinedInputNode;
 
   /**
-   * This is the render function this component will call when it needs to render a writeable element.
+   * Renders a writeable element in page DOM. Both React hosts use this placement. The standalone custom element
+   * keeps its instance's writeable elements inside its shadow root.
    */
   renderWriteableElements?: RenderWriteableElementResponse;
 

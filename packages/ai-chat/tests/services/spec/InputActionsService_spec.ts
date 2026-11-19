@@ -15,6 +15,7 @@ import { createBaseConfig, makeConfigStore } from '../../test_helpers';
 import { ViewConnection } from '../../../src/sdk/services/viewBindings';
 import actions from '../../../src/sdk/store/actions';
 import { textToDoc } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/json-utils.js';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 
 function createService(config: PublicConfig = createBaseConfig()) {
   const store = makeConfigStore(config);
@@ -84,6 +85,40 @@ describe('InputActionsService data ownership', () => {
       fields: [{ id: 'rating', value: { score: 1 } }],
     });
   });
+
+  it.each(['complete', 'error'] as const)(
+    'keeps main prebuilt upload routing after an awaited %s when an agent connects',
+    async (outcome) => {
+      const uploaded = resolvablePromise<StructuredData>();
+      const config = createBaseConfig();
+      config.upload = { isOn: true, onFileUpload: () => uploaded };
+      const { service, store } = createService(config);
+      const done = service.handleFileSelectedForUpload(
+        new File(['content'], 'example.txt')
+      );
+      store.dispatch(
+        actions.changeState({
+          persistedToBrowserStorage: {
+            humanAgentState: { isConnected: true },
+          },
+        })
+      );
+
+      if (outcome === 'complete') {
+        uploaded.doResolve({ user_defined: { uploaded: true } });
+      } else {
+        uploaded.doReject(new Error('Upload failed'));
+      }
+      await done;
+
+      expect(store.getState().assistantInputState.pendingUploads).toEqual([
+        expect.objectContaining({ status: 'uploading' }),
+      ]);
+      expect(
+        store.getState().humanAgentState.inputState.pendingUploads
+      ).toEqual([]);
+    }
+  );
 
   it('owns contributed upload data returned by the host', async () => {
     const contributedData: StructuredData = {

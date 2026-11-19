@@ -48,6 +48,7 @@ import {
 } from '../../schema/outputItemToLocalItem';
 import {
   addDefaultsToMessage,
+  hasLiveHumanAgentMessage,
   isConnectToHumanAgent,
   isHiddenOutputItem,
   isPause,
@@ -58,10 +59,27 @@ import {
 import { consoleError } from '../../utils/miscUtils';
 import { hasDisplayableContentForItem } from '../../utils/streamingUtils';
 import { ServiceManager } from '../ServiceManager';
-import {
-  retainNativeMessageOrigin,
-  snapshotNativeMessageEvent,
-} from './nativeMessageEvents';
+
+/**
+ * Whether `next` is the same version of `previous` with only its native upsert error mark
+ * changed. Marking an item errored writes a new local item, but its content is unchanged.
+ */
+function isOnlyUpsertErrorChange(
+  previous: LocalMessageItem | undefined,
+  next: LocalMessageItem
+): boolean {
+  if (!previous || previous.item !== next.item) {
+    return false;
+  }
+  const differs = <T extends object>(a: T, b: T, ignore: keyof T) =>
+    [...new Set([...Object.keys(a), ...Object.keys(b)] as (keyof T)[])].some(
+      (key) => key !== ignore && a[key] !== b[key]
+    );
+  return (
+    !differs(previous, next, 'ui_state') &&
+    !differs(previous.ui_state, next.ui_state, 'upsertError')
+  );
+}
 
 /**
  * Whether an upserted item counts as content for the stream-start announcement. A text
@@ -200,7 +218,11 @@ class UpsertWorkflow {
     for (const messageID of this.lifetime.state.streamingIDs) {
       const requestID = lifecycle.responseRequestID(messageID);
       if (requestID) {
-        lifecycle.requestStopped(requestID);
+        lifecycle.requestStopped(
+          requestID,
+          undefined,
+          reason === CancellationReason.STOP_STREAMING
+        );
       }
       this.endStreamingMessage(messageID);
     }
@@ -461,15 +483,15 @@ class UpsertWorkflow {
             (id) =>
               previousState.allMessageItemsByID[id]?.fullMessageID === messageID
           );
+    // Marked before the copy, so the slot events' message keeps the mark too.
+    this.keepTurnFailureMark(messageID, result);
     const ownedResult = this.incomingMessageService.copyNativeMessage(result);
-    retainNativeMessageOrigin(ownedResult);
-    this.keepTurnFailureMark(messageID, ownedResult);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
         ownedResult,
         nextState === MessageState.STREAMING && !isStopped,
         holdFromIndex,
-        options
+        { ...options, nativeMessageState: nextState }
       )
     );
     if (isStale()) {
@@ -723,11 +745,11 @@ class UpsertWorkflow {
       const previousHoldFromIndex = pauseIndex;
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
+      this.keepTurnFailureMark(messageID, result);
       const ownedResult = this.incomingMessageService.copyNativeMessage(result);
-      retainNativeMessageOrigin(ownedResult);
-      this.keepTurnFailureMark(messageID, ownedResult);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
+          nativeMessageState: revealState,
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
         })
       );
@@ -927,13 +949,19 @@ class UpsertWorkflow {
     });
   }
 
-  private getStoredResponse(messageID: string): MessageResponse | undefined {
+  /**
+   * Reads the stored response for `messageID`, throwing `ErrorType` when the ID names a request.
+   */
+  private getStoredResponse(
+    messageID: string,
+    ErrorType: new (message: string) => Error = Error
+  ): MessageResponse | undefined {
     const existing = this.serviceManager.store.getState().allMessagesByID[
       messageID
     ] as Message | undefined;
 
     if (existing && isRequest(existing as MessageRequest)) {
-      throw new Error(
+      throw new ErrorType(
         `upsertMessage: messageID "${messageID}" refers to a non-assistant message and cannot be upserted.`
       );
     }
@@ -949,15 +977,17 @@ class UpsertWorkflow {
     updater: UpsertMessageUpdater,
     stamp: UpsertStamp
   ): Promise<MessageResponse> {
-    const existing = this.getStoredResponse(messageID);
-
-    const previousMessage = existing
-      ? cloneDeep(existing as MessageResponse)
-      : undefined;
+    const existing = this.getStoredResponse(messageID, TypeError);
+    const previousMessage = existing ? cloneDeep(existing) : undefined;
     let result = await updater(previousMessage);
     this.markDroppedByRestart(stamp);
 
     result = this.incomingMessageService.prepareUpsertMessage(result);
+    if (isRequest(result) || hasLiveHumanAgentMessage(result)) {
+      throw new TypeError(
+        'upsertMessage: updater must return an assistant message, not a request or a human-agent message.'
+      );
+    }
     if (Object.isFrozen(result.history)) {
       result.history = { ...result.history };
     }
@@ -969,7 +999,7 @@ class UpsertWorkflow {
     if (result.id === undefined || result.id === null) {
       result.id = messageID;
     } else if (result.id !== messageID) {
-      throw new Error(
+      throw new TypeError(
         `upsertMessage: updater returned message id "${result.id}" but call was for "${messageID}".`
       );
     }
@@ -995,7 +1025,7 @@ class UpsertWorkflow {
       if (!result.id) {
         result.id = messageID;
       } else {
-        throw new Error(
+        throw new TypeError(
           `upsertMessage: pre:receive handler changed message id from "${messageID}" to "${result.id}".`
         );
       }
@@ -1027,7 +1057,8 @@ class UpsertWorkflow {
   /**
    * Reports each shown item of `messageID` that the chat can't draw and now shows an
    * error for: one the last write or settle replaced, that is no longer streaming. A
-   * reused local item was reported when it was written, so each version reports once.
+   * reused local item was reported when it was written, so each version reports once. An
+   * item whose only change is its native upsert error mark is the same version.
    *
    * Pass `false` for `reportErrors` when the settle is user-initiated (stop/cancel):
    * a malformed in-flight item that was never completed is not actionable host data.
@@ -1047,6 +1078,7 @@ class UpsertWorkflow {
       if (
         localItem?.fullMessageID !== messageID ||
         refsBefore.get(localID) === localItem ||
+        isOnlyUpsertErrorChange(refsBefore.get(localID), localItem) ||
         isItemStillStreaming(localItem)
       ) {
         continue;
@@ -1145,7 +1177,6 @@ class UpsertWorkflow {
       ...eventValues,
       commit: () => {
         eventValues.commit((committed) => {
-          retainNativeMessageOrigin(committed as MessageResponse);
           stamp.eventMessage = committed as MessageResponse;
         });
       },
@@ -1193,51 +1224,47 @@ class UpsertWorkflow {
     if (!eventValues) {
       return;
     }
-    const snapshot = snapshotNativeMessageEvent({
-      message: eventValues.message as MessageResponse,
-      localItems: eventValues.localItems,
-    });
-    for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
-      if (isStale()) {
-        return;
-      }
-      const storedLocalItem =
-        entry.index >= fromIndex
-          ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
-          : undefined;
-      if (storedLocalItem) {
-        const localItem = entry.isHidden
-          ? {
-              ...storedLocalItem,
-              item: snapshot.message.output.generic[entry.index],
-              ui_state: { ...storedLocalItem.ui_state },
-            }
-          : snapshot.localItems[storedLocalItem.ui_state.id];
-        if (!localItem) {
-          continue;
-        }
-        const nestedItems = entry.isHidden
-          ? {
-              ...snapshot.localItems,
-              ...this.createHiddenNestedItems(localItem, snapshot.message),
-            }
-          : snapshot.localItems;
-        await chatActions.handleUserDefinedResponseItems(
-          localItem,
-          snapshot.message,
-          nextState,
-          nestedItems,
-          () => !isStale()
-        );
+    try {
+      for (const entry of this.fanOutEntries(messageID, result, toIndex)) {
         if (isStale()) {
           return;
         }
-        await chatActions.handleCustomFooterSlot(
-          localItem,
-          snapshot.message,
-          () => !isStale()
-        );
+        const storedLocalItem =
+          entry.index >= fromIndex
+            ? this.localItemToFanOut(messageID, result, entry, skipsUnchanged)
+            : undefined;
+        if (storedLocalItem) {
+          const localItem = entry.isHidden
+            ? storedLocalItem
+            : eventValues.localItems[storedLocalItem.ui_state.id];
+          if (!localItem) {
+            continue;
+          }
+          const nestedItems = entry.isHidden
+            ? {
+                ...eventValues.localItems,
+                ...this.createHiddenNestedItems(localItem, result),
+              }
+            : eventValues.localItems;
+          await chatActions.handleUserDefinedResponseItems(
+            localItem,
+            result,
+            nextState,
+            nestedItems,
+            () => !isStale()
+          );
+          if (isStale()) {
+            return;
+          }
+          await chatActions.handleCustomFooterSlot(
+            localItem,
+            result,
+            () => !isStale()
+          );
+        }
       }
+    } finally {
+      eventValues.commit();
     }
   }
 
@@ -1355,12 +1382,11 @@ class UpsertWorkflow {
     result: MessageResponse,
     stamp: UpsertStamp
   ): Promise<void> {
-    // Capture current internal metadata before creating the detached notification.
-    this.captureUpsertEvent(messageID, result, stamp);
     const receiveEvent: BusEventReceive = {
       type: BusEventType.RECEIVE,
-      data: snapshotNativeMessageEvent(result),
+      data: result,
     };
+    const eventValues = this.captureUpsertEvent(messageID, result, stamp);
     try {
       await this.serviceManager.fire(
         receiveEvent,
@@ -1368,6 +1394,8 @@ class UpsertWorkflow {
       );
     } catch (error) {
       consoleError('upsertMessage: receive handler threw, continuing.', error);
+    } finally {
+      eventValues?.commit();
     }
     if (!this.isStale(stamp, result.request_id)) {
       this.serviceManager.messageCoordinator.finalizeStreamingMessage(

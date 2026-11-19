@@ -23,11 +23,17 @@ interface BodyMessageComponentsProps extends MessageTypeComponentProps {
   ) => React.ReactNode;
 }
 
+const NO_BODY_ITEMS: readonly string[] = [];
+
 /**
  * This component handles rendering nested messages for response types that have a "body" property.
  */
 function BodyMessageComponents(props: BodyMessageComponentsProps) {
-  const nestedItems = useNestedMessageItems(props.message.ui_state.id, 'body');
+  const nestedItems = useNestedMessageItems(
+    props.message.ui_state.id,
+    'body',
+    props.message.ui_state.bodyLocalMessageItemIDs ?? NO_BODY_ITEMS
+  );
 
   // Loop through the nested items the list draws and return a message component for each.
   const messageComponents = nestedItems.map(

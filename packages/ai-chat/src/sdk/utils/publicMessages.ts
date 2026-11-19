@@ -24,7 +24,7 @@ import {
   MessageResponseTypes,
 } from '../../types/messaging/Messages';
 import type ObjectMap from '../../types/utilities/ObjectMap';
-import { deepFreeze } from './lang/objectUtils';
+import { deepFreezeCopy } from './lang/objectUtils';
 import {
   isHiddenOutputItem,
   isPause,
@@ -131,8 +131,9 @@ function assembleStreamingItem(localItem: LocalMessageItem): GenericItem {
 const publicCopies = new WeakMap<object, unknown>();
 
 /**
- * A frozen deep copy of a value, made once per source object. A value that
- * isn't an object passes through.
+ * A frozen deep copy of a value, made once per source object. Values the copy
+ * shares with the source, such as functions and classes, stay unfrozen. A
+ * value that isn't an object passes through.
  */
 function publicCopyOf<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
@@ -141,7 +142,7 @@ function publicCopyOf<T>(value: T): T {
   let copy = publicCopies.get(value) as T;
   if (!copy) {
     // Cloned as a nested value, as the whole message once was, so lodash keeps a value it can't clone.
-    copy = deepFreeze(cloneDeep([value])[0]);
+    copy = deepFreezeCopy(cloneDeep([value])[0], value);
     publicCopies.set(value, copy);
   }
   return copy;
@@ -162,7 +163,8 @@ export function publicItemOf(localItem: LocalMessageItem): GenericItem {
   }
   let item = streamedItems.get(localItem);
   if (!item) {
-    item = deepFreeze(cloneDeep(assembleStreamingItem(localItem)));
+    const assembled = assembleStreamingItem(localItem);
+    item = deepFreezeCopy(cloneDeep(assembled), assembled);
     streamedItems.set(localItem, item);
   }
   return item;

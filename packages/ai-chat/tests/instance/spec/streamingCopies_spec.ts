@@ -119,13 +119,15 @@ describe('streaming copies', () => {
     await streamThreeItems(instance);
     await chunk(instance, 'b', ' more');
 
-    const freeze = jest.spyOn(objectUtils, 'deepFreeze');
+    const freeze = jest.spyOn(objectUtils, 'deepFreezeCopy');
+    const freezeAll = jest.spyOn(objectUtils, 'deepFreeze');
     await chunk(instance, 'b', ' and more');
     const state = instance.state.get();
     const changed = liveItems(state).get('b');
 
     // The mounted list read both fields during the chunk; reading them again copies nothing.
     expect(freeze).toHaveBeenCalledTimes(1);
+    expect(freezeAll).not.toHaveBeenCalled();
     expect(freeze.mock.calls[0][0]).toBe(changed);
     expect(changed).toMatchObject({ text: 'B more and more' });
     expect(Object.isFrozen(changed)).toBe(true);
