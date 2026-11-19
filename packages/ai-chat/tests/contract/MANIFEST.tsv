@@ -1131,6 +1131,10 @@ context	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"scope:
 context	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"scope:describeShared:'receive events for a stream'"	d914176fd50bd7f565700006a31aa97b79d3ad17cee20c8e5ff2061d5cb74817
 context	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"scope:describeShared:'status during a stream'"	d914176fd50bd7f565700006a31aa97b79d3ad17cee20c8e5ff2061d5cb74817
 context	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"scope:describeShared:'streams without streaming_metadata.id'"	d914176fd50bd7f565700006a31aa97b79d3ad17cee20c8e5ff2061d5cb74817
+context	packages/ai-chat/tests/contract/spec/messaging/turnFailureDuringPause_spec.ts	"file"	63ecf9395ccf961951206eaabdbcc02fff10ed0cd5ccc8a145c3f887880a53d5
+context	packages/ai-chat/tests/contract/spec/messaging/turnFailureDuringPause_spec.ts	"registration:describe:'failTurn during an upsert pause'"	0fa1c97b3583230e2e55a190211f94699e0bb86391d0b7592ebd0653d25d6dbb
+context	packages/ai-chat/tests/contract/spec/messaging/turnFailureDuringPause_spec.ts	"registration:describe:'failTurn during an upsert pause'/it:'keeps the failure mark in the revealed slot and stored response'"	f0df887eeaeb0d479e2a0174a970fe20d5fd030e2af057e32138d69baca80570
+context	packages/ai-chat/tests/contract/spec/messaging/turnFailureDuringPause_spec.ts	"scope:describe:'failTurn during an upsert pause'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/messaging/turnState_spec.ts	"file"	783eacdd477dc23cfe5ee39d3b280d3eb46e756a4599d31a9d130b325fb25d16
 context	packages/ai-chat/tests/contract/spec/messaging/turnState_spec.ts	"registration:describe:'activeResponseId'"	698186103368a25b74d7eb0425a59a701bc71db05c7122c03879728521bdbe3f
 context	packages/ai-chat/tests/contract/spec/messaging/turnState_spec.ts	"registration:describe:'activeResponseId'/it:'clears on clearConversation'"	984bf2af762e7791818292e3e69b7de57e3ee36bfee45051bdf2801a3eb59e52
@@ -2621,6 +2625,7 @@ test	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"status du
 test	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"status during a stream [instance] stays streaming until every open stream has its final_response"	2bdd93adf5b7a41ccc5c0a5cd50c39e66f58082eb5eb30ce3b185ee7ee756ae8
 test	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"streams without streaming_metadata.id [instance] keeps the text of two such streams in their own messages"	31f59c97dc59fa70a5067c97e33cceb65bb20ae47c0c26618db7b1e7b1944dac
 test	packages/ai-chat/tests/contract/spec/messaging/streaming_spec.ts	"streams without streaming_metadata.id [instance] replaces each stream’s item at its own final_response"	fd60ab62dc1c0d412a8220cbb47525840d03779497a9344e298e7da89b07be79
+test	packages/ai-chat/tests/contract/spec/messaging/turnFailureDuringPause_spec.ts	"failTurn during an upsert pause keeps the failure mark in the revealed slot and stored response"	5ee962a5783b49f4edc5ba4869404b504ea5e0c03ca97183aa9a2c26572caa7a
 test	packages/ai-chat/tests/contract/spec/messaging/turnState_spec.ts	"activeResponseId clears on clearConversation"	331bbdca3211f4fd09508e9e7bf14e79bc6322175dd6ca1ff9c662083741a162
 test	packages/ai-chat/tests/contract/spec/messaging/turnState_spec.ts	"activeResponseId clears on restartConversation"	772c35c240cfd0ddca2a572d40fc7dda7a76b60960370a558ee886027935b36a
 test	packages/ai-chat/tests/contract/spec/messaging/turnState_spec.ts	"activeResponseId clears on send, and names the reply once it arrives"	0efea6635bf222b1c9a119a461dfce8d82b786c75d6c4067b66971e0d7e2e82f
