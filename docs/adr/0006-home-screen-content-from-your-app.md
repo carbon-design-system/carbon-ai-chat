@@ -34,7 +34,7 @@ If you use the home screen, you hit these problems today.
 
 **Return is on by default.** Turn on the home screen, and you also get a "Home screen" entry in the header's overflow menu once a conversation starts. If your home screen is a one-time intro, you have to know about `disableReturn` to remove it. Once the chat no longer knows what the home screen shows, it has no basis for adding a way back to it.
 
-**Why now.** 1.x is moving the chat's shell from React to Lit, one screen at a time. Each built-in piece of the home screen has to be ported, restyled, and checked for accessibility. 2.0.0 is the release where a removal can land, with one upgrade guide to explain it. After 2.0.0 the greeting and starters would stay until the next major release, and none is planned.
+**Why now.** 1.x is moving the chat's shell from React to Lit, one screen at a time. Each built-in piece of the home screen has to be ported, restyled, and checked for accessibility. 2.0.0 is the release where a removal can land, with one upgrade guide to explain it.
 
 ## Proposal
 
@@ -150,7 +150,7 @@ The three old slot names get no alias and no runtime warning:
 | `HOME_SCREEN_AFTER_STARTERS_ELEMENT` | `homeScreenAfterStartersElement` | `homeScreenContent` |
 | `HOME_SCREEN_BEFORE_INPUT_ELEMENT` | `homeScreenBeforeInputElement` | The bottom of `homeScreenContent` |
 
-An alias kept "until the next major release" is an alias kept for good, since no 3.0.0 is planned. Each kept name would need its own position in the layout, which brings back the split this proposal removes. The upgrade guide carries the warning instead.
+Each kept name would need its own position in the layout, which brings back the split this proposal removes. The upgrade guide carries the warning instead.
 
 ### Reference: release plan
 
