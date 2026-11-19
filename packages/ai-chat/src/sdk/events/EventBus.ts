@@ -64,6 +64,8 @@ class EventBus {
   private onceHandlerSources: WeakMap<EventBusHandler, EventBusHandler> =
     new WeakMap();
 
+  private onceRemovalCallbacks = new WeakMap<EventBusHandler, () => void>();
+
   /**
    * The latest fire of each event type that has not finished yet. A new fire of a type listed here waits for this one
    * before its handlers start, so overlapping fires of one type run in call order. Fires of different types never
@@ -301,11 +303,13 @@ class EventBus {
             );
           }
           if (index !== -1) {
-            handlersForType.splice(index, 1);
+            const [removed] = handlersForType.splice(index, 1);
+            this.notifyRemoval(removed);
           }
         } else {
           // If no handler is specified, unsubscribe all the handlers.
           this.handlersByType.set(type, []);
+          handlersForType.forEach((removed) => this.notifyRemoval(removed));
         }
       }
     });
@@ -343,14 +347,19 @@ class EventBus {
    * @param type The event type to listen for.
    * @param wrapper The handler to add.
    * @param source The function the wrapper runs, as given to `once`.
+   * @param onRemoved Releases the wrapper owner's tracking after removal.
    * @returns The instance for method chaining.
    */
   onceWrapper(
     type: BusEventType,
     wrapper: EventBusHandler,
-    source: EventBusHandler
+    source: EventBusHandler,
+    onRemoved?: () => void
   ) {
     this.onceHandlerSources.set(wrapper, source);
+    if (onRemoved) {
+      this.onceRemovalCallbacks.set(wrapper, onRemoved);
+    }
     return this.on({ type, handler: wrapper });
   }
 
@@ -367,8 +376,16 @@ class EventBus {
     });
   }
 
+  private notifyRemoval(handler: EventBusHandler) {
+    const onRemoved = this.onceRemovalCallbacks.get(handler);
+    this.onceRemovalCallbacks.delete(handler);
+    onRemoved?.();
+  }
+
   clear() {
+    const removed = [...this.handlersByType.values()].flat();
     this.handlersByType.clear();
+    removed.forEach((handler) => this.notifyRemoval(handler));
     return this;
   }
 }

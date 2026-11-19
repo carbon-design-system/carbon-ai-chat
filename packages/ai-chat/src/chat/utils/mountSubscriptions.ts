@@ -76,9 +76,7 @@ function mountSubscriptions(
           eventBus.once({ type, handler });
           return;
         }
-        // The bus's own `once`, with the wrapper recorded so a drop finds it.
-        // The bus knows it as a once wrapper for `handler`, so `off` with
-        // that function removes it, as it does on the bus.
+        // Track this mount's once wrapper until it fires or is removed.
         const entry: TypeAndHandler = {
           type,
           handler: (event, instance) => {
@@ -88,7 +86,9 @@ function mountSubscriptions(
           },
         };
         own.add(entry);
-        eventBus.onceWrapper(type, entry.handler, handler);
+        eventBus.onceWrapper(type, entry.handler, handler, () =>
+          own.delete(entry)
+        );
       });
       return self();
     },
