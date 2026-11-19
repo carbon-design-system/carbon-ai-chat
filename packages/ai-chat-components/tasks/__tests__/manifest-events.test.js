@@ -18,6 +18,7 @@ import { readSource } from '../manifest-source.js';
 import { readWrappers } from '../manifest-wrappers.js';
 import { readEvents, validateEvents } from '../manifest-events.js';
 import { manifestEventsPlugin } from '../manifest-events-plugin.js';
+import { fireTags } from '../manifest-event-producers.js';
 
 const elementPath = 'src/components/aichat-example/aichat-example.ts';
 const source = `
@@ -114,6 +115,50 @@ test('reads arrow handlers, local events, optional dispatch and static names wit
   assert.equal(result.producers[0].composed, true);
   assert.equal(result.pairs[0].type, 'CustomEvent<ChangeDetail>');
   assert.equal(result.pairs[0].description, 'Contains the updated value.');
+});
+
+test('keeps braces in a description out of the event type and name', () => {
+  for (const description of [
+    'Fired with {@link Example} as target.',
+    'Contains { value } after {@link Example} updates.',
+  ]) {
+    const result = validate(
+      fixture(source.replace('Contains the updated value.', description))
+    );
+    assert.equal(result.pairs[0].name, 'example-change');
+    assert.equal(result.pairs[0].type, 'CustomEvent<ChangeDetail>');
+    assert.equal(result.pairs[0].description, description);
+  }
+});
+
+test('reads a nested object event type up to its balancing brace', () => {
+  const type = 'CustomEvent<{ value: { text: string } } | null>';
+  const model = readSource({
+    files: {
+      'src/element.ts': `
+        /**
+         * @fires {${type}} example-change - Fired with {@link Example}.
+         */
+        export class Example {}
+      `,
+    },
+  });
+  let tags = [];
+  model.visit(model.sources[0], (node) => {
+    if (model.ts.isClassDeclaration(node)) {
+      tags = fireTags(model, node);
+    }
+  });
+  assert.deepEqual(
+    tags.map(({ type, name, description }) => ({ type, name, description })),
+    [
+      {
+        type,
+        name: 'example-change',
+        description: 'Fired with {@link Example}.',
+      },
+    ]
+  );
 });
 
 test('requires a source event name, useful type and description independently', () => {

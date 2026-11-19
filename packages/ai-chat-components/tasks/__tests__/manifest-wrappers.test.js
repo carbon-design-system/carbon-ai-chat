@@ -296,6 +296,8 @@ test('rejects an adapter whose only wrapper JSX is unused or inside an unreturne
     'return (<Base/> ? <div/> : null);',
     'return (<Base/> && <div/>);',
     'return `${<Base/>}`;',
+    'return <noscript><Base/></noscript>;',
+    "return React.createElement('noscript', null, <Base/>);",
   ]) {
     assert.throws(
       () =>
@@ -370,6 +372,59 @@ test('reads bindings before type enforcement and rejects a removed or widened ev
         requireEventTypes: true,
       }
     )
+  );
+});
+
+test('checks the resolved event type rather than its source text', () => {
+  const source = (cast) =>
+    model(`${imports}
+      type Loose = CustomEvent<any>;
+      type Opaque = CustomEvent<unknown>;
+      interface Keyed { any: string; unknown: number }
+      interface Payload { value: string; meta?: unknown }
+      interface Nested { item: { meta: Record<string, any> } }
+      interface Framework {
+        node: React.ReactNode;
+        icon: React.ComponentType<{ size: number }>;
+        element: HTMLElement;
+      }
+      export default createComponent({
+        tagName: Example.is, elementClass: Example, react: React,
+        events: { onChange: Example.eventChange as EventName<${cast}> },
+      });
+    `);
+  for (const cast of [
+    'Loose',
+    'Opaque',
+    'CustomEvent<unknown>',
+    'CustomEvent<{ value: any }>',
+    'CustomEvent<Nested>',
+    'CustomEvent<{ icon: React.ComponentType<any> }>',
+    'CustomEvent<{ handle: (value: any) => void }>',
+  ]) {
+    assert.throws(
+      () => readWrappers(source(cast), { requireEventTypes: true }),
+      /concrete DOM event type/,
+      cast
+    );
+  }
+  for (const cast of [
+    'CustomEvent<Keyed>',
+    'CustomEvent<{ any: string }>',
+    'CustomEvent<Payload>',
+    'CustomEvent<Framework>',
+    'MouseEvent',
+  ]) {
+    assert.doesNotThrow(
+      () => readWrappers(source(cast), { requireEventTypes: true }),
+      cast
+    );
+  }
+  // TypeScript reports an unresolved name, so it is not read as any here.
+  assert.doesNotThrow(() =>
+    readWrappers(source('CustomEvent<MissingDetail>'), {
+      requireEventTypes: true,
+    })
   );
 });
 
