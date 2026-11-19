@@ -36,6 +36,7 @@ const maxWidthWrapper = (width, storyFn) => {
 };
 
 export default {
+  component: 'cds-aichat-card',
   title: 'Components/Card',
   decorators: [
     (story) => html`
@@ -276,12 +277,6 @@ export const CardFooter = {
       control: 'boolean',
       description:
         'Setting this property with 8px will apply the border radius to the card footer component.',
-    },
-    '@cds-aichat-card-footer-action': {
-      action: 'action',
-      table: { category: 'events' },
-      description:
-        'Event fired when an action is clicked in the card footer. The event detail contains the action object. including additional payload.',
     },
   },
   args: {

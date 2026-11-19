@@ -20,6 +20,7 @@ const toggle = (event) => {
 };
 
 export default {
+  component: 'cds-aichat-transcript',
   title: 'Components/Audio player/Transcript',
   args: {
     text: 'My text input is, you know, I am a teapot and then my image input is a picture of David Hasselhoff.',

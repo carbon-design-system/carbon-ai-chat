@@ -70,9 +70,9 @@ import '@carbon/ai-chat-components/es/components/audio-player/index.js';
 <Markdown>{`${cdnJs(['audio-player'])}`}</Markdown>
 <Markdown>{`${cdnCss()}`}</Markdown>
 
-## Events
+## Synchronize transcript state
 
-The component fires the following custom event. The transcript doesn't open or close itself, so set `expanded` from the event:
+The transcript doesn't open or close itself, so set `expanded` from the toggle event:
 
 ```javascript
 const transcript = document.querySelector('cds-aichat-transcript');
