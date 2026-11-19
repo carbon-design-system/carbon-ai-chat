@@ -19,12 +19,12 @@
  * an alias, fails the spec until the entry changes.
  *
  * Owners:
- * - #2707: the message list's lookup of the chat's own local item and message
- *   behind each entry of `messageItems`, and each component that gets them
- *   from its hooks. The list draws the entries, but hands the chat's own
- *   objects to host events, the workspace panel, and the agent service, where
- *   a host can keep or edit them, and writes back by local item ID. Once those
- *   payloads are read-only, the list can hand the entries.
+ * - #2707: the list and nested renderers join public entries to local items
+ *   and messages. Renderers still need local IDs and internal flags for
+ *   events and panels. Writable workspace, slot, and human-agent receive
+ *   paths use working values, then commit permitted edits to conversation
+ *   state. Frozen payloads stay read-only. The list can pass public entries
+ *   after the read-only event and rendering contracts settle.
  * - #2825: the response panel's message, which the app shell's panel hook
  *   looks up in the chat's own messages and hands to the panel.
  * - #2969: the custom panels' workspace events, and, for a reused chat, the
