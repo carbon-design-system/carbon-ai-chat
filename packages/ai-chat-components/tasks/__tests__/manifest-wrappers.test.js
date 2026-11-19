@@ -287,6 +287,8 @@ test('rejects an adapter whose only wrapper JSX is unused or inside an unreturne
     'return (<Base/> ? <div/> : null);',
     'return (<Base/> && <div/>);',
     'return `${<Base/>}`;',
+    'return <noscript><Base/></noscript>;',
+    "return React.createElement('noscript', null, <Base/>);",
   ]) {
     assert.throws(
       () =>
@@ -362,6 +364,43 @@ test('reads bindings before type enforcement and rejects a removed or widened ev
       }
     )
   );
+});
+
+test('checks the resolved event type rather than its source text', () => {
+  const source = (cast) =>
+    model(`${imports}
+      type Loose = CustomEvent<any>;
+      type Opaque = CustomEvent<unknown>;
+      interface Keyed { any: string; unknown: number }
+      interface Payload { value: string; meta?: unknown }
+      export default createComponent({
+        tagName: Example.is, elementClass: Example, react: React,
+        events: { onChange: Example.eventChange as EventName<${cast}> },
+      });
+    `);
+  for (const cast of [
+    'Loose',
+    'Opaque',
+    'CustomEvent<unknown>',
+    'CustomEvent<{ value: any }>',
+  ]) {
+    assert.throws(
+      () => readWrappers(source(cast), { requireEventTypes: true }),
+      /concrete DOM event type/,
+      cast
+    );
+  }
+  for (const cast of [
+    'CustomEvent<Keyed>',
+    'CustomEvent<{ any: string }>',
+    'CustomEvent<Payload>',
+    'MouseEvent',
+  ]) {
+    assert.doesNotThrow(
+      () => readWrappers(source(cast), { requireEventTypes: true }),
+      cast
+    );
+  }
 });
 
 test('supports aliased Lit factories, EventName imports and namespace React calls', () => {
