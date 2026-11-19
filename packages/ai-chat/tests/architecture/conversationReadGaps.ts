@@ -30,9 +30,9 @@
  * - #2969: the custom panels' workspace events, and, for a reused chat, the
  *   slot events fired again for responses that came while the chat had no
  *   view. Both hand a host copies of the chat's own message and items, then
- *   write the host's edits back onto them. Boot builds the panel manager,
- *   and the manager builds the panels. Once those payloads are read-only,
- *   these reads can use the SDK's entries.
+ *   write the host's edits back onto them. Boot builds the panel manager
+ *   through `createPrebuiltInstance`, and the manager builds the panels.
+ *   Once those payloads are read-only, these reads can use the SDK's entries.
  * - #2824: everything else the prebuilt chat reads from the conversation
  *   partition in 1.x:
  *   - view state the partition still holds: which connect card is
@@ -324,15 +324,13 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2969',
   },
   {
-    // Hands the instance builder to createChatSDK, and calls it to build an
-    // instance for a mount that adopts a running chat. The builder's only read
-    // on this list is createCustomPanelManager(), the entry above. When that
-    // read goes, this entry goes with it, even if its owner's other work isn't
-    // done.
+    // Boot passes this builder to createChatSDK and calls it for a mount that
+    // adopts a running chat. Its only read listed here comes from
+    // createCustomPanelManager(), so both entries leave this list together.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
     count: 2,
-    owner: '#2824',
+    owner: '#2969',
   },
   {
     // An adopting mount fires again the user-defined responses, and the
