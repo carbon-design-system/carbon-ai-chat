@@ -35,6 +35,7 @@ import { HistoryShell, HistoryHeader, HistoryToolbar, HistoryContent, HistoryLoa
 import prefix, { prefix as namedPrefix } from '@carbon/ai-chat-components/es/globals/settings.js';
 import { defineCustomElement, type DefineCustomElementOptions, type CarbonCustomElementConstructor } from '@carbon/ai-chat-components/es/globals/register.js';
 import type componentsManifest from '@carbon/ai-chat-components/custom-elements.json';
+import type componentsPackage from '@carbon/ai-chat-components/package.json';
 import type chatManifest from '@carbon/ai-chat/custom-elements.json';
 import * as ChatRoot from '@carbon/ai-chat';
 import * as ChatEs from '@carbon/ai-chat/es';
@@ -90,6 +91,7 @@ const defaultPrefix: 'cds' = prefix;
 const namedPrefixType: typeof prefix = namedPrefix;
 const defaultPrefixType: typeof namedPrefix = prefix;
 const componentSchema: typeof componentsManifest.schemaVersion = '1.0.0';
+const componentPackageName: typeof componentsPackage.name = '@carbon/ai-chat-components';
 const chatSchema: typeof chatManifest.schemaVersion = '1.0.0';
 
 const rootApi: typeof ChatRoot = ChatEs;
@@ -121,7 +123,7 @@ const aggregateAsReact: ComponentType<any> = AggregateCard;
 // @ts-expect-error Host instance properties retain their Boolean contract.
 outer.aiEnabled = 'yes';
 
-export { canonical, barrel, pureContainer, pureOuter, card, aggregateCard, audio, transcript, wrappers, constructor, registered, defaultPrefix, namedPrefixType, defaultPrefixType, componentSchema, chatSchema, rootApi, esApi, entryApi, serverApi, containerConstructor, outerConstructor, oldContainer, oldOuter, container, outer, containerTag, outerTag };
+export { componentPackageName, canonical, barrel, pureContainer, pureOuter, card, aggregateCard, audio, transcript, wrappers, constructor, registered, defaultPrefix, namedPrefixType, defaultPrefixType, componentSchema, chatSchema, rootApi, esApi, entryApi, serverApi, containerConstructor, outerConstructor, oldContainer, oldOuter, container, outer, containerTag, outerTag };
 `;
 
 async function assertPackageAliases(consumer) {
@@ -155,6 +157,11 @@ async function assertPackageAliases(consumer) {
   assert.throws(() => require.resolve('@carbon/ai-chat-components'), {
     code: 'ERR_PACKAGE_PATH_NOT_EXPORTED',
   });
+  assert.equal(
+    await realpath(require.resolve('@carbon/ai-chat-components/package.json')),
+    await realpath(join(componentRoot, 'package.json')),
+    'Components must export its package.json, though files no longer lists it.'
+  );
   assert.deepEqual(chat.exports['./es'], chat.exports['.']);
   assert.deepEqual(chat.exports['./es/aiChatEntry.js'], chat.exports['.']);
   assert.deepEqual(

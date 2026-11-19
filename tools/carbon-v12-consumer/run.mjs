@@ -117,6 +117,11 @@ for (const [name, directory] of [
     [],
     `${name}: the tarball must not contain the removed fixed-prefix tree.`
   );
+  assert.deepEqual(
+    packed.files.filter(({ path }) => path.split('/').includes('__tests__')),
+    [],
+    `${name}: the tarball must not contain test files.`
+  );
   const legacyOutput = join(
     repository,
     'packages',

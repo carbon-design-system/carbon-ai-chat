@@ -8,7 +8,7 @@ A library of Lit-based custom elements plus hand-authored React wrappers. Consum
 
 Load only what you need:
 
-- Component file layout, the custom-elements manifest, React wrappers, naming, public API & deprecation → [component-authoring.md](references/component-authoring.md)
+- Component file layout, the custom-elements manifest, React wrappers, naming, public API & deprecation, and what ships (`exports`, `files`, `dist/`, the `tsconfig.json` exclude) → [component-authoring.md](references/component-authoring.md)
 - Authoring or editing a Storybook story or Overview MDX → [storybook.md](references/storybook.md)
 - Writing or running a test (WTR for Lit, Jest for React wrappers) → [testing.md](references/testing.md)
 - Shipping any UI change (WCAG 2.1 AA) → [root accessibility.md](../../references/accessibility.md)

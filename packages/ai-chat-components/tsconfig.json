@@ -39,6 +39,7 @@
   "exclude": [
     "src/**/*.stories.ts",
     "src/**/*.test.ts",
+    "src/**/__tests__/**",
     "src/globals/internal/storybook-cdn.ts"
   ]
 }
