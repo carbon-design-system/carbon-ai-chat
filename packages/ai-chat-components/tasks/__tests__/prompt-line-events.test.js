@@ -92,10 +92,16 @@ function wrapperEvents(sourceFile) {
       ts.isObjectLiteralExpression(node.initializer)
     ) {
       for (const property of node.initializer.properties) {
+        // Typed wrappers write `'name' as EventName<CustomEvent<Detail>>`.
+        let value = ts.isPropertyAssignment(property)
+          ? property.initializer
+          : undefined;
+        while (value && ts.isAsExpression(value)) {
+          value = value.expression;
+        }
         names.push(
-          ts.isPropertyAssignment(property) &&
-            ts.isStringLiteral(property.initializer)
-            ? property.initializer.text
+          value && ts.isStringLiteral(value)
+            ? value.text
             : property.getText(sourceFile)
         );
       }

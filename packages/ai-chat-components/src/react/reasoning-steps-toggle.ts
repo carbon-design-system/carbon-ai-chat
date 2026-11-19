@@ -7,23 +7,22 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatReasoningStepsToggle } from '../components/aichat-reasoning-steps/index.js';
 import { type ReasoningStepsToggleEventDetail } from '../components/aichat-reasoning-steps/aichat-reasoning-steps-toggle.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const ReasoningStepsToggle = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatReasoningStepsToggle.is,
-    elementClass: CDSAIChatReasoningStepsToggle,
-    react: React,
-    events: {
-      onToggle: 'reasoning-steps-toggle',
-    },
-  })
-);
+const ReasoningStepsToggle = createComponent({
+  tagName: CDSAIChatReasoningStepsToggle.is,
+  elementClass: CDSAIChatReasoningStepsToggle,
+  react: React,
+  events: {
+    onToggle: 'reasoning-steps-toggle' as EventName<
+      CustomEvent<ReasoningStepsToggleEventDetail>
+    >,
+  },
+});
 
 export type { ReasoningStepsToggleEventDetail };
 export default ReasoningStepsToggle;

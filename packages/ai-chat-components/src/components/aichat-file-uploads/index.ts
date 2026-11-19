@@ -15,6 +15,7 @@ export { default as FileUploadsElement } from './aichat-file-uploads.js';
 export { default as FileUploadItemElement } from './aichat-file-upload-item.js';
 
 export type { FileAttachment } from './types.js';
+export type { FileRemoveEventDetail } from '../aichat-prompt-line/types.js';
 
 defineCustomElement(FileUploadsElement);
 defineCustomElement(FileUploadItemElement);

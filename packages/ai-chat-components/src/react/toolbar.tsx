@@ -13,7 +13,6 @@ import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-load
 
 import { CDSAIChatToolbar } from '../components/aichat-toolbar/index.js';
 import type { Action } from '../components/aichat-toolbar/aichat-toolbar.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 import { transformReactIconToCarbonIcon } from './utils/iconTransform.js';
 
 /**
@@ -32,13 +31,11 @@ export interface ToolbarAction extends Omit<Action, 'icon'> {
 }
 
 // Base toolbar component from @lit/react
-const BaseToolbar = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatToolbar.is,
-    elementClass: CDSAIChatToolbar,
-    react: React,
-  })
-);
+const BaseToolbar = createComponent({
+  tagName: CDSAIChatToolbar.is,
+  elementClass: CDSAIChatToolbar,
+  react: React,
+});
 
 /**
  * Toolbar component with automatic icon transformation support.
@@ -84,30 +81,41 @@ function getSizeInPixels(size?: string): number {
   return sizeMap[size.toLowerCase()] || 16;
 }
 
-const Toolbar = React.forwardRef<any, any>((props, ref) => {
-  const { actions, ...restProps } = props;
+export interface ToolbarProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof BaseToolbar>,
+  'actions'
+> {
+  actions?: ToolbarAction[];
+}
 
-  // Transform React icons to CarbonIcon format
-  const transformedActions = React.useMemo(() => {
-    if (!actions) {
-      return [];
-    }
+const Toolbar = React.forwardRef<CDSAIChatToolbar, ToolbarProps>(
+  (props, ref) => {
+    const { actions, ...restProps } = props;
 
-    return actions.map((action: ToolbarAction) => ({
-      ...action,
-      icon: action.icon
-        ? transformReactIconToCarbonIcon(
-            action.icon,
-            getSizeInPixels(action.size)
-          )
-        : undefined,
-      // Preserve testId if provided
-      testId: action.testId,
-    }));
-  }, [actions]);
+    // Transform React icons to CarbonIcon format
+    const transformedActions = React.useMemo(() => {
+      if (!actions) {
+        return [];
+      }
 
-  return <BaseToolbar ref={ref} actions={transformedActions} {...restProps} />;
-});
+      return actions.map((action: ToolbarAction) => ({
+        ...action,
+        icon: action.icon
+          ? transformReactIconToCarbonIcon(
+              action.icon,
+              getSizeInPixels(action.size)
+            )
+          : undefined,
+        // Preserve testId if provided
+        testId: action.testId,
+      }));
+    }, [actions]);
+
+    return (
+      <BaseToolbar ref={ref} actions={transformedActions} {...restProps} />
+    );
+  }
+);
 
 Toolbar.displayName = 'Toolbar';
 

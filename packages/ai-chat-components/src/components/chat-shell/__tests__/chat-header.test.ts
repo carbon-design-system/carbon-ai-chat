@@ -65,6 +65,29 @@ describe('cds-aichat-chat-header', function () {
 
   // ========== Property/Attribute Tests ==========
   describe('Properties and Attributes', () => {
+    it('updates menu and toolbar alignment through the public isRTL property', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header
+          navigation-type="overflow"
+          navigation-overflow-label="More"
+          .navigationOverflowItems=${[{ text: 'Choice', onClick() {} }]}>
+        </cds-aichat-chat-header>
+      `);
+      for (const isRTL of [true, false]) {
+        el.isRTL = isRTL;
+        await el.updateComplete;
+        expect(
+          el
+            .shadowRoot!.querySelector('cds-overflow-menu')!
+            .getAttribute('align')
+        ).to.equal(isRTL ? 'left' : 'right');
+        const toolbar = el.shadowRoot!.querySelector(
+          'cds-aichat-toolbar'
+        ) as HTMLElement & { isRTL: boolean };
+        expect(toolbar.isRTL).to.equal(isRTL);
+      }
+    });
+
     it('should set headerTitle property', async () => {
       const el = await fixture<CdsAiChatHeader>(
         html`<cds-aichat-chat-header

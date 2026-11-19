@@ -13,6 +13,8 @@ import WorkspaceShell, {
   WorkspaceShellFooter,
 } from '@carbon/ai-chat-components/es/react/workspace-shell.js';
 import Toolbar from '@carbon/ai-chat-components/es/react/toolbar.js';
+import type { Action as WorkspaceAction } from '@carbon/ai-chat-components/es/components/aichat-workspace-shell/index.js';
+import { BUTTON_KIND } from '@carbon/web-components/es/components/button/defs.js';
 
 // Using @carbon/icons-react for all icons
 import Edit16 from '@carbon/icons-react/es/Edit.js';
@@ -96,23 +98,23 @@ function WorkspaceWriteableElementExample({
     },
   ]);
 
-  const [footerActions, _setFooterActions] = useState([
+  const [footerActions, _setFooterActions] = useState<WorkspaceAction[]>([
     {
       id: 'evaluate',
       label: 'Evaluate plan',
-      kind: 'secondary',
+      kind: BUTTON_KIND.SECONDARY,
       payload: { test: 'value' },
     },
     {
       id: 'run',
       label: 'Run plan',
-      kind: 'primary',
+      kind: BUTTON_KIND.PRIMARY,
       payload: { test: 'value' },
     },
     {
       id: 'cancel',
       label: 'Cancel',
-      kind: 'ghost',
+      kind: BUTTON_KIND.GHOST,
       payload: { test: 'value' },
     },
   ]);

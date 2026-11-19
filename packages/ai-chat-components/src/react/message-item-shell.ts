@@ -10,15 +10,12 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 import { CDSAIChatMessageItemShell } from '../components/aichat-message-item-shell/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const MessageItemShell = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatMessageItemShell.is,
-    elementClass: CDSAIChatMessageItemShell,
-    react: React,
-    events: {},
-  })
-);
+const MessageItemShell = createComponent({
+  tagName: CDSAIChatMessageItemShell.is,
+  elementClass: CDSAIChatMessageItemShell,
+  react: React,
+  events: {},
+});
 
 export default MessageItemShell;

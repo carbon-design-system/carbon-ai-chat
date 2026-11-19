@@ -10,14 +10,11 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 import { CDSAIChatUserMessageContent } from '../components/aichat-user-message-content/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const UserMessageContent = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatUserMessageContent.is,
-    elementClass: CDSAIChatUserMessageContent,
-    react: React,
-  })
-);
+const UserMessageContent = createComponent({
+  tagName: CDSAIChatUserMessageContent.is,
+  elementClass: CDSAIChatUserMessageContent,
+  react: React,
+});
 
 export default UserMessageContent;

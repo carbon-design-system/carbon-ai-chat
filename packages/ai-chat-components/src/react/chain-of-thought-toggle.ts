@@ -7,23 +7,22 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { CDSAIChatChainOfThoughtToggle } from '../components/aichat-chain-of-thought/index.js';
 import { type ChainOfThoughtToggleEventDetail } from '../components/aichat-chain-of-thought/defs.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const ChainOfThoughtToggle = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatChainOfThoughtToggle.is,
-    elementClass: CDSAIChatChainOfThoughtToggle,
-    react: React,
-    events: {
-      onToggle: 'chain-of-thought-toggle',
-    },
-  })
-);
+const ChainOfThoughtToggle = createComponent({
+  tagName: CDSAIChatChainOfThoughtToggle.is,
+  elementClass: CDSAIChatChainOfThoughtToggle,
+  react: React,
+  events: {
+    onToggle: 'chain-of-thought-toggle' as EventName<
+      CustomEvent<ChainOfThoughtToggleEventDetail>
+    >,
+  },
+});
 
 export type { ChainOfThoughtToggleEventDetail };
 export default ChainOfThoughtToggle;

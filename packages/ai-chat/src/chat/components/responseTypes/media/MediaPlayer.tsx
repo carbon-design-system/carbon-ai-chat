@@ -184,8 +184,7 @@ function MediaPlayerComponent({
               data-rounded="top"
               source={source}
               title={!hideIconAndTitle ? title : undefined}
-              description={description}
-              ariaLabel={ariaLabel || description || title}
+              aria-label={ariaLabel || description || title}
               playing={playing}
               errorMessage={errorMessage}
               loadingStatusMessage={media_audioPlayer_loading}
@@ -227,8 +226,7 @@ function MediaPlayerComponent({
               data-rounded="top"
               source={source}
               title={!hideIconAndTitle ? title : undefined}
-              description={description}
-              ariaLabel={ariaLabel || description || title}
+              aria-label={ariaLabel || description || title}
               playing={playing}
               aspectRatioPercentage={aspectRatioPercentage}
               subtitleTracks={subtitle_tracks}

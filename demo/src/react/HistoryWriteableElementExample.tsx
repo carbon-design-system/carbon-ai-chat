@@ -83,7 +83,7 @@ function HistoryWriteableElementExample({
   instance,
   isMobile,
 }: HistoryExampleProps) {
-  const historyShellRef = useRef<HTMLElement | null>(null);
+  const historyShellRef = useRef<React.ComponentRef<typeof HistoryShell>>(null);
   const [searchResults, setSearchResults] = useState<resultItem[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const [selectedId, setSelectedId] = useState<string | undefined>(
@@ -388,9 +388,7 @@ function HistoryWriteableElementExample({
             {noSearchResults && (
               <HistoryPanelMenu expanded title="Search results">
                 <Search slot="title-icon" />
-                <HistorySearchItem disabled>
-                  No available chats
-                </HistorySearchItem>
+                <span role="status">No available chats</span>
               </HistoryPanelMenu>
             )}
             {showSearchResults && (

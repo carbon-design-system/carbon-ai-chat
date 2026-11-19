@@ -7,22 +7,22 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import { CDSAICarousel } from '../components/aichat-carousel/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type { CarouselResponse } from '../components/aichat-carousel/index.js';
 
-const Carousel = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAICarousel.is,
-    elementClass: CDSAICarousel,
-    react: React,
-    events: {
-      onChange: 'cds-aichat-carousel-onchange',
-    },
-  })
-);
+const Carousel = createComponent({
+  tagName: CDSAICarousel.is,
+  elementClass: CDSAICarousel,
+  react: React,
+  events: {
+    onChange: 'cds-aichat-carousel-onchange' as EventName<
+      CustomEvent<CarouselResponse>
+    >,
+  },
+});
 
 export { Carousel };
 export default Carousel;

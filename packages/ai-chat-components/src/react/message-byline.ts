@@ -10,14 +10,11 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 import { CDSAIChatMessageByline } from '../components/aichat-message-byline/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const MessageByline = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatMessageByline.is,
-    elementClass: CDSAIChatMessageByline,
-    react: React,
-  })
-);
+const MessageByline = createComponent({
+  tagName: CDSAIChatMessageByline.is,
+  elementClass: CDSAIChatMessageByline,
+  react: React,
+});
 
 export default MessageByline;

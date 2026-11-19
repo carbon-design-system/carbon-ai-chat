@@ -7,24 +7,27 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatPanel as CdsChatPanelElement } from '../components/aichat-shell/index.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+import type {
+  PanelBodyScrollEventDetail,
+  PanelOpenEndEventDetail,
+} from '../components/aichat-shell/index.js';
 
-const CDSAIChatPanel = withWebComponentBridge(
-  createComponent({
-    tagName: CdsChatPanelElement.is,
-    elementClass: CdsChatPanelElement,
-    react: React,
-    events: {
-      onOpenStart: 'openstart',
-      onOpenEnd: 'openend',
-      onCloseStart: 'closestart',
-      onCloseEnd: 'closeend',
-      onBodyScroll: 'body-scroll',
-    },
-  })
-);
+const CDSAIChatPanel = createComponent({
+  tagName: CdsChatPanelElement.is,
+  elementClass: CdsChatPanelElement,
+  react: React,
+  events: {
+    onOpenStart: 'openstart' as EventName<CustomEvent<null>>,
+    onOpenEnd: 'openend' as EventName<CustomEvent<PanelOpenEndEventDetail>>,
+    onCloseStart: 'closestart' as EventName<CustomEvent<null>>,
+    onCloseEnd: 'closeend' as EventName<CustomEvent<null>>,
+    onBodyScroll: 'body-scroll' as EventName<
+      CustomEvent<PanelBodyScrollEventDetail>
+    >,
+  },
+});
 
 export default CDSAIChatPanel;

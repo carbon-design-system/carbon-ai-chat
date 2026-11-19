@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 
 import {
@@ -16,43 +16,44 @@ import {
   CDSAIChatWorkspaceShellBody,
   CDSAIChatWorkspaceShellFooter,
 } from '../components/aichat-workspace-shell/index.js';
+import type {
+  Action,
+  WorkspaceHeaderToggleEventDetail,
+} from '../components/aichat-workspace-shell/index.js';
 
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
+const WorkspaceShell = createComponent({
+  tagName: CDSAIChatWorkspaceShell.is,
+  elementClass: CDSAIChatWorkspaceShell,
+  react: React,
+});
 
-const WorkspaceShell = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatWorkspaceShell.is,
-    elementClass: CDSAIChatWorkspaceShell,
-    react: React,
-  })
-);
+const WorkspaceShellHeader = createComponent({
+  tagName: CDSAIChatWorkspaceShellHeader.is,
+  elementClass: CDSAIChatWorkspaceShellHeader,
+  react: React,
+  events: {
+    onHeaderToggle: 'workspace-header-toggle' as EventName<
+      CustomEvent<WorkspaceHeaderToggleEventDetail>
+    >,
+  },
+});
 
-const WorkspaceShellHeader = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatWorkspaceShellHeader.is,
-    elementClass: CDSAIChatWorkspaceShellHeader,
-    react: React,
-  })
-);
+const WorkspaceShellBody = createComponent({
+  tagName: CDSAIChatWorkspaceShellBody.is,
+  elementClass: CDSAIChatWorkspaceShellBody,
+  react: React,
+});
 
-const WorkspaceShellBody = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatWorkspaceShellBody.is,
-    elementClass: CDSAIChatWorkspaceShellBody,
-    react: React,
-  })
-);
-
-const WorkspaceShellFooter = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatWorkspaceShellFooter.is,
-    elementClass: CDSAIChatWorkspaceShellFooter,
-    react: React,
-    events: {
-      onFooterClicked: 'cds-aichat-workspace-shell-footer-clicked',
-    },
-  })
-);
+const WorkspaceShellFooter = createComponent({
+  tagName: CDSAIChatWorkspaceShellFooter.is,
+  elementClass: CDSAIChatWorkspaceShellFooter,
+  react: React,
+  events: {
+    onFooterClicked: 'cds-aichat-workspace-shell-footer-clicked' as EventName<
+      CustomEvent<Action>
+    >,
+  },
+});
 
 export default WorkspaceShell;
 export { WorkspaceShellHeader, WorkspaceShellBody, WorkspaceShellFooter };

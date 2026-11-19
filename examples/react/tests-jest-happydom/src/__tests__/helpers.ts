@@ -20,6 +20,7 @@ import type { ReactElement } from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 import { PageObjectId } from '@carbon/ai-chat';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+import type PromptLineElement from '@carbon/ai-chat-components/es/components/aichat-prompt-line/aichat-prompt-line.js';
 import { WAIT_FOR_TIMEOUT } from './constants';
 
 export async function renderChatContainer(
@@ -157,14 +158,8 @@ export async function sendUserMessage(
   shadowRoot: ShadowRoot,
   text: string
 ): Promise<void> {
-  // The INPUT PageObjectId is the ProseMirror contenteditable inside
-  // cds-aichat-prompt-line-shell. Driving the editor with synthetic key/composition
-  // events is unreliable in happy-dom (PM relies on selection APIs the shim
-  // doesn't fully implement), so we instead fire the same custom events the
-  // editor would emit. The shell listens on its container for both events:
-  //   - `cds-aichat-input-change` updates the shell's rawValue
-  //   - `cds-aichat-input-send` triggers the shell to re-emit its own send
-  //     event up to React's `onSend`, which calls customSendMessage.
+  // ProseMirror needs selection APIs the DOM shim lacks. Its public setContent
+  // method emits the real change event, then the send button exercises React's callback.
   const input = await waitFor(
     () => {
       // INPUT (the editor div) and INPUT_SEND (a `cds-button` inside the
@@ -183,32 +178,32 @@ export async function sendUserMessage(
     { timeout: WAIT_FOR_TIMEOUT }
   );
 
-  // The input is a ProseMirror-backed web component (cds-aichat-prompt-line-shell).
-  // The editor div above lives a couple of light-DOM levels under the shell
-  // host (PM wraps `view.dom` inside its own container element). Walk up
-  // with `closest` to reach the shell — they share the same shadow scope
-  // because `view.dom` is a light-DOM descendant — and call its public
-  // `setContent` to drive the doc.
-  //
-  // Driving the rest of the send flow from the UI under happy-dom is
-  // unreliable: `setContent` correctly dispatches `cds-aichat-input-change`
-  // synchronously, but `@lit/react`'s `onChange` listener never fires under
-  // happy-dom in this harness, so React's `rawInputValue` state never
-  // updates and the send button stays disabled. Tests that need to send a
-  // message should capture the chat instance via `onBeforeRender` and call
-  // `instance.send(...)` (or `instance.messaging.addMessage(...)`) directly
-  // — `sendUserMessage` is left in place for future tests that only need
-  // to populate the input doc.
-  const promptLineShell = input.closest('cds-aichat-prompt-line-shell') as
-    | (HTMLElement & {
-        setContent?: (segments: Array<{ type: 'text'; text: string }>) => void;
-      })
-    | null;
-  if (typeof promptLineShell?.setContent !== 'function') {
-    throw new Error('Prompt-line shell `setContent` not available');
+  const promptLine = input.closest<PromptLineElement>('cds-aichat-prompt-line');
+  if (typeof promptLine?.setContent !== 'function') {
+    throw new Error('Prompt-line `setContent` not available');
   }
   await act(async () => {
-    promptLineShell.setContent!([{ type: 'text', text }]);
+    promptLine.setContent(text);
+    await promptLine.updateComplete;
+    if (typeof (shadowRoot.host as any).updateComplete !== 'undefined') {
+      await (shadowRoot.host as any).updateComplete;
+    }
+  });
+  const sendButton = await waitFor(
+    () => {
+      const button = deepQuerySelector(
+        shadowRoot,
+        `[data-testid="${PageObjectId.INPUT_SEND}"]`
+      ) as (HTMLElement & { disabled: boolean }) | null;
+      if (!button || button.disabled) {
+        throw new Error('Send button is not enabled');
+      }
+      return button;
+    },
+    { timeout: WAIT_FOR_TIMEOUT }
+  );
+  await act(async () => {
+    sendButton.click();
     if (typeof (shadowRoot.host as any).updateComplete !== 'undefined') {
       await (shadowRoot.host as any).updateComplete;
     }

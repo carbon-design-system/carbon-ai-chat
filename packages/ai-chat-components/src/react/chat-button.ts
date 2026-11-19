@@ -18,15 +18,12 @@ import {
   CHAT_BUTTON_TOOLTIP_ALIGNMENT,
   CHAT_BUTTON_TOOLTIP_POSITION,
 } from '../components/aichat-button/aichat-button.js';
-import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
 
-const ChatButton = withWebComponentBridge(
-  createComponent({
-    tagName: AIChatButton.is,
-    elementClass: AIChatButton,
-    react: React,
-  })
-);
+const ChatButton = createComponent({
+  tagName: AIChatButton.is,
+  elementClass: AIChatButton,
+  react: React,
+});
 
 export default ChatButton;
 export {

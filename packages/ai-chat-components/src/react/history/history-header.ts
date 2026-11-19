@@ -7,20 +7,17 @@
  *  @license
  */
 
-import { createComponent } from '@lit/react';
+import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import { CDSAIChatHistoryHeader } from '../../components/aichat-history/index.js';
-import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
-const HistoryHeader = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatHistoryHeader.is,
-    elementClass: CDSAIChatHistoryHeader,
-    react: React,
-    events: {
-      onClose: 'history-header-close-click',
-    },
-  })
-);
+const HistoryHeader = createComponent({
+  tagName: CDSAIChatHistoryHeader.is,
+  elementClass: CDSAIChatHistoryHeader,
+  react: React,
+  events: {
+    onClose: 'history-header-close-click' as EventName<CustomEvent<null>>,
+  },
+});
 
 export default HistoryHeader;

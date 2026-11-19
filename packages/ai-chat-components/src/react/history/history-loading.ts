@@ -10,14 +10,11 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 import { CDSAIChatHistoryLoading } from '../../components/aichat-history/index.js';
-import { withWebComponentBridge } from '../utils/withWebComponentBridge.js';
 
-const HistoryLoading = withWebComponentBridge(
-  createComponent({
-    tagName: CDSAIChatHistoryLoading.is,
-    elementClass: CDSAIChatHistoryLoading,
-    react: React,
-  })
-);
+const HistoryLoading = createComponent({
+  tagName: CDSAIChatHistoryLoading.is,
+  elementClass: CDSAIChatHistoryLoading,
+  react: React,
+});
 
 export default HistoryLoading;
