@@ -84,7 +84,10 @@ async function chatWithCards() {
   return { ...chat, events, log };
 }
 
-/** Opens the workspace from a message's card, as the card's button does. */
+/**
+ * Opens the workspace with a message card's data and IDs. Unlike the card's button, which
+ * closes an open workspace first, it stores them before `open` closes one.
+ */
 async function openFromCard(
   {
     store,
@@ -272,13 +275,25 @@ describe('workspace event message and item IDs', () => {
     await click(otherButton);
     await waitFor(() => expect(chat.log).toHaveLength(4));
 
+    // The close events carry the first card's workspace as well as its IDs, so the
+    // button closed it before it stored the second card's data.
     expect(
-      chat.log.map(({ type, messageID, itemID }) => [type, messageID, itemID])
+      chat.log.map(({ type, workspaceId, messageID, itemID }) => [
+        type,
+        workspaceId,
+        messageID,
+        itemID,
+      ])
     ).toEqual([
-      [BusEventType.WORKSPACE_PRE_CLOSE, 'plan', 'plan:i:1'],
-      [BusEventType.WORKSPACE_CLOSE, 'plan', 'plan:i:1'],
-      [BusEventType.WORKSPACE_PRE_OPEN, 'other', 'other:i:0'],
-      [BusEventType.WORKSPACE_OPEN, 'other', 'other:i:0'],
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'plan-workspace', 'plan', 'plan:i:1'],
+      [BusEventType.WORKSPACE_CLOSE, 'plan-workspace', 'plan', 'plan:i:1'],
+      [
+        BusEventType.WORKSPACE_PRE_OPEN,
+        'other-workspace',
+        'other',
+        'other:i:0',
+      ],
+      [BusEventType.WORKSPACE_OPEN, 'other-workspace', 'other', 'other:i:0'],
     ]);
   });
 });
