@@ -88,11 +88,15 @@ jobs:
       # Apply the versions in the runner checkout only (no commit, no tag). Pin
       # @carbon/ai-chat to the exact components alpha so installing
       # @carbon/ai-chat@alpha pulls the matching components alpha, not stable.
+      # Point the demo at the alphas too. Nx orders builds only for workspace
+      # dependencies whose range the version satisfies, so a new major would
+      # otherwise build the demo before the packages it reads.
       - name: Apply alpha versions
         run: |
           npm pkg set version="$COMPONENTS_ALPHA" --workspace @carbon/ai-chat-components
           npm pkg set version="$AI_CHAT_ALPHA" --workspace @carbon/ai-chat
           npm pkg set "dependencies.@carbon/ai-chat-components=$COMPONENTS_ALPHA" --workspace @carbon/ai-chat
+          npm pkg set "dependencies.@carbon/ai-chat=$AI_CHAT_ALPHA" "dependencies.@carbon/ai-chat-components=$COMPONENTS_ALPHA" --workspace @carbon/ai-chat-examples-demo
 
       - name: Build packages, demo and docs
         run: npm run aiChat:build:docs
