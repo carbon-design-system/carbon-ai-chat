@@ -29,16 +29,33 @@ import { HistoryItem } from '../../../../src/types/messaging/History';
 
 async function expectRequestSender(text: string, sender: string) {
   await waitFor(() => {
-    const message = Array.from(
+    const messages = Array.from(
       getChatShadowRoot().querySelectorAll('.cds-aichat--message--request')
-    ).find((element) =>
+    );
+    const index = messages.findIndex((element) =>
       element
         .querySelector('cds-aichat-markdown')
         ?.shadowRoot?.textContent.includes(text)
     );
-    expect(
-      message?.querySelector('.cds-aichat--message__label').textContent
-    ).toMatch(new RegExp(`^${sender} `));
+    expect(index).toBeGreaterThanOrEqual(0);
+    const message = messages[index];
+    let byline = message.querySelector('cds-aichat-message-byline') as any;
+    if (!byline) {
+      for (let i = index - 1; i >= 0; i--) {
+        const prev = messages[i].querySelector(
+          'cds-aichat-message-byline'
+        ) as any;
+        if (prev) {
+          byline = prev;
+          break;
+        }
+      }
+    }
+    const labelText =
+      byline?.shadowRoot?.querySelector('.cds-aichat-message-byline__label')
+        ?.textContent ??
+      [byline?.label, byline?.timestamp].filter(Boolean).join(' ');
+    expect(labelText).toMatch(new RegExp(`^${sender} `));
   });
 }
 

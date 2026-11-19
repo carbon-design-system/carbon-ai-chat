@@ -13,20 +13,10 @@
 
 $message-bar-width: 3px;
 
-.cds-aichat--icon-holder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  block-size: 100%;
-  inline-size: 100%;
-}
-
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--message {
     position: relative;
     display: block;
-    /* We cannot use margin on messages as that affects the position calculations that determine how to auto-scroll the
-     panel. Padding on the .cds-aichat--message--padding element must be used instead. */
     margin: 0;
     animation: none;
   }
@@ -35,9 +25,6 @@ $message-bar-width: 3px;
 .cds-aichat--message {
   position: relative;
   display: block;
-
-  /* We cannot use margin on messages as that affects the position calculations that determine how to auto-scroll the
-   panel. Padding on the .cds-aichat--message--padding element must be used instead. */
   margin: 0;
   --cds-aichat-border-radius-start-start: 0;
   --cds-aichat-border-radius-start-end: 0;
@@ -56,7 +43,7 @@ $message-bar-width: 3px;
   pointer-events: none;
 }
 
-/* The first and last messages have some extra padding. This will counteract that padding so the border appears balance. */
+/* The first and last messages have some extra padding. This will counteract that padding so the border appears balanced. */
 .cds-aichat--message.cds-aichat--message--first-message.cds-aichat--message--has-focus::after {
   block-size: calc(100% - 0.5rem);
   inset-block-start: 0.5rem;
@@ -67,9 +54,13 @@ $message-bar-width: 3px;
   inset-block-end: calc(#{layout.$spacing-07} - 0.5rem);
 }
 
+.cds-aichat--message.cds-aichat--message--last-message {
+  padding-block-end: layout.$spacing-06;
+}
+
 .cds-aichat--message .cds-aichat--message-vertical-padding,
 .cds-aichat--message .cds-aichat--ui-customization-element--response {
-  /*  WARNING: If we change this value it will effect the vertical alignment of existing custom message elements. */
+  /* WARNING: If we change this value it will affect the vertical alignment of existing custom message elements. */
   padding-block-start: layout.$spacing-05;
 }
 
@@ -78,8 +69,6 @@ $message-bar-width: 3px;
   .cds-aichat--ui-customization-element--response,
 .cds-aichat--message--option-response-without-title-or-description
   .cds-aichat--message-vertical-padding {
-  /* If this is the avatar line or an option response without title or description then remove the padding-block-start
-   from the message and the custom element. */
   padding-block-start: 0;
 }
 
@@ -93,86 +82,6 @@ $message-bar-width: 3px;
 .cds-aichat--message.cds-aichat--message--custom
   .cds-aichat--ui-customization-element--response {
   padding-block: 0;
-}
-
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
-  > div.cds-aichat--received,
-.cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding
-  .cds-aichat--assistant-message
-  > div.cds-aichat--received.cds-aichat--received--full-width:first-child {
-  margin-block-start: layout.$spacing-03;
-}
-
-.cds-aichat--message.cds-aichat--message--last-message
-  .cds-aichat--message--padding {
-  padding-block-end: layout.$spacing-06;
-}
-
-.cds-aichat--sent-container {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* Shrink-to-fit so its children measure against the bubble rather than the whole message column. */
-.cds-aichat--sent--bubble-group {
-  display: flex;
-  flex-direction: column;
-  align-self: end;
-  max-inline-size: 100%;
-}
-
-// The spacing is a gap after an empty ::before, so it only opens once slotted content gives the gap a second flex item:
-// a slot the host never filled costs no height. A margin on the slotted content would do the same, but that node is in
-// the document tree, where a global reset such as Carbon's zeroes it and beats any ::slotted() rule.
-.cds-aichat--request-footer-slot {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  row-gap: layout.$spacing-03;
-
-  &::before {
-    content: '';
-  }
-}
-
-.cds-aichat--message .cds-aichat--received,
-.cds-aichat--message .cds-aichat--sent-container {
-  flex-grow: 1;
-  margin-inline: layout.$spacing-05;
-  min-inline-size: 0;
-
-  /* Smooth transitions for message margins when workspace opens/closes.
- * Matches workspace content transition timing for visual coherence. */
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .cds-aichat--message .cds-aichat--received,
-    .cds-aichat--message .cds-aichat--sent-container {
-      transition: margin-inline motion.$duration-fast-02
-        motion.motion(standard, productive);
-    }
-
-    .cds-aichat--message__avatar-line
-      + .cds-aichat--message--padding
-      .cds-aichat--assistant-message
-      > div.cds-aichat--received {
-      transition: margin-block-start motion.$duration-fast-02
-        motion.motion(standard, productive);
-    }
-  }
-}
-
-.cds-aichat--wide-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--narrow-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--full-width,
-.cds-aichat--standard-width
-  .cds-aichat--message
-  .cds-aichat--received.cds-aichat--received--full-width {
-  margin-inline: 0 layout.$spacing-05;
 }
 
 .cds-aichat--message a:not(button) {
@@ -201,13 +110,6 @@ $message-bar-width: 3px;
 
 .cds-aichat--messages--welcome.cds-aichat--messages--welcome--typing {
   min-block-size: 100%;
-}
-
-.cds-aichat--assistant-message {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  max-inline-size: 100%;
 }
 
 .cds-aichat--received--inline-error,
@@ -267,16 +169,8 @@ $message-bar-width: 3px;
   }
 }
 
-/* moved earlier: .cds-aichat--message-status */
 .cds-aichat--message-status .cds-aichat--loading-spinner circle {
   stroke-width: 6;
-}
-
-@media screen and (prefers-reduced-motion: reduce) {
-  .cds-aichat--sent-container .cds-aichat--message-status-file-success svg {
-    animation: none;
-    fill: theme.$interactive;
-  }
 }
 
 @keyframes cds-aichat-fade-out {
@@ -289,10 +183,34 @@ $message-bar-width: 3px;
   }
 }
 
-.cds-aichat--sent-container .cds-aichat--message-status-file-success svg {
-  animation: motion.$duration-moderate-01 motion.motion(exit, expressive) 2000ms
-    cds-aichat-fade-out forwards;
+.cds-aichat--message__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: layout.$spacing-07;
+  inline-size: layout.$spacing-07;
+}
+
+.cds-aichat--message__avatar--assistant {
+  > svg {
+    block-size: 28px;
+    inline-size: 28px;
+  }
+}
+
+.cds-aichat--sent-and-message-state-container
+  .cds-aichat--message-status-file-success
+  svg {
   fill: theme.$interactive;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cds-aichat--sent-and-message-state-container
+    .cds-aichat--message-status-file-success
+    svg {
+    animation: motion.$duration-moderate-01 motion.motion(exit, expressive)
+      2000ms cds-aichat-fade-out forwards;
+  }
 }
 
 .cds-aichat--received--loading,
@@ -358,7 +276,7 @@ svg.cds-aichat--sent-file-icon {
   inline-size: 100%;
 }
 
-.cds-aichat--assistant-message .cds-aichat--received--chat-status-message {
+.cds-aichat--received--chat-status-message {
   color: theme.$text-secondary;
   @include type.type-style('caption-01');
 }
@@ -368,86 +286,6 @@ svg.cds-aichat--sent-file-icon {
   padding-block-start: 28px;
 }
 
-.cds-aichat--message__avatar-line {
-  display: flex;
-
-  /* This is custom spacing and not from a token. */
-  padding-block-start: 28px;
-
-  .cds-aichat--message__label {
-    color: theme.$text-secondary;
-    @include type.type-style('caption-01');
-  }
-
-  .cds-aichat--message__reasoning {
-    display: flex;
-    align-items: center;
-  }
-
-  .cds-aichat--message__reasoning-separator {
-    color: theme.$text-secondary;
-    margin-inline-end: layout.$spacing-03;
-  }
-
-  .cds-aichat--message__avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    block-size: layout.$spacing-07;
-    inline-size: layout.$spacing-07;
-  }
-
-  .cds-aichat--message__avatar--assistant {
-    svg {
-      block-size: 28px;
-      inline-size: 28px;
-    }
-  }
-
-  .cds-aichat--image-with-fallback {
-    display: flex;
-
-    img,
-    .cds-aichat--icon-holder {
-      border-radius: 14px;
-      block-size: 28px;
-      inline-size: 28px;
-
-      svg {
-        block-size: 16px;
-        fill: theme.$icon-inverse;
-        inline-size: 16px;
-      }
-    }
-  }
-}
-
-.cds-aichat--message--request .cds-aichat--message__avatar-line {
-  justify-content: flex-end;
-  padding-inline-end: layout.$spacing-05;
-
-  .cds-aichat--message__label {
-    padding-block-end: layout.$spacing-03;
-    padding-inline-start: layout.$spacing-03;
-  }
-}
-
-/* Ensure generic avatar-line padding is declared before more specific response groups */
-.cds-aichat--message--response .cds-aichat--message__avatar-line {
-  padding-inline-start: layout.$spacing-03;
-
-  .cds-aichat--message__label {
-    padding-block: layout.$spacing-03;
-    padding-inline: layout.$spacing-03;
-  }
-}
-
-.cds-aichat--message--request
-  .cds-aichat--message__avatar
-  + .cds-aichat--message__label {
-  padding-block: layout.$spacing-03;
-}
-
 /* Group only unnamed requests; hiding a header at a named boundary can attribute
    the next message to the wrong sender. */
 
@@ -455,19 +293,9 @@ svg.cds-aichat--sent-file-icon {
   + .cds-aichat--message--request:not(.cds-aichat--message--named-request) {
   padding-block-start: layout.$spacing-03;
 
-  .cds-aichat--message__avatar-line {
-    display: none;
-  }
-
   .cds-aichat--sent--bubble {
     border-radius: layout.$spacing-03;
   }
-}
-
-.cds-aichat--message--response
-  .cds-aichat--message__avatar-line
-  + .cds-aichat--message--padding {
-  padding-block-start: layout.$spacing-02;
 }
 
 .cds-aichat--received--chain-of-thought {
@@ -483,94 +311,20 @@ svg.cds-aichat--sent-file-icon {
   padding-block-end: layout.$spacing-04;
 }
 
-.cds-aichat--message__avatar--assistant
-  .cds-aichat--image-with-fallback
-  .cds-aichat--icon-holder {
-  background-color: theme.$chat-avatar-bot;
-}
-
-/* Layout overrides by shell state (legacy/light DOM). */
-.cds-aichat--container--render {
-  /* Views bigger than a small phone. */
-  :where(cds-aichat-shell) {
-    &.cds-aichat--standard-width,
-    &.cds-aichat--wide-width {
-      .cds-aichat--message__avatar-line
-        + .cds-aichat--message--padding
-        .cds-aichat--assistant-message
-        > div.cds-aichat--received {
-        margin-block-start: 0;
-      }
-    }
-
-    /* Both the sent and received messages fill the same space within the chat. */
-    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
-    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
-    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-    &.cds-aichat--standard-width
-      .cds-aichat--message
-      .cds-aichat--sent-container {
-      /* Start = left padding + avatar + right padding. */
-      margin-inline: calc(
-          #{layout.$spacing-03} + #{layout.$spacing-07} + #{layout.$spacing-03}
-        )
-        layout.$spacing-05;
-    }
-
-    /* Workspaces: open should use the no-margin-block-start variant regardless of width. */
-    &[show-workspace] {
-      .cds-aichat--message__avatar-line
-        + .cds-aichat--message--padding
-        .cds-aichat--assistant-message
-        > div.cds-aichat--received {
-        margin-block-start: 0;
-      }
-    }
-  }
-
-  /* Force narrow view mode when workspace is in inline container mode.
-   * When the workspace is displayed inline (side-by-side with messages), the available
-   * width for messages is constrained. Messages should use narrow view spacing regardless
-   * of the calculated width breakpoint to prevent layout issues. */
-
-  :where(cds-aichat-shell[workspace-in-container]) {
-    &.cds-aichat--standard-width,
-    &.cds-aichat--wide-width {
-      .cds-aichat--message__avatar-line
-        + .cds-aichat--message--padding
-        .cds-aichat--assistant-message
-        > div.cds-aichat--received {
-        margin-block-start: layout.$spacing-03;
-      }
-    }
-
-    /* Use narrow view margins (no avatar compensation needed in constrained space). */
-    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--received,
-    &.cds-aichat--standard-width .cds-aichat--message .cds-aichat--received,
-    &.cds-aichat--wide-width .cds-aichat--message .cds-aichat--sent-container,
-    &.cds-aichat--standard-width
-      .cds-aichat--message
-      .cds-aichat--sent-container {
-      margin-inline: layout.$spacing-05;
-    }
-  }
-}
-
 .cds-aichat--message-footer {
   display: flex;
   margin-block-start: layout.$spacing-03;
 }
 
-.cds-aichat--container--render
-  :where(cds-aichat-shell).cds-aichat--wide-width
-  .cds-aichat--message.cds-aichat--message--hide-avatar
-  .cds-aichat--received {
-  margin-inline-start: 1rem;
-}
-
-.cds-aichat--container--render
-  :where(cds-aichat-shell).cds-aichat--standard-width
-  .cds-aichat--message.cds-aichat--message--hide-avatar
-  .cds-aichat--received {
-  margin-inline-start: 1rem;
+/* Layout overrides by shell state (legacy/light DOM). */
+.cds-aichat--container--render {
+  :where(cds-aichat-shell) {
+    &.cds-aichat--narrow-width,
+    &[workspace-in-container] {
+      --cds-aichat-message-item-shell-inset-start: #{layout.$spacing-05};
+      --cds-aichat-message-item-shell-gap-block-start: calc(
+        #{layout.$spacing-03} + #{layout.$spacing-02}
+      );
+    }
+  }
 }

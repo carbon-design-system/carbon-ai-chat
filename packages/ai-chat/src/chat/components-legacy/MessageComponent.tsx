@@ -9,10 +9,12 @@
 
 import ChatBot32 from '@carbon/icons/es/chat-bot/32.js';
 import CheckmarkFilled16 from '@carbon/icons/es/checkmark--filled/16.js';
-import Headset32 from '@carbon/icons/es/headset/32.js';
 import ReasoningStepsComponent from '@carbon/ai-chat-components/es/react/reasoning-steps.js';
 import ReasoningStepComponent from '@carbon/ai-chat-components/es/react/reasoning-step.js';
 import ReasoningStepsToggle from '@carbon/ai-chat-components/es/react/reasoning-steps-toggle.js';
+import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
+import UserAvatar from '@carbon/ai-chat-components/es/react/user-avatar.js';
 import type CDSAIChatReasoningSteps from '@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps.js';
 import { type ReasoningStepsToggleEventDetail } from '@carbon/ai-chat-components/es/components/reasoning-steps/src/reasoning-steps-toggle.js';
 import { carbonIconToReact } from '../utils/carbonIcon';
@@ -24,37 +26,6 @@ import { nodeToText } from '../utils/domUtils';
 import { Avatar } from './Avatar';
 import { InlineError } from '../components/responseTypes/error/InlineError';
 import VisuallyHidden from '../components/helpers/VisuallyHidden/VisuallyHidden';
-
-// Inline helper components (previously in util/IconHolder.tsx and util/ImageWithFallback.tsx)
-function IconHolder({ icon }: { icon: React.ReactNode }) {
-  return <div className="cds-aichat--icon-holder">{icon}</div>;
-}
-
-function ImageWithFallback({
-  url,
-  alt,
-  fallback,
-}: {
-  url: string;
-  alt?: string;
-  fallback: React.ReactNode;
-}) {
-  const [hasError, setHasError] = React.useState(false);
-
-  React.useEffect(() => {
-    setHasError(false);
-  }, [url]);
-
-  return (
-    <div className="cds-aichat--image-with-fallback">
-      {!hasError && url ? (
-        <img src={url} alt={alt} onError={() => setHasError(true)} />
-      ) : (
-        fallback
-      )}
-    </div>
-  );
-}
 import { HasAriaAnnouncer, withAriaAnnouncer } from '../hocs/withAriaAnnouncer';
 import { HasServiceManager } from '../hocs/withServiceManager';
 import actions from '../store/actions';
@@ -108,7 +79,6 @@ import {
   UserType,
 } from '../../types/messaging/Messages';
 import { LanguagePack } from '../../types/config/LanguagePack';
-import { ResponseUserAvatar } from './ResponseUserAvatar';
 import { CarbonTheme } from '../../types/config/CarbonTheme';
 import { MarkdownWithDefaults } from '../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import {
@@ -119,7 +89,6 @@ import {
 
 const ChatBot = carbonIconToReact(ChatBot32);
 const CheckmarkFilled = carbonIconToReact(CheckmarkFilled16);
-const Headset = carbonIconToReact(Headset32);
 
 enum MoveFocusType {
   /**
@@ -277,6 +246,11 @@ interface MessageProps
    * {@link hideFeedback} is false.
    */
   allowNewFeedback: boolean;
+
+  /**
+   * Indicates if the previous message in the list was also an unnamed request from the same sender.
+   */
+  previousIsUnnamedRequest?: boolean;
 }
 
 interface MessageState {
@@ -570,32 +544,24 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     }
     const { messagesIndex } = this.props;
     return (
-      <div
+      <MessageItemShell
+        rowType="response"
         className={`cds-aichat--message cds-aichat--message--inline-error cds-aichat--message-${messagesIndex} ${
           this.props.className || ''
         }`}
         ref={this.ref}>
-        <div className="cds-aichat--message--padding">
-          <div className="cds-aichat--assistant-message">
-            <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
-            <div className="cds-aichat--received cds-aichat--message-vertical-padding cds-aichat--received--text">
-              <InlineError
-                text={this.props.languagePack.errors_singleMessage}
-              />
-            </div>
-          </div>
+        <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
+        <div className="cds-aichat--received cds-aichat--received--text">
+          <InlineError text={this.props.languagePack.errors_singleMessage} />
         </div>
-      </div>
+      </MessageItemShell>
     );
   }
 
   /**
-   * Renders the avatar line that appears above each message that has the avatar (for responses) and timestamps.
+   * Renders the byline section of a message: avatar, label, timestamp, and optional reasoning toggle.
    */
-  private renderAvatarLine(
-    localMessageItem: LocalMessageItem,
-    message: Message
-  ) {
+  private renderByline(localMessageItem: LocalMessageItem, message: Message) {
     let avatar;
     const {
       languagePack,
@@ -603,18 +569,15 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       assistantAvatarUrl,
       useAITheme,
       carbonTheme,
-      hideAvatar,
     } = this.props;
 
     const timestamp = timestampToTimeString(message.history.timestamp);
 
-    let label;
+    let label = '';
     let actorName;
-    let iconClassName = '';
     let reasoning;
 
     if (isResponse(message)) {
-      // We'll use the first message item for deciding if we should show the agent's avatar.
       const agentMessageType = localMessageItem.item.agent_message_type;
       const responseUserProfile: ResponseUserProfile = message.message_options
         ?.response_user_profile || {
@@ -624,73 +587,101 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       };
 
       if (isStatusMessage(agentMessageType)) {
-        // These messages don't show an avatar line.
         return null;
       }
 
       const fromHumanAgent =
         agentMessageType === HumanAgentMessageType.FROM_HUMAN_AGENT;
+
       if (
         responseUserProfile.profile_picture_url &&
         responseUserProfile.user_type !== UserType.WATSONX
       ) {
+        actorName = responseUserProfile?.nickname || '';
         avatar = (
-          <ImageWithFallback
-            url={responseUserProfile?.profile_picture_url}
-            alt={
+          <UserAvatar
+            slot="avatar"
+            name={actorName}
+            image={responseUserProfile.profile_picture_url}
+            label={
               fromHumanAgent
                 ? languagePack.agent_ariaHumanAgentAvatar
                 : languagePack.agent_ariaGenericAvatar
             }
-            fallback={<IconHolder icon={<Headset />} />}
+            width="28px"
+            height="28px"
           />
         );
-        iconClassName = 'cds-aichat--message__avatar--assistant';
-        actorName = responseUserProfile?.nickname || '';
       } else {
         actorName =
           responseUserProfile?.nickname === 'watsonx' && assistantName
             ? assistantName
             : responseUserProfile?.nickname;
 
-        let icon = <IconHolder icon={<ChatBot />} />;
-
-        if (useAITheme && responseUserProfile.user_type === UserType.WATSONX) {
-          icon = <Avatar theme={carbonTheme} />;
-        }
-
-        avatar = (
-          <ImageWithFallback
-            url={responseUserProfile?.profile_picture_url ?? assistantAvatarUrl}
-            alt={languagePack.agent_ariaGenericAssistantAvatar}
-            fallback={icon}
-          />
-        );
-
         if (responseUserProfile.user_type === UserType.HUMAN) {
           avatar = (
-            <ResponseUserAvatar
-              responseUserProfile={responseUserProfile}
-              width="24px"
-              height="24px"
+            <UserAvatar
+              slot="avatar"
+              name={actorName}
+              image={responseUserProfile.profile_picture_url}
+              label={
+                fromHumanAgent
+                  ? languagePack.agent_ariaHumanAgentAvatar
+                  : languagePack.agent_ariaGenericAvatar
+              }
+              width="28px"
+              height="28px"
             />
           );
+        } else if (
+          responseUserProfile.profile_picture_url ||
+          assistantAvatarUrl
+        ) {
+          avatar = (
+            <UserAvatar
+              slot="avatar"
+              name={actorName}
+              image={
+                responseUserProfile.profile_picture_url ?? assistantAvatarUrl
+              }
+              label={languagePack.agent_ariaGenericAssistantAvatar}
+              width="28px"
+              height="28px"
+            />
+          );
+        } else if (
+          useAITheme &&
+          responseUserProfile.user_type === UserType.WATSONX
+        ) {
+          avatar = (
+            <div
+              slot="avatar"
+              className="cds-aichat--message__avatar cds-aichat--message__avatar--assistant">
+              <Avatar theme={carbonTheme} />
+            </div>
+          );
+        } else {
+          avatar = (
+            <div
+              slot="avatar"
+              className="cds-aichat--message__avatar cds-aichat--message__avatar--assistant">
+              <ChatBot
+                aria-label={languagePack.agent_ariaGenericAssistantAvatar}
+              />
+            </div>
+          );
         }
-
-        iconClassName = 'cds-aichat--message__avatar--assistant';
       }
 
-      label = (
-        <span data-cds-aichat-exclude-node-read>
-          {this.props.intl.formatMessage(
-            { id: 'message_labelAssistant' },
-            {
-              timestamp,
-              actorName,
-            }
-          )}
-        </span>
-      );
+      label = this.props.intl
+        .formatMessage(
+          { id: 'message_labelAssistant' },
+          {
+            timestamp: '',
+            actorName,
+          }
+        )
+        .trim();
 
       const reasoningData = message.message_options?.reasoning;
       if (
@@ -699,46 +690,47 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       ) {
         const isOpen = this.getReasoningContainerOpen(reasoningData);
         reasoning = (
-          <>
-            <span className="cds-aichat--message__reasoning-separator">|</span>
-            <ReasoningStepsToggle
-              open={isOpen}
-              panelID={this.getReasoningContainerId()}
-              openLabelText={languagePack.reasoningSteps_mainLabelOpen}
-              closedLabelText={languagePack.reasoningSteps_mainLabelClosed}
-              onToggle={this.handleReasoningToggleClick}
-            />
-          </>
+          <ReasoningStepsToggle
+            slot="reasoning"
+            open={isOpen}
+            panelID={this.getReasoningContainerId()}
+            openLabelText={languagePack.reasoningSteps_mainLabelOpen}
+            closedLabelText={languagePack.reasoningSteps_mainLabelClosed}
+            onToggle={this.handleReasoningToggleClick}
+          />
         );
       }
     } else {
       const actorName = getRequestSenderName(message);
       const avatarUrl = message.history?.user_profile?.profile_picture_url;
       if (actorName && avatarUrl) {
-        avatar = <ImageWithFallback url={avatarUrl} alt="" fallback={null} />;
+        avatar = (
+          <UserAvatar
+            slot="avatar"
+            name={actorName}
+            image={avatarUrl}
+            width="28px"
+            height="28px"
+          />
+        );
       }
-      label = (
-        <span>
-          {this.props.intl.formatMessage(
-            { id: actorName ? 'message_labelUser' : 'message_labelYou' },
-            { timestamp, actorName }
-          )}
-        </span>
-      );
+      label = this.props.intl
+        .formatMessage(
+          { id: actorName ? 'message_labelUser' : 'message_labelYou' },
+          { timestamp: '', actorName }
+        )
+        .trim();
     }
 
     return (
-      <div
-        className="cds-aichat--message__avatar-line"
-        key={`${message.id}-avatar-line`}>
-        {avatar && !hideAvatar && (
-          <div className={`cds-aichat--message__avatar ${iconClassName}`}>
-            {avatar}
-          </div>
-        )}
-        <div className="cds-aichat--message__label">{label}</div>
-        <div className="cds-aichat--message__reasoning">{reasoning}</div>
-      </div>
+      <MessageByline
+        slot="byline"
+        label={label}
+        timestamp={timestamp}
+        data-cds-aichat-exclude-node-read>
+        {avatar}
+        {reasoning}
+      </MessageByline>
     );
   }
 
@@ -1360,7 +1352,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
     let messageState;
     if (messageIsRequest) {
-      messageState = this.renderMessageState(message);
+      messageState = this.renderMessageState(message as MessageRequest);
     }
 
     // Files attached to a sent message. Rendered here rather than inside the bubble
@@ -1378,8 +1370,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       !messageIsRequest ||
       hasRequestBubbleContent(localMessageItem, message as MessageRequest);
 
+    const showByline =
+      showAvatarLine &&
+      (messageIsRequest ? !this.props.previousIsUnnamedRequest : true);
+
     return (
-      <div
+      <MessageItemShell
         data-testid={`message-by-index-${messagesIndex}${serviceManager.namespace.suffix}`}
         className={cx(
           `cds-aichat--message cds-aichat--message-${messagesIndex}`,
@@ -1397,107 +1393,96 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             'cds-aichat--message--option-response-without-title-or-description':
               isOptionResponseWithoutTitleOrDescription,
             'cds-aichat--message--hide-avatar': hideAvatar,
+            'cds-aichat--received--inset-footer': bubbleLayout.insetFooter,
           }
         )}
-        ref={this.ref}>
+        ref={this.ref}
+        rowType={messageIsRequest ? 'request' : 'response'}
+        fullWidth={!messageIsRequest && bubbleLayout.fullWidth}
+        hideAvatar={hideAvatar}>
         {this.renderFocusHandle()}
-        {showAvatarLine && this.renderAvatarLine(localMessageItem, message)}
-        <div
-          className="cds-aichat--message--padding"
-          aria-hidden={this.state.focusHandleHasFocus ? 'true' : undefined}>
-          {isResponse(message) && (
-            <div className="cds-aichat--assistant-message">
-              {readWidgetSaid && (
-                <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
-              )}
-              <div
-                className={cx(
-                  'cds-aichat--received',
-                  'cds-aichat--message-vertical-padding',
-                  {
-                    'cds-aichat--received--text':
-                      responseType === MessageResponseTypes.TEXT,
-                    'cds-aichat--received--options':
-                      responseType === MessageResponseTypes.OPTION,
-                    'cds-aichat--received--inline-error':
-                      responseType === MessageResponseTypes.INLINE_ERROR,
-                    'cds-aichat--received--full-width': bubbleLayout.fullWidth,
-                    'cds-aichat--received--inset-footer':
-                      bubbleLayout.insetFooter,
-                    [`cds-aichat--received--width-${bubbleLayout.widthCap}`]:
-                      bubbleLayout.widthCap !== 'none',
-                    'cds-aichat--received--chat-status-message':
-                      isConnectionNotice,
-                    'cds-aichat--message--historical': fromHistory,
-                  }
+        {showByline && this.renderByline(localMessageItem, message)}
+        {isResponse(message) && (
+          <div
+            className={cx(
+              'cds-aichat--received',
+              'cds-aichat--message-vertical-padding',
+              {
+                'cds-aichat--received--text':
+                  responseType === MessageResponseTypes.TEXT,
+                'cds-aichat--received--options':
+                  responseType === MessageResponseTypes.OPTION,
+                'cds-aichat--received--inline-error':
+                  responseType === MessageResponseTypes.INLINE_ERROR,
+                'cds-aichat--received--full-width': bubbleLayout.fullWidth,
+                'cds-aichat--received--inset-footer': bubbleLayout.insetFooter,
+                [`cds-aichat--received--width-${bubbleLayout.widthCap}`]:
+                  bubbleLayout.widthCap !== 'none',
+                'cds-aichat--received--chat-status-message': isConnectionNotice,
+                'cds-aichat--message--historical': fromHistory,
+              }
+            )}
+            ref={this.messageRef}
+            aria-hidden={this.state.focusHandleHasFocus ? 'true' : undefined}>
+            {readWidgetSaid && (
+              <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
+            )}
+            <div className="cds-aichat--received--inner">
+              {isFirstMessageItem &&
+                this.renderReasoningSteps(
+                  message.message_options?.reasoning,
+                  Boolean(
+                    localMessageItem.ui_state.streamingState &&
+                    !localMessageItem.ui_state.streamingState.isDone
+                  )
                 )}
-                ref={this.messageRef}>
-                <div className="cds-aichat--received--inner">
-                  {isFirstMessageItem &&
-                    this.renderReasoningSteps(
-                      message.message_options?.reasoning,
-                      Boolean(
-                        localMessageItem.ui_state.streamingState &&
-                        !localMessageItem.ui_state.streamingState.isDone
-                      )
-                    )}
-                  {messageComponent}
+              {messageComponent}
+            </div>
+          </div>
+        )}
+        {messageIsRequest && (
+          <>
+            <VisuallyHidden>
+              {this.getRequestSaidMessage(message, languagePack)}
+            </VisuallyHidden>
+            {hasBubbleContent && (
+              <div className="cds-aichat--sent">
+                <div
+                  className="cds-aichat--sent--bubble"
+                  aria-hidden={
+                    this.state.focusHandleHasFocus ? 'true' : undefined
+                  }>
+                  <div ref={this.messageRef}>{messageComponent}</div>
                 </div>
               </div>
-            </div>
-          )}
-          {messageIsRequest && (
-            <div className="cds-aichat--sent-container">
+            )}
+            {(attachments.length > 0 || messageState?.element) && (
               <div
-                className={cx(
-                  'cds-aichat--sent-and-message-state-container',
-                  'cds-aichat--message-vertical-padding',
-                  {
-                    'cds-aichat--sent-and-message-state--below-message':
-                      messageState?.showBelowMessage,
-                  }
-                )}>
-                {/* messageState is empty, or the messageState is not empty and the messageState should not be below the message. */}
+                slot="attachment"
+                className={cx('cds-aichat--sent-and-message-state-container', {
+                  'cds-aichat--sent-and-message-state--below-message':
+                    messageState?.showBelowMessage,
+                })}>
                 {!messageState?.showBelowMessage && messageState?.element}
-                <div className="cds-aichat--sent">
-                  <VisuallyHidden>
-                    {this.getRequestSaidMessage(message, languagePack)}
-                  </VisuallyHidden>
-                  {/* The bubble, its attachments and its footer share a
-                      shrink-to-fit column so the footer can align to the
-                      bubble's leading edge. Without the group the footer is a
-                      full-width flex item and lands at the far edge of the
-                      message column instead. */}
-                  <div className="cds-aichat--sent--bubble-group">
-                    {hasBubbleContent && (
-                      <div className="cds-aichat--sent--bubble">
-                        <div ref={this.messageRef}>{messageComponent}</div>
-                      </div>
-                    )}
-                    {/* Attachments sit below the bubble rather than inside it. */}
-                    {attachments.length > 0 && (
-                      <MessageFileAttachments
-                        attachments={attachments}
-                        label={languagePack.messages_attachmentsLabel}
-                        fallbackName={languagePack.messages_unnamedAttachment}
-                      />
-                    )}
-                    {hasRequestFooter(
-                      localMessageItem,
-                      message as MessageRequest
-                    ) && (
-                      <MessageCustomRequestFooterSlot
-                        slotName={getRequestFooterSlotName(localMessageItem)}
-                      />
-                    )}
-                  </div>
-                </div>
+                {attachments.length > 0 && (
+                  <MessageFileAttachments
+                    attachments={attachments}
+                    label={languagePack.messages_attachmentsLabel}
+                    fallbackName={languagePack.messages_unnamedAttachment}
+                  />
+                )}
                 {messageState?.showBelowMessage && messageState?.element}
               </div>
-            </div>
-          )}
-        </div>
-      </div>
+            )}
+            {hasRequestFooter(localMessageItem, message as MessageRequest) && (
+              <MessageCustomRequestFooterSlot
+                slot="footer"
+                slotName={getRequestFooterSlotName(localMessageItem)}
+              />
+            )}
+          </>
+        )}
+      </MessageItemShell>
     );
   }
 }

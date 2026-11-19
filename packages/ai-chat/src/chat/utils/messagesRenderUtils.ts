@@ -10,7 +10,11 @@
 import ObjectMap from '../../types/utilities/ObjectMap';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { Message } from '../../types/messaging/Messages';
-import { isStandaloneSystemMessage } from './messageUtils';
+import {
+  getRequestSenderName,
+  isRequest,
+  isStandaloneSystemMessage,
+} from './messageUtils';
 
 interface RenderableMessageMetadata {
   fullMessage: Message;
@@ -21,6 +25,7 @@ interface RenderableMessageMetadata {
   localMessageItem: LocalMessageItem;
   messageItemID: string;
   messagesIndex: number;
+  previousIsUnnamedRequest: boolean;
   showBeforeWelcomeNodeElement: boolean;
 }
 
@@ -46,6 +51,23 @@ function buildRenderableMessageMetadata(
       localMessageItems.length - 1 === currentIndex ||
       localMessageItem.fullMessageID !== nextLocalMessageItem.fullMessageID;
 
+    const prevFullMessage =
+      currentIndex > 0
+        ? allMessagesByID[localMessageItems[currentIndex - 1].fullMessageID]
+        : null;
+    const isCurrentUnnamedRequest = Boolean(
+      fullMessage &&
+      isRequest(fullMessage) &&
+      !getRequestSenderName(fullMessage)
+    );
+    const isPrevUnnamedRequest = Boolean(
+      prevFullMessage &&
+      isRequest(prevFullMessage) &&
+      !getRequestSenderName(prevFullMessage)
+    );
+    const previousIsUnnamedRequest =
+      isCurrentUnnamedRequest && isPrevUnnamedRequest;
+
     metadata.push({
       fullMessage,
       isFirstMessageItem,
@@ -55,6 +77,7 @@ function buildRenderableMessageMetadata(
       localMessageItem,
       messageItemID: localMessageItem.ui_state.id,
       messagesIndex: currentIndex,
+      previousIsUnnamedRequest,
       showBeforeWelcomeNodeElement:
         localMessageItem.ui_state.isWelcomeResponse && isFirstMessageItem,
     });

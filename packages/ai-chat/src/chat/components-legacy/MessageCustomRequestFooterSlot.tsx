@@ -19,15 +19,20 @@ interface MessageCustomRequestFooterSlotProps {
    * The name of the slot to render.
    */
   slotName: string;
+
+  /**
+   * The parent slot name when rendered inside a web component shell.
+   */
+  slot?: string;
 }
 
 function MessageCustomRequestFooterSlot(
   props: MessageCustomRequestFooterSlotProps
 ) {
-  const { slotName } = props;
+  const { slotName, slot } = props;
 
   return (
-    <div className="cds-aichat--request-footer-slot">
+    <div className="cds-aichat--request-footer-slot" slot={slot}>
       <slot name={slotName} />
     </div>
   );

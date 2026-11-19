@@ -100,15 +100,15 @@ test('an unfilled footer slot costs the message no height', async ({
   const wrapper = page.locator(REQUEST_FOOTER_WRAPPER).first();
   await expect(wrapper).toBeAttached();
 
-  // Measure the whole sent column, not the wrapper alone: a margin on the
+  // Measure the whole message row, not the wrapper alone: a margin on the
   // wrapper would not show up in its own bounding box but would still push the
   // next message down.
-  const column = page.locator('.cds-aichat--sent').first();
-  const filled = await column.evaluate(
+  const message = page.locator('.cds-aichat--message--request').first();
+  const filled = await message.evaluate(
     (node) => node.getBoundingClientRect().height
   );
 
-  // Emptying the slot must return the column to the height it would have on
+  // Emptying the slot must return the message to the height it would have on
   // main, where no host opted in and the wrapper renders empty.
   await page.evaluate((selector) => {
     document
@@ -116,7 +116,7 @@ test('an unfilled footer slot costs the message no height', async ({
       .forEach((node) => node.parentElement?.removeChild(node));
   }, '[slot^="request-footer-"]');
 
-  const emptied = await column.evaluate(
+  const emptied = await message.evaluate(
     (node) => node.getBoundingClientRect().height
   );
 

@@ -1014,7 +1014,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
 
     // Render both in the same feedback container div
     return (
-      <div className="cds-aichat--received--feedback">
+      <div className="cds-aichat--received--feedback" slot="footer">
         <div className="cds-aichat--message-footer">
           {feedback && feedback.buttons}
           {customFooter}
