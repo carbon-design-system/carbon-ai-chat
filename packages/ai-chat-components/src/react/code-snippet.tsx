@@ -13,7 +13,7 @@ import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-load
 
 import { CDSAIChatCodeSnippet } from '../components/aichat-code-snippet/index.js';
 import type { Action } from '../components/aichat-code-snippet/index.js';
-import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from './utils/iconTransform.js';
 import type { CodeSnippetChangeEventDetail } from '../components/aichat-code-snippet/index.js';
 
 // Re-export the Action interface from the web component

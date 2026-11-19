@@ -16,8 +16,6 @@
  * content. This is a thin token-specific wrapper over `renderInLightDom`.
  */
 
-import type { ReactNode } from 'react';
-
 import { setVarsForSelector } from '../../../globals/utils/dynamic-css-var-sheet.js';
 import { renderInLightDom } from './render-in-light-dom.js';
 import type { SuggestionItem, TriggerSuggestionConfig } from './types.js';
@@ -118,7 +116,7 @@ export function renderTokenChip(args: RenderTokenChipArgs): HTMLElement {
     ...((args.attrs.data ?? {}) as Record<string, unknown>),
   };
 
-  let result: HTMLElement | ReactNode | undefined;
+  let result: unknown;
   try {
     result = renderer(item);
   } catch (error) {
