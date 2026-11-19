@@ -133,14 +133,14 @@ class ChatInstanceService {
     }
   }
 
-  /** @see SendService.send */
+  /** @see MessageCoordinator.send */
   async send(
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
     ignoreHydration = false
   ) {
-    return this.serviceManager.sendService.send(
+    return this.serviceManager.messageCoordinator.send(
       message,
       source,
       options,

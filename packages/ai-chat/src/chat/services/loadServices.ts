@@ -7,6 +7,12 @@
  *  @license
  */
 
+import actions from '../store/actions';
+import {
+  hasCustomPromptLine,
+  requestComposerFocus,
+} from '../utils/customPromptLine';
+import { MessagePresentationAdapter } from './messaging/presentation/MessagePresentationAdapter';
 import { ChatInstanceService } from './ChatInstanceService';
 import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
@@ -15,7 +21,6 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
-import { SendService } from './messaging/outbound/SendService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
@@ -65,12 +70,32 @@ function createServiceManager(publicConfig: PublicConfig) {
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
   serviceManager.receiveService = new ReceiveService(serviceManager);
-  serviceManager.sendService = new SendService(serviceManager);
   serviceManager.viewService = new ViewService(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
   serviceManager.publicStateService = new PublicStateService(serviceManager);
-  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
+  serviceManager.messageCoordinator = new MessageCoordinator(
+    serviceManager,
+    new MessagePresentationAdapter({
+      hasCustomPromptLine: () => hasCustomPromptLine(serviceManager),
+      requestComposerFocus: () => requestComposerFocus(serviceManager),
+      announceSending: () => {
+        if (serviceManager.ariaAnnouncer) {
+          const languagePack = serviceManager.store.getState().languagePack;
+          serviceManager.ariaAnnouncer(languagePack.input_sendingMessage);
+        }
+      },
+      isHomeScreenOpen: () =>
+        serviceManager.store.getState().persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen,
+      closeHomeScreen: () =>
+        serviceManager.store.dispatch(actions.setHomeScreenIsOpen(false)),
+      isResponsePanelOpen: () =>
+        serviceManager.store.getState().responsePanelState.isOpen,
+      closeResponsePanel: () =>
+        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(false)),
+    })
+  );
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
     serviceManager
