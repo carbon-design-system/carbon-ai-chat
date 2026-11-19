@@ -7,6 +7,7 @@
  *  @license
  */
 
+import type { MessageState } from '../../types/config/MessagingConfig';
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import type {
   GenericItem,
@@ -19,6 +20,9 @@ import type { DeepPartial } from '../../types/utilities/DeepPartial';
  * `upsertMessage` never passes it.
  */
 interface MessageWriteOptions {
+  /** The lifecycle value the native upsert workflow is committing. */
+  nativeMessageState?: MessageState;
+
   /** Whether the caller's original message lifetime is still active. */
   isCurrent?: () => boolean;
 

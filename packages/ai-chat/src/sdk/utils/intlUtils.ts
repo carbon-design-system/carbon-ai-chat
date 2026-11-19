@@ -13,6 +13,7 @@ import { createIntl } from './i18n';
 import { loadLocale } from './languageUtils';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { ServiceManager } from '../services/ServiceManager';
+import actions from '../store/actions';
 
 // Keyed by manager rather than stored on it, so tests can stub a manager.
 const intlListeners = new WeakMap<ServiceManager, Set<() => void>>();
@@ -80,6 +81,9 @@ async function refreshLocalization(
     }
     dayjs.locale(localePack);
     setIntl(serviceManager, localePack.name, languagePack);
+    serviceManager.store.dispatch(
+      actions.setAppStateValue('loadedLocale', locale)
+    );
   } else {
     // Strings-only change: keep the locale the formatter already resolved (the
     // normalized name set at boot / the last locale change), so a strings edit

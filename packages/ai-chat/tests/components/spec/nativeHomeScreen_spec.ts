@@ -229,8 +229,8 @@ describe('native home screen', () => {
     expect(view.querySelector('h2')?.textContent).toBe('Welcome');
   });
 
-  it('observes writable content without replacing the slot, borrowed host, or descendants', async () => {
-    const { view, host, writable } = await createHome();
+  it('samples writable content at render without replacing the slot, borrowed host, or descendants', async () => {
+    const { view, host, store, writable } = await createHome();
     const slot = view.querySelector<HTMLSlotElement>('slot');
     expect(slot.name).toBe(
       WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
@@ -248,55 +248,82 @@ describe('native home screen', () => {
       counter.textContent = String(Number(counter.textContent) + 1);
     };
     writable.appendChild(counter);
-    await waitFor(() =>
-      expect(
-        body(view).classList.contains(
-          'cds-aichat--home-screen__body--custom-content'
-        )
-      ).toBe(true)
-    );
+    await Promise.resolve();
+    await view.updateComplete;
+    expect(
+      body(view).classList.contains(
+        'cds-aichat--home-screen__body--no-custom-content'
+      )
+    ).toBe(true);
+    showBack(store);
+    await view.updateComplete;
+    expect(
+      body(view).classList.contains(
+        'cds-aichat--home-screen__body--custom-content'
+      )
+    ).toBe(true);
     counter.click();
     expect(counter.textContent).toBe('1');
     expect(view.querySelector('slot')).toBe(slot);
     expect(writable.assignedSlot).toBe(slot);
     expect(counter.parentNode).toBe(writable);
     counter.remove();
-    await waitFor(() =>
-      expect(
-        body(view).classList.contains(
-          'cds-aichat--home-screen__body--no-custom-content'
-        )
-      ).toBe(true)
-    );
+    await Promise.resolve();
+    await view.updateComplete;
+    expect(
+      body(view).classList.contains(
+        'cds-aichat--home-screen__body--custom-content'
+      )
+    ).toBe(true);
+    applyConfigChange(store, {
+      homescreen: { ...homescreen, greeting: 'Again' },
+    });
+    await view.updateComplete;
+    expect(
+      body(view).classList.contains(
+        'cds-aichat--home-screen__body--no-custom-content'
+      )
+    ).toBe(true);
     writable.appendChild(counter);
-    await waitFor(() =>
-      expect(
-        body(view).classList.contains(
-          'cds-aichat--home-screen__body--custom-content'
-        )
-      ).toBe(true)
-    );
+    applyConfigChange(store, {
+      homescreen: { ...homescreen, greeting: 'Last' },
+    });
+    await view.updateComplete;
+    expect(
+      body(view).classList.contains(
+        'cds-aichat--home-screen__body--custom-content'
+      )
+    ).toBe(true);
     expect(counter.textContent).toBe('1');
     expect(view.querySelector('slot')).toBe(slot);
   });
 
-  it('releases subscriptions and observers on detach, then reads current values on reconnect', async () => {
-    const observe = jest.spyOn(MutationObserver.prototype, 'observe');
-    const disconnect = jest.spyOn(MutationObserver.prototype, 'disconnect');
+  it('counts whitespace and comment children as custom content at render', async () => {
+    const { view, store, writable } = await createHome();
+    for (const node of [
+      document.createTextNode('  '),
+      document.createComment('content'),
+    ]) {
+      writable.replaceChildren(node);
+      applyConfigChange(store, {
+        homescreen: { ...homescreen, greeting: node.nodeName },
+      });
+      await view.updateComplete;
+      expect(
+        body(view).classList.contains(
+          'cds-aichat--home-screen__body--custom-content'
+        )
+      ).toBe(true);
+    }
+  });
+
+  it('releases subscriptions on detach, then reads current values on reconnect', async () => {
     const { view, host, store, writable, subscriptions } = await createHome();
     const connectedSubscriptions = subscriptions.size;
     expect(connectedSubscriptions).toBeGreaterThan(0);
-    const observerIndex = observe.mock.calls.findIndex(
-      ([target]) => target === host
-    );
-    expect(observerIndex).toBeGreaterThanOrEqual(0);
-    const observer = observe.mock.contexts[observerIndex];
     const renderView = jest.spyOn(view as any, 'renderView');
     view.remove();
     expect(subscriptions.size).toBe(0);
-    expect(
-      disconnect.mock.contexts.filter((value) => value === observer)
-    ).toHaveLength(1);
     applyConfigChange(store, {
       homescreen: { ...homescreen, greeting: 'While detached' },
     });

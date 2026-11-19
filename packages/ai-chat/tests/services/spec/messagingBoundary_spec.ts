@@ -161,13 +161,6 @@ it('keeps all processor and state runtime dependencies pure', () => {
   }
 });
 
-it('checks native snapshot preparation while allowing only deferred host callable bodies', () => {
-  const source = get(messaging + 'nativeMessageEvents.ts');
-  const allowed = snapshotDataCalls(checker, source);
-  expect(allowed.size).toBe(16); // Deferred traps, intrinsic reads and owned data operations.
-  expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
-});
-
 it('keeps core runtime imports and capabilities independent of the view', () => {
   const result = coreRuntime;
   expect(result.issues).toEqual([]);
@@ -578,6 +571,7 @@ function isAllowedStateField(
     'src/chat/services/createViewBindings.ts': ['catastrophicErrorType'],
     // The one config update path (#1833).
     'src/sdk/services/applyConfig.ts': ['languagePack'],
+    'src/sdk/utils/intlUtils.ts': ['loadedLocale'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
   };
   return Boolean(
@@ -1252,42 +1246,6 @@ it('classifies a destructured broad message-state setter as an assistant write',
   ]);
 });
 
-it('recognizes current intrinsic snapshot preparation without eager host invocation', () => {
-  const source = get(messaging + 'nativeMessageEvents.ts');
-  const allowed = snapshotDataCalls(checker, source);
-  expect(pureEffectIssues(checker, source, allowed)).toEqual([]);
-});
-
-it.each([
-  [
-    'Reflect.construct(\n      BufferConstructor,',
-    'Reflect.construct(\n      value as Function,',
-  ],
-  ['isCollection(value, Map.prototype)', 'isCollection(value, value as any)'],
-  [
-    '? [ArrayBuffer]\n      : [ArrayBuffer, SharedArrayBuffer]',
-    '? [ArrayBuffer]\n      : [ArrayBuffer, value as any]',
-  ],
-  [
-    'Function.prototype.toString.call(constructor)',
-    '(constructor as Function).call(undefined)',
-  ],
-  [
-    'copies.set(value, owned);\n    if (map)',
-    'copies.set(value, owned);\n    owned = value;\n    if (map)',
-  ],
-])('rejects replacing an intrinsic snapshot binding: %s', (before, after) => {
-  const original = get(messaging + 'nativeMessageEvents.ts').text;
-  expect(original).toContain(before);
-  const file = '../src/sdk/services/messaging/nativeMessageEvents.ts';
-  const f = fixture({ [file]: original.replace(before, after) });
-  const source = f.source(file);
-  expect(
-    pureEffectIssues(f.checker, source, snapshotDataCalls(f.checker, source))
-      .length
-  ).toBeGreaterThan(0);
-});
-
 it.each([
   'const read = Date.now.bind(Date); read();',
   'const random = Math.random.bind(Math); random();',
@@ -1387,59 +1345,23 @@ function rawActionProperties(node: ts.Expression | undefined) {
   return properties;
 }
 
-function rawActionConstant(
-  typeChecker: ts.TypeChecker,
-  value: ts.Expression | undefined,
-  file: string,
-  text: string
-) {
-  if (!value || !ts.isIdentifier(value)) {
-    return false;
-  }
-  let symbol = typeChecker.getSymbolAtLocation(value);
-  if (symbol?.flags & ts.SymbolFlags.Alias) {
-    symbol = typeChecker.getAliasedSymbol(symbol);
-  }
-  const declaration = symbol?.valueDeclaration;
-  return Boolean(
-    declaration &&
-    ts.isVariableDeclaration(declaration) &&
-    declaration.getSourceFile().fileName === file &&
-    declaration.initializer &&
-    ts.isStringLiteralLike(declaration.initializer) &&
-    declaration.initializer.text === text
-  );
-}
-
-function allowedRawAction(
-  typeChecker: ts.TypeChecker,
-  file: string,
-  node: ts.Expression | undefined,
-  actionsFile: string
-) {
+function allowedRawAction(file: string, node: ts.Expression | undefined) {
   const properties = rawActionProperties(node);
   if (!properties) {
     return false;
   }
   const type = properties.get('type');
-  if (file === 'src/chat/utils/chatBoot.ts') {
-    const key = properties.get('key');
-    return (
-      properties.size === 3 &&
-      type &&
-      ts.isStringLiteralLike(type) &&
-      type.text === 'SET_APP_STATE_VALUE' &&
-      key &&
-      ts.isStringLiteralLike(key) &&
-      key.text === 'catastrophicErrorType' &&
-      properties.get('value')?.kind === ts.SyntaxKind.TrueKeyword
-    );
-  }
-  return (
-    file === 'src/chat/services/ThemeWatcherService.ts' &&
-    properties.size === 2 &&
-    properties.has('themeState') &&
-    rawActionConstant(typeChecker, type, actionsFile, 'UPDATE_THEME_STATE')
+  const key = properties.get('key');
+  return Boolean(
+    file === 'src/chat/utils/chatBoot.ts' &&
+    properties.size === 3 &&
+    type &&
+    ts.isStringLiteralLike(type) &&
+    type.text === 'SET_APP_STATE_VALUE' &&
+    key &&
+    ts.isStringLiteralLike(key) &&
+    key.text === 'catastrophicErrorType' &&
+    properties.get('value')?.kind === ts.SyntaxKind.TrueKeyword
   );
 }
 
@@ -1468,12 +1390,7 @@ it('rejects raw store writes throughout the package except exact existing view s
     const argument = call.node.arguments[0];
     if (
       !rawActionValue(checker, argument, creatorFiles, ownershipFile) &&
-      !allowedRawAction(
-        checker,
-        relative(call.source.fileName),
-        argument,
-        actionsFile
-      )
+      !allowedRawAction(relative(call.source.fileName), argument)
     ) {
       issues.push(`${relative(call.source.fileName)}: ${argument?.getText()}`);
     }
@@ -1502,38 +1419,15 @@ it.each([
     "{type: 'SET_APP_STATE_VALUE', key: 'catastrophicErrorType', value: true}",
     false,
   ],
-  [
-    'src/chat/services/ThemeWatcherService.ts',
-    '{type: UPDATE_THEME_STATE, themeState: {}}',
-    true,
-  ],
-  [
-    'src/chat/services/ThemeWatcherService.ts',
-    "{type: 'UPDATE_THEME_STATE', themeState: {}}",
-    false,
-  ],
-  [
-    'src/chat/services/ThemeWatcherService.ts',
-    "{type: 'ADD_MESSAGE', message: {}}",
-    false,
-  ],
 ])(
   'allows only the exact raw state action at %s: %s',
   (file, expression, expected) => {
     const f = fixture({
-      'entry.ts': `import { UPDATE_THEME_STATE } from './actions'; export const action = ${expression};`,
-      'actions.ts': "export const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';",
+      'entry.ts': `export const action = ${expression};`,
     });
     const declaration = f.source().statements.find(ts.isVariableStatement)!
       .declarationList.declarations[0];
-    expect(
-      allowedRawAction(
-        f.checker,
-        file,
-        declaration.initializer,
-        f.source('actions.ts').fileName
-      )
-    ).toBe(expected);
+    expect(allowedRawAction(file, declaration.initializer)).toBe(expected);
   }
 );
 

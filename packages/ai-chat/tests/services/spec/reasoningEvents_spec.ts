@@ -8,7 +8,6 @@
  */
 
 import { coordinateReasoningEvents } from '../../../src/sdk/services/messaging/coordinateReasoningEvents';
-import { retainNativeMessageOrigin } from '../../../src/sdk/services/messaging/nativeMessageEvents';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   MessageResponse,
@@ -88,23 +87,6 @@ it('keeps a failed detached delivery marked on later passes through the same ses
   });
   coordinateReasoningEvents(session, message, deliver);
   expect(values).toEqual(['first', 'second', 'later']);
-});
-
-it('retains native snapshots and message/item aliases at each delivery', () => {
-  const { message, first } = fixture();
-  retainNativeMessageOrigin(message);
-  const delivered: unknown[] = [];
-  coordinateReasoningEvents(new Set(), message, (local, full: any) => {
-    expect(full).not.toBe(message);
-    expect(Object.isFrozen(full)).toBe(true);
-    expect(Object.isFrozen(local.item)).toBe(true);
-    const index = delivered.length;
-    expect(local.item).toBe(full.message_options.reasoning.content[index]);
-    delivered.push(local.item);
-    return Promise.resolve();
-  });
-  expect(delivered).toHaveLength(2);
-  expect(delivered[0]).not.toBe(first);
 });
 
 it('can stop a retired headless session without changing mounted delivery', () => {

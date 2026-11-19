@@ -109,9 +109,7 @@ const viewActions = {
     return { type: UPDATE_THEME_STATE, themeState };
   },
 
-  updateCatastrophicErrorPanel(
-    panelState: Partial<CatastrophicErrorPanelState>
-  ) {
+  updateCatastrophicErrorPanel(panelState: CatastrophicErrorPanelState) {
     return {
       type: UPDATE_CATASTROPHIC_ERROR_PANEL,
       panelState,
@@ -131,7 +129,7 @@ const viewActions = {
   },
   resetIsHydratingCounter() {
     return {
-      type: RESET_IS_LOADING_COUNTER,
+      type: RESET_IS_HYDRATING_COUNTER,
     };
   },
   addIsHydratingCounter(addToIsHydrating: number) {

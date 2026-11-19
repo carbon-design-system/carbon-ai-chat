@@ -33,7 +33,7 @@ import {
   FileStatusValue,
   type FileUpload,
 } from '../../types/config/ServiceDeskConfig';
-import { isPlainTextDoc } from '../utils/inputContent';
+import { isPlainTextDoc, literalTextToDoc } from '../utils/inputContent';
 import type { ServiceManager } from './ServiceManager';
 import { CancellationReason } from '../../types/config/MessagingConfig';
 
@@ -80,12 +80,49 @@ function assertFileFits(
   );
 }
 
+function warnUpdateRawValueDeprecated() {
+  if (!hasWarnedAboutUpdateRawValueDeprecation) {
+    hasWarnedAboutUpdateRawValueDeprecation = true;
+    consoleWarn(
+      'ChatInstance.input.updateRawValue is deprecated. Use updateContent.'
+    );
+  }
+}
+
+/**
+ * Throws when Tiptap's `setContent` can't parse the JSON, where Tiptap would
+ * log "Invalid content" and replace the draft with an empty doc. Runs only the
+ * parse Tiptap runs, so anything Tiptap applies still applies.
+ */
+function assertEditorAccepts(editor: Editor, content: JSONContent) {
+  if (
+    typeof content !== 'object' ||
+    content === null ||
+    typeof (content as { nodesBetween?: unknown }).nodesBetween === 'function'
+  ) {
+    return;
+  }
+  try {
+    if (Array.isArray(content) && content.length > 0) {
+      content.forEach((item) => editor.schema.nodeFromJSON(item));
+    } else {
+      editor.schema.nodeFromJSON(content);
+    }
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new TypeError(
+      `ChatInstance.input.updateContent can't apply this content, so the input keeps its draft: ${detail}. Pass JSON the editor's schema can read, and add any node or mark type it lacks through input.tiptap.extensions.`
+    );
+  }
+}
+
 class InputActionsService {
   private serviceManager: ServiceManager;
 
   /**
-   * Maps pending upload IDs to their AbortControllers so that in-progress uploads can be cancelled
-   * when the user removes an attachment before the upload completes.
+   * Maps pending upload IDs to their AbortControllers so that in-progress uploads can be canceled
+   * when the user removes an attachment before the upload completes, when the conversation restarts
+   * or its session is destroyed, or when the chat unmounts.
    *
    * AbortControllers are not serializable and therefore cannot be stored in Redux.
    */
@@ -130,12 +167,7 @@ class InputActionsService {
           'ChatInstance.input.updateRawValue cannot be used while the input contains non-text nodes or marked text. Use updateContent instead.'
         );
       }
-      if (!hasWarnedAboutUpdateRawValueDeprecation) {
-        hasWarnedAboutUpdateRawValueDeprecation = true;
-        consoleWarn(
-          'ChatInstance.input.updateRawValue is deprecated. Use updateContent.'
-        );
-      }
+      warnUpdateRawValueDeprecated();
       let previousRaw = getRawText(currentJson);
       if (previousRaw === '\n') {
         previousRaw = '';
@@ -156,10 +188,12 @@ class InputActionsService {
       if (nextValue === previousRaw) {
         return;
       }
-      ref.setContent(nextValue);
+      // A string would reach Tiptap as HTML, which folds a newline into a space.
+      ref.setContent(literalTextToDoc(nextValue));
       return;
     }
 
+    warnUpdateRawValueDeprecated();
     const { store } = this.serviceManager;
     const state = store.getState();
     const inputState = selectInputState(state);
@@ -186,9 +220,10 @@ class InputActionsService {
       return;
     }
 
+    // On this path the document follows the text.
     store.dispatch(
       actions.updateInputState(
-        { rawValue: nextValue },
+        { rawValue: nextValue, content: textToDoc(nextValue) },
         selectIsInputToHumanAgent(state)
       )
     );
@@ -228,6 +263,7 @@ class InputActionsService {
     }
 
     if (ref && editor) {
+      assertEditorAccepts(editor, next);
       ref.setContent(next);
       return;
     }
@@ -247,11 +283,12 @@ class InputActionsService {
         'ChatInstance.input.updateContent cannot seed non-text content before the input is rendered. Wait for the input to mount, or write plain text.'
       );
     }
-    await ref.ensureEditor();
+    const ensuredEditor = await ref.ensureEditor();
     this.assertBuiltInInput();
     if (this.input() !== ref) {
       throw new Error('Input is not currently rendered');
     }
+    assertEditorAccepts(ensuredEditor, next);
     ref.setContent(next);
   }
 
@@ -323,6 +360,41 @@ class InputActionsService {
     this.uploadAbortControllers.clear();
   }
 
+  /**
+   * Aborts every upload still in progress. The pending uploads stay in the
+   * store; {@link cancelPendingUploads} removes them.
+   */
+  abortPendingUploads() {
+    const controllers = [...this.uploadAbortControllers.values()];
+    this.uploadAbortControllers.clear();
+    controllers.forEach((controller) => controller.abort());
+  }
+
+  /**
+   * Cancels every upload still in progress, for a restart or a destroyed
+   * session: aborts its signal and removes its attachment from the input, so
+   * nothing it returns reaches a later send.
+   */
+  cancelPendingUploads() {
+    const uploadIds = new Set(this.uploadAbortControllers.keys());
+    this.abortPendingUploads();
+    const { store } = this.serviceManager;
+    const state = store.getState();
+    const slices = [
+      { isInputToHumanAgent: false, input: state.assistantInputState },
+      { isInputToHumanAgent: true, input: state.humanAgentState.inputState },
+    ];
+    for (const { isInputToHumanAgent, input } of slices) {
+      for (const upload of input.pendingUploads) {
+        if (uploadIds.has(upload.id)) {
+          store.dispatch(
+            actions.removePendingUpload(upload.id, isInputToHumanAgent)
+          );
+        }
+      }
+    }
+  }
+
   async handleFileSelectedForUpload(file: File): Promise<void> {
     const uploadConfig =
       this.serviceManager.store.getState().config.public.upload;
@@ -333,7 +405,9 @@ class InputActionsService {
     ) {
       return;
     }
-    await this.startUpload(file, uploadConfig.onFileUpload).done;
+    await this.startUpload(file, uploadConfig.onFileUpload, () =>
+      selectIsInputToHumanAgent(this.serviceManager.store.getState())
+    ).done;
   }
 
   /**
@@ -364,7 +438,11 @@ class InputActionsService {
       uploadConfig,
       'config'
     );
-    return { id: this.startUpload(file, uploadConfig.onFileUpload).id };
+    return {
+      id: this.startUpload(file, uploadConfig.onFileUpload, () =>
+        selectIsInputToHumanAgent(state)
+      ).id,
+    };
   }
 
   /** Stages a file for the service desk, which receives it with the next message. */
@@ -435,13 +513,13 @@ class InputActionsService {
    */
   private startUpload(
     file: File,
-    onFileUpload: (file: File, signal: AbortSignal) => Promise<StructuredData>
+    onFileUpload: (file: File, signal: AbortSignal) => Promise<StructuredData>,
+    inputForCompletion: () => boolean
   ) {
     const { store } = this.serviceManager;
     const uploadId = uuid();
     const controller = new AbortController();
     this.uploadAbortControllers.set(uploadId, controller);
-    // The upload settles in the slice it started in, even if an agent connects meanwhile.
     const toHumanAgent = selectIsInputToHumanAgent(store.getState());
 
     store.dispatch(
@@ -461,7 +539,7 @@ class InputActionsService {
             actions.updatePendingUpload(
               uploadId,
               { status: PendingUploadStatus.COMPLETE, contributedData },
-              toHumanAgent
+              inputForCompletion()
             )
           );
         }
@@ -475,7 +553,7 @@ class InputActionsService {
           actions.updatePendingUpload(
             uploadId,
             { status: PendingUploadStatus.ERROR, errorMessage },
-            toHumanAgent
+            inputForCompletion()
           )
         );
       } finally {

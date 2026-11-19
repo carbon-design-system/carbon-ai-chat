@@ -22,7 +22,8 @@ import type {
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
  *
- * - `loading`: history and the welcome are loading.
+ * - `loading`: the chat itself is loading history and the welcome. Calls to
+ *   {@link ChatInstance.updateIsChatLoadingCounter} don't set it.
  * - `submitted`: a send is waiting for its first associated response.
  * - `streaming`: a response is active, or its sender is still pending after a response arrives.
  *   This includes the gap after the response completes and before the sender settles.
@@ -83,8 +84,8 @@ export interface ChatSDKMessageItem {
    *
    * An item nested in another one adds to its parent's ID: `<parentID>:i:<index>` for a carousel item
    * or a body item, `<parentID>:f:<index>` for a footer item, and `<parentID>:i:<row>.<column>.<index>`
-   * for an item in a grid cell. A nested index counts only the children the list draws, so a child of
-   * a type its parent doesn't support takes no index.
+   * for an item in a grid cell. A nested index is the child's position in its parent's raw source
+   * array, including positions occupied by children the list doesn't draw.
    *
    * The same messages give the same IDs after a reload or a history replay, as long as the messages
    * have IDs. The chat gives a message without one a new ID each time it loads, so give your messages
@@ -112,14 +113,16 @@ export interface ChatSDKMessageItem {
 
   /**
    * The item as the list draws it. While it streams, this is the content so far. For a request, it's a
-   * `text` item with the text the user's message shows.
+   * `text` item with the text the user's message shows. As in `messages`, functions, classes, and other
+   * values the chat can't copy pass through by reference, and the snapshot doesn't freeze them.
    */
   readonly item: Readonly<GenericItem>;
 
   /**
    * - `streaming`: more of the item is on its way.
    * - `complete`: the item is done.
-   * - `error`: its request failed, or its response failed while streaming.
+   * - `error`: its request failed, its response failed while streaming, or the latest upsert used
+   *   {@link MessageState.ERROR}.
    */
   readonly status: 'streaming' | 'complete' | 'error';
 
@@ -214,14 +217,17 @@ export interface ChatSDKState {
    * Conversation messages, oldest first, or `[]` when empty. Partial
    * streaming content is included as it arrives. The array and its message
    * values are immutable snapshots, and internal UI state is omitted.
+   * Functions, classes, and other values the chat can't copy are the host's
+   * own objects. They pass through by reference, and the snapshot doesn't
+   * freeze them.
    */
   readonly messages: readonly Readonly<Message>[];
 
   /**
    * One entry per item the message list draws, in the order it shows them, with items nested in
    * another one right after it. Each entry's `messageID` is in `messages`. Silent requests, pauses, and
-   * items marked `user_defined.silent` aren't listed, except a `user_defined.silent` item loaded from
-   * history, which the list draws today. It changes in the same update as `messages`. The array and its entries
+   * items marked `user_defined.silent` aren't listed, whether they arrive live or through history.
+   * It changes in the same update as `messages`. The array and its entries
    * are frozen, and the array keeps its object until an entry changes. See {@link ChatSDKMessageItem}.
    *
    * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.

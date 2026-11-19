@@ -21,6 +21,8 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
   ) => React.ReactNode;
 }
 
+const NO_FOOTER_ITEMS: readonly string[] = [];
+
 /**
  * This component handles rendering button response types in the footer of a container, under "body" content. See
  * {@link #BodyMessageComponents}.
@@ -28,7 +30,8 @@ interface FooterButtonComponentsProps extends MessageTypeComponentProps {
 function FooterButtonComponents(props: FooterButtonComponentsProps) {
   const nestedItems = useNestedMessageItems(
     props.message.ui_state.id,
-    'footer'
+    'footer',
+    props.message.ui_state.footerLocalMessageItemIDs ?? NO_FOOTER_ITEMS
   );
   const buttonComponents = nestedItems.map(
     ({ localMessageItem: nestedLocalMessage }) => {
