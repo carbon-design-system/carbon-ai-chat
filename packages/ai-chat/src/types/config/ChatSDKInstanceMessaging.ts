@@ -31,6 +31,14 @@ export interface ChatSDKInstanceMessaging {
    * calls {@link ChatSDKConfigMessaging.customSendMessage}. Messages sent while another turn runs
    * wait in a queue and go out in order.
    *
+   * In the prebuilt chat, sends during a human agent conversation still call
+   * {@link ChatSDKConfigMessaging.customSendMessage}. Only what the user types in the chat's input
+   * reaches the service desk.
+   *
+   * A send made while the prebuilt chat loads waits until every `chat:ready` handler settles. A
+   * handler that never settles holds those sends, so they never reach `customSendMessage`. Sends
+   * made after `chat:ready` fires don't wait.
+   *
    * **When the promise resolves:**
    * - When `customSendMessage` resolves and the chat records the turn as sent. It doesn't wait
    *   for a reply: a response that's still streaming keeps streaming after the promise resolves.
@@ -43,6 +51,8 @@ export interface ChatSDKInstanceMessaging {
    *   ({@link ChatSDKConfigMessaging.messageTimeoutSecs}), or you mark the turn failed with
    *   {@link ChatSDKInstanceMessaging.failTurn} before `customSendMessage` resolves. The
    *   conversation's `status` becomes `'error'`.
+   * - In the prebuilt chat, when a `pre:send` or `send` handler throws. The promise rejects with
+   *   that handler's own error, `customSendMessage` isn't called, and `status` stays `'ready'`.
    * - In read-only mode, or while a file upload is still running. In these cases the message isn't
    *   sent and `pre:send` doesn't fire. `state.get().hasInFlightUploads` is `true` while an upload
    *   runs. Files that finished uploading, in `state.get().pendingUploads`, go out with the message.
