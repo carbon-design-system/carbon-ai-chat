@@ -242,9 +242,6 @@
       "katex": "0.19.1"
     },
     "glob@>=10 <14": "^14.0.3",
-    "serve": {
-      "compression": "^1.8.2"
-    },
     "rollup-plugin-postcss": {
       "cssnano": "^7.1.9"
     },
