@@ -7,17 +7,42 @@
  *  @license
  */
 
+import { SendWorkflow } from './SendWorkflow';
+import { MessageLoadingManager } from '../../utils/messageServiceUtils';
+import { consoleError } from '../../utils/miscUtils';
+import type { PublicConfig } from '../../../types/config/PublicConfig';
 import { coordinateSend, type SendOrder } from './coordinateSend';
 import type { MessagePresentationPort } from './presentationPort';
 import type { MessageRequest } from '../../../types/messaging/Messages';
 import type { MessageSendSource } from '../../../types/events/eventBusTypes';
-import type { SendOptions } from '../../../types/instance/ChatInstance';
+import type {
+  SendOptions,
+  IncreaseOrDecrease,
+} from '../../../types/instance/ChatInstance';
 import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
+import { RequestQueue, type RequestToken } from './state/RequestQueue';
+import type { PendingMessageRequest } from './MessageService';
 import { ConversationState } from './state/ConversationState';
+
+// The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
+// move on to the next item in the queue.
+const MS_MAX_ATTEMPT = 150 * 1000;
+
+/** The request timeout for a `messageTimeoutSecs` value, in milliseconds: 0 turns it off, unset uses the default. */
+function messageTimeoutMS(timeoutSecs: number | undefined): number {
+  return timeoutSecs || timeoutSecs === 0 ? timeoutSecs * 1000 : MS_MAX_ATTEMPT;
+}
 
 class MessageCoordinator {
   private state = new ConversationState();
+  private sendWorkflow?: SendWorkflow;
+  private loadingManager?: MessageLoadingManager;
+  private requestGenerations = new Map<string, number>();
+  private processedMessageID: string | null = null;
+  public timeoutMS: number;
+  private requestQueue = new RequestQueue();
+  private requests = new WeakMap<RequestToken, PendingMessageRequest>();
 
   private sendOrder: SendOrder = { sendStartingHydration: null };
 
@@ -53,6 +78,148 @@ class MessageCoordinator {
       options,
       ignoreHydration
     );
+  }
+
+  private getSendWorkflow() {
+    return (this.sendWorkflow ??= new SendWorkflow(this.serviceManager));
+  }
+
+  get messageLoadingManager() {
+    return (this.loadingManager ??= new MessageLoadingManager());
+  }
+
+  configureMessageTimeout(publicConfig: PublicConfig) {
+    this.timeoutMS = messageTimeoutMS(
+      publicConfig.messaging?.messageTimeoutSecs
+    );
+  }
+
+  get lastProcessedMessageID() {
+    return this.processedMessageID;
+  }
+
+  recordProcessedMessageID(messageID: string) {
+    this.processedMessageID = messageID;
+  }
+
+  runQueueIfReady() {
+    return this.getSendWorkflow().runQueueIfReady();
+  }
+
+  advanceRequestQueue() {
+    this.clearCurrentRequest();
+    this.runQueueIfReady();
+  }
+
+  rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
+    this.getSendWorkflow().rejectFinalErrorOnMessage(request, text);
+  }
+
+  resolveCancelledMessage(request: PendingMessageRequest) {
+    this.getSendWorkflow().resolveCancelledMessage(request);
+  }
+
+  public registerRequestGeneration(
+    requestID: string,
+    restartGeneration: number
+  ) {
+    this.requestGenerations.set(requestID, restartGeneration);
+  }
+
+  public isRequestFromPreviousConversation(
+    requestID: string | undefined
+  ): boolean {
+    const restartGeneration = this.requestGenerations.get(requestID);
+    return (
+      restartGeneration !== undefined &&
+      restartGeneration !== this.serviceManager.restartCount
+    );
+  }
+
+  updateIsMessageLoadingCounter(
+    direction: IncreaseOrDecrease,
+    message?: string
+  ): void {
+    const { store } = this.serviceManager;
+
+    if (direction === 'reset') {
+      store.dispatch(actions.resetIsLoadingCounter());
+    } else if (direction === 'increase') {
+      store.dispatch(actions.addIsLoadingCounter(1, message));
+    } else if (direction === 'decrease') {
+      if (store.getState().assistantMessageState.isMessageLoadingCounter <= 0) {
+        return;
+      }
+      store.dispatch(actions.addIsLoadingCounter(-1, message));
+    } else if (!direction && message) {
+      store.dispatch(actions.addIsLoadingCounter(0, message));
+    } else if (direction) {
+      consoleError(
+        `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`
+      );
+    }
+  }
+
+  updateIsChatLoadingCounter(direction: string): void {
+    const { store } = this.serviceManager;
+
+    if (direction === 'reset') {
+      store.dispatch(actions.resetIsHydratingCounter());
+    } else if (direction === 'increase') {
+      store.dispatch(actions.addIsHydratingCounter(1));
+    } else if (direction === 'decrease') {
+      if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
+        return;
+      }
+      store.dispatch(actions.addIsHydratingCounter(-1));
+    } else {
+      consoleError(
+        `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`
+      );
+    }
+  }
+
+  enqueueRequest(request: PendingMessageRequest) {
+    const token = Object.freeze({ identity: Symbol() });
+    this.requests.set(token, request);
+    this.requestQueue.enqueue(token);
+  }
+
+  getCurrentRequest() {
+    const token = this.requestQueue.getCurrent();
+    return token ? this.requests.get(token) : null;
+  }
+
+  getWaitingRequestCount() {
+    return this.requestQueue.getWaitingCount();
+  }
+
+  getFirstWaitingRequest() {
+    const token = this.requestQueue.getWaitingAt(0);
+    return token ? this.requests.get(token) : undefined;
+  }
+
+  takeNextRequest() {
+    const token = this.requestQueue.takeNext();
+    return token ? this.requests.get(token) : null;
+  }
+
+  clearCurrentRequest() {
+    this.requestQueue.clearCurrent();
+  }
+
+  removeWaitingRequest(messageID: string) {
+    // Match the original findIndex scan: ID getters can reenter cancellation.
+    const count = this.requestQueue.getWaitingCount();
+    for (let index = 0; index < count; index++) {
+      const token = this.requestQueue.getWaitingAt(index);
+      const request = this.requests.get(token);
+      if (request.message.id === messageID) {
+        // Remove the entry now at this index, after the ID getter has run.
+        return this.requests.get(this.requestQueue.removeWaitingAt(index));
+      }
+    }
+    return undefined;
   }
 
   get currentGeneration() {
@@ -211,4 +378,4 @@ class MessageCoordinator {
   }
 }
 
-export { MessageCoordinator };
+export { MessageCoordinator, messageTimeoutMS };
