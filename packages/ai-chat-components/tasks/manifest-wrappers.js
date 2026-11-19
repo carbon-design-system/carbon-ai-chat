@@ -303,7 +303,10 @@ function renderedChildren(model, node) {
       : [];
   }
   if (ts.isJsxElement(node)) {
-    return [node.openingElement, ...node.children];
+    // React renders nothing inside noscript on the client.
+    return node.openingElement.tagName.getText() === 'noscript'
+      ? [node.openingElement]
+      : [node.openingElement, ...node.children];
   }
   if (ts.isJsxFragment(node)) {
     return [...node.children];
@@ -317,8 +320,11 @@ function renderedChildren(model, node) {
   }
   if (ts.isCallExpression(node)) {
     const binding = callBinding(model, node.expression);
-    return binding?.module === 'react' && binding.name === 'createElement'
-      ? [...node.arguments].slice(2)
+    const [tag, , ...children] = node.arguments;
+    return binding?.module === 'react' &&
+      binding.name === 'createElement' &&
+      !(tag && ts.isStringLiteralLike(tag) && tag.text === 'noscript')
+      ? children
       : [];
   }
   return [];
@@ -536,14 +542,38 @@ export function readWrappers(model, { requireEventTypes = false } = {}) {
   return records;
 }
 
+function writesLooseKeyword(model, node) {
+  const { ts } = model;
+  return (
+    node.kind === ts.SyntaxKind.AnyKeyword ||
+    node.kind === ts.SyntaxKind.UnknownKeyword ||
+    Boolean(ts.forEachChild(node, (child) => writesLooseKeyword(model, child)))
+  );
+}
+
+// Rejects a cast that writes any or unknown, and a cast whose resolved event
+// or detail is any or unknown. The second catches an alias such as
+// `type Loose = CustomEvent<any>`, and a bare CustomEvent, whose detail
+// defaults to any.
+function looseEventType(model, typeNode) {
+  const { ts, checker } = model;
+  const loose = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+  const type = checker.getTypeFromTypeNode(typeNode);
+  const detail =
+    type.objectFlags & ts.ObjectFlags.Reference
+      ? checker.getTypeArguments(type)
+      : [];
+  return (
+    writesLooseKeyword(model, typeNode) ||
+    Boolean(type.flags & loose) ||
+    detail.some((entry) => entry.flags & loose)
+  );
+}
+
 export function validateWrapperEvents(model, wrappers) {
   for (const wrapper of wrappers) {
     for (const callback of wrapper.callbacks) {
-      if (
-        !callback.type ||
-        /\b(?:any|unknown)\b/.test(callback.type) ||
-        callback.type === 'CustomEvent'
-      ) {
+      if (!callback.typeNode || looseEventType(model, callback.typeNode)) {
         model.fail(
           callback.node,
           `Cast ${callback.callback} with EventName and a concrete DOM event type.`
