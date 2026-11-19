@@ -25,7 +25,6 @@ import {
 import { AccordionStateManager } from './accordion-state-manager';
 import { ConfigManager } from './config-manager';
 import { ReactAppManager } from './react-app-manager';
-import './demo-chat-theme-switcher';
 import './demo-header-switcher';
 import './demo-chat-feedback-switcher';
 import './demo-layout-config-switcher';
@@ -86,7 +85,6 @@ export class DemoBody extends LitElement {
     demo-page-theme-switcher,
     demo-layout-switcher,
     demo-theme-switcher,
-    demo-chat-theme-switcher,
     demo-homescreen-switcher,
     demo-writeable-elements-switcher,
     demo-markdown-custom-renderers-switcher,
@@ -623,16 +621,6 @@ export class DemoBody extends LitElement {
                       </div>
                       <demo-theme-switcher
                         .config=${this.config}></demo-theme-switcher>
-                    </div>
-                    <div
-                      class="config-section"
-                      role="group"
-                      aria-labelledby="ai-theme-heading">
-                      <div class="config-section__title" id="ai-theme-heading">
-                        AI Theme
-                      </div>
-                      <demo-chat-theme-switcher
-                        .config=${this.config}></demo-chat-theme-switcher>
                     </div>
                     <div
                       class="config-section"
