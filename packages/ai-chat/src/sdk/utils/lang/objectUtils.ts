@@ -32,6 +32,9 @@ function deepFreeze(object: any) {
  * Deep freezes a copy made by `cloneDeep` from `original`, but leaves alone every value the copy
  * shares with the original. `cloneDeep` keeps functions, classes and other values it can't copy by
  * reference, and those belong to the host, so they stay as the host made them.
+ *
+ * `original` must be the exact source value copied into `copy`, including the matching subtree
+ * when only part of a larger clone is passed.
  */
 function deepFreezeCopy<T>(copy: T, original: unknown): T {
   if (Object.is(copy, original)) {
