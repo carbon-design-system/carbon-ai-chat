@@ -24,7 +24,7 @@ import {
   MessageResponseTypes,
 } from '../../types/messaging/Messages';
 import type ObjectMap from '../../types/utilities/ObjectMap';
-import { deepFreeze } from './lang/objectUtils';
+import { deepFreezeCopy } from './lang/objectUtils';
 import {
   isHiddenOutputItem,
   isPause,
@@ -275,7 +275,7 @@ function clonePublicMessage(
   if (clone.history) {
     delete clone.history.file_upload_status;
   }
-  return deepFreeze(clone);
+  return deepFreezeCopy(clone, projected);
 }
 
 export class PublicMessagesProjection {

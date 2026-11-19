@@ -28,4 +28,33 @@ function deepFreeze(object: any) {
   return object;
 }
 
-export { deepFreeze };
+/**
+ * Deep freezes a copy made by `cloneDeep` from `original`, but leaves alone every value the copy
+ * shares with the original. `cloneDeep` keeps functions, classes and other values it can't copy by
+ * reference, and those belong to the host, so they stay as the host made them.
+ */
+function deepFreezeCopy<T>(copy: T, original: unknown): T {
+  if (Object.is(copy, original)) {
+    return copy;
+  }
+  const object = copy as any;
+  Object.freeze(object);
+  Object.getOwnPropertyNames(object).forEach((prop) => {
+    const value = object[prop];
+    if (
+      value !== null &&
+      (typeof value === 'object' || typeof value === 'function') &&
+      !Object.isFrozen(value)
+    ) {
+      const source =
+        original !== null &&
+        (typeof original === 'object' || typeof original === 'function')
+          ? (original as any)[prop]
+          : undefined;
+      deepFreezeCopy(value, source);
+    }
+  });
+  return copy;
+}
+
+export { deepFreeze, deepFreezeCopy };

@@ -26,7 +26,7 @@ import {
 import type { HumanAgentsOnlineStatus } from '../../types/config/ServiceDeskConfig';
 import type ObjectMap from '../../types/utilities/ObjectMap';
 import type { AppStateMessages } from '../../types/state/ChatMessagesState';
-import { deepFreeze } from './lang/objectUtils';
+import { deepFreezeCopy } from './lang/objectUtils';
 import {
   getRequestBubbleText,
   isConnectToHumanAgent,
@@ -437,13 +437,19 @@ function drawnItem(plan: ItemPlan): GenericItem {
   return item;
 }
 
+/** A frozen copy of the item a plan draws. Values the copy shares with the host's item stay unfrozen. */
+function frozenDrawnItem(plan: ItemPlan): GenericItem {
+  const item = drawnItem(plan);
+  return deepFreezeCopy(cloneDeep(item), item);
+}
+
 function buildEntry(plan: ItemPlan): Readonly<ChatSDKMessageItem> {
   return Object.freeze({
     id: plan.id,
     messageID: plan.messageID,
     kind: plan.kind,
     ...(plan.parentID !== undefined && { parentID: plan.parentID }),
-    item: deepFreeze(cloneDeep(drawnItem(plan))),
+    item: frozenDrawnItem(plan),
     status: plan.status,
     origin: plan.origin,
     ...(plan.isConnectToAgent && {
