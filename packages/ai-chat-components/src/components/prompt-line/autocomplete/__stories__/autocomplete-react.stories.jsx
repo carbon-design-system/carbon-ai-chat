@@ -7,6 +7,7 @@
  *
  *  @license
  */
+import { manifestEventArgTypes } from '../../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useMemo } from 'react';
 import { action } from 'storybook/actions';
 import CDSAIChatAutocomplete from '../../../../react/autocomplete';
@@ -338,4 +339,10 @@ export const Detached = {
       </Wrapper>
     );
   },
+};
+
+export const CDSAIChatAutocompleteEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CDSAIChatAutocomplete) },
 };

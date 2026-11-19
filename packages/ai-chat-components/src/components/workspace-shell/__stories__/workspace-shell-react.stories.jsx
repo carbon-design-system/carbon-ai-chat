@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import Toolbar from '../../../react/toolbar';
 import WorkspaceShell, {
@@ -177,4 +178,16 @@ export const Default = {
       </WorkspaceShell>
     );
   },
+};
+
+export const WorkspaceShellFooterEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(WorkspaceShellFooter) },
+};
+
+export const WorkspaceShellHeaderEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(WorkspaceShellHeader) },
 };

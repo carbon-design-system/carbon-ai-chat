@@ -21,6 +21,7 @@ node_modules
 # Generated or manifest files
 *.snap.js
 custom-elements.json
+packages/ai-chat-components/.storybook-react/manifest-wrapper-registry.generated.js
 telemetry.yml
 package-lock.json
 

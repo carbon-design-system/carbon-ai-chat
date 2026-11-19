@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import AudioPlayer from '../../../react/audio-player';
 import { Transcript } from '../../../react/transcript';
@@ -270,4 +271,10 @@ export const ErrorState = {
       </Card>
     );
   },
+};
+
+export const AudioPlayerEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(AudioPlayer) },
 };

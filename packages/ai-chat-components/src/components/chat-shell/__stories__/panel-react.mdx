@@ -69,6 +69,12 @@ If the trigger cannot receive focus, the shell focuses the first available contr
 
 Panels do not trap Tab. Your application sets initial focus and handles Escape. Apply initial focus once per opening, including when a panel first mounts open. If `onOpenEnd` has `detail.isReactivation` set to `true`, skip initial focus: the panel is becoming visible after another panel covered it. Leave close-time restoration to the shell.
 
+## Events
+
+### `ChatPanel`
+
+<ArgTypes of={PanelReactStories.ChatPanelEvents} />
+
 ## Component API
 
 <ArgTypes of={PanelReactStories.Default} />

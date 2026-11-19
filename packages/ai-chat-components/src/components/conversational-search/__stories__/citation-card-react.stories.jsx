@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React from 'react';
 import { action } from 'storybook/actions';
 import CitationCard from '../../../react/citation-card';
@@ -54,8 +55,7 @@ export const Default = {
   args: { ...DefaultWC.args },
   argTypes: {
     ...argTypes,
-    onCitationSelect: { ...selectEvent, control: 'none' },
-    onCitationExpand: { ...expandEvent, control: 'none' },
+    ...manifestEventArgTypes(CitationCard),
   },
   render: (args) => <Card args={args} />,
 };
@@ -75,4 +75,10 @@ export const MarkdownBody = {
       <Markdown slot="body" markdown={markdownBody} />
     </Card>
   ),
+};
+
+export const CitationCardEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CitationCard) },
 };

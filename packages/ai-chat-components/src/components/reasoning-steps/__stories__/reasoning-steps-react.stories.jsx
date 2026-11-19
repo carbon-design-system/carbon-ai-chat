@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import ReasoningSteps from '../../../react/reasoning-steps';
@@ -265,4 +266,10 @@ export const WithStaticSteps = {
 
 export const Controlled = {
   render: () => <ControlledExample />,
+};
+
+export const ReasoningStepsEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(ReasoningSteps) },
 };

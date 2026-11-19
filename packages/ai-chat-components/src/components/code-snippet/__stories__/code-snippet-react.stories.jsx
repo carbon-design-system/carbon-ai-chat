@@ -8,6 +8,7 @@
  */
 
 /* eslint-disable */
+import { manifestEventArgTypes } from '../../../../.storybook-react/manifest-event-arg-types.js';
 import React, {
   useCallback,
   useEffect,
@@ -255,10 +256,8 @@ export default {
         'The number in milliseconds to determine how long the feedback tooltip should remain.',
     },
     // Event handler
-    onChange: {
-      action: 'onChange',
-      table: { category: 'events' },
-    },
+
+    ...manifestEventArgTypes(CodeSnippet),
   },
   args: {
     onChange: undefined,
@@ -468,4 +467,10 @@ export const FullHeightMode = {
       </div>
     );
   },
+};
+
+export const CodeSnippetEvents = {
+  tags: ['!dev'],
+  parameters: { chromatic: { disable: true } },
+  argTypes: { ...manifestEventArgTypes(CodeSnippet) },
 };
