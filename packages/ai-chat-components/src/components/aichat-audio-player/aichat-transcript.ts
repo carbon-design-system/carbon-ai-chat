@@ -21,7 +21,7 @@ import ChevronUp16 from '@carbon/icons/es/chevron--up/16.js';
  * Renders as an expandable/collapsible section.
  *
  * @element cds-aichat-transcript
- * @fires cds-aichat-transcript-toggle - Fired when transcript is expanded or collapsed
+ * @fires {CustomEvent<TranscriptToggleEventDetail>} cds-aichat-transcript-toggle - Requests the next transcript visibility state.
  */
 class Transcript extends LitElement {
   static get is() {
@@ -77,11 +77,14 @@ class Transcript extends LitElement {
    */
   private handleToggle(): void {
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-transcript-toggle', {
-        bubbles: true,
-        composed: true,
-        detail: { expanded: !this.expanded },
-      })
+      new CustomEvent<TranscriptToggleEventDetail>(
+        'cds-aichat-transcript-toggle',
+        {
+          bubbles: true,
+          composed: true,
+          detail: { expanded: !this.expanded },
+        }
+      )
     );
   }
 
@@ -138,3 +141,9 @@ class Transcript extends LitElement {
 }
 
 export default Transcript;
+
+/** Requests transcript visibility. */
+export interface TranscriptToggleEventDetail {
+  /** Whether the transcript should be expanded. */
+  expanded: boolean;
+}

@@ -105,7 +105,9 @@ function LightDomPortalsContainer({
             key,
             slotElement: slotEl,
             hostElement: hostEl,
-            reactNode: reactNode ?? null,
+            // The event types its content without React. This listener is
+            // the React renderer it is addressed to.
+            reactNode: (reactNode as React.ReactNode | undefined) ?? null,
           },
         ]);
       }

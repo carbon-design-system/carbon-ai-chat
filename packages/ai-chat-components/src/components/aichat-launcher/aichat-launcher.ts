@@ -25,7 +25,7 @@ import {
  * Launcher button — opens the AI Chat window.
  *
  * @element cds-aichat-launcher
- * @fires {CustomEvent} cds-aichat-launcher-toggle - Fired when the user clicks the launcher button.
+ * @fires {CustomEvent<null>} cds-aichat-launcher-toggle - The launcher requests a visibility change.
  */
 class CDSAIChatLauncher extends LitElement {
   static get is() {
@@ -121,7 +121,7 @@ class CDSAIChatLauncher extends LitElement {
 
   private _handleToggle() {
     this.dispatchEvent(
-      new CustomEvent(`${prefix}-aichat-launcher-toggle`, {
+      new CustomEvent<null>(`${prefix}-aichat-launcher-toggle`, {
         bubbles: true,
         composed: true,
       })

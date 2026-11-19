@@ -17,3 +17,7 @@ export { default as Transcript } from './aichat-transcript.js';
 
 defineCustomElement(AudioPlayer);
 defineCustomElement(Transcript);
+
+export type { AudioPlayerErrorEventDetail } from './aichat-audio-player.js';
+
+export type { TranscriptToggleEventDetail } from './aichat-transcript.js';

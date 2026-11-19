@@ -7,6 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import type { TriggerChangeEventDetail } from './tiptap/types.js';
+import type { LightDomPortalEventDetail } from './tiptap/render-in-light-dom.js';
+import type {
+  InputChangeEventDetail,
+  PromptFocusEventDetail,
+  PromptKeydownEventDetail,
+  TypingEventDetail,
+} from './types.js';
 import type { Editor, Extension, JSONContent } from '@tiptap/core';
 import { css, html, LitElement, unsafeCSS } from 'lit';
 import { property } from 'lit/decorators.js';
@@ -56,12 +64,12 @@ import styles from './aichat-prompt-line.scss?lit';
  *
  * @element cds-aichat-prompt-line
  * @fires {CustomEvent<InputChangeEventDetail>} cds-aichat-prompt-change - Fired when the content changes.
- * @fires {CustomEvent<{ keyboard: boolean }>} cds-aichat-prompt-focus - Fired when the editing surface gains focus. `keyboard` is false for mouse focus.
- * @fires {CustomEvent} cds-aichat-prompt-blur - Fired when the editing surface loses focus.
+ * @fires {CustomEvent<PromptFocusEventDetail>} cds-aichat-prompt-focus - Fired when the editing surface gains focus. `keyboard` is false for mouse focus.
+ * @fires {CustomEvent<null>} cds-aichat-prompt-blur - Fired when the editing surface loses focus.
  * @fires {CustomEvent<TypingEventDetail>} cds-aichat-prompt-typing - Fired when the user starts or stops typing.
- * @fires {CustomEvent<{ originalEvent: KeyboardEvent }>} cds-aichat-prompt-keydown - Fired for each key press in the editing surface.
- * @fires {CustomEvent} cds-aichat-prompt-send-intent - Fired when the user presses Enter in a non-empty field, or Cmd+Enter (Ctrl+Enter on Windows and Linux) even when the field is empty.
- * @fires {CustomEvent<TriggerChangeEventDetail>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends. Rich mode only.
+ * @fires {CustomEvent<PromptKeydownEventDetail>} cds-aichat-prompt-keydown - Fired for each key press in the editing surface.
+ * @fires {CustomEvent<null>} cds-aichat-prompt-send-intent - Fired when the user presses Enter in a non-empty field, or Cmd+Enter (Ctrl+Enter on Windows and Linux) even when the field is empty.
+ * @fires {CustomEvent<TriggerChangeEventDetail | null>} cds-aichat-trigger-change - Fired when an autocomplete trigger such as `@` or `/` starts, changes, or ends. Rich mode only.
  * @fires {CustomEvent<LightDomPortalEventDetail>} cds-aichat-light-dom-portal - Fired when a rich-editor node asks the host to render content in the light DOM. Rich mode only.
  *
  * @experimental
@@ -655,3 +663,12 @@ declare global {
 }
 
 export default PromptLineElement;
+
+export type {
+  InputChangeEventDetail,
+  PromptFocusEventDetail,
+  PromptKeydownEventDetail,
+  TypingEventDetail,
+  TriggerChangeEventDetail,
+  LightDomPortalEventDetail,
+};

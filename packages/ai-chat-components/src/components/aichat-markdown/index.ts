@@ -45,3 +45,8 @@ export {
 export type { InlineMarkdownOptions } from './inline-markdown.js';
 
 defineCustomElement(CDSAIChatMarkdown);
+
+export type {
+  MarkdownPluginHostUpdateDetail,
+  MarkdownPluginHostUnmountDetail,
+} from './utils/plugin-host-container.js';

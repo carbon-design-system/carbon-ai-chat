@@ -26,6 +26,9 @@ const generateId = (segment: string) =>
 /**
  * Reasoning step component
  * @element cds-aichat-reasoning-step
+ * @fires {CustomEvent<ReasoningStepToggleEventDetail>} reasoning-step-beingtoggled - Requests a step toggle. Call preventDefault() to veto the toggle.
+ * @fires {CustomEvent<ReasoningStepToggleEventDetail>} reasoning-step-toggled - A step toggle is accepted.
+ * @fires {CustomEvent<ReasoningStepToggleEventDetail>} reasoning-animation-end - The step finishes its open or close animation.
  */
 class CDSAIChatReasoningStep extends LitElement {
   static get is() {
@@ -157,7 +160,10 @@ class CDSAIChatReasoningStep extends LitElement {
       detail,
     };
     const canToggle = this.dispatchEvent(
-      new CustomEvent('reasoning-step-beingtoggled', init)
+      new CustomEvent<ReasoningStepToggleEventDetail>(
+        'reasoning-step-beingtoggled',
+        init
+      )
     );
 
     if (!canToggle) {
@@ -168,7 +174,12 @@ class CDSAIChatReasoningStep extends LitElement {
       this.open = nextState;
     }
 
-    this.dispatchEvent(new CustomEvent('reasoning-step-toggled', init));
+    this.dispatchEvent(
+      new CustomEvent<ReasoningStepToggleEventDetail>(
+        'reasoning-step-toggled',
+        init
+      )
+    );
   }
 
   private handleButtonClick() {
@@ -250,11 +261,14 @@ class CDSAIChatReasoningStep extends LitElement {
       );
       const emit = () =>
         this.dispatchEvent(
-          new CustomEvent('reasoning-animation-end', {
-            bubbles: true,
-            composed: true,
-            detail: { open: this.open },
-          })
+          new CustomEvent<ReasoningStepToggleEventDetail>(
+            'reasoning-animation-end',
+            {
+              bubbles: true,
+              composed: true,
+              detail: { open: this.open },
+            }
+          )
         );
       // Only the `grid-template-rows` transition changes block size; awaiting the
       // panel's opacity/padding transitions too can delay the emit well past the
@@ -349,3 +363,9 @@ declare global {
 
 export { CDSAIChatReasoningStep };
 export default CDSAIChatReasoningStep;
+
+/** Describes a requested or completed step visibility change. */
+export interface ReasoningStepToggleEventDetail {
+  /** Whether the step is open after the change. */
+  open: boolean;
+}

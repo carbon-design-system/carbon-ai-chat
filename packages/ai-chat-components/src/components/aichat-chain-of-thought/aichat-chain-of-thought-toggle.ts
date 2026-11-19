@@ -20,6 +20,7 @@ import type { ChainOfThoughtToggleEventDetail } from './defs.js';
 /**
  * Chain of thought toggle component
  * @element cds-aichat-chain-of-thought-toggle
+ * @fires {CustomEvent<ChainOfThoughtToggleEventDetail>} chain-of-thought-toggle - The toggle changes its open state.
  */
 class CDSAIChatChainOfThoughtToggle extends LitElement {
   static get is() {

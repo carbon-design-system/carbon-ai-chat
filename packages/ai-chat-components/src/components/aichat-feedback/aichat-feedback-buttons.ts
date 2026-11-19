@@ -27,6 +27,7 @@ const DEFAULT_NEGATIVE_LABEL = 'Bad response';
 /**
  * Feedback buttons component
  * @element cds-aichat-feedback-buttons
+ * @fires {CustomEvent<FeedbackButtonsClickEventDetail>} feedback-buttons-click - A positive or negative feedback button is activated.
  */
 class CDSAIChatFeedbackButtons extends LitElement {
   static get is() {

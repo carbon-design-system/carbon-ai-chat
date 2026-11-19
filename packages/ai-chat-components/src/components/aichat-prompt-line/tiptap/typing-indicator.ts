@@ -23,6 +23,7 @@
  * state immediately on send.
  */
 
+import type { TypingEventDetail } from '../types.js';
 import { Extension } from '@tiptap/core';
 import { Plugin } from '@tiptap/pm/state';
 
@@ -35,6 +36,9 @@ export interface TypingIndicatorStorage {
   lastTransactionIsHost: boolean;
 }
 
+/**
+ * @eventOwner {import('../aichat-prompt-line.js').default}
+ */
 export const TypingIndicator = Extension.create<
   unknown,
   TypingIndicatorStorage
@@ -55,7 +59,7 @@ export const TypingIndicator = Extension.create<
       isTyping = typing;
       if (editorDom) {
         editorDom.dispatchEvent(
-          new CustomEvent('cds-aichat-prompt-typing', {
+          new CustomEvent<TypingEventDetail>('cds-aichat-prompt-typing', {
             detail: { isTyping: typing },
             bubbles: true,
             composed: true,

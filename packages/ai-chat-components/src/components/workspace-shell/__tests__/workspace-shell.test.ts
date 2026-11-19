@@ -352,6 +352,39 @@ describe('CDSAIChatWorkspaceShellBody - props', () => {
 });
 
 describe('CDSAIChatWorkspaceShellFooter - props & events', () => {
+  it('uses an overridden footer event name when a subclass action is clicked', async () => {
+    class NamedFooter extends CDSAIChatWorkspaceShellFooter {
+      static get eventButtonClick() {
+        return 'consumer-footer-click';
+      }
+    }
+    customElements.define('test-named-workspace-footer', NamedFooter);
+    const element = await fixture<NamedFooter>(html`
+      <test-named-workspace-footer .actions=${footerActions}>
+      </test-named-workspace-footer>
+    `);
+    const received: CustomEvent[] = [];
+    element.addEventListener('consumer-footer-click', (event) => {
+      received.push(event as CustomEvent);
+    });
+    let defaultEvents = 0;
+    element.addEventListener(
+      'cds-aichat-workspace-shell-footer-clicked',
+      () => {
+        defaultEvents += 1;
+      }
+    );
+    const button = Array.from(
+      element.shadowRoot!.querySelectorAll('cds-button')
+    ).find((entry) => entry.textContent?.trim() === 'Secondary') as HTMLElement;
+
+    button.click();
+
+    expect(received).to.have.length(1);
+    expect(received[0].detail).to.equal(footerActions[0]);
+    expect(defaultEvents).to.equal(0);
+  });
+
   it('should render footer-action buttons from the actions prop', async () => {
     const el = await fixture<CDSAIChatWorkspaceShellFooter>(html`
       <cds-aichat-workspace-shell-footer .actions=${footerActions}>

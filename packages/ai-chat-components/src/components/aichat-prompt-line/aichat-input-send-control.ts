@@ -33,8 +33,8 @@ import styles from './aichat-input-send-control.scss?lit';
  * Send control component — renders the send button or stop streaming button.
  *
  * @element cds-aichat-input-send-control
- * @fires {CustomEvent} cds-aichat-input-send - Fired when the send button is clicked
- * @fires {CustomEvent} cds-aichat-input-stop-streaming - Fired when the stop streaming button is clicked
+ * @fires {CustomEvent<null>} cds-aichat-input-send - The send button is activated.
+ * @fires {CustomEvent<null>} cds-aichat-input-stop-streaming - The stop streaming button is activated.
  */
 class InputSendControlElement extends LitElement {
   static get is() {
@@ -146,7 +146,7 @@ class InputSendControlElement extends LitElement {
       return;
     }
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-input-send', {
+      new CustomEvent<null>('cds-aichat-input-send', {
         bubbles: true,
         composed: true,
       })
@@ -155,7 +155,7 @@ class InputSendControlElement extends LitElement {
 
   private _handleStopStreamingClick = () => {
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-input-stop-streaming', {
+      new CustomEvent<null>('cds-aichat-input-stop-streaming', {
         bubbles: true,
         composed: true,
       })

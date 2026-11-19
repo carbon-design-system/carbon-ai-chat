@@ -16,6 +16,7 @@ import {
 import { createRequire, isBuiltin } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
+import { eventContractSource } from './event-contracts.mjs';
 
 const localPackages = [
   '@carbon/ai-chat',
@@ -167,6 +168,31 @@ async function checkManifest(layer, prefix, context) {
   assert.deepEqual(
     manifestTags(manifest),
     manifestTags(original).map((tag) => tag.replace(/^cds/, prefix))
+  );
+  const eventEntries = (value) =>
+    value.modules.flatMap((module) =>
+      (module.declarations ?? [])
+        .filter((entry) => entry.tagName)
+        .map((entry) => ({
+          tag: entry.tagName,
+          events: (entry.events ?? []).map((event) => ({
+            name: event.name,
+            type: event.type?.text,
+            description: event.description,
+          })),
+        }))
+    );
+  assert.deepEqual(
+    eventEntries(manifest),
+    eventEntries(original).map((entry) => ({
+      ...entry,
+      tag: entry.tag.replace(/^cds/, prefix),
+      events: entry.events.map((event) => ({
+        ...event,
+        name: event.name.replace(/^cds/, prefix),
+      })),
+    })),
+    'Generated prefixes must retain event names, detail types, and descriptions.'
   );
   const references = [];
   for (const module of manifest.modules) {
@@ -398,7 +424,7 @@ createElement(Transcript, { text: 'Generated transcript', expanded: true });
 // @ts-expect-error Generated precise React props retain their Boolean type.
 createElement(Transcript, { expanded: 'yes' });
 export { host, constructor, card };
-`
+` + eventContractSource(`${root}/ai-chat-components`, receipt.prefix)
   );
   for (const [name, module, moduleResolution] of [
     ['node16', ts.ModuleKind.Node16, ts.ModuleResolutionKind.Node16],

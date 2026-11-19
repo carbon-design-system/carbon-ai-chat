@@ -135,9 +135,10 @@ export interface AutocompleteNavigatedEventDetail {
  * Autocomplete component for AI Chat input suggestions.
  *
  * @element cds-aichat-autocomplete
- * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - Fired when an item is clicked/activated and `disableDirectSend` is true (insert-into-editor path)
- * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - Fired when an item is clicked/activated and `disableDirectSend` is false (default: sends directly to chat)
- * @fires {CustomEvent} cds-aichat-autocomplete-dismiss - Fired when the autocomplete is dismissed
+ * @fires {CustomEvent<AutocompleteSelectEventDetail>} cds-aichat-autocomplete-select - An item is activated for insertion when direct send is disabled.
+ * @fires {CustomEvent<AutocompleteSendEventDetail>} cds-aichat-autocomplete-send - An item is activated for direct send.
+ * @fires {CustomEvent<null>} cds-aichat-autocomplete-dismiss - The suggestion list is dismissed.
+ * @fires {CustomEvent<AutocompleteNavigatedEventDetail>} cds-aichat-autocomplete-navigated - Keyboard navigation enters or leaves the suggestion list.
  */
 class AutocompleteElement extends LitElement {
   static get is() {
@@ -564,7 +565,7 @@ class AutocompleteElement extends LitElement {
     this._setUserHasNavigated(false);
     this._announcer.announce(this.i18n.suggestionsClosed);
     this.dispatchEvent(
-      new CustomEvent('cds-aichat-autocomplete-dismiss', {
+      new CustomEvent<null>('cds-aichat-autocomplete-dismiss', {
         bubbles: true,
         composed: true,
       })

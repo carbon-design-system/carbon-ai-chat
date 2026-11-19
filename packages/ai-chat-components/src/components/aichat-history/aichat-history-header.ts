@@ -21,6 +21,7 @@ import styles from './chat-history.scss?lit';
  *
  * @element cds-aichat-history-header
  *
+ * @fires {CustomEvent<null>} history-header-close-click - The history close button is activated.
  */
 class CDSAIChatHistoryHeader extends LitElement {
   static get is() {
@@ -56,7 +57,7 @@ class CDSAIChatHistoryHeader extends LitElement {
    */
   _handleCloseButtonClick = () => {
     this.dispatchEvent(
-      new CustomEvent('history-header-close-click', {
+      new CustomEvent<null>('history-header-close-click', {
         bubbles: true,
         composed: true,
       })

@@ -14,7 +14,7 @@ import { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-load
 import { CDSAIChatToolbar } from '../components/aichat-toolbar/index.js';
 import type { Action } from '../components/aichat-toolbar/aichat-toolbar.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
-import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from './utils/iconTransform.js';
 
 /**
  * Toolbar action interface that accepts both CarbonIcon and React icon components.

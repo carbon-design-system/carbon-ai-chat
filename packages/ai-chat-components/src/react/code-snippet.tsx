@@ -14,7 +14,7 @@ import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js
 
 import { CDSAIChatCodeSnippet } from '../components/aichat-code-snippet/index.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
-import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from './utils/iconTransform.js';
 
 // Re-export the Action interface from the web component
 export type { Action } from '../components/aichat-code-snippet/aichat-code-snippet.js';

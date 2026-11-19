@@ -11,6 +11,8 @@ import { css, html, LitElement, type PropertyValues, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
+import type { AutocompleteNavigatedEventDetail } from '../aichat-autocomplete/aichat-autocomplete.js';
+
 import { prefix } from '../../globals/settings.js';
 
 import styles from './aichat-prompt-line-shell.scss?lit';
@@ -74,6 +76,7 @@ import styles from './aichat-prompt-line-shell.scss?lit';
  * The focus outline and error outline are not affected by either hook.
  *
  * @element cds-aichat-prompt-line-shell
+ * @fires {CustomEvent<AutocompleteNavigatedEventDetail>} cds-aichat-autocomplete-navigated - The active autocomplete list enters or leaves keyboard navigation, including cleanup after its removal.
  */
 class PromptLineShellElement extends LitElement {
   static get is() {
@@ -296,3 +299,5 @@ declare global {
 }
 
 export default PromptLineShellElement;
+
+export type { AutocompleteNavigatedEventDetail };

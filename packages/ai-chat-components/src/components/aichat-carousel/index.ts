@@ -13,3 +13,5 @@ import CDSAICarousel from './aichat-carousel.js';
 export { CDSAICarousel };
 
 defineCustomElement(CDSAICarousel);
+
+export type { CarouselResponse } from '@carbon/utilities';

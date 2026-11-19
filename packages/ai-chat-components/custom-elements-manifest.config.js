@@ -13,6 +13,7 @@ import {
   internalMembersPlugin,
   readPrefixSetting,
 } from './tasks/cem-plugins.js';
+import { manifestEventsPlugin } from './tasks/manifest-events-plugin.js';
 
 export default {
   globs: [
@@ -20,7 +21,7 @@ export default {
     'src/components/aichat-*/**/*.ts',
     'src/components/shared/**/*.ts',
     'src/globals/**/*.ts',
-    'src/react/**/*.ts',
+    'src/react/**/*.{ts,tsx}',
     'src/testing/**/*.ts',
     'src/typings/**/*.ts',
   ],
@@ -40,5 +41,6 @@ export default {
     carbonElementTagPlugin({ prefix: readPrefixSetting() }),
     internalMembersPlugin(),
     componentModulePathsPlugin(),
+    manifestEventsPlugin(),
   ],
 };

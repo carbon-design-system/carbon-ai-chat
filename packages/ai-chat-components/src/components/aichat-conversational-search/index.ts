@@ -13,6 +13,11 @@ import CitationCard from './aichat-citation-card.js';
 import ConversationalSearchShell from './aichat-conversational-search-shell.js';
 
 export { CitationCard, ConversationalSearchShell };
+export type { CitationCardEventDetail } from './aichat-citation-card.js';
+export type {
+  CitationToggleEventDetail,
+  CitationsSelectEventDetail,
+} from './aichat-conversational-search-shell.js';
 
 defineCustomElement(ConversationalSearchShell);
 defineCustomElement(CitationCard);

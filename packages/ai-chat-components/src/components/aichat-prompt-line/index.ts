@@ -91,3 +91,11 @@ defineCustomElement(PromptLineShellElement);
 defineCustomElement(ErrorMessage);
 defineCustomElement(InputSendControlElement);
 defineCustomElement(PromptLineElement);
+
+export type {
+  PromptFocusEventDetail,
+  PromptKeydownEventDetail,
+  PromptLineEventDetailMap,
+} from './types.js';
+
+export type { CustomListRenderEventDetail } from './aichat-autocomplete-controller.js';

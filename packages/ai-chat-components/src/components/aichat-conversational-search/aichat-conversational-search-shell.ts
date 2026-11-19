@@ -41,7 +41,7 @@ export interface CitationsSelectEventDetail {
  * @slot answer-error - An optional answer error, after the toggle.
  * @slot citations - Citation content, including loading or error states.
  * @csspart answer - The answer and toggle container.
- * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests a citation state change.
+ * @fires {CustomEvent<CitationToggleEventDetail>} cds-aichat-citations-toggle - Requests the next citation visibility state.
  * @fires {CustomEvent<CitationsSelectEventDetail>} cds-aichat-citations-select - Requests a new selected citation when a slotted card is focused or clicked, or the slotted carousel changes slides.
  */
 class ConversationalSearchShell extends LitElement {

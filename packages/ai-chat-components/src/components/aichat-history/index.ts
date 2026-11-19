@@ -49,3 +49,15 @@ defineCustomElement(CDSAIChatHistoryPanelItem);
 defineCustomElement(CDSAIChatHistoryPanelMenu);
 defineCustomElement(CDSAIChatHistoryHeader);
 defineCustomElement(CDSAIChatHistoryShell);
+
+export type { HistorySearchInputEventDetail } from './aichat-history-toolbar.js';
+
+export type { HistoryRenameChangeEventDetail } from './aichat-history-panel-item-input.js';
+
+export type { HistoryRenameSaveEventDetail } from './aichat-history-panel-item-input.js';
+
+export type { HistoryDeleteConfirmEventDetail } from './aichat-history-delete-panel.js';
+
+export type { HistoryItemSelectedEventDetail } from './aichat-history-panel-item.js';
+
+export type { HistoryMenuActionEventDetail } from './aichat-history-panel-item.js';

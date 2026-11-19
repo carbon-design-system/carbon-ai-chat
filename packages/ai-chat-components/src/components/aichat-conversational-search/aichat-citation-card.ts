@@ -39,7 +39,7 @@ export interface CitationCardEventDetail {
  * @slot title - The source title. Use a block element, such as a `div`.
  * @slot body - The cited text, clamped to five lines. Use a block element, such as a `div`. Keep links and buttons out of it, because the card's click target covers it.
  * @fires {CustomEvent<CitationCardEventDetail>} cds-aichat-citation-select - Fires when the link or button gets focus or is clicked.
- * @fires {CustomEvent<CitationCardEventDetail>} cds-aichat-citation-expand - Fires when an expandable card is clicked, before `cds-aichat-citation-select`.
+ * @fires {CustomEvent<CitationCardEventDetail>} cds-aichat-citation-expand - Fires when an expandable card is clicked, just before its select event.
  */
 class CitationCard extends LitElement {
   static get is() {
@@ -125,19 +125,29 @@ class CitationCard extends LitElement {
     });
   }
 
-  private _eventInit(): CustomEventInit<CitationCardEventDetail> {
-    return { detail: { index: this.index }, bubbles: true, composed: true };
-  }
-
   private _handleSelect() {
     this.dispatchEvent(
-      new CustomEvent(CitationCard.eventCitationSelect, this._eventInit())
+      new CustomEvent<CitationCardEventDetail>(
+        CitationCard.eventCitationSelect,
+        {
+          detail: { index: this.index },
+          bubbles: true,
+          composed: true,
+        }
+      )
     );
   }
 
   private _handleExpand() {
     this.dispatchEvent(
-      new CustomEvent(CitationCard.eventCitationExpand, this._eventInit())
+      new CustomEvent<CitationCardEventDetail>(
+        CitationCard.eventCitationExpand,
+        {
+          detail: { index: this.index },
+          bubbles: true,
+          composed: true,
+        }
+      )
     );
     this._handleSelect();
   }

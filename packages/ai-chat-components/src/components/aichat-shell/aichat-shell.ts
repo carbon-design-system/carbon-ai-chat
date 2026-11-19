@@ -31,7 +31,7 @@ const INSTANCE_ATTR = 'data-cds-aichat-shell-id';
 let shellInstanceCounter = 0;
 
 /**
- * @fires cds-aichat-shell-panel-focus-fallback - A closed panel's trigger cannot receive focus and no panel remains active. Focus an appropriate fallback.
+ * @fires {CustomEvent<null>} cds-aichat-shell-panel-focus-fallback - A closed panel has no focusable trigger or active panel. Focus an appropriate fallback.
  */
 class CDSAIChatShell extends LitElement {
   static get is() {
