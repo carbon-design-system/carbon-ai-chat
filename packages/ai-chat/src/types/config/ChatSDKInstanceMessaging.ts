@@ -35,9 +35,10 @@ export interface ChatSDKInstanceMessaging {
    * {@link ChatSDKConfigMessaging.customSendMessage}. Only what the user types in the chat's input
    * reaches the service desk.
    *
-   * A send made while the prebuilt chat loads waits until every `chat:ready` handler settles. A
-   * handler that never settles holds those sends, so they never reach `customSendMessage`. Sends
-   * made after `chat:ready` fires don't wait.
+   * If a send starts loading the prebuilt chat, that send and sends queued behind it during loading
+   * wait until every `chat:ready` handler settles. A handler that never settles holds those sends,
+   * so they never reach `customSendMessage`. If opening the chat starts loading first, sends wait
+   * for that load alone. Sends made after `chat:ready` fires don't wait.
    *
    * **When the promise resolves:**
    * - When `customSendMessage` resolves and the chat records the turn as sent. It doesn't wait
