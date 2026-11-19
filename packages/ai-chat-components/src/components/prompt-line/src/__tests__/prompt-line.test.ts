@@ -220,6 +220,122 @@ describe('<cds-aichat-prompt-line> (textarea mode)', function () {
     await el.updateComplete;
     expect(el.hasFocus()).to.equal(false);
   });
+
+  it('re-enabling returns focus the disable took away', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(true);
+    expect(getDeepActiveElement() === getTextarea(el)).to.equal(true);
+  });
+
+  it('re-enabling keeps the focus origin the disable took away', async () => {
+    const el = await makePromptLine();
+    const focused = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    // A pointer-driven focus, so the origin differs from the keyboard default.
+    getTextarea(el).dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true })
+    );
+    getTextarea(el).focus();
+    expect((await focused).detail.keyboard).to.equal(false);
+    el.disabled = true;
+    await el.updateComplete;
+
+    const refocused = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    el.disabled = false;
+    await el.updateComplete;
+    expect((await refocused).detail.keyboard).to.equal(false);
+  });
+
+  it('re-enabling leaves focus alone after a click elsewhere while disabled', async () => {
+    const el = await makePromptLine();
+    const text = document.createElement('p');
+    text.textContent = 'transcript text';
+    document.body.appendChild(text);
+    try {
+      getTextarea(el).focus();
+      el.disabled = true;
+      await el.updateComplete;
+      // Clicking unfocusable content leaves focus on the body.
+      text.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, composed: true })
+      );
+
+      el.disabled = false;
+      await el.updateComplete;
+      expect(el.hasFocus()).to.equal(false);
+    } finally {
+      text.remove();
+    }
+  });
+
+  it('re-enabling still returns focus after a click on the disabled prompt line', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+    // On the host around the textarea: a disabled control may not receive
+    // pointer events.
+    el.querySelector('[data-aichat-editor-host]')!.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, composed: true })
+    );
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(true);
+  });
+
+  it('re-enabling leaves focus alone after blur() while disabled', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+    el.blur();
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+  });
+
+  it('re-enabling leaves focus alone when the surface was not focused', async () => {
+    const el = await makePromptLine();
+    el.disabled = true;
+    await el.updateComplete;
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+  });
+
+  it('re-enabling leaves focus that moved elsewhere while disabled', async () => {
+    const el = await makePromptLine();
+    const other = document.createElement('button');
+    other.textContent = 'elsewhere';
+    document.body.appendChild(other);
+    try {
+      getTextarea(el).focus();
+      el.disabled = true;
+      await el.updateComplete;
+      other.focus();
+
+      el.disabled = false;
+      await el.updateComplete;
+      expect(el.hasFocus()).to.equal(false);
+      expect(document.activeElement === other).to.equal(true);
+    } finally {
+      other.remove();
+    }
+  });
 });
 
 describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
@@ -422,6 +538,50 @@ describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
     el.rich = true;
     await waitForRich(el, describeUpgrade);
     expect((await postFocus).detail.keyboard).to.equal(true);
+  });
+
+  it('re-enabling returns focus the disable took away', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    const editor = el.getEditor()!;
+    editor.view.focus();
+    expect(el.hasFocus()).to.equal(true);
+
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(true);
+    expect(getDeepActiveElement() === editor.view.dom).to.equal(true);
+  });
+
+  it('returns focus to the rich editor when it upgrades while disabled', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+
+    const editor = await el.ensureEditor();
+    el.disabled = false;
+    await el.updateComplete;
+    expect(getDeepActiveElement() === editor.view.dom).to.equal(true);
+  });
+
+  it('keeps focus through a disable and re-enable in the same frame', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    el.getEditor()!.view.focus();
+
+    el.disabled = true;
+    await el.updateComplete;
+    el.disabled = false;
+    await el.updateComplete;
+    // Let any blur queued for the next frame run.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(el.hasFocus()).to.equal(true);
   });
 });
 
