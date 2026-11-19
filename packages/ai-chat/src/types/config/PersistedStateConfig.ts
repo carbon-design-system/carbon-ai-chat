@@ -17,8 +17,6 @@ import { PersistedState } from '../state/AppState';
  * {@link PersistedStateConfig.initialState} to restore a session.
  *
  * @category Config
- *
- * @experimental
  */
 export type PersistableState = Omit<
   PersistedState,
@@ -40,20 +38,21 @@ export type PersistableState = Omit<
  * is set.
  *
  * @category Config
- * @experimental
  */
 export interface PersistedStateConfig {
   /**
-   * The session state to boot from, used in place of reading `sessionStorage`. Resolve any
-   * asynchronous load (for example from your own backend) before constructing the chat and pass the
-   * resolved value here. When omitted, the chat starts a fresh session but still reports changes to
-   * {@link PersistedStateConfig.onStateChange}.
+   * The session state to boot from: a value you saved from {@link PersistedStateConfig.onStateChange},
+   * or one you build. When restoring, pass back the whole value you saved. The chat uses it in place of
+   * reading `sessionStorage`. Resolve any asynchronous load (for example from your own backend) before
+   * constructing the chat and pass the resolved value here. When omitted, the chat starts a fresh session
+   * but still reports changes to {@link PersistedStateConfig.onStateChange}.
    *
    * A restored session never restores an expanded launcher or a pending call to action:
    * `launcherIsExpanded` and `launcherShouldStartCallToActionCounterIfEnabled` always start false, as
    * they do for a session restored from `sessionStorage`.
    *
-   * @experimental
+   * In 1.x, passing any `initialState` counts as a restored session, so
+   * {@link PublicConfig.openChatByDefault} doesn't open the window.
    */
   initialState?: PersistableState;
 
@@ -64,8 +63,6 @@ export interface PersistedStateConfig {
    * transition is reported once, including a restored open view. A mount that leaves the saved values unchanged
    * makes no call. The argument is the complete {@link PersistableState}; persist it verbatim so it can later seed
    * {@link PersistedStateConfig.initialState}.
-   *
-   * @experimental
    */
   onStateChange?: (state: PersistableState) => void;
 }
