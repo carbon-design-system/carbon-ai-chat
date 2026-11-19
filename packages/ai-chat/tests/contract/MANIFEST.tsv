@@ -1285,7 +1285,7 @@ context	packages/ai-chat/tests/contract/spec/panels/historyPanel_spec.ts	"scope:
 context	packages/ai-chat/tests/contract/spec/panels/historyPanel_spec.ts	"scope:describe:'history panel through customPanels'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/panels/historyPanel_spec.ts	"scope:describe:'historyPanelElement'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/tests/contract/spec/panels/historyPanel_spec.ts	"scope:describe:'mobile history menu'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
-context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"file"	bee6468e0a2b0f167cb7c73d78537afb55c40da9a5066dfafbfe098a6a0f8346
+context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"file"	eed15f830f7a507296a24a6f84698c8c418d6ac50816f257a171ae9489a714a0
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.customContentOnly'"	b893ce65c567a6e0fdc4f490b6e6d1fa75c4cdc0d46e9d57d32a6d40ce95c4b9
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.customContentOnly'/it:'shows neither the greeting nor the starters'"	bd37bc37e44b972fd46d5ed1808c27b25e547e764e0317ca91515fc59ba67761
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.customContentOnly'/it:'still shows host content written into homeScreenAfterStartersElement'"	5f4b137cdac5610472aa4698a5811022f8e00f798a7b1880a1d3b81054da53e5
@@ -1295,6 +1295,7 @@ context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registra
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.disableReturn'/it:'still shows the home screen on first open'"	a239452a43b80e95f60ac76de0e62171cb76e3e154f328f517e0848d04a0b70d
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.greeting'"	d98be0fc6eeeef21de906e59a7e643b349e65055406c038e4ee0d9c09eca2e42
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.greeting'/it:'shows the greeting on the home screen'"	9434fe4585223ef38871b2c71578c51cbd7622f593bf8f1dd81479299b8be7ea
+context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.greeting'/it:'updates the greeting without an after-starters element'"	cc1c5d5a5e5b64a98412326da2899e363c761617b99068f55473b3e5979e5750
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.starters'"	c51da416b03f6d903a68583302bc647fd00afa36c6b862d8edad4e9287ac34a7
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.starters'/it:'sends the starter label as the user message, from homeScreenStarter, and leaves the home screen'"	8bad0f0eada83c9f1f438ad998aa49d34d48e62369a1732681511fe15cdc281c
 context	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"registration:describe:'homescreen.starters'/it:'shows no starter buttons with starters.isOn false'"	57379bbc5a4f84259164757cc9fa96465661861c74a3117b8a4ff9a0aa5559fa
@@ -2730,6 +2731,7 @@ test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.
 test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.disableReturn offers no way back to the home screen once a message is sent"	56e9ffcb7df8d91ee016997f8aa43a76a2df58fed7bf5560f68f40c4b7c481de
 test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.disableReturn still shows the home screen on first open"	de642b845bc63d5463c21ba135a7f2bcd81b0874e654b344835623ded4438aa0
 test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.greeting shows the greeting on the home screen"	17799c40b3d07cb2144eb40191f3fbf16907a039ac29337404ca579b39d48048
+test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.greeting updates the greeting without an after-starters element"	2bff76e0b396865c34c84236f6319231417962979966833822de635c1da01106
 test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.starters sends the starter label as the user message, from homeScreenStarter, and leaves the home screen"	806fb8079e1d27ec1d628a8e0bea3b9714324a345074132dfe5f9d69c94ed77e
 test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.starters shows no starter buttons with starters.isOn false"	09494d6a3198c6118ddc84defea0bb32c5fd658dc51da4f3a37b2a186745efc7
 test	packages/ai-chat/tests/contract/spec/panels/homeScreen_spec.ts	"homescreen.starters shows one button per starter, labeled with its label"	2b891b777b1244faacf80468659766db902e4d5595707d37386f6ad39f73fe87

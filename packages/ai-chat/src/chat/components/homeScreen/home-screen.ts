@@ -100,7 +100,7 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
       starters?.isOn && Boolean(starters.buttons?.length);
     const hasCustomContent = writeableElementsOf(this.serviceManager)[
       WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
-    ].hasChildNodes();
+    ]?.hasChildNodes();
 
     return html`
       <div
