@@ -551,22 +551,116 @@ function writesLooseKeyword(model, node) {
   );
 }
 
-// Rejects a cast that writes any or unknown, and a cast whose resolved event
-// or detail is any or unknown. The second catches an alias such as
-// `type Loose = CustomEvent<any>`, and a bare CustomEvent, whose detail
-// defaults to any.
+function externalDeclarations(model, symbol) {
+  const declarations = symbol?.declarations ?? [];
+  return (
+    declarations.length > 0 &&
+    declarations.every((declaration) => {
+      const source = declaration.getSourceFile();
+      return (
+        model.program.isSourceFileDefaultLibrary(source) ||
+        model.program.isSourceFileFromExternalLibrary(source)
+      );
+    })
+  );
+}
+
+function typeArguments(model, type) {
+  return [
+    ...(type.aliasTypeArguments ?? []),
+    ...(type.objectFlags & model.ts.ObjectFlags.Reference
+      ? model.checker.getTypeArguments(type)
+      : []),
+  ];
+}
+
+function signatureTypes(model, type) {
+  const { ts, checker } = model;
+  return [ts.SignatureKind.Call, ts.SignatureKind.Construct].flatMap((kind) =>
+    checker
+      .getSignaturesOfType(type, kind)
+      .flatMap((signature) => [
+        ...signature.parameters.map((parameter) =>
+          checker.getTypeOfSymbol(parameter)
+        ),
+        checker.getReturnTypeOfSignature(signature),
+      ])
+  );
+}
+
+function defaultsToAny(model, symbol, index) {
+  for (const declaration of symbol?.declarations ?? []) {
+    const parameter = declaration.typeParameters?.[index];
+    if (parameter?.default) {
+      return Boolean(
+        model.checker.getTypeFromTypeNode(parameter.default).flags &
+        model.ts.TypeFlags.Any
+      );
+    }
+  }
+  return false;
+}
+
+// Type arguments, less an any that only fills a parameter whose declared
+// default is any, such as the state of React's ComponentClass<P, S = any>.
+function writtenTypeArguments(model, type) {
+  const { ts, checker } = model;
+  const written = (symbol) => (entry, index) =>
+    !(entry.flags & ts.TypeFlags.Any && defaultsToAny(model, symbol, index));
+  return [
+    ...(type.aliasTypeArguments ?? []).filter(written(type.aliasSymbol)),
+    ...(type.objectFlags & ts.ObjectFlags.Reference
+      ? checker
+          .getTypeArguments(type)
+          .filter(written(type.target?.symbol ?? type.getSymbol()))
+      : []),
+  ];
+}
+
+// Reports any anywhere in a payload type. Lib and package types, such as
+// ReactNode or members inherited from LitElement, are trusted, but the type
+// arguments local code passes them are not: ComponentType<any> fails.
+function containsAny(model, type, seen = new Set()) {
+  const { ts, checker } = model;
+  if (seen.has(type)) {
+    return false;
+  }
+  seen.add(type);
+  if (type.flags & ts.TypeFlags.Any) {
+    return true;
+  }
+  const nested = writtenTypeArguments(model, type);
+  if (!externalDeclarations(model, type.aliasSymbol ?? type.getSymbol())) {
+    if (type.isUnionOrIntersection()) {
+      nested.push(...type.types);
+    } else if (type.flags & ts.TypeFlags.Object) {
+      nested.push(
+        ...checker
+          .getPropertiesOfType(type)
+          .filter((property) => !externalDeclarations(model, property))
+          .map((property) => checker.getTypeOfSymbol(property)),
+        ...checker.getIndexInfosOfType(type).map((info) => info.type),
+        ...signatureTypes(model, type)
+      );
+    }
+  }
+  return nested.some((entry) => containsAny(model, entry, seen));
+}
+
+// Rejects a cast that writes any or unknown, a cast whose resolved event or
+// detail is any or unknown, and any any inside the payload. These catch an
+// alias such as `type Loose = CustomEvent<any>`, a bare CustomEvent, whose
+// detail defaults to any, and a named payload with an any field. An unknown
+// field inside a named payload stays allowed, since it marks opaque host data.
 function looseEventType(model, typeNode) {
   const { ts, checker } = model;
   const loose = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
   const type = checker.getTypeFromTypeNode(typeNode);
-  const detail =
-    type.objectFlags & ts.ObjectFlags.Reference
-      ? checker.getTypeArguments(type)
-      : [];
   return (
     writesLooseKeyword(model, typeNode) ||
     Boolean(type.flags & loose) ||
-    detail.some((entry) => entry.flags & loose)
+    typeArguments(model, type).some((entry) => entry.flags & loose) ||
+    containsAny(model, type)
   );
 }
 
