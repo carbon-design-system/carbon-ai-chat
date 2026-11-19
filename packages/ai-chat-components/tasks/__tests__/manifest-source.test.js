@@ -372,6 +372,26 @@ test('fails unknown static tags instead of omitting the element', () => {
   );
 });
 
+test('fails a class expression or anonymous class with a static tag instead of omitting the element', () => {
+  for (const declaration of [
+    "export default class extends HTMLElement { static get is() { return 'a-b'; } }",
+    "export const Element = class extends HTMLElement { static is = 'a-b'; };",
+    "const Element = class Named extends HTMLElement { static is = 'a-b'; }; export default Element;",
+  ]) {
+    assert.throws(
+      () => fixture({ 'src/element.ts': declaration }),
+      /src\/element\.ts:1:\d+: Declare an element with a static is as a named class declaration\./,
+      declaration
+    );
+  }
+  assert.deepEqual(
+    fixture({
+      'src/element.ts': 'export const Scoped = class extends HTMLElement {};',
+    }).elements,
+    []
+  );
+});
+
 test('loads ambient declarations into the program without treating them as source contracts', () => {
   const model = fixture({
     'src/typings/resources.d.ts': `
@@ -614,5 +634,72 @@ test('rejects changed object properties without confusing unrelated symbols', ()
   );
   assert.deepEqual(model.values(variable(model, 'unchanged').initializer), [
     'other-event',
+  ]);
+});
+
+test('rejects contract values written by a for...of or for...in loop', () => {
+  for (const loop of [
+    "for (eventName of ['event-next']) {}",
+    'for (eventName in incoming) {}',
+    "for ([eventName] of [['event-next']]) {}",
+    "for ({ name: eventName } of [{ name: 'event-next' }]) {}",
+  ]) {
+    const model = fixture({
+      'src/changed.ts': `
+        let eventName = 'event-known';
+        const incoming: Record<string, string> = {};
+        ${loop}
+        const result = eventName;
+      `,
+    });
+
+    assert.throws(
+      () => model.values(variable(model, 'result').initializer),
+      /src\/changed\.ts:4:\d+: Assigned contract value cannot be resolved statically: eventName\./,
+      loop
+    );
+  }
+});
+
+test('rejects contract properties written through a cast receiver or reflection', () => {
+  for (const write of [
+    "(options as any).eventName = 'event-next';",
+    "(<any>options)['eventName'] = 'event-next';",
+    "Object.assign(options, { eventName: 'event-next' });",
+    "Object.defineProperty(options, 'eventName', { value: 'event-next' });",
+    "Object.defineProperties(options, { eventName: { value: 'event-next' } });",
+    "Reflect.set(options, 'eventName', 'event-next');",
+    "Reflect.defineProperty(options, 'eventName', { value: 'event-next' });",
+    "Object.defineProperty(options, key, { value: 'event-next' });",
+  ]) {
+    const model = fixture({
+      'src/changed.ts': `
+        const options = { eventName: 'event-known', sibling: 'event-other' };
+        declare const key: string;
+        ${write}
+        const result = options.eventName;
+      `,
+    });
+
+    assert.throws(
+      () => model.values(variable(model, 'result').initializer),
+      /src\/changed\.ts:4:\d+: Assigned contract value cannot be resolved statically: options\.eventName\./,
+      write
+    );
+  }
+});
+
+test('reflection with a named key leaves sibling properties readable', () => {
+  const model = fixture({
+    'src/changed.ts': `
+      const options = { eventName: 'event-known', sibling: 'event-other' };
+      Object.defineProperty(options, 'eventName', { value: 'event-next' });
+      Reflect.set(options, 'eventName', 'event-next');
+      const unchanged = options.sibling;
+    `,
+  });
+
+  assert.deepEqual(model.values(variable(model, 'unchanged').initializer), [
+    'event-other',
   ]);
 });
