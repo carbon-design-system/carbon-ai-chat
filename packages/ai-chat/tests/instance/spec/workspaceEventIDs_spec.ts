@@ -7,11 +7,12 @@
  *  @license
  */
 
-import { act } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
+import { allByRole, click } from '../../contract/helpers/dom';
 import { setWorkspaceCardSource } from '../../../src/chat/services/CustomPanelInstance';
 import { viewActions } from '../../../src/chat/state';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
-import { PanelType } from '../../../src/types/instance/apiTypes';
+import { PanelType, ViewType } from '../../../src/types/instance/apiTypes';
 import {
   MessageResponseTypes,
   type PreviewCardItem,
@@ -243,8 +244,8 @@ describe('workspace event message and item IDs', () => {
     chat.log.length = 0;
     await openFromCard(chat, 'other');
 
-    // The first workspace's close finishes after the second's pre-open, so its IDs must
-    // not clear the second card's.
+    // The first workspace's close events keep the first card's IDs, and the second
+    // card's open events get its own.
     const ids = (type: string) =>
       chat.log
         .filter((event) => event.type === type)
@@ -255,5 +256,29 @@ describe('workspace event message and item IDs', () => {
     expect(ids(BusEventType.WORKSPACE_CLOSE)).toEqual([plan]);
     expect(ids(BusEventType.WORKSPACE_PRE_OPEN)).toEqual([other]);
     expect(ids(BusEventType.WORKSPACE_OPEN)).toEqual([other]);
+  });
+
+  it("closes the open workspace with its card's IDs when another card's button opens its own", async () => {
+    const chat = await chatWithCards();
+    await act(async () => {
+      await chat.instance.changeView(ViewType.MAIN_WINDOW);
+    });
+    const viewDetails = () => allByRole('button', 'View details');
+    await waitFor(() => expect(viewDetails()).toHaveLength(3));
+    const [planButton, otherButton] = viewDetails();
+    await click(planButton);
+    await waitFor(() => expect(chat.log).toHaveLength(2));
+    chat.log.length = 0;
+    await click(otherButton);
+    await waitFor(() => expect(chat.log).toHaveLength(4));
+
+    expect(
+      chat.log.map(({ type, messageID, itemID }) => [type, messageID, itemID])
+    ).toEqual([
+      [BusEventType.WORKSPACE_PRE_CLOSE, 'plan', 'plan:i:1'],
+      [BusEventType.WORKSPACE_CLOSE, 'plan', 'plan:i:1'],
+      [BusEventType.WORKSPACE_PRE_OPEN, 'other', 'other:i:0'],
+      [BusEventType.WORKSPACE_OPEN, 'other', 'other:i:0'],
+    ]);
   });
 });
