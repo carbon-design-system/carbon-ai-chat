@@ -347,7 +347,7 @@ class MessageService {
       this.hideStopStreamingButtonIfIdle();
       this.moveToNextQueueItem();
     }
-    this.serviceManager.conversationLifecycleService.requestFinished(
+    this.serviceManager.messageCoordinator.requestFinished(
       current.message.id,
       current.generation
     );
@@ -383,7 +383,7 @@ class MessageService {
     this.clearCurrentQueueItem();
     this.queue.current = this.queue.waiting.shift();
     const { current } = this.queue;
-    this.serviceManager.conversationLifecycleService.requestStarted(
+    this.serviceManager.messageCoordinator.requestStarted(
       current.message.id,
       current.generation,
       current.message
@@ -514,8 +514,7 @@ class MessageService {
     this.messageAbortControllers.set(message.id, controller);
 
     const newPendingMessage: PendingMessageRequest = {
-      generation:
-        this.serviceManager.conversationLifecycleService.currentGeneration,
+      generation: this.serviceManager.messageCoordinator.currentGeneration,
       restartGeneration: this.serviceManager.restartCount,
       localMessageID,
       message,
@@ -740,9 +739,7 @@ class MessageService {
    */
   public finalizeStreamingMessage(messageID: string) {
     this.inboundStreaming.finalizeStreamingMessage(messageID);
-    this.serviceManager.conversationLifecycleService.responseFinished(
-      messageID
-    );
+    this.serviceManager.messageCoordinator.responseFinished(messageID);
   }
 
   /** Ends response streaming without treating the associated transport as complete. */
@@ -776,7 +773,7 @@ class MessageService {
       pendingRequest.message.id,
       pendingRequest.generation
     );
-    this.serviceManager.conversationLifecycleService.requestStopped(
+    this.serviceManager.messageCoordinator.requestStopped(
       pendingRequest.message.id,
       pendingRequest.generation
     );
@@ -791,7 +788,7 @@ class MessageService {
       return;
     }
     this.inboundStreaming.clearStreamingResponse(responseID);
-    this.serviceManager.conversationLifecycleService.responseFinished(
+    this.serviceManager.messageCoordinator.responseFinished(
       responseID,
       pendingRequest.generation
     );
@@ -960,8 +957,7 @@ class MessageService {
     }
 
     // Abort listeners may restart the chat, so read the generation first.
-    const generation =
-      this.serviceManager.conversationLifecycleService.currentGeneration;
+    const generation = this.serviceManager.messageCoordinator.currentGeneration;
     const sendMessageController =
       controller || pendingRequest?.sendMessageController;
 
@@ -973,18 +969,18 @@ class MessageService {
     if (!pendingRequest) {
       // The sender already settled, so only the response stream remains. A user stop still
       // records its request as stopped, so the request's late partial chunks are dropped.
-      const lifecycle = this.serviceManager.conversationLifecycleService;
-      lifecycle.responseStopped(responseId, generation);
-      const requestID = lifecycle.responseRequestID(responseId);
+      const coordinator = this.serviceManager.messageCoordinator;
+      coordinator.responseStopped(responseId, generation);
+      const requestID = coordinator.responseRequestID(responseId);
       if (requestID && reason === CancellationReason.STOP_STREAMING) {
-        lifecycle.requestStopped(requestID, generation, true);
+        coordinator.requestStopped(requestID, generation, true);
       }
     }
 
     // Only process the pending request if it exists (it may have already been cleared from queue)
     if (pendingRequest) {
       if (reason !== CancellationReason.TIMEOUT) {
-        this.serviceManager.conversationLifecycleService.requestStopped(
+        this.serviceManager.messageCoordinator.requestStopped(
           pendingRequest.message.id,
           pendingRequest.generation,
           reason === CancellationReason.STOP_STREAMING
@@ -992,7 +988,7 @@ class MessageService {
       }
       if (reason === CancellationReason.TIMEOUT) {
         if (logError) {
-          this.serviceManager.conversationLifecycleService.fail(
+          this.serviceManager.messageCoordinator.fail(
             {
               messageID: pendingRequest.message.id,
             },
@@ -1018,11 +1014,11 @@ class MessageService {
         // Mark as processed and advance the queue
         pendingRequest.sendMessagePromise.doResolve();
         pendingRequest.isProcessed = true;
-        this.serviceManager.conversationLifecycleService.requestFinished(
+        this.serviceManager.messageCoordinator.requestFinished(
           pendingRequest.message.id,
           pendingRequest.generation
         );
-        this.serviceManager.conversationLifecycleService.responseStopped(
+        this.serviceManager.messageCoordinator.responseStopped(
           responseId,
           pendingRequest.generation
         );

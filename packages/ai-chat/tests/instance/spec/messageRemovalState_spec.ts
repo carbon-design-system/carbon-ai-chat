@@ -131,14 +131,10 @@ describe('message removal and public state', () => {
       });
       expect(instance.state.get().status).toBe('ready');
       expect(
-        serviceManager.conversationLifecycleService.isRequestStopped(
-          originalRequestID
-        )
+        serviceManager.messageCoordinator.isRequestStopped(originalRequestID)
       ).toBe(true);
       expect(
-        serviceManager.conversationLifecycleService.responseRequestID(
-          'reused-response'
-        )
+        serviceManager.messageCoordinator.responseRequestID('reused-response')
       ).toBeUndefined();
 
       const stoppedButton =
@@ -167,9 +163,7 @@ describe('message removal and public state', () => {
       expect(replacementSnapshot.status).toBe('streaming');
       expect(publicText(replacementSnapshot)).toBe('Replacement');
       expect(
-        serviceManager.conversationLifecycleService.responseRequestID(
-          'reused-response'
-        )
+        serviceManager.messageCoordinator.responseRequestID('reused-response')
       ).toBe(replacementRequestID);
 
       await act(async () => {
@@ -184,9 +178,7 @@ describe('message removal and public state', () => {
       expect(publicText(instance.state.get())).toBe('Replacement');
       expect(receive).not.toHaveBeenCalled();
       expect(
-        serviceManager.conversationLifecycleService.isRequestStopped(
-          originalRequestID
-        )
+        serviceManager.messageCoordinator.isRequestStopped(originalRequestID)
       ).toBe(true);
 
       await act(async () => {

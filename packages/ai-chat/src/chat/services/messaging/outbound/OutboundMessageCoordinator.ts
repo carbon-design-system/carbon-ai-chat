@@ -133,7 +133,7 @@ class OutboundMessageCoordinator {
 
     this.addErrorMessageIfSilent(pendingRequest);
 
-    this.serviceManager.conversationLifecycleService.fail(
+    this.serviceManager.messageCoordinator.fail(
       { messageID: pendingRequest.message.id },
       pendingRequest.generation
     );
@@ -189,7 +189,7 @@ class OutboundMessageCoordinator {
     const resultText = getSendErrorText(error, false);
     this.addErrorMessageIfSilent(pendingRequest);
     if (pendingRequest.source === MessageSendSource.WELCOME_REQUEST) {
-      this.serviceManager.conversationLifecycleService.fail(
+      this.serviceManager.messageCoordinator.fail(
         { messageID: pendingRequest.message.id },
         pendingRequest.generation
       );
@@ -231,7 +231,7 @@ class OutboundMessageCoordinator {
     this.finishStreamingResponse(pendingRequest);
     sendMessagePromise.doReject(rejection);
     pendingRequest.isProcessed = true;
-    this.serviceManager.conversationLifecycleService.requestFinished(
+    this.serviceManager.messageCoordinator.requestFinished(
       pendingRequest.message.id,
       pendingRequest.generation
     );
@@ -302,7 +302,7 @@ class OutboundMessageCoordinator {
 
     sendMessagePromise.doResolve();
     pendingRequest.isProcessed = true;
-    this.serviceManager.conversationLifecycleService.requestFinished(
+    this.serviceManager.messageCoordinator.requestFinished(
       pendingRequest.message.id,
       pendingRequest.generation
     );
