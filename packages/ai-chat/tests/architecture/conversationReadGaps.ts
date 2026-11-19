@@ -25,22 +25,22 @@
  *   objects to host events, the workspace panel, and the agent service, where
  *   a host can keep or edit them, and writes back by local item ID. Once those
  *   payloads are read-only, the list can hand the entries.
- * - #2825: the response panel: the app shell's panel hook, and the chat's own
- *   message it hands the panel's renderer.
- * - #2969: the custom panels' workspace event capture, which keeps a host's
- *   edits on the chat's own message and items, and the panel manager boot
- *   builds for it; and, for a reused chat, firing slot events again with the
- *   chat's own message and items for responses that came while it had no
- *   view. Once those payloads are read-only, these reads can use the SDK's
- *   entries.
+ * - #2825: the response panel's message, which the app shell's panel hook
+ *   looks up in the chat's own messages and hands to the panel.
+ * - #2969: the custom panels' workspace events, which hand a host the chat's
+ *   own message and items and write the host's edits back onto them, and the
+ *   panel manager that boot builds for the panels; and, for a reused chat,
+ *   firing slot events again, with the chat's own message and items, for
+ *   responses that came while it had no view. Once those payloads are
+ *   read-only, these reads can use the SDK's entries.
  * - #2824: everything else the prebuilt chat reads from the conversation
  *   partition in 1.x:
  *   - view state the partition still holds: which connect card is
  *     connecting, and the screen-share request the modal shows;
  *   - read-only state, the history load trigger, and attaching the view;
  *   - the shell's home screen and loading decisions, including the message
- *     count a config update checks before it shows the home screen, and the
- *     shell's check that the response panel's message exists;
+ *     count a config update checks before it shows the home screen;
+ *   - the shell's check that the response panel's message still exists;
  *   - the input slice, its routing to the agent, and its flags, including
  *     when the Stop button shows. Hosts tell whether a turn can be stopped
  *     from `status` (#2693 O8, amended November 10);
@@ -324,10 +324,11 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2969',
   },
   {
-    // Hands the instance builder to createChatSDK, and builds an adopting
-    // mount its own. The builder reads conversation data only through the
-    // custom panel read above, so this entry leaves the list when that read
-    // moves, even if the boot work that owns it isn't done.
+    // Hands the instance builder to createChatSDK, and calls it to build an
+    // instance for a mount that adopts a running chat. The builder's only read
+    // on this list is createCustomPanelManager(), the entry above. When that
+    // read goes, this entry goes with it, even if its owner's other work isn't
+    // done.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
     count: 2,
