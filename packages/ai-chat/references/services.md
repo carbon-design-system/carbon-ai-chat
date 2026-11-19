@@ -4,6 +4,8 @@ Load this when adding, editing, or testing a service. Services are orchestration
 
 For view-owned classes, follow [the hook core contract](../src/chat/hooks/AGENTS.md). The initialization, manager lookup, and teardown rules below apply to chat-instance services.
 
+Assistant message services live in `services/messaging/`, grouped under `inbound/`, `outbound/`, and `presentation/`. Human-agent callbacks live in `services/haa/`.
+
 ## Initialization order
 
 See [`createServiceManager()`](../src/chat/services/loadServices.ts) for service initialization order.
@@ -29,7 +31,7 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 - **Simple data adapter:** [`HistoryService`](../src/chat/services/HistoryService.ts) loads and transforms history data.
 - **Lifecycle watcher:** [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
-- **Orchestration engine:** [`MessageService`](../src/chat/services/MessageService.ts) manages the message queue and inbound/outbound coordinators.
+- **Orchestration engine:** [`MessageService`](../src/chat/services/messaging/MessageService.ts) manages the message queue and inbound/outbound coordinators.
 
 ## When to create a service
 
