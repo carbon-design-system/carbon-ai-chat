@@ -93,8 +93,16 @@ $block-class: #{$prefix}-message-item-shell;
     align-items: flex-start;
   }
 
+  // Slotted content starts at its own width and grows to fill the column, so a
+  // percentage width on it is only a starting size.
   .#{$block-class}__content {
+    display: flex;
     inline-size: 100%;
+
+    ::slotted(*) {
+      flex-grow: 1;
+      min-inline-size: 0;
+    }
   }
 
   // The gap only opens below a byline. A row without one has nothing to
