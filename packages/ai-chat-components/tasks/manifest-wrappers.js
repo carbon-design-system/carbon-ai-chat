@@ -617,6 +617,13 @@ function writtenTypeArguments(model, type) {
   ];
 }
 
+// TypeScript gives a name it cannot resolve an error type that carries the
+// any flag. TypeScript and the event contract checks report the missing name
+// with its fix, so this check leaves it to them.
+function hasFlag(model, type, flags) {
+  return Boolean(type.flags & flags) && type.intrinsicName !== 'error';
+}
+
 // Reports any anywhere in a payload type. Lib and package types, such as
 // ReactNode or members inherited from LitElement, are trusted, but the type
 // arguments local code passes them are not: ComponentType<any> fails.
@@ -626,7 +633,7 @@ function containsAny(model, type, seen = new Set()) {
     return false;
   }
   seen.add(type);
-  if (type.flags & ts.TypeFlags.Any) {
+  if (hasFlag(model, type, ts.TypeFlags.Any)) {
     return true;
   }
   const nested = writtenTypeArguments(model, type);
@@ -658,8 +665,8 @@ function looseEventType(model, typeNode) {
   const type = checker.getTypeFromTypeNode(typeNode);
   return (
     writesLooseKeyword(model, typeNode) ||
-    Boolean(type.flags & loose) ||
-    typeArguments(model, type).some((entry) => entry.flags & loose) ||
+    hasFlag(model, type, loose) ||
+    typeArguments(model, type).some((entry) => hasFlag(model, entry, loose)) ||
     containsAny(model, type)
   );
 }

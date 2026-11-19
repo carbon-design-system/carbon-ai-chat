@@ -411,6 +411,12 @@ test('checks the resolved event type rather than its source text', () => {
       cast
     );
   }
+  // TypeScript reports an unresolved name, so it is not read as any here.
+  assert.doesNotThrow(() =>
+    readWrappers(source('CustomEvent<MissingDetail>'), {
+      requireEventTypes: true,
+    })
+  );
 });
 
 test('supports aliased Lit factories, EventName imports and namespace React calls', () => {
