@@ -34,7 +34,7 @@ import '@carbon/web-components/es/components/menu/index.js';
 import AddLarge16 from '@carbon/icons/es/add--large/16.js';
 import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
 import { createOverflowHandler } from '@carbon/utilities';
-import { carbonIconToReact } from '../../../globals/utils/iconTransform';
+import { carbonIconToReact } from '../../../react/utils/iconTransform';
 
 import PromptLine from '../../../react/prompt-line';
 import PromptLineShell from '../../../react/prompt-line-shell';
