@@ -111,6 +111,24 @@ describe('shutdown through the mount path', () => {
       expect(shutDownManagers()[0].isShutdown).toBe(true);
     });
 
+    it('shuts down even when the renderer cleanup throws', async () => {
+      const error = new Error('Renderer cleanup failed');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      const { element } = await mountElement();
+
+      expect(() =>
+        (element as unknown as { releaseMount: () => void }).releaseMount()
+      ).toThrow(error);
+      expect(shutdown).toHaveBeenCalledTimes(1);
+      expect(shutDownManagers()[0].isShutdown).toBe(true);
+    });
+
     it('a web component moved within one task keeps running', async () => {
       const { element } = await mountElement();
       const other = document.createElement('div');
