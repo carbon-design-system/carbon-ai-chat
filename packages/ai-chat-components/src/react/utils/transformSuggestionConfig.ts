@@ -17,7 +17,7 @@
 
 import type { ComponentType } from 'react';
 import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
-import { transformReactIconToCarbonIcon } from '../../globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from './iconTransform.js';
 import type {
   AutocompleteConfig,
   StartersConfig,

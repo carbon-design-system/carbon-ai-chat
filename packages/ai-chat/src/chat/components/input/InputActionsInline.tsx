@@ -10,7 +10,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import OverflowMenuVertical16 from '@carbon/icons/es/overflow-menu--vertical/16.js';
 import { createOverflowHandler } from '@carbon/utilities';
-import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/react/utils/iconTransform.js';
 
 import IconButton from '../carbon/IconButton';
 import { BUTTON_KIND } from '../carbon/Button';
