@@ -119,7 +119,7 @@ describe('streaming copies', () => {
     await streamThreeItems(instance);
     await chunk(instance, 'b', ' more');
 
-    const freeze = jest.spyOn(objectUtils, 'deepFreeze');
+    const freeze = jest.spyOn(objectUtils, 'deepFreezeCopy');
     await chunk(instance, 'b', ' and more');
     const state = instance.state.get();
     const changed = liveItems(state).get('b');
