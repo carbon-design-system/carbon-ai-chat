@@ -10,7 +10,7 @@
 import { createComponent } from '@lit/react';
 import React from 'react';
 import { CdsAiChatChatHeader } from '../components/aichat-shell/index.js';
-import { transformReactIconToCarbonIcon } from '../globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from './utils/iconTransform.js';
 import type { ToolbarAction } from './toolbar.js';
 
 export interface ChatHeaderProps extends Omit<

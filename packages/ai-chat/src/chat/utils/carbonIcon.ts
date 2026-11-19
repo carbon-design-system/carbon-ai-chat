@@ -13,7 +13,7 @@
 
 import { ComponentType, createElement, FunctionComponent } from 'react';
 import type { CarbonIcon as PublicCarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
-import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/react/utils/iconTransform.js';
 
 type CarbonIcon = {
   elem: 'svg';

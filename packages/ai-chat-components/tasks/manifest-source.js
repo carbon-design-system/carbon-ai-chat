@@ -161,6 +161,12 @@ function assignmentTarget(node) {
   ) {
     return node.operand;
   }
+  if (
+    (ts.isForOfStatement(node) || ts.isForInStatement(node)) &&
+    !ts.isVariableDeclarationList(node.initializer)
+  ) {
+    return node.initializer;
+  }
   return undefined;
 }
 
@@ -200,16 +206,31 @@ function assignmentDestinations(node) {
   return [node];
 }
 
-function assignedSymbols(node, symbol, checker) {
-  if (!ts.isElementAccessExpression(node)) {
-    return [symbol(node)].filter(Boolean);
+function withoutAssertions(node) {
+  while (
+    ts.isParenthesizedExpression(node) ||
+    ts.isAsExpression(node) ||
+    ts.isTypeAssertionExpression(node) ||
+    ts.isNonNullExpression(node) ||
+    ts.isSatisfiesExpression(node)
+  ) {
+    node = node.expression;
   }
-  const target = checker.getTypeAtLocation(node.expression);
-  const key = checker.getTypeAtLocation(node.argumentExpression);
-  const keys = key.isUnion() ? key.types : [key];
-  const finite = keys.every(
-    (entry) => entry.isStringLiteral() || entry.isNumberLiteral()
-  );
+  return node;
+}
+
+// A cast such as `(E as any)` hides the receiver's properties, so read them
+// from the expression underneath the cast.
+function receiverType(node, checker) {
+  return checker.getTypeAtLocation(withoutAssertions(node));
+}
+
+function keyedProperties(target, keyNode, checker) {
+  const key = keyNode && checker.getTypeAtLocation(keyNode);
+  const keys = key ? (key.isUnion() ? key.types : [key]) : [];
+  const finite =
+    keys.length > 0 &&
+    keys.every((entry) => entry.isStringLiteral() || entry.isNumberLiteral());
   if (!finite) {
     return checker.getPropertiesOfType(target);
   }
@@ -218,21 +239,70 @@ function assignedSymbols(node, symbol, checker) {
     .filter(Boolean);
 }
 
+function assignedSymbols(node, symbol, checker) {
+  if (ts.isPropertyAccessExpression(node)) {
+    const property =
+      symbol(node) ??
+      checker.getPropertyOfType(
+        receiverType(node.expression, checker),
+        node.name.text
+      );
+    return [property].filter(Boolean);
+  }
+  if (!ts.isElementAccessExpression(node)) {
+    return [symbol(node)].filter(Boolean);
+  }
+  return keyedProperties(
+    receiverType(node.expression, checker),
+    node.argumentExpression,
+    checker
+  );
+}
+
+// Each value says whether the second argument names the one property written.
+const reflectiveWrites = new Map([
+  ['Object.assign', false],
+  ['Object.defineProperties', false],
+  ['Object.defineProperty', true],
+  ['Reflect.defineProperty', true],
+  ['Reflect.set', true],
+]);
+
+// Object.assign(target, ...) and its relatives write the target's properties
+// without an assignment expression.
+function reflectedSymbols(node, checker) {
+  if (
+    !ts.isCallExpression(node) ||
+    !ts.isPropertyAccessExpression(node.expression) ||
+    !ts.isIdentifier(node.expression.expression)
+  ) {
+    return [];
+  }
+  const keyed = reflectiveWrites.get(
+    `${node.expression.expression.text}.${node.expression.name.text}`
+  );
+  const [target, key] = node.arguments;
+  if (keyed === undefined || !target) {
+    return [];
+  }
+  const type = receiverType(target, checker);
+  return keyed
+    ? keyedProperties(type, key, checker)
+    : checker.getPropertiesOfType(type);
+}
+
 function indexWrites(sources, symbol, checker) {
   const writes = new Map();
   for (const source of sources) {
     visit(source, (node) => {
       const target = assignmentTarget(node);
-      if (target) {
-        for (const destination of assignmentDestinations(target)) {
-          for (const assigned of assignedSymbols(
-            destination,
-            symbol,
-            checker
-          )) {
-            writes.set(assigned, node);
-          }
-        }
+      const assigned = target
+        ? assignmentDestinations(target).flatMap((destination) =>
+            assignedSymbols(destination, symbol, checker)
+          )
+        : reflectedSymbols(node, checker);
+      for (const entry of assigned) {
+        writes.set(entry, node);
       }
     });
   }
@@ -391,8 +461,7 @@ function hasModifier(node, kind) {
 
 function readElement(node, model) {
   if (
-    !ts.isClassDeclaration(node) ||
-    !node.name ||
+    !ts.isClassLike(node) ||
     hasModifier(node, ts.SyntaxKind.AbstractKeyword)
   ) {
     return undefined;
@@ -404,6 +473,12 @@ function readElement(node, model) {
   );
   if (!identity) {
     return undefined;
+  }
+  if (!ts.isClassDeclaration(node) || !node.name) {
+    return model.fail(
+      node,
+      'Declare an element with a static is as a named class declaration.'
+    );
   }
   const expression = ts.isGetAccessorDeclaration(identity)
     ? getterExpression(identity, model.fail)

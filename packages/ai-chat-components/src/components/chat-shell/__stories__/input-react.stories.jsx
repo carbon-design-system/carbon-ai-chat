@@ -15,7 +15,7 @@ import '@carbon/web-components/es/components/button/index.js';
 import Document16 from '@carbon/icons/es/document/16.js';
 import Language16 from '@carbon/icons/es/language/16.js';
 import Idea16 from '@carbon/icons/es/idea/16.js';
-import { carbonIconToReact } from '../../../globals/utils/iconTransform';
+import { carbonIconToReact } from '../../../react/utils/iconTransform';
 
 import ChatShell from '../../../react/chat-shell.js';
 import PromptLine from '../../../react/prompt-line.js';
