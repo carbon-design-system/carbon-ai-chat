@@ -15,7 +15,9 @@
  * lists.
  */
 
-import { transformReactIconToCarbonIcon } from '../../globals/utils/iconTransform.js';
+import type { ComponentType } from 'react';
+import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
+import { transformReactIconToCarbonIcon } from './iconTransform.js';
 import type {
   AutocompleteConfig,
   StartersConfig,
@@ -35,7 +37,12 @@ export function transformItemIcon(item: SuggestionItem): SuggestionItem {
   }
   return {
     ...item,
-    avatar: transformReactIconToCarbonIcon(item.avatar, ICON_SIZE),
+    // The shared item type describes an icon component without React, so
+    // name it as a React component here, where React renders it.
+    avatar: transformReactIconToCarbonIcon(
+      item.avatar as CarbonIcon | ComponentType<{ size: number }>,
+      ICON_SIZE
+    ),
   };
 }
 
