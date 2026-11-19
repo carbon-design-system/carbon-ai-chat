@@ -92,9 +92,16 @@ export function carbonIconToReact(
   };
 }
 
+// Keyed by the consumer's icon so each icon maps to one stable component type. A new type on every render would make
+// React remount the svg each time.
+const customIconCache = new WeakMap<
+  object,
+  FunctionComponent<CarbonIconProps>
+>();
+
 /**
  * Converts a consumer-provided icon (a `@carbon/icons` object or an `@carbon/icons-react` component) into a React
- * component.
+ * component. Returns the same component for the same icon.
  */
 export function customIconToReact(
   icon: PublicCarbonIcon | ComponentType<any> | undefined
@@ -102,9 +109,15 @@ export function customIconToReact(
   if (!icon) {
     return undefined;
   }
-  return carbonIconToReact(
-    transformReactIconToCarbonIcon(icon, 16) as Parameters<
-      typeof carbonIconToReact
-    >[0]
-  );
+
+  let component = customIconCache.get(icon);
+  if (!component) {
+    component = carbonIconToReact(
+      transformReactIconToCarbonIcon(icon, 16) as Parameters<
+        typeof carbonIconToReact
+      >[0]
+    );
+    customIconCache.set(icon, component);
+  }
+  return component;
 }
