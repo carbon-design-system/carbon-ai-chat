@@ -53,15 +53,22 @@ The root `test:manifest-consumer` packs the built package. It checks that the di
 
 Root `npm test`, `npm run ci-check`, and the GitHub components test job run this packed check. Run `npm run test:manifest-consumer` from the root after a fresh build for manifest changes.
 
-The check does not cover all props, events, slots, or style hooks. Broader guards belong to [#2287](https://github.com/carbon-design-system/carbon-ai-chat/issues/2287). Checks of external type symbols and styles remain with [#2551](https://github.com/carbon-design-system/carbon-ai-chat/issues/2551).
+Events are guarded at build time. After `cem analyze`, `npm run custom-elements` runs `validate:manifest`. It fails when the manifest and the source disagree about an element event. Every dispatched event needs a `@fires` entry with a name, a type, and a description. The type is `CustomEvent<Detail>`, and it must match the dispatched detail. Each entry needs a reason to exist. The element dispatches the event, a descendant dispatches it with `bubbles` and `composed`, or the React wrapper binds it. An element lists each event once.
+
+Props, slots, and style hooks have no such guard yet. Broader guards belong to [#2287](https://github.com/carbon-design-system/carbon-ai-chat/issues/2287). Checks of external type symbols and styles remain with [#2551](https://github.com/carbon-design-system/carbon-ai-chat/issues/2551).
 
 ### What to do when the API changes
 
 1. Keep each new public element in the source globs, with a module the build ships. Use supported decorator syntax. If new syntax is unsupported, extend the parser and its pure tests before relying on the CEM entry.
 2. Check each `@property` option against the public contract. Use `attribute: false` for property-only values. Without an explicit attribute name, Lit lowercases the property name. Keep existing attribute names; choose explicit names for new kebab-case attributes. Mark private or internal members in source so they stay out of public tables.
 3. Update the source types and JSDoc for changed props, events, slots, and CSS parts. Update the matching wrapper in `src/react/` by hand; the CEM tool does not edit wrappers.
-4. Rebuild the CEM and inspect only the changed component's entries. Restart both Storybooks and inspect the changed `<ArgTypes>` rows. Use the [Storybook guide](storybook.md) for launch commands.
-5. Establish a fresh build with the [build preflight](../../../references/commands.md#build-preflight), then run these checks from the root:
+4. Tag each dispatched event on the element that publishes it: `@fires {CustomEvent<Detail>} cds-aichat-thing-verb - What the event means.` Two more tags help the guard find the owner:
+   - **A dispatch outside the element class**, such as in a controller: add `@eventOwner {import('./aichat-thing.js').default}` to the enclosing class, method, or function. It names the element that publishes the event.
+   - **An exported helper whose caller picks the target**: tag it `@eventProtocol`, with its own `@fires`. It can't also carry `@eventOwner`.
+
+   When a tag is missing, untyped, undescribed, unjustified, or repeated, `npm run custom-elements` fails and names the dispatch site.
+5. Rebuild the CEM and inspect only the changed component's entries. Restart both Storybooks and inspect the changed `<ArgTypes>` rows. Use the [Storybook guide](storybook.md) for launch commands.
+6. Establish a fresh build with the [build preflight](../../../references/commands.md#build-preflight), then run these checks from the root:
 
    ```bash
    npm run test:manifest --workspace=@carbon/ai-chat-components

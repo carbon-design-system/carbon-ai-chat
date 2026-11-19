@@ -311,7 +311,10 @@ function renderedChildren(model, node) {
       : [];
   }
   if (ts.isJsxElement(node)) {
-    return [node.openingElement, ...node.children];
+    // React renders nothing inside noscript on the client.
+    return node.openingElement.tagName.getText() === 'noscript'
+      ? [node.openingElement]
+      : [node.openingElement, ...node.children];
   }
   if (ts.isJsxFragment(node)) {
     return [...node.children];
@@ -325,8 +328,11 @@ function renderedChildren(model, node) {
   }
   if (ts.isCallExpression(node)) {
     const binding = callBinding(model, node.expression);
-    return binding?.module === 'react' && binding.name === 'createElement'
-      ? [...node.arguments].slice(2)
+    const [tag, , ...children] = node.arguments;
+    return binding?.module === 'react' &&
+      binding.name === 'createElement' &&
+      !(tag && ts.isStringLiteralLike(tag) && tag.text === 'noscript')
+      ? children
       : [];
   }
   return [];
@@ -544,14 +550,139 @@ export function readWrappers(model, { requireEventTypes = false } = {}) {
   return records;
 }
 
+function writesLooseKeyword(model, node) {
+  const { ts } = model;
+  return (
+    node.kind === ts.SyntaxKind.AnyKeyword ||
+    node.kind === ts.SyntaxKind.UnknownKeyword ||
+    Boolean(ts.forEachChild(node, (child) => writesLooseKeyword(model, child)))
+  );
+}
+
+function externalDeclarations(model, symbol) {
+  const declarations = symbol?.declarations ?? [];
+  return (
+    declarations.length > 0 &&
+    declarations.every((declaration) => {
+      const source = declaration.getSourceFile();
+      return (
+        model.program.isSourceFileDefaultLibrary(source) ||
+        model.program.isSourceFileFromExternalLibrary(source)
+      );
+    })
+  );
+}
+
+function typeArguments(model, type) {
+  return [
+    ...(type.aliasTypeArguments ?? []),
+    ...(type.objectFlags & model.ts.ObjectFlags.Reference
+      ? model.checker.getTypeArguments(type)
+      : []),
+  ];
+}
+
+function signatureTypes(model, type) {
+  const { ts, checker } = model;
+  return [ts.SignatureKind.Call, ts.SignatureKind.Construct].flatMap((kind) =>
+    checker
+      .getSignaturesOfType(type, kind)
+      .flatMap((signature) => [
+        ...signature.parameters.map((parameter) =>
+          checker.getTypeOfSymbol(parameter)
+        ),
+        checker.getReturnTypeOfSignature(signature),
+      ])
+  );
+}
+
+function defaultsToAny(model, symbol, index) {
+  for (const declaration of symbol?.declarations ?? []) {
+    const parameter = declaration.typeParameters?.[index];
+    if (parameter?.default) {
+      return Boolean(
+        model.checker.getTypeFromTypeNode(parameter.default).flags &
+        model.ts.TypeFlags.Any
+      );
+    }
+  }
+  return false;
+}
+
+// Type arguments, less an any that only fills a parameter whose declared
+// default is any, such as the state of React's ComponentClass<P, S = any>.
+function writtenTypeArguments(model, type) {
+  const { ts, checker } = model;
+  const written = (symbol) => (entry, index) =>
+    !(entry.flags & ts.TypeFlags.Any && defaultsToAny(model, symbol, index));
+  return [
+    ...(type.aliasTypeArguments ?? []).filter(written(type.aliasSymbol)),
+    ...(type.objectFlags & ts.ObjectFlags.Reference
+      ? checker
+          .getTypeArguments(type)
+          .filter(written(type.target?.symbol ?? type.getSymbol()))
+      : []),
+  ];
+}
+
+// TypeScript gives a name it cannot resolve an error type that carries the
+// any flag. TypeScript and the event contract checks report the missing name
+// with its fix, so this check leaves it to them.
+function hasFlag(model, type, flags) {
+  return Boolean(type.flags & flags) && type.intrinsicName !== 'error';
+}
+
+// Reports any anywhere in a payload type. Lib and package types, such as
+// ReactNode or members inherited from LitElement, are trusted, but the type
+// arguments local code passes them are not: ComponentType<any> fails.
+function containsAny(model, type, seen = new Set()) {
+  const { ts, checker } = model;
+  if (seen.has(type)) {
+    return false;
+  }
+  seen.add(type);
+  if (hasFlag(model, type, ts.TypeFlags.Any)) {
+    return true;
+  }
+  const nested = writtenTypeArguments(model, type);
+  if (!externalDeclarations(model, type.aliasSymbol ?? type.getSymbol())) {
+    if (type.isUnionOrIntersection()) {
+      nested.push(...type.types);
+    } else if (type.flags & ts.TypeFlags.Object) {
+      nested.push(
+        ...checker
+          .getPropertiesOfType(type)
+          .filter((property) => !externalDeclarations(model, property))
+          .map((property) => checker.getTypeOfSymbol(property)),
+        ...checker.getIndexInfosOfType(type).map((info) => info.type),
+        ...signatureTypes(model, type)
+      );
+    }
+  }
+  return nested.some((entry) => containsAny(model, entry, seen));
+}
+
+// Rejects a cast that writes any or unknown, a cast whose resolved event or
+// detail is any or unknown, and any any inside the payload. These catch an
+// alias such as `type Loose = CustomEvent<any>`, a bare CustomEvent, whose
+// detail defaults to any, and a named payload with an any field. An unknown
+// field inside a named payload stays allowed, since it marks opaque host data.
+function looseEventType(model, typeNode) {
+  const { ts, checker } = model;
+  const loose = ts.TypeFlags.Any | ts.TypeFlags.Unknown;
+  const type = checker.getTypeFromTypeNode(typeNode);
+  return (
+    writesLooseKeyword(model, typeNode) ||
+    hasFlag(model, type, loose) ||
+    typeArguments(model, type).some((entry) => hasFlag(model, entry, loose)) ||
+    containsAny(model, type)
+  );
+}
+
 function requireEventTypes(model, wrappers) {
   for (const wrapper of wrappers) {
     for (const callback of wrapper.callbacks) {
-      if (
-        !callback.type ||
-        /\b(?:any|unknown)\b/.test(callback.type) ||
-        callback.type === 'CustomEvent'
-      ) {
+      if (!callback.typeNode || looseEventType(model, callback.typeNode)) {
         model.fail(
           callback.node,
           `Cast ${callback.callback} with EventName and a concrete DOM event type.`
