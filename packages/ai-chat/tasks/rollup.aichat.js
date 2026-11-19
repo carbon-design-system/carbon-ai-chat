@@ -163,9 +163,10 @@ async function runRollup() {
       output: {
         dir: path.join(paths.dist, '/es'),
         format: 'es',
-        preserveModules: false,
+        // Preserve source paths so package sideEffects rules follow setup code.
+        preserveModules: true,
+        preserveModulesRoot: paths.src,
         entryFileNames: '[name].js',
-        chunkFileNames: 'chat.[name].js',
         sourcemap: process.env.NODE_ENV !== 'production',
         banner: `/*
  *  Copyright IBM Corp. 2025

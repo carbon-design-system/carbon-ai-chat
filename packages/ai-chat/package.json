@@ -108,9 +108,11 @@
     "not IE 11"
   ],
   "sideEffects": [
-    "**/web-components/**/*.js",
-    "**/chat.*.js",
-    "**/*.css"
+    "**/web-components/cds-aichat-container/index.js",
+    "**/web-components/cds-aichat-container/register.js",
+    "**/web-components/cds-aichat-custom-element/index.js",
+    "**/*.css",
+    "**/*.scss"
   ],
   "devDependencies": {
     "@babel/core": "^7.0.0",
