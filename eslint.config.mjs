@@ -174,6 +174,24 @@ const config = [
     },
   },
 
+  // React wrappers read their tag from the element class, so a wrapper can't
+  // drift from the tag the class registers, prefixed builds included.
+  {
+    files: ['packages/*/src/**/*.ts', 'packages/*/src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/__stories__/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "CallExpression[callee.name='createComponent'] Property[key.name='tagName'] > :matches(Literal, TemplateLiteral)",
+          message:
+            'Set tagName from the wrapped class, as `tagName: ElementClass.is`, not a string.',
+        },
+      ],
+    },
+  },
+
   // Test-file overrides
   {
     files: [

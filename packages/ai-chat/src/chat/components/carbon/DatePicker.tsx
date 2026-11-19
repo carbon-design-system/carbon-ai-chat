@@ -16,7 +16,7 @@ import {
 } from '@carbon/web-components/es/components/date-picker/index.js';
 
 const DatePicker = createComponent({
-  tagName: 'cds-date-picker',
+  tagName: CarbonDatePickerElement.is,
   elementClass: CarbonDatePickerElement,
   react: React,
   events: {
@@ -25,7 +25,7 @@ const DatePicker = createComponent({
 });
 
 const DatePickerInput = createComponent({
-  tagName: 'cds-date-picker-input',
+  tagName: CarbonDatePickerInputElement.is,
   elementClass: CarbonDatePickerInputElement,
   react: React,
 });

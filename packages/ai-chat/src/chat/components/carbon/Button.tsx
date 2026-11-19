@@ -18,7 +18,7 @@ export {
 import { CDSButton as CarbonButtonElement } from '@carbon/web-components/es/components/button/index.js';
 
 const Button = createComponent({
-  tagName: 'cds-button',
+  tagName: CarbonButtonElement.is,
   elementClass: CarbonButtonElement,
   react: React,
 });

@@ -16,7 +16,7 @@ import {
 } from '@carbon/web-components/es/components/dropdown/index.js';
 
 const Dropdown = createComponent({
-  tagName: 'cds-dropdown',
+  tagName: CarbonDropdownElement.is,
   elementClass: CarbonDropdownElement,
   events: {
     onSelected: 'cds-dropdown-selected',
@@ -26,7 +26,7 @@ const Dropdown = createComponent({
 });
 
 const DropdownItem = createComponent({
-  tagName: 'cds-dropdown-item',
+  tagName: CarbonDropdownItemElement.is,
   elementClass: CarbonDropdownItemElement,
   react: React,
 });

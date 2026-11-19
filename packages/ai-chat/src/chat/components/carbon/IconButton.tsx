@@ -12,7 +12,7 @@ import React from 'react';
 import { CDSIconButton as CDSIconButtonElement } from '@carbon/web-components/es/components/icon-button/index.js';
 
 const IconButton = createComponent({
-  tagName: 'cds-icon-button',
+  tagName: CDSIconButtonElement.is,
   elementClass: CDSIconButtonElement,
   react: React,
 });

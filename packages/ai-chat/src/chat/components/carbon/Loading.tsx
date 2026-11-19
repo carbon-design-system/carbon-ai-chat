@@ -13,7 +13,7 @@ import React from 'react';
 import { CDSLoading as CarbonLoadingElement } from '@carbon/web-components/es/components/loading/index.js';
 
 const Loading = createComponent({
-  tagName: 'cds-loading',
+  tagName: CarbonLoadingElement.is,
   elementClass: CarbonLoadingElement,
   react: React,
 });

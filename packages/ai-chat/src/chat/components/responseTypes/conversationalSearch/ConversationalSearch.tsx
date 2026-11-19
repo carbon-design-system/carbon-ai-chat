@@ -36,7 +36,7 @@ import { CitationsErrorBoundary } from './CitationsErrorBoundary';
 
 const Citations = lazy(() => import('./ConversationalSearchCitations'));
 const SkeletonPlaceholder = createComponent({
-  tagName: 'cds-skeleton-placeholder',
+  tagName: SkeletonPlaceholderElement.is,
   elementClass: SkeletonPlaceholderElement,
   react: React,
 });
