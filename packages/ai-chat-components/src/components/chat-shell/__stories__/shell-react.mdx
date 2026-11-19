@@ -33,7 +33,7 @@ The shell includes support for:
 Here's a quick example to get you started.
 
 ```jsx
-import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
+import { ChatShell } from '@carbon/ai-chat-components/react';
 
 function MyChatInterface() {
   return (
@@ -51,8 +51,7 @@ function MyChatInterface() {
 Panels can be added to create overlay experiences with different priorities and animations:
 
 ```jsx
-import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
-import ChatPanel from '@carbon/ai-chat-components/es/react/panel.js';
+import { ChatShell, ChatPanel } from '@carbon/ai-chat-components/react';
 
 function ChatWithPanel() {
   const [isPanelOpen, setIsPanelOpen] = React.useState(false);

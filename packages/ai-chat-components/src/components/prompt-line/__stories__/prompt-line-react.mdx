@@ -23,7 +23,7 @@ The prompt line supports:
 - **Text input** — text entry with placeholder, disabled, and autofocus states.
 - **Autocomplete** — trigger-driven suggestion overlays via `useChatAutocomplete` and the `buildCarbonExtensions` helper.
 - **Message actions** — icon action buttons projected into the `message-actions` slot (e.g. attach file, switch mode).
-- **File uploads** — a visual file chip list projected into the `file-uploads` slot via `<CDSAIChatFileUploads>`.
+- **File uploads** — a visual file chip list projected into the `file-uploads` slot via `<FileUploads>`.
 - **Context chips** — inline token chips rendered inside the rich editor (e.g. `@mention`, `/command`).
 - **Error state** — displays error message `field-messaging` slot and applies error styling.
 
@@ -31,13 +31,13 @@ It composes three React components into a complete input surface:
 
 - `<PromptLineShell>` - layout chrome that defines named slots and controls inline/expanded layout modes.
 - `<PromptLine>` — the editing surface; renders a plain `<textarea>` or a Tiptap rich-text editor with additional capabilities (context chips, custom Tiptap nodes, etc.) when `extensions` are provided.
-- `<CDSAIChatInputSendControl>` — renders the send button or stop streaming button.
+- `<InputSendControl>` — renders the send button or stop streaming button.
 
 Additional components used with the prompt line:
 
-- `<CDSAIChatAutocomplete>` - suggestion list overlay rendered by the `useChatAutocomplete` hook in the `autocomplete-content` slot.
-- `<CDSAIChatFileUploads>` — container of file attachment chips rendered in the `file-uploads` slot.
-- `<CDSAIChatErrorMessage>` — error message rendered in the `field-messaging` slot.
+- `<Autocomplete>` - suggestion list overlay rendered by the `useChatAutocomplete` hook in the `autocomplete-content` slot.
+- `<FileUploads>` — container of file attachment chips rendered in the `file-uploads` slot.
+- `<ErrorMessage>` — error message rendered in the `field-messaging` slot.
 
 ### Getting started
 
@@ -45,9 +45,11 @@ Here's a minimal implementation.
 
 ```jsx
 import { useState, useCallback } from 'react';
-import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
-import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
-import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+import {
+  PromptLine,
+  PromptLineShell,
+  InputSendControl,
+} from '@carbon/ai-chat-components/react';
 
 function ChatInput() {
   const [hasValidInput, setHasValidInput] = useState(false);
@@ -68,7 +70,7 @@ function ChatInput() {
         onChange={handleChange}
         onSendIntent={handleSend}
       />
-      <CDSAIChatInputSendControl
+      <InputSendControl
         slot="send-control"
         hasValidInput={hasValidInput}
         onSend={handleSend}
@@ -82,10 +84,12 @@ function ChatInput() {
 
 ```jsx
 import { useState, useCallback, useMemo, useRef } from 'react';
-import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
-import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
-import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
-import { useChatAutocomplete } from '@carbon/ai-chat-components/es/react/hooks/useChatAutocomplete.js';
+import {
+  PromptLine,
+  PromptLineShell,
+  InputSendControl,
+  useChatAutocomplete,
+} from '@carbon/ai-chat-components/react';
 import { buildCarbonExtensions } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 const ALL_ITEMS = [
@@ -134,7 +138,7 @@ function ChatInput() {
         onTriggerChange={onTriggerChange}
       />
       {autocompleteContent}
-      <CDSAIChatInputSendControl
+      <InputSendControl
         slot="send-control"
         hasValidInput={hasValidInput}
         onSend={() => {
@@ -177,10 +181,12 @@ items: (query) => {
 
 ```jsx
 import { useState, useCallback, useRef } from 'react';
-import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
-import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
-import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
-import CDSAIChatFileUploads from '@carbon/ai-chat-components/es/react/file-uploads.js';
+import {
+  PromptLine,
+  PromptLineShell,
+  InputSendControl,
+  FileUploads,
+} from '@carbon/ai-chat-components/react';
 import { FileStatusValue } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 
 function ChatInput() {
@@ -213,7 +219,7 @@ function ChatInput() {
   return (
     <PromptLineShell rounded expanded>
       {/* Always mounted so live regions persist after the last file is removed */}
-      <CDSAIChatFileUploads
+      <FileUploads
         slot="file-uploads"
         uploads={uploads}
         onFileRemove={handleFileRemove}
@@ -241,7 +247,7 @@ function ChatInput() {
           <span slot="tooltip-content">Attach file</span>
         </cds-icon-button>
       </div>
-      <CDSAIChatInputSendControl
+      <InputSendControl
         slot="send-control"
         hasValidInput={hasValidInputOrUploads}
         onSend={() => {
@@ -259,15 +265,15 @@ function ChatInput() {
 
 <ArgTypes of={PromptLineReactStories.PromptLineEvents} />
 
-### `CDSAIChatInputSendControl`
+### `InputSendControl`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatInputSendControlEvents} />
 
-### `CDSAIChatAutocomplete`
+### `Autocomplete`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatAutocompleteEvents} />
 
-### `CDSAIChatFileUploads`
+### `FileUploads`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatFileUploadsEvents} />
 
@@ -284,7 +290,7 @@ function ChatInput() {
 Import the controller wrapper when you need its DOM event callbacks. Read each callback's payload from `event.detail`.
 
 ```jsx
-import AutocompleteController from '@carbon/ai-chat-components/es/react/autocomplete-controller.js';
+import { AutocompleteController } from '@carbon/ai-chat-components/react';
 ```
 
 <ArgTypes of={PromptLineReactStories.AutocompleteControllerEvents} />
@@ -299,19 +305,19 @@ import AutocompleteController from '@carbon/ai-chat-components/es/react/autocomp
 
 <ArgTypes of={PromptLineReactStories.PromptLineShellArgTypes} />
 
-### `<CDSAIChatInputSendControl>`
+### `<InputSendControl>`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatInputSendControlArgTypes} />
 
-### `<CDSAIChatAutocomplete>`
+### `<Autocomplete>`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatAutocompleteArgTypes} />
 
-### `<CDSAIChatFileUploads>`
+### `<FileUploads>`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatFileUploadsArgTypes} />
 
-### `<CDSAIChatErrorMessage>`
+### `<ErrorMessage>`
 
 <ArgTypes of={PromptLineReactStories.CDSAIChatErrorMessageArgTypes} />
 

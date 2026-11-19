@@ -27,7 +27,7 @@ Use `UserMessageContent` to show a sent message, including its text, chips, and 
 A top-level node uses the slot name `${slotPrefix}::${index}`. A node inside a paragraph uses `${slotPrefix}::${paragraphIndex}.${inlineIndex}`.
 
 ```jsx
-import UserMessageContent from '@carbon/ai-chat-components/es/react/user-message-content.js';
+import { UserMessageContent } from '@carbon/ai-chat-components/react';
 
 function Message({ savedDocument }) {
   return (
@@ -69,7 +69,7 @@ Chips and custom nodes are part of the message text, so keep their slotted conte
 ## JSX (via import)
 
 ```jsx
-import UserMessageContent from '@carbon/ai-chat-components/es/react/user-message-content.js';
+import { UserMessageContent } from '@carbon/ai-chat-components/react';
 ```
 
 ## Feedback

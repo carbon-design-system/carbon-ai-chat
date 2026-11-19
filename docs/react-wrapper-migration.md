@@ -6,7 +6,7 @@ The wrappers now use native Lit binding. The old test bridge is removed. It mask
 
 ```tsx
 import React, { useRef } from 'react';
-import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
+import { PromptLine } from '@carbon/ai-chat-components/react';
 import { PromptLineElement } from '@carbon/ai-chat-components/es/components/aichat-prompt-line/index.js';
 
 function Prompt() {
@@ -20,10 +20,10 @@ function Prompt() {
 }
 ```
 
-CodeSnippet, Toolbar, and ChatHeader still accept React icons in their action props. Markdown still accepts React nodes from its custom renderers. The autocomplete controller wrapper is an opt-in import. The hook import stays lightweight.
+CodeSnippet, Toolbar, and ChatHeader still accept React icons in their action props. Markdown still accepts React nodes from its custom renderers. The autocomplete controller wrapper is an opt-in import: a bundle includes it only when it's imported. The hook import stays lightweight.
 
 ```tsx
-import AutocompleteController from '@carbon/ai-chat-components/es/react/autocomplete-controller.js';
+import { AutocompleteController } from '@carbon/ai-chat-components/react';
 ```
 
 In a DOM-based Jest project, select Lit's browser export. Keep true Node/SSR tests in a separate project with Node exports.

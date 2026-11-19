@@ -13,7 +13,7 @@ Set an action's optional `disabled` field to `true` to keep it visible and preve
 Pass a new `actions` array to update the rendered menu, including while it is open:
 
 ```jsx
-import HistoryPanelItem from '@carbon/ai-chat-components/es/react/history/history-panel-item.js';
+import { HistoryPanelItem } from '@carbon/ai-chat-components/react';
 
 function Conversation({ actions, deleteDisabled }) {
   return (
@@ -39,7 +39,20 @@ Here's a quick example to get you started.
 ### JS (via import)
 
 ```javascript
-import '@carbon/ai-chat-components/es/react/history/index.js';
+import {
+  HistoryShell,
+  HistoryHeader,
+  HistoryToolbar,
+  HistoryContent,
+  HistoryLoading,
+  HistoryPanel,
+  HistoryPanelMenu,
+  HistoryPanelItem,
+  HistoryPanelItems,
+  HistorySearchItem,
+  HistoryPanelItemInput,
+  HistoryDeletePanel,
+} from '@carbon/ai-chat-components/react';
 ```
 
 ### HTML
@@ -57,7 +70,7 @@ import {
   HistoryPanelItems,
   HistorySearchItem,
   HistoryDeletePanel,
-} from '@carbon/ai-chat-components/es/react/history/index.js';
+} from '@carbon/ai-chat-components/react';
 import { PinFilled, Search } from '@carbon/icons-react';
 
 function ChatHistory() {

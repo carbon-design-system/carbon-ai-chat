@@ -73,7 +73,7 @@ See [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) for co
 Here's a quick example to get you started.
 
 ```jsx
-import Card from '@carbon/ai-chat-components/es/react/card.js';
+import { Card } from '@carbon/ai-chat-components/react';
 
 function CardExample() {
   return (
@@ -99,7 +99,7 @@ function CardExample() {
 Add interactive buttons to your card with `CardFooter`.
 
 ```jsx
-import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+import { Card, CardFooter } from '@carbon/ai-chat-components/react';
 import { Launch16 } from '@carbon/icons';
 
 function CardWithFooter() {
@@ -139,7 +139,7 @@ function CardWithFooter() {
 Display media content with proper corner rounding using the `media` slot and `data-rounded` attribute.
 
 ```jsx
-import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+import { Card, CardFooter } from '@carbon/ai-chat-components/react';
 import { Launch16 } from '@carbon/icons';
 
 function CardWithImage() {
@@ -180,7 +180,7 @@ function CardWithImage() {
 Remove the default tile padding using `isFlush={true}` for full-width content like images or custom layouts.
 
 ```jsx
-import { Card } from '@carbon/ai-chat-components/es/react/card.js';
+import { Card } from '@carbon/ai-chat-components/react';
 
 function FlushCard() {
   return (
@@ -202,7 +202,7 @@ function FlushCard() {
 Display multiple action buttons in the footer. Buttons are arranged horizontally and support different kinds (primary, secondary, ghost, danger).
 
 ```jsx
-import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+import { Card, CardFooter } from '@carbon/ai-chat-components/react';
 
 function CardWithMultipleActions() {
   const handleAction = (event) => {
@@ -243,11 +243,7 @@ function CardWithMultipleActions() {
 Use `CardSteps` to display multi-step processes with status indicators.
 
 ```jsx
-import {
-  Card,
-  CardSteps,
-  CardFooter,
-} from '@carbon/ai-chat-components/es/react/card.js';
+import { Card, CardSteps, CardFooter } from '@carbon/ai-chat-components/react';
 import { ICON_INDICATOR_KIND } from '@carbon/web-components/es/components/icon-indicator/defs.js';
 
 function CardWithSteps() {
@@ -306,7 +302,7 @@ function CardWithSteps() {
 ### Image-Only Card
 
 ```jsx
-import { Card } from '@carbon/ai-chat-components/es/react/card.js';
+import { Card } from '@carbon/ai-chat-components/react';
 
 function ImageOnlyCard() {
   return (

@@ -38,7 +38,7 @@ The shell fills its parent, so give the parent a height. The handle width honors
 Set `topHandleLabel` and `bottomHandleLabel` to add keyboard-focusable handles above and below the scroller. Focusing a handle shows a focus ring on the scroller. Press Escape to leave a handle. Supply translated strings for your locale. A handle is omitted when its label is empty.
 
 ```jsx
-import MessagesShell from '@carbon/ai-chat-components/es/react/messages-shell.js';
+import { MessagesShell } from '@carbon/ai-chat-components/react';
 
 function Messages() {
   return (
@@ -58,7 +58,7 @@ function Messages() {
 `onMessagesShellScroll` receives `cds-aichat-messages-shell-scroll` on every scroll. Read `scrollTop`, `scrollHeight`, and `clientHeight` from `event.detail`. `isScrollable` is true when the content overflows. `isAtBottom` is true within 1px of the bottom.
 
 ```jsx
-import MessagesShell from '@carbon/ai-chat-components/es/react/messages-shell.js';
+import { MessagesShell } from '@carbon/ai-chat-components/react';
 
 function Messages() {
   const handleScroll = (event) => {
@@ -89,7 +89,7 @@ function Messages() {
 ## JSX (via import)
 
 ```jsx
-import MessagesShell from '@carbon/ai-chat-components/es/react/messages-shell.js';
+import { MessagesShell } from '@carbon/ai-chat-components/react';
 ```
 
 ## Feedback

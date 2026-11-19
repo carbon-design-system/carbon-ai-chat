@@ -35,6 +35,7 @@ import {
 import { assertPackedResolution } from './resolution.mjs';
 import { assertAggregateProof, prepareAggregateProof } from './aggregate.mjs';
 import { assertIsolationProofs, prepareIsolationProofs } from './isolation.mjs';
+import { assertReactBarrelShaking } from './react-barrel.mjs';
 import { assertParentBaseline } from './baseline.mjs';
 import { preparePrefixProofs } from './prefix.mjs';
 import { assertPrefixProofs } from './prefix-browser.mjs';
@@ -255,6 +256,7 @@ if (!prefixOnly) {
     manifest: componentsMetadata.manifest,
     runNpm,
   });
+  await assertReactBarrelShaking({ consumer });
 }
 const prefixProof = await preparePrefixProofs({
   consumer,

@@ -22,10 +22,12 @@ Use [Prompt line shell](?path=/docs/preview-prompt-line--overview) in the `slot=
 Here's a quick example to get you started.
 
 ```jsx
-import ChatShell from '@carbon/ai-chat-components/es/react/chat-shell.js';
-import PromptLine from '@carbon/ai-chat-components/es/react/prompt-line.js';
-import PromptLineShell from '@carbon/ai-chat-components/es/react/prompt-line-shell.js';
-import CDSAIChatInputSendControl from '@carbon/ai-chat-components/es/react/input-send-control.js';
+import {
+  ChatShell,
+  PromptLine,
+  PromptLineShell,
+  InputSendControl,
+} from '@carbon/ai-chat-components/react';
 
 function ChatInput() {
   const [hasValidInput, setHasValidInput] = React.useState(false);
@@ -41,7 +43,7 @@ function ChatInput() {
           placeholder="Ask a question"
           onChange={(e) => setHasValidInput(e.detail.rawValue.length > 0)}
         />
-        <CDSAIChatInputSendControl
+        <InputSendControl
           slot="send-control"
           hasValidInput={hasValidInput}
           buttonLabel="Send"
@@ -78,7 +80,7 @@ function ChatInputExpanded() {
           </cds-icon-button>
         </div>
 
-        <CDSAIChatInputSendControl
+        <InputSendControl
           slot="send-control"
           hasValidInput={hasValidInput}
           buttonLabel="Send"

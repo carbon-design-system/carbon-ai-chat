@@ -27,7 +27,7 @@ The `<FeedbackButtons>` component wraps the `cds-aichat-feedback-buttons` web co
 Here's a quick example to get you started.
 
 ```jsx
-import FeedbackButtons from '@carbon/ai-chat-components/es/react/feedback-buttons.js';
+import { FeedbackButtons } from '@carbon/ai-chat-components/react';
 
 function FeedbackButtonsExample() {
   return (
@@ -92,8 +92,7 @@ function SimpleFeedback() {
 #### With Feedback Details Panel
 
 ```jsx
-import FeedbackButtons from '@carbon/ai-chat-components/es/react/feedback-buttons.js';
-import Feedback from '@carbon/ai-chat-components/es/react/feedback.js';
+import { FeedbackButtons, Feedback } from '@carbon/ai-chat-components/react';
 
 function DetailedFeedback() {
   const [isNegativeOpen, setNegativeOpen] = React.useState(false);

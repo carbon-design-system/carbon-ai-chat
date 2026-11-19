@@ -30,7 +30,7 @@ The chat header includes support for:
 Here's a quick example to get you started.
 
 ```jsx
-import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
+import { ChatHeader } from '@carbon/ai-chat-components/react';
 import { Close, Restart } from '@carbon/icons-react';
 
 const actions = [
@@ -67,7 +67,7 @@ function MyComponent() {
 The header supports different navigation types:
 
 ```jsx
-import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
+import { ChatHeader } from '@carbon/ai-chat-components/react';
 import { ArrowLeft, OverflowMenuVertical } from '@carbon/icons-react';
 
 function ChatWithBackButton() {
@@ -112,7 +112,7 @@ Use refs to programmatically manage focus:
 
 ```jsx
 import { useRef } from 'react';
-import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
+import { ChatHeader } from '@carbon/ai-chat-components/react';
 
 function ChatWithFocus() {
   const headerRef = useRef(null);
@@ -140,7 +140,7 @@ function ChatWithFocus() {
 Use slots for custom content:
 
 ```jsx
-import ChatHeader from '@carbon/ai-chat-components/es/react/chat-header.js';
+import { ChatHeader } from '@carbon/ai-chat-components/react';
 import { Button, AILabel } from '@carbon/react';
 
 function ChatWithCustomContent() {

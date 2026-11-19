@@ -33,7 +33,7 @@ The autocomplete component includes support for:
 Here's a quick example to get you started.
 
 ```jsx
-import CDSAIChatAutocomplete from '@carbon/ai-chat-components/es/react/autocomplete.js';
+import { Autocomplete } from '@carbon/ai-chat-components/react';
 
 const suggestions = [
   {
@@ -48,7 +48,7 @@ const suggestions = [
 
 function MyComponent() {
   return (
-    <CDSAIChatAutocomplete
+    <Autocomplete
       items={suggestions}
       attached={true}
       onSend={(event) => {
@@ -71,7 +71,7 @@ Use CSS custom properties to adjust layout sizing. Apply them to a wrapper aroun
 
 ## Events
 
-### `CDSAIChatAutocomplete`
+### `Autocomplete`
 
 <ArgTypes of={AutocompleteReactStories.CDSAIChatAutocompleteEvents} />
 

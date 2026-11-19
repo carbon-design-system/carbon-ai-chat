@@ -35,7 +35,7 @@ The shell adds no screen reader announcements. Your slotted content decides what
 Set `fullWidth` to break the content out of the inset column.
 
 ```jsx
-import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+import { MessageItemShell } from '@carbon/ai-chat-components/react';
 
 function Row() {
   return (
@@ -55,9 +55,11 @@ Set `hideAvatar` to hide the avatar in the byline. The label and timestamp remai
 Slot a `MessageByline` in `byline` and give its avatar `slot="avatar"` directly. The shell sets `hidden` on that avatar, and the byline then renders no avatar box. An avatar nested inside another element is not hidden.
 
 ```jsx
-import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
-import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
-import UserAvatar from '@carbon/ai-chat-components/es/react/user-avatar.js';
+import {
+  MessageByline,
+  MessageItemShell,
+  UserAvatar,
+} from '@carbon/ai-chat-components/react';
 
 function Row() {
   return (
@@ -82,7 +84,7 @@ function Row() {
 ## JSX (via import)
 
 ```jsx
-import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+import { MessageItemShell } from '@carbon/ai-chat-components/react';
 ```
 
 ## Feedback

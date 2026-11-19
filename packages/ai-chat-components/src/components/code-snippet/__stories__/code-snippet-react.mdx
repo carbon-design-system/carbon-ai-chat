@@ -27,7 +27,7 @@ The `<CodeSnippet>` and `<CodeSnippetCard>` components wrap the `cds-aichat-code
 Here's a quick example to get you started using the `code` prop (recommended):
 
 ```jsx
-import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
+import { CodeSnippet } from '@carbon/ai-chat-components/react';
 
 function ReadOnlySnippet({ code }) {
   return <CodeSnippet highlight code={code} />;
@@ -39,7 +39,7 @@ function ReadOnlySnippet({ code }) {
 You can also provide code via children, though the `code` prop is recommended for better performance, especially when streaming content:
 
 ```jsx
-import CodeSnippet from '@carbon/ai-chat-components/es/react/code-snippet.js';
+import { CodeSnippet } from '@carbon/ai-chat-components/react';
 
 function ReadOnlySnippet({ code }) {
   return <CodeSnippet highlight>{code}</CodeSnippet>;
