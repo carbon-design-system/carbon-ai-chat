@@ -154,7 +154,8 @@ for (const framework of ['react', 'web-component']) {
       await expect(
         page.getByRole('group', { name: filename, exact: true })
       ).toBeVisible();
-      await expect(remove).toHaveCount(0);
+      await expect(remove).toBeVisible();
+      await expect(remove).toBeEnabled();
       await expect(fileInput).toBeDisabled();
 
       await chooseUploadAction(page, expanded);

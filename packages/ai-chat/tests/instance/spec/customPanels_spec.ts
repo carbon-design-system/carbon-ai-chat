@@ -641,8 +641,10 @@ describe('ChatInstance.customPanels', () => {
 
   describe('history panel', () => {
     it("keeps the custom panel's title and layout when history opens with other options", async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const { instance, store } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        history: { isOn: true },
+      });
       const customOptions: DefaultCustomPanelConfigOptions = {
         title: 'Order details',
         fullWidth: true,
@@ -669,8 +671,10 @@ describe('ChatInstance.customPanels', () => {
     });
 
     it("keeps the custom panel's title when history opens with no options", async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const { instance, store } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        history: { isOn: true },
+      });
       instance.customPanels
         .getPanel(PanelType.DEFAULT)
         .open({ title: 'Order details' });
@@ -683,9 +687,11 @@ describe('ChatInstance.customPanels', () => {
       expect(store.getState().view.historyPanelState.isOpen).toBe(true);
     });
 
-    it('fires historyPanel:pre:open once, before the panel opens, when opened from code', async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
+    it('opens history from code without firing the mobile-menu notification', async () => {
+      const { instance, store } = await renderChatAndGetInstanceWithStore({
+        ...createBaseConfig(),
+        history: { isOn: true },
+      });
       const openWhenFired: boolean[] = [];
       instance.on({
         type: BusEventType.HISTORY_PANEL_PRE_OPEN,
@@ -698,7 +704,7 @@ describe('ChatInstance.customPanels', () => {
       store.dispatch(viewActions.setHistoryPanelOptions(false, false));
       await instance.customPanels.getPanel(PanelType.HISTORY).open();
 
-      expect(openWhenFired).toEqual([false]);
+      expect(openWhenFired).toEqual([]);
       expect(store.getState().view.historyPanelState.isOpen).toBe(true);
       expect(store.getState().view.customPanelState.isOpen).toBe(false);
     });

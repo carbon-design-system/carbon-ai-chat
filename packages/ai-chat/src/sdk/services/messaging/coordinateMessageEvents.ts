@@ -19,6 +19,7 @@ import {
 } from '../../utils/messageUtils';
 import {
   captureMessageEvent,
+  eventLocalItems,
   watchPayloadEdits,
 } from '../../utils/messageEventOwnership';
 import {
@@ -113,7 +114,10 @@ export async function coordinateUserDefinedResponseItems(
       await coordinateUserDefinedResponseItems(
         serviceManager,
         presentation,
-        eventValues.localItems[localMessage.ui_state.id] ?? localMessage,
+        eventValues.localItems[localMessage.ui_state.id] ??
+          eventLocalItems(originalMessage, eventValues.message, {
+            [localMessage.ui_state.id]: localMessage,
+          })[localMessage.ui_state.id],
         eventValues.message,
         messageState,
         eventValues.localItems,

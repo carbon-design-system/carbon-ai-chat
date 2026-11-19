@@ -287,20 +287,42 @@ it('returns focus to the trigger after Escape closes the menu and leaves a blur 
   expect(document.activeElement).toBe(outside);
 });
 
-it('routes callback errors once and ignores detached action nodes', async () => {
-  const selected = jest.fn(() => {
-    throw new Error('action failed');
-  });
-  const { view, errorOccurred } = await fixture(
-    [action('One', { onClick: selected })],
-    true
-  );
-  const button = view.querySelector<HTMLElement>('[data-testid="One"]');
-  button.click();
-  await view.updateComplete;
-  expect(errorOccurred).toHaveBeenCalledTimes(1);
-  view.remove();
-  button.click();
-  expect(selected).toHaveBeenCalledTimes(1);
-  expect(errorOccurred).toHaveBeenCalledTimes(1);
-});
+it.each([false, true])(
+  'preserves callback exceptions with expanded=%s and ignores detached action nodes',
+  async (expanded) => {
+    const failure = new Error('action failed');
+    const selected = jest.fn(() => {
+      throw failure;
+    });
+    const { view, errorOccurred } = await fixture(
+      [action('One', { onClick: selected })],
+      expanded
+    );
+    if (!expanded) {
+      await click(view, '[data-input-actions-trigger]');
+    }
+    const button = view.querySelector<HTMLElement>('[data-testid="One"]');
+    const uncaught = jest.fn((event: ErrorEvent) => {
+      if (event.error === failure) {
+        event.preventDefault();
+      }
+    });
+    window.addEventListener('error', uncaught);
+    try {
+      button.click();
+      await view.updateComplete;
+      expect(uncaught).toHaveBeenCalledTimes(1);
+      expect(uncaught.mock.calls[0][0].error).toBe(failure);
+      expect(errorOccurred).not.toHaveBeenCalled();
+      expect(view.querySelector('[data-input-actions-trigger]')).not.toBeNull();
+      expect(view.querySelector('cds-menu')).toBeNull();
+      view.remove();
+      button.click();
+      expect(selected).toHaveBeenCalledTimes(1);
+      expect(errorOccurred).not.toHaveBeenCalled();
+      expect(uncaught).toHaveBeenCalledTimes(1);
+    } finally {
+      window.removeEventListener('error', uncaught);
+    }
+  }
+);

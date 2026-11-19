@@ -54,6 +54,7 @@ import {
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 
 import { WindowOpenState } from '../services/windowOpenState';
+import { fireUserEvent } from '../services/fireUserEvent';
 
 import { shallowEqual } from '../../sdk/store/appStore';
 
@@ -132,7 +133,6 @@ import {
 } from '../state';
 
 import { chatStore } from '../services/attachChatView';
-import { openHistoryPanel } from '../services/CustomPanelInstance';
 
 import { joinPersistedState } from '../state';
 import { writeableElementsOf } from './writeableElements';
@@ -337,7 +337,7 @@ export class ShellLifecycle {
       answerPrompt: (id, choice) =>
         answerPrompt(chatStore(manager), id, choice),
       fireCustomPanelEvent: (type) => {
-        manager.eventBus.fire({ type }, manager.instance);
+        fireUserEvent(manager, { type });
       },
       resetCustomPanelOptions: () => {
         manager.store.dispatch(
@@ -723,14 +723,21 @@ export class ShellLifecycle {
               {
                 text: languagePack.history_new_chat,
                 handler: () => {
-                  serviceManager.fire({
+                  fireUserEvent(serviceManager, {
                     type: BusEventType.HISTORY_PANEL_NEW_CHAT,
                   });
                 },
               },
               {
                 text: languagePack.history_view_chats,
-                handler: () => openHistoryPanel(serviceManager),
+                handler: () => {
+                  fireUserEvent(serviceManager, {
+                    type: BusEventType.HISTORY_PANEL_PRE_OPEN,
+                  });
+                  serviceManager.store.dispatch(
+                    viewActions.setHistoryPanelOpen(true)
+                  );
+                },
               },
               ...(header?.menuOptions || []),
             ],

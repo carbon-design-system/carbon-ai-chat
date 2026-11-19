@@ -384,7 +384,7 @@ for (const framework of ['react', 'web-component']) {
       await expect(prompt).toBeHidden();
       await expect(counter).toBeVisible();
       // Closing the cover returns focus to the control it covered. The
-      // covered panel's options still reset (#2700).
+      // covered panel's options still reset when another panel covers it.
       await expect(counter).toBeFocused();
       await expect(counter).toHaveText('Panel count 1');
       expect(

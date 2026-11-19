@@ -31,8 +31,12 @@ import {
 } from '../../../../types/messaging/Messages';
 
 import { viewActions } from '../../../state';
-
-import { setWorkspaceCardSource } from '../../../services/CustomPanelInstance';
+import {
+  closeWorkspaceForNext,
+  setWorkspaceCardSource,
+} from '../../../services/CustomPanelInstance';
+import { chatStore } from '../../../services/attachChatView';
+import { consoleError } from '../../../../sdk/utils/miscUtils';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;
@@ -49,10 +53,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
     item;
 
   const serviceManager = useServiceManager();
-  const { isOpen, workspaceID } = useSelector(
+  const { isOpen, workspaceID, viewDetailsLabel, viewingLabel } = useSelector(
     (state: AppState) => ({
       isOpen: state.view.workspacePanelState.isOpen,
       workspaceID: state.view.workspacePanelState.workspaceID,
+      viewDetailsLabel: state.languagePack.previewCard_viewDetails,
+      viewingLabel: state.languagePack.previewCard_viewing,
     }),
     shallowEqual
   );
@@ -62,7 +68,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
 
   const isViewing = isOpen && workspaceID === workspace_id;
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
+    // Close the open workspace before storing this card's data, so its close events carry its own data.
+    if (chatStore(serviceManager).getState().view.workspacePanelState.isOpen) {
+      await closeWorkspaceForNext(() => panel.close(), serviceManager);
+    }
+
     // Store workspace panel data in Redux before opening
     serviceManager.store.dispatch(
       viewActions.setWorkspacePanelData({
@@ -75,13 +86,20 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
 
     // Name this card as the workspace's source, so its events carry the card's IDs.
     setWorkspaceCardSource(serviceManager, fullMessage, localMessageItem);
-    // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events
-    // If a workspace is already open, it will be closed first (handled in CustomPanelInstance)
-    panel.open({
-      ...workspace_options,
-      workspaceId: workspace_id,
-      additionalData: additional_data,
-    });
+    // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events. Nothing awaits the click, so a
+    // workspace handler that throws is logged here.
+    panel
+      .open({
+        ...workspace_options,
+        workspaceId: workspace_id,
+        additionalData: additional_data,
+      })
+      .catch((error) => {
+        consoleError(
+          'A workspace open handler failed while a preview card opened its workspace.',
+          error
+        );
+      });
   }, [
     workspace_id,
     workspace_options,
@@ -98,12 +116,12 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
         icon: isViewing ? View16 : Maximize16,
         id: 'docs',
         kind: 'ghost',
-        label: isViewing ? 'Viewing' : 'View details',
+        label: isViewing ? viewingLabel : viewDetailsLabel,
         payload: { test: 'value' },
         isViewing,
       },
     ],
-    [isViewing]
+    [isViewing, viewingLabel, viewDetailsLabel]
   );
 
   return (

@@ -238,7 +238,7 @@ import type { ServiceManager } from '../../sdk/services/ServiceManager';
     const reads = readsWith({
       [planted]:
         header +
-        'export const read = (state: AppState) => [state.view.persistedToBrowserStorage, state.config.public, state.languagePack];',
+        'export const read = (state: AppState) => [state.view.persistedToBrowserStorage, state.config.public, state.languagePack, state.loadedLocale];',
     });
     expect([...reads].filter((read) => read.startsWith(planted))).toEqual([]);
   });

@@ -45,6 +45,10 @@ export interface PublicConfigMessaging extends ChatSDKConfigMessaging<ChatInstan
    * sent when the previous is still processing. If the Promise rejects, an error indicator will be displayed next to the user's message.
    *
    * If the request takes longer than PublicConfigMessaging.messageTimeoutSecs than the AbortSignal will be sent.
+   *
+   * Without it, every send fails, the welcome request included. The message shows as failed,
+   * {@link PublicConfig.onError} reports a message communication error, and {@link ChatInstance.send} rejects with
+   * an error that names this field.
    */
   customSendMessage?: (
     request: MessageRequest,
@@ -61,10 +65,11 @@ export interface PublicConfigMessaging extends ChatSDKConfigMessaging<ChatInstan
   customLoadHistory?: (instance: ChatInstance) => Promise<HistoryItem[]>;
 
   /**
-   * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
-   * the loading indicator on its own. This is tied to either {@link ChatInstanceMessaging.addMessage} or
-   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
-   * are called with in the window defined here, the loading indicator will be shown.
+   * Controls how long AI chat should wait before showing the loading indicator, in seconds. The default is 4 seconds.
+   * If set to 0, the chat will never show the loading indicator on its own. This is tied to either
+   * {@link ChatInstanceMessaging.addMessage} or {@link ChatInstanceMessaging.addMessageChunk} being called after this
+   * message was sent. If neither of those methods are called with in the window defined here, the loading indicator
+   * will be shown.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 

@@ -65,13 +65,21 @@ function sameDrawnItems(
  * The same array comes back while no entry, local item, or message changes.
  */
 function useDrawnMessageItems(
-  messageItems: readonly Readonly<ChatSDKMessageItem>[]
+  messageItems: readonly Readonly<ChatSDKMessageItem>[],
+  retainedLocalIDs?: readonly string[]
 ): readonly DrawnMessageItem[] {
   const { publicStateService } = useServiceManager();
   const selectDrawn = useCallback(
     (state: AppState) => {
       const drawn: DrawnMessageItem[] = [];
-      messageItems.forEach((messageItem) => {
+      const selectedItems = retainedLocalIDs
+        ? retainedLocalIDs.flatMap((localID) => {
+            const itemID = publicStateService.messageItemIDOf(localID, state);
+            const entry = messageItemByID(messageItems, itemID);
+            return entry ? [entry] : [];
+          })
+        : messageItems;
+      selectedItems.forEach((messageItem) => {
         const localID = publicStateService.localItemIDOf(messageItem.id, state);
         const localMessageItem =
           localID === undefined
@@ -84,7 +92,7 @@ function useDrawnMessageItems(
       });
       return drawn;
     },
-    [messageItems, publicStateService]
+    [messageItems, publicStateService, retainedLocalIDs]
   );
   const drawn = useSelector(selectDrawn, sameDrawnItems);
   // A new list of entries makes a new selector, which compares with the last value React
@@ -133,16 +141,23 @@ function useMessageItem(
  */
 function useNestedMessageItems(
   localItemID: string,
-  list: NestedList
+  list: NestedList,
+  retainedLocalIDs?: readonly string[]
 ): readonly DrawnMessageItem[] {
   const parentID = useMessageItemID(localItemID);
   const row = typeof list === 'string' ? undefined : list.row;
   const column = typeof list === 'string' ? undefined : list.column;
   const kind = typeof list === 'string' ? list : undefined;
   const nested = usePublicChatState((state) =>
-    nestedMessageItems(state.messageItems, parentID, kind ?? { row, column })
+    retainedLocalIDs
+      ? state.messageItems
+      : nestedMessageItems(
+          state.messageItems,
+          parentID,
+          kind ?? { row, column }
+        )
   );
-  return useDrawnMessageItems(nested);
+  return useDrawnMessageItems(nested, retainedLocalIDs);
 }
 
 export {

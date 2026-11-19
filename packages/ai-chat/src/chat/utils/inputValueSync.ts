@@ -13,6 +13,7 @@ import type { PromptLineElement } from '@carbon/ai-chat-components/es/components
 import { textToDoc } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/json-utils.js';
 import type { FileUpload } from '../../types/config/ServiceDeskConfig';
 import { hasSendableInput } from './sendableInput';
+import { literalTextToDoc } from '../../sdk/utils/inputContent';
 
 interface InputValueChange {
   rawValue: string;
@@ -111,7 +112,7 @@ function mirrorInputValue({
   }
   const promptLine = getPromptLine();
   if (promptLine && promptLine.getValue() !== rawValue) {
-    promptLine.setContent(rawValue);
+    promptLine.setContent(literalTextToDoc(rawValue));
   }
 }
 

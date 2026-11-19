@@ -61,16 +61,14 @@ it('delivers a constructable class in a native response event without running it
     })
   );
   expect(constructions).toBe(0);
-  expect(delivered).not.toBe(source);
+  expect(delivered).toBe(source);
   const item = new delivered('host view');
   expect(item.render()).toBe('host view');
   expect(item).toBeInstanceOf(source);
   expect(item).toBeInstanceOf(delivered);
-  expect(delivered.settings).not.toBe(source.settings);
-  expect(() => {
-    delivered.settings.value = 'changed';
-  }).toThrow(TypeError);
-  expect(source.settings.value).toBe('before');
+  expect(delivered.settings).toBe(source.settings);
+  delivered.settings.value = 'changed';
+  expect(source.settings.value).toBe('changed');
 });
 
 it('keeps accepted opaque APIs in native callbacks with the approved shared-reference limit', async () => {
@@ -155,15 +153,15 @@ it('delivers accepted boxed strings to response and receive callbacks', async ()
   );
   expect(delivered).toHaveLength(2);
   for (const copy of delivered) {
-    expect(copy).not.toBe(label);
+    expect(copy).toBe(label);
     expect(copy.valueOf()).toBe('host label');
     expect(copy[0]).toBe('h');
-    expect(Object.isFrozen(copy.metadata)).toBe(true);
+    expect(Object.isFrozen(copy.metadata)).toBe(false);
   }
   expect(Object.isFrozen(label.metadata)).toBe(false);
 });
 
-it('isolates shared-buffer bytes in response and receive snapshots', async () => {
+it('keeps response and receive callbacks on the existing shared-buffer path', async () => {
   const { instance, store } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
   const buffer = new SharedArrayBuffer(4);
@@ -201,15 +199,49 @@ it('isolates shared-buffer bytes in response and receive snapshots', async () =>
   );
   expect(delivered).toHaveLength(2);
   for (const copy of delivered) {
-    expect(copy.buffer).not.toBe(buffer);
+    expect(copy.buffer).toBe(buffer);
     expect(copy.bytes.buffer).toBe(copy.buffer);
     expect(copy.view.buffer).toBe(copy.buffer);
     copy.bytes[0] = 9;
     copy.view.setUint8(0, 8);
   }
-  expect(Array.from(bytes)).toEqual([1, 2, 3, 4]);
+  expect(Array.from(bytes)).toEqual([9, 8, 3, 4]);
   const stored = store.getState().allMessagesByID.shared as MessageResponse;
   expect(
     Array.from(stored.output.generic[0].user_defined.bytes as Uint8Array)
   ).toEqual([1, 2, 3, 4]);
+});
+
+it('leaves a host class unfrozen when state lists its message', async () => {
+  const { instance } =
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+  class Widget {}
+  const source = Object.assign(Widget, { settings: { value: 'before' } });
+  await instance.messaging.upsertMessage(
+    'listed',
+    MessageState.COMPLETE,
+    () => ({
+      id: 'listed',
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { Widget: source },
+          },
+        ],
+      },
+    })
+  );
+  const state = instance.getState();
+  const message = state.messages.find(
+    (entry) => entry.id === 'listed'
+  ) as MessageResponse;
+  const item = state.messageItems.find((entry) => entry.messageID === 'listed');
+  expect(Object.isFrozen(message.output.generic[0])).toBe(true);
+  expect(message.output.generic[0].user_defined.Widget).toBe(source);
+  expect(Object.isFrozen(item.item)).toBe(true);
+  expect(item.item.user_defined.Widget).toBe(source);
+  expect(Object.isFrozen(source)).toBe(false);
+  source.settings.value = 'changed';
+  expect(source.settings.value).toBe('changed');
 });
