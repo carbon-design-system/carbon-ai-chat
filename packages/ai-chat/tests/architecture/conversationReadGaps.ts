@@ -27,12 +27,13 @@
  *   payloads are read-only, the list can hand the entries.
  * - #2825: the response panel's message, which the app shell's panel hook
  *   looks up in the chat's own messages and hands to the panel.
- * - #2969: the custom panels' workspace events, which hand a host the chat's
- *   own message and items and write the host's edits back onto them, and the
- *   panel manager that boot builds for the panels; and, for a reused chat,
- *   firing slot events again, with the chat's own message and items, for
- *   responses that came while it had no view. Once those payloads are
- *   read-only, these reads can use the SDK's entries.
+ * - #2969: the custom panels' workspace events. They hand a host copies of
+ *   the chat's own message and items, then write the host's edits back onto
+ *   them. Boot builds the panel manager, and the manager builds the panels.
+ *   For a reused chat, this also covers firing slot events again, with the
+ *   chat's own message and items, for responses that came while the chat had
+ *   no view. Once those payloads are read-only, these reads can use the
+ *   SDK's entries.
  * - #2824: everything else the prebuilt chat reads from the conversation
  *   partition in 1.x:
  *   - view state the partition still holds: which connect card is
@@ -335,9 +336,10 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2824',
   },
   {
-    // An adopting mount fires again the user-defined responses that had no
-    // slot while the chat waited in its grace window; it finds them in the
-    // message slices, which the message model replaces.
+    // An adopting mount fires again the user-defined responses, and the
+    // user-defined items inside reasoning, that had no slot while the chat
+    // waited in its grace window. It finds them in the chat's own messages
+    // and items.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'allMessageItemsByID',
     count: 2,
