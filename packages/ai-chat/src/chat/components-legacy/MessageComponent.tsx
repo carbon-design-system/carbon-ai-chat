@@ -1402,6 +1402,12 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
         hideAvatar={hideAvatar}>
         {this.renderFocusHandle()}
         {showByline && this.renderByline(localMessageItem, message)}
+        {isResponse(message) && readWidgetSaid && (
+          <VisuallyHidden
+            aria-hidden={this.state.focusHandleHasFocus ? 'true' : undefined}>
+            {this.getWidgetSaidMessage()}
+          </VisuallyHidden>
+        )}
         {isResponse(message) && (
           <div
             className={cx(
@@ -1424,9 +1430,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             )}
             ref={this.messageRef}
             aria-hidden={this.state.focusHandleHasFocus ? 'true' : undefined}>
-            {readWidgetSaid && (
-              <VisuallyHidden>{this.getWidgetSaidMessage()}</VisuallyHidden>
-            )}
             <div className="cds-aichat--received--inner">
               {isFirstMessageItem &&
                 this.renderReasoningSteps(
