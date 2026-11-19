@@ -127,13 +127,13 @@ function assembleStreamingItem(localItem: LocalMessageItem): GenericItem {
   return merge({}, localItem.item, ...streamingState.chunks) as GenericItem;
 }
 
-/** Each source object's frozen public copy. */
+/** Each source object's public copy. */
 const publicCopies = new WeakMap<object, unknown>();
 
 /**
- * A frozen deep copy of a value, made once per source object. Values the copy
- * shares with the source, such as functions and classes, stay unfrozen. A
- * value that isn't an object passes through.
+ * A public copy of a value, made once per source object. Copied containers are frozen;
+ * non-empty typed arrays remain mutable. Values shared with the source, such as
+ * functions and classes, are left untouched. A value that isn't an object passes through.
  */
 function publicCopyOf<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
