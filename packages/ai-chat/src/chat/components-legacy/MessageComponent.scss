@@ -16,16 +16,12 @@ $message-bar-width: 3px;
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--message {
     position: relative;
-    display: block;
-    margin: 0;
     animation: none;
   }
 }
 
 .cds-aichat--message {
   position: relative;
-  display: block;
-  margin: 0;
   --cds-aichat-border-radius-start-start: 0;
   --cds-aichat-border-radius-start-end: 0;
   --cds-aichat-border-radius-end-start: 0;

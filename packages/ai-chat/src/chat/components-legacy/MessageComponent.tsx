@@ -1476,7 +1476,6 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
             )}
             {hasRequestFooter(localMessageItem, message as MessageRequest) && (
               <MessageCustomRequestFooterSlot
-                slot="footer"
                 slotName={getRequestFooterSlotName(localMessageItem)}
               />
             )}

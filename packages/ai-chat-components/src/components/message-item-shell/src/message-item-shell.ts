@@ -45,6 +45,9 @@ export type MessageItemShellRowType = 'request' | 'response';
  *   the row body. A response ignores it when `hide-avatar` is set.
  * - `--cds-aichat-message-item-shell-gap-block-start` sets the space between a
  *   response's byline and its content. It only applies with a byline present.
+ * - `--cds-aichat-message-item-shell-byline-gap-before` sets the space above
+ *   the byline, which separates the row from the one before it. It only
+ *   applies with a byline present. Set it to `0` to remove the gap.
  */
 @carbonElement(blockClass)
 class CDSAIChatMessageItemShell extends LitElement {

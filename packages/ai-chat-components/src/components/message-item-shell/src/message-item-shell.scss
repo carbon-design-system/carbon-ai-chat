@@ -32,6 +32,12 @@ $block-class: #{$prefix}-message-item-shell;
 .#{$block-class}__byline {
   display: flex;
   align-items: center;
+
+  // Adds spacing above a message with a byline
+  padding-block-start: var(
+    --cds-aichat-message-item-shell-byline-gap-before,
+    28px
+  );
 }
 
 // A wrapper whose slot is empty is `hidden`. Its own `display` rule would
@@ -85,6 +91,10 @@ $block-class: #{$prefix}-message-item-shell;
 
   .#{$block-class}__body {
     align-items: flex-start;
+  }
+
+  .#{$block-class}__content {
+    inline-size: 100%;
   }
 
   // The gap only opens below a byline. A row without one has nothing to
