@@ -37,7 +37,6 @@ type TooltipAlignment =
  * Chat History panel item input.
  *
  * @element cds-aichat-history-panel-item-input
-
  *
  * @fires {CustomEvent<HistoryRenameChangeEventDetail>} history-panel-item-input-change - The rename input value changes.
  * @fires {CustomEvent<null>} history-panel-item-input-cancel - The rename is canceled.

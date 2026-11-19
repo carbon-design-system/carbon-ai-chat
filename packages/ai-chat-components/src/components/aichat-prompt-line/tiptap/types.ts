@@ -13,7 +13,6 @@
  * `carbonStarterTrigger`) and the shell consume these types directly.
  */
 
-import type { ComponentType, ReactNode } from 'react';
 import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 /**
@@ -35,12 +34,13 @@ export interface SuggestionItem {
    * Can be:
    * - a string URL for an avatar image
    * - an icon from `@carbon/icons` (CarbonIcon descriptor)
-   * - a React icon component from `@carbon/icons-react`
+   * - an icon component that renders at a pixel `size`, such as one from
+   *   `@carbon/icons-react`
    *
-   * React components are automatically transformed to CarbonIcon format when
-   * rendered through the React wrapper.
+   * The element renders only strings and CarbonIcon descriptors. The React
+   * wrapper converts an icon component to a CarbonIcon before rendering.
    */
-  avatar?: string | CarbonIcon | ComponentType<any>;
+  avatar?: string | CarbonIcon | ((props: { size: number }) => unknown);
   /** Whether the item is disabled and cannot be selected. */
   disabled?: boolean;
   /**
@@ -160,8 +160,12 @@ export interface TriggerSuggestionConfig extends Omit<
    *  anywhere. Defaults to "anywhere". */
   triggerPosition?: 'start' | 'anywhere';
 
-  /** Replace the visual element rendered inside the token chip. */
-  renderCustomToken?: (item: SuggestionItem) => HTMLElement | ReactNode;
+  /**
+   * Replace the visual element rendered inside the token chip. Return an
+   * `HTMLElement`, or content the chat's framework renderer accepts, such as
+   * a React node. Return `null` or `undefined` to keep the default chip.
+   */
+  renderCustomToken?: (item: SuggestionItem) => unknown;
 
   /**
    * Called whenever a token chip for this trigger **enters** the editor via

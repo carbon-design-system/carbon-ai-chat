@@ -7,6 +7,31 @@
 
 import path from 'node:path';
 
+// Splits `@fires {type} name - description`. The type ends at the brace that
+// balances its opening one, so nested object types parse whole and braces in
+// the description, such as {@link X}, stay in the description.
+function splitFireTag(raw) {
+  const head = raw.match(/^@(?:fires|event)\s+/);
+  if (!head) {
+    return {};
+  }
+  let rest = raw.slice(head[0].length);
+  let type;
+  if (rest.startsWith('{')) {
+    let depth = 0;
+    for (let index = 0; index < rest.length; index += 1) {
+      depth += rest[index] === '{' ? 1 : rest[index] === '}' ? -1 : 0;
+      if (depth === 0) {
+        type = rest.slice(1, index);
+        rest = rest.slice(index + 1).trimStart();
+        break;
+      }
+    }
+  }
+  const match = rest.match(/^([^\s]+)?(?:\s+[-—]\s*|\s+)?([\s\S]*)$/);
+  return { type, name: match?.[1], description: match?.[2]?.trim() };
+}
+
 export function fireTags(model, node) {
   const { ts } = model;
   return ts
@@ -18,13 +43,8 @@ export function fireTags(model, node) {
         .replace(/\r?\n\s*\*\s?/g, ' ')
         .replace(/\s*\*\/$/, '')
         .trim();
-      const match = raw.match(
-        /^@(?:fires|event)\s+(?:\{(.+)\}\s+)?([^\s]+)?(?:\s+[-—]\s*|\s+)?([\s\S]*)$/
-      );
       return {
-        name: match?.[2],
-        type: match?.[1],
-        description: match?.[3]?.trim(),
+        ...splitFireTag(raw),
         node: tag,
         location: model.location(tag),
       };
@@ -235,7 +255,7 @@ function dispatchOwner(model, dispatch, required = true, target) {
   }
   return model.fail(
     dispatch,
-    `Unresolved public event owner for ${receiver.getText()}.`
+    `Unresolved public event owner for ${receiver.getText()}. Add @eventOwner {import('./element.js').default} to the enclosing class or function to name the publishing element, or tag an exported helper whose caller picks the target with @eventProtocol and @fires.`
   );
 }
 
