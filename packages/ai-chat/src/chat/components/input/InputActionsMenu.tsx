@@ -9,7 +9,7 @@
 
 import React, { useRef, useState } from 'react';
 import Add16 from '@carbon/icons/es/add--large/16.js';
-import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/globals/utils/iconTransform.js';
+import { transformReactIconToCarbonIcon } from '@carbon/ai-chat-components/es/react/utils/iconTransform.js';
 
 import IconButton from '../carbon/IconButton';
 import { BUTTON_KIND } from '../carbon/Button';
