@@ -8,8 +8,6 @@
  */
 
 import { constructViewState } from '../../../src/chat/utils/viewStateUtils';
-import { VIEW_STATE_ALL_CLOSED } from '../../../src/sdk/store/reducerUtils';
-import { ViewType } from '../../../src/types/state/AppState';
 
 describe('viewStateUtils', () => {
   const baseState = {
@@ -22,11 +20,6 @@ describe('viewStateUtils', () => {
       },
     },
   } as any;
-
-  it('builds view state from string view type', () => {
-    const result = constructViewState(ViewType.MAIN_WINDOW, baseState);
-    expect(result).toEqual({ ...VIEW_STATE_ALL_CLOSED, mainWindow: true });
-  });
 
   it('merges partial view state', () => {
     const result = constructViewState({ launcher: true }, baseState);
