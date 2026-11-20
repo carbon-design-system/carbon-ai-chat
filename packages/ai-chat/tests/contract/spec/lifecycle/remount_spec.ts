@@ -12,6 +12,7 @@ import { act, waitFor } from '@testing-library/react';
 import { ChatInstance, ViewType } from '../../../../src/aiChatEntry';
 import {
   ContractElementTag,
+  ELEMENT_TAGS,
   FakeBackend,
   WELCOME,
   changeView,
@@ -27,11 +28,6 @@ import {
 } from '../../helpers';
 
 type HostName = 'ChatContainer' | ContractElementTag;
-
-const ELEMENT_TAGS: ContractElementTag[] = [
-  'cds-aichat-container',
-  'cds-aichat-custom-element',
-];
 
 const HOSTS: HostName[] = ['ChatContainer', ...ELEMENT_TAGS];
 

@@ -34,6 +34,7 @@ import type { ResolvablePromise } from '../../chat/utils/resolvablePromise';
 import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 import { consoleError } from '../../chat/utils/miscUtils';
+import { placeHosts } from '../../chat/utils/removeHostsOnUnmount';
 import {
   BusEventType,
   BusEventViewChange,
@@ -189,6 +190,9 @@ class ChatContainer extends FlattenedConfigElement {
    * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
    * container has no wrapping element to size, so no default visibility
    * behavior runs when this property is omitted.
+   *
+   * The chat reads this property once, at its first render, so a later change
+   * is ignored. It also runs at mount, for the chat's move to its first view.
    */
   @property()
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
@@ -199,6 +203,9 @@ class ChatContainer extends FlattenedConfigElement {
    * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
    * container has no wrapping element to size, so no default visibility
    * behavior runs when this property is omitted.
+   *
+   * The chat reads this property once, at its first render, so a later change
+   * is ignored. It also runs at mount, for the chat's move to its first view.
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
@@ -206,7 +213,8 @@ class ChatContainer extends FlattenedConfigElement {
   /**
    * Optional callback to render user defined responses. When provided, the library manages all event listening,
    * slot tracking, streaming state, and element lifecycle. The callback receives the accumulated state and should
-   * return an HTMLElement or null.
+   * return an HTMLElement or null. The output and writeable elements use this container's light DOM. Page CSS
+   * reaches them when the container is on the page; the standalone custom element nests it in a shadow root.
    *
    * When this property is not set, the existing event + manual slot approach continues to work.
    */
@@ -229,6 +237,9 @@ class ChatContainer extends FlattenedConfigElement {
    * return an HTMLElement or null.
    *
    * Passing this callback is how you opt in. Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   @property({ attribute: false })
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
@@ -242,6 +253,9 @@ class ChatContainer extends FlattenedConfigElement {
    * `{ node, message }` plus the chat instance and should return an
    * `HTMLElement` (or `null`). The library mounts the element inside the
    * bubble via a slot.
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */
@@ -407,11 +421,6 @@ class ChatContainer extends FlattenedConfigElement {
       return;
     }
 
-    // Prepend so these host nodes land before any Lit ChildPart comment
-    // markers a parent template may have stamped into this element's light
-    // DOM. Lit only manages nodes between its start/end markers; a node
-    // prepended before the start marker is outside that range and survives
-    // parent re-renders unchanged. One call keeps them in their map order.
     const unattached: HTMLElement[] = [];
     Object.entries(writeableElements).forEach(([slot, element]) => {
       if (!element) {
@@ -424,7 +433,7 @@ class ChatContainer extends FlattenedConfigElement {
         unattached.push(element);
       }
     });
-    this.prepend(...unattached);
+    placeHosts(this, unattached);
   }
 
   /**
@@ -767,6 +776,17 @@ declare global {
  * This interface extends {@link PublicConfig} with additional component-specific props,
  * flattening all config properties as top-level properties for better TypeScript IntelliSense.
  *
+ * Object attributes, such as `header`, take JSON. If the JSON doesn't parse,
+ * the chat logs a warning that names the attribute and leaves the field as it
+ * was: a value set earlier through the property or a valid attribute stays,
+ * and otherwise the field comes from `config`, or its default.
+ *
+ * A Boolean field also takes an HTML attribute, which turns it on whatever its
+ * value, `"false"` included. Removing the attribute sets the field to `false`,
+ * which overrides `config`. The exception is `ai-enabled`: `"false"`, `"0"`,
+ * `"off"`, and `"no"` turn it off, and removing it leaves the field to
+ * `config`, or its default.
+ *
  * @category Web component
  */
 interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
@@ -802,12 +822,18 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
   /**
    * Called before a view change (the chat opening or closing). Async — return a Promise to defer the view
    * change until it resolves. This is an opt-in observation hook with no default visibility behavior.
+   *
+   * The chat reads this property once, at its first render, so a later change is ignored. It also runs at mount,
+   * for the chat's move to its first view.
    */
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
 
   /**
    * Called when a view change (the chat opening or closing) is complete. This is an opt-in observation hook
    * with no default visibility behavior.
+   *
+   * The chat reads this property once, at its first render, so a later change is ignored. It also runs at mount,
+   * for the chat's move to its first view.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
@@ -825,12 +851,18 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
 
   /**
    * Called when a footer below a user message should be rendered. Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content).
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */

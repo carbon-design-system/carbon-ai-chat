@@ -19,31 +19,19 @@ import { act, waitFor } from '@testing-library/react';
 
 import { PageObjectId, PublicConfig } from '../../../../src/aiChatEntry';
 import {
-  ContractElementTag,
-  byTestId,
-  contractElement,
+  ELEMENT_TAGS,
   contractSetup,
   fakeBackend,
   finishSend,
   getByTestId,
+  headerTitle,
   instanceSender,
+  openElement,
   pause,
   recordEvents,
-  shownText,
   startSend,
   textResponse,
 } from '../../helpers';
-
-const TAGS: ContractElementTag[] = [
-  'cds-aichat-container',
-  'cds-aichat-custom-element',
-];
-
-/** The header title the chat shows, or `null` when it shows none. */
-function headerTitle(): string | null {
-  const title = byTestId(PageObjectId.HEADER_TITLE);
-  return title ? shownText(title) : null;
-}
 
 /** Sets properties on the element the way a host would, inside `act`. */
 async function setProperties(
@@ -55,21 +43,7 @@ async function setProperties(
   });
 }
 
-/** Connects an element that opens at mount with no welcome request. */
-function openElement(
-  tag: ContractElementTag,
-  properties: Record<string, unknown> & Partial<PublicConfig> = {}
-) {
-  return contractElement(tag, {
-    properties: {
-      ...properties,
-      openChatByDefault: true,
-      messaging: { skipWelcome: true, ...properties.messaging },
-    },
-  });
-}
-
-describe.each(TAGS)('config updates on %s', (tag) => {
+describe.each(ELEMENT_TAGS)('config updates on %s', (tag) => {
   contractSetup();
 
   // @covers config.header config.header.title state.messages state.viewState
