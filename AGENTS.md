@@ -6,14 +6,13 @@ It is a **router**: find your package and your task below, then read the linked 
 
 A few things hold everywhere, regardless of what you touch:
 
-- **Set up before running package code**: `npm install && npm run aiChat:build`. Workspace deps resolve through built artifacts (`dist/es/`, `es/`), not TS sources. Guidance-only edits do not need a package build.
-- **Establish build freshness before a test that reads built output.** Existing output and a build that exited 0 earlier are not proof. With no evidence, freshness is unknown → [build preflight](references/commands.md#build-preflight).
-- **Ask before starting any build/watch yourself.** Most developers keep `npm run aiChat:start` running; a parallel `npm run build` races the watcher.
-- **Work from source; never hand-edit generated output**: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `storybook-react-static/`, `node_modules/`, `packages/ai-chat-components/custom-elements.json`, and `telemetry.yml`. Skip these in routine discovery. Regenerate via the documented commands. For required verification, inspect only changed components' freshly regenerated manifest entries or changed symbols' locally rendered TypeDoc pages. Release-owned API paths: `packages/ai-chat/docs/api/markdown/`, `packages/ai-chat/docs/api/symbol-index.json` → [docs guidance](packages/ai-chat/docs/AGENTS.md).
-- **Lint, format, and test through the npm scripts**, never the underlying binary — `npx prettier`, bare `eslint`, and `stylelint` drop the ignore globs the scripts carry and reformat generated output → [commands.md](references/commands.md).
-- Every UI change holds **WCAG 2.1 AA** → [accessibility.md](references/accessibility.md) (checklist, live-region patterns, announcer utilities).
-- Use **sub-agents** (when available) for code/plan reviews, complex analysis, or parallel work — a fresh perspective without the main conversation's bias keeps the primary thread focused. Be aggressive with tasking additional sub-agents to review work or do discovery in parallel.
-- If you support **browser automation or visual inspection**, use it for component development, styling, and integration testing — visual verification catches issues code review alone misses.
+- **Tests and workspace deps read built output** (`dist/es/`, `es/`), not TS sources. A fresh checkout or worktree needs `npm install && npm run aiChat:build`. Before a test that reads built output, show the build is current; existing output or an earlier exit 0 is not proof → [build preflight](references/commands.md#build-preflight). Guidance-only edits need no build.
+- **Ask before you start a build or watcher the user didn't request.** Most developers keep `npm run aiChat:start` running, and a parallel build races it.
+- **Read [worktrees.md](references/worktrees.md) before you create, enter, move, or remove a worktree.** Create worktrees with git in `../<repo>.worktrees/<slug>`, never in `/tmp`, a scratchpad, or inside the checkout. Claude Code's own worktrees (`--worktree`, `EnterWorktree`, `isolation: "worktree"`) land inside the checkout, so this repo doesn't use them.
+- **Edit source, not generated output**: `dist/`, `es/`, `es-custom/`, `storybook-static/`, `storybook-react-static/`, `node_modules/`, `packages/ai-chat-components/custom-elements.json`, `telemetry.yml`, and the release-owned `packages/ai-chat/docs/api/markdown/` and `packages/ai-chat/docs/api/symbol-index.json` → [docs guidance](packages/ai-chat/docs/AGENTS.md). Skip them in discovery and regenerate them with the documented commands. When a check needs them, inspect only a changed component's regenerated manifest entry or a changed symbol's locally rendered TypeDoc page.
+- **Lint, format, and test through the npm scripts**, never the underlying binary. `npx prettier`, bare `eslint`, and `stylelint` drop the scripts' ignore globs and reformat generated output → [commands.md](references/commands.md).
+- **UI changes meet WCAG 2.1 AA** → [accessibility.md](references/accessibility.md) (checklist, live-region patterns, announcer utilities). With browser automation available, also check the change visually.
+- **Use sub-agents, when available, for independent reviews and parallel discovery.** A sub-agent sees none of this conversation, so its brief carries the goal, the constraints, and any approval it relies on, such as a build the user allowed. Do small lookups yourself.
 
 ## Repository layout
 
@@ -41,7 +40,6 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
 | Building, testing, linting, or using prettier | [commands.md](references/commands.md) |
 | Adding a root-level Node script (`scripts/` vs `tools/`) | [commands.md](references/commands.md#scripts-vs-tools) |
-| Creating, naming, or cleaning up a worktree | [worktrees.md](references/worktrees.md) |
 | Choosing a gate before shipping, and reporting its result | [definition-of-done.md](references/definition-of-done.md) |
 | Measuring a diff before review (PR size, complexity, coupling, smells, size vs precedent) | [measuring.md](references/measuring.md) |
 | Writing copy of any kind — how the words sound | [tone.md](references/tone.md) |
