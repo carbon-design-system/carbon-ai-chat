@@ -22,7 +22,7 @@ import { CustomSendMessageOptions } from '../../../types/config/MessagingConfig'
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { PublicConfigMessaging } from '../../../types/config/PublicConfigMessaging';
 import { ServiceManager } from '../ServiceManager';
-import { PendingMessageRequest } from './MessageService';
+import { PendingMessageRequest } from './pendingRequestTypes';
 import { consoleError, debugLog } from '../../utils/miscUtils';
 import {
   BusEventSend,
@@ -152,7 +152,7 @@ class OutboundMessageCoordinator {
     // A `customSendMessage` that throws mid-stream never sends a closing chunk, so settle
     // the items it had streamed — only if that stream belongs to this request, since a
     // host can still be streaming a response to an earlier one.
-    const { inboundStreaming } = this.serviceManager.messageService;
+    const { inboundStreaming } = this.serviceManager.messageCoordinator;
     const { streamingMessageID } = inboundStreaming;
     const streamingMeta =
       streamingMessageID &&
@@ -361,7 +361,7 @@ class OutboundMessageCoordinator {
           store.dispatch(actions.setStopStreamingButtonVisible(true));
         }
         // Apply disablement from any other in-flight non-cancellable stream.
-        this.serviceManager.messageService.updateStreamingCancellation(
+        this.serviceManager.messageCoordinator.updateStreamingCancellation(
           message.id
         );
       }

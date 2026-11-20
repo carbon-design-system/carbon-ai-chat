@@ -174,7 +174,7 @@ describe('hydration and timeout isolation', () => {
         });
       let timeout: () => void;
       jest
-        .spyOn(serviceManager.messageService.messageLoadingManager, 'start')
+        .spyOn(serviceManager.messageCoordinator.messageLoadingManager, 'start')
         .mockImplementation((_message, _options, onTimeout) => {
           timeout = onTimeout;
         });

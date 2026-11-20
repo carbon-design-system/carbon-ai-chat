@@ -106,7 +106,7 @@ describe('upsert rendering and public-state integration', () => {
       () => response('standalone')
     );
     expect(instance.state.get().status).toBe('streaming');
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     expect(serviceManager.messageUpsertCoordinator.hasStreamingMessages()).toBe(
       false
     );

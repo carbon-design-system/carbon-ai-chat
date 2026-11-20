@@ -67,7 +67,7 @@ class ReceiveService {
     isCallerCurrent: () => boolean = () => true
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
-    const { messageService } = this.serviceManager;
+    const { messageCoordinator: messageService } = this.serviceManager;
     if (
       !isCallerCurrent() ||
       messageService.isRequestFromPreviousConversation(

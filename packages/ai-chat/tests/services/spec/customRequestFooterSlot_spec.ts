@@ -74,8 +74,8 @@ const createServiceManagerStub = () => {
       getState: () => state,
       subscribe: jest.fn(() => jest.fn()),
     },
-    messageService: {
-      send: jest.fn().mockResolvedValue(undefined),
+    messageCoordinator: {
+      enqueueMessage: jest.fn().mockResolvedValue(undefined),
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
       messageLoadingManager: { end: jest.fn() },
     },
@@ -97,7 +97,15 @@ const createServiceManagerStub = () => {
     serviceManager
   );
   (serviceManager as any).receiveService = new ReceiveService(serviceManager);
+  const messageMethods = serviceManager.messageCoordinator;
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
+  for (const [name, value] of Object.entries(messageMethods)) {
+    Object.defineProperty(serviceManager.messageCoordinator, name, {
+      value,
+      writable: true,
+      configurable: true,
+    });
+  }
   (serviceManager as any).viewService = new ViewService(serviceManager);
 
   return { serviceManager, firedEvents };
@@ -146,7 +154,7 @@ describe('custom request footer slot', () => {
       'what is the weather?'
     );
     const [, , localMessageID] = (
-      serviceManager.messageService.send as jest.Mock
+      serviceManager.messageCoordinator.enqueueMessage as jest.Mock
     ).mock.calls[0];
     expect(footerEvents[0].data.slotName).toBe(
       `request-footer-${localMessageID}`
@@ -178,7 +186,9 @@ describe('custom request footer slot', () => {
       true
     );
 
-    expect(serviceManager.messageService.send).toHaveBeenCalledTimes(1);
+    expect(
+      serviceManager.messageCoordinator.enqueueMessage
+    ).toHaveBeenCalledTimes(1);
 
     // And the next send still fires: the bus recovers from a rejected fire.
     await chatActions.send(
@@ -216,7 +226,9 @@ describe('custom request footer slot', () => {
       true
     );
 
-    expect(serviceManager.messageService.send).toHaveBeenCalledTimes(2);
+    expect(
+      serviceManager.messageCoordinator.enqueueMessage
+    ).toHaveBeenCalledTimes(2);
   });
 
   it('hands the host a frozen message', async () => {

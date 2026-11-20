@@ -162,8 +162,12 @@ export async function applyConfigChangesDynamically(
   // message service, which the store/React render cannot reach, so push it.
   const prevTimeoutSecs = prevConfig?.messaging?.messageTimeoutSecs;
   const nextTimeoutSecs = newConfig.messaging?.messageTimeoutSecs;
-  if (prevTimeoutSecs !== nextTimeoutSecs && serviceManager.messageService) {
-    serviceManager.messageService.timeoutMS = messageTimeoutMS(nextTimeoutSecs);
+  if (
+    prevTimeoutSecs !== nextTimeoutSecs &&
+    serviceManager.messageCoordinator
+  ) {
+    serviceManager.messageCoordinator.timeoutMS =
+      messageTimeoutMS(nextTimeoutSecs);
   }
 
   // SERVICE-INTERNAL MIRROR: the human-agent service coordinates a service desk

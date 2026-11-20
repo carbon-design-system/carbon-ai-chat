@@ -10,7 +10,7 @@
 import { RequestQueue } from '../../../src/chat/services/messaging/state/RequestQueue';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import type { PendingMessageRequest } from '../../../src/chat/services/messaging/MessageService';
+import type { PendingMessageRequest } from '../../../src/chat/services/messaging/pendingRequestTypes';
 
 it('keeps opaque operations in FIFO order until the current operation releases', () => {
   const queue = new RequestQueue();

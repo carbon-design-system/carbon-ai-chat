@@ -373,13 +373,13 @@ export async function initServiceManagerAndInstance(options: {
           message = cloneDeep(message);
         }
         if (
-          serviceManager.messageService.isRequestFromPreviousConversation(
+          serviceManager.messageCoordinator.isRequestFromPreviousConversation(
             message.request_id
           )
         ) {
           return Promise.resolve();
         }
-        serviceManager.messageService.messageLoadingManager.end();
+        serviceManager.messageCoordinator.messageLoadingManager.end();
         return serviceManager.actions.receive(
           message,
           options?.isLatestWelcomeNode ?? false,
@@ -411,7 +411,7 @@ export async function initServiceManagerAndInstance(options: {
           );
         } catch (error) {
           if (restartCount === serviceManager.restartCount) {
-            serviceManager.messageService.messageLoadingManager.end();
+            serviceManager.messageCoordinator.messageLoadingManager.end();
           }
           throw error;
         }
