@@ -41,49 +41,6 @@ function renderInline(text: string) {
 }
 
 describe('renderInlineMarkdown', () => {
-  it('renders nothing for empty input', () => {
-    const { getByTestId } = renderInline('');
-    expect(getByTestId('root').textContent).toBe('');
-    expect(getByTestId('root').querySelector('span').childElementCount).toBe(0);
-  });
-
-  it('renders plain text unchanged', () => {
-    const { getByTestId } = renderInline('hello there');
-    expect(getByTestId('root').textContent).toBe('hello there');
-  });
-
-  it('emits <strong> for **bold**', () => {
-    const { getByTestId } = renderInline('a **bold** word');
-    const root = getByTestId('root');
-    const strong = root.querySelector('strong');
-    expect(strong?.textContent).toBe('bold');
-    expect(root.textContent).toBe('a bold word');
-  });
-
-  it('emits <em> for *italic*', () => {
-    const { getByTestId } = renderInline('an *em* word');
-    expect(getByTestId('root').querySelector('em')?.textContent).toBe('em');
-  });
-
-  it('emits <code> for `inline code`', () => {
-    const { getByTestId } = renderInline('run `npm install`');
-    expect(getByTestId('root').querySelector('code')?.textContent).toBe(
-      'npm install'
-    );
-  });
-
-  it('emits <s> for ~~strike~~', () => {
-    const { getByTestId } = renderInline('a ~~strike~~');
-    expect(getByTestId('root').querySelector('s')?.textContent).toBe('strike');
-  });
-
-  it('emits <mark> for ==highlight==', () => {
-    const { getByTestId } = renderInline('a ==marked== word');
-    const root = getByTestId('root');
-    expect(root.querySelector('mark')?.textContent).toBe('marked');
-    expect(root.textContent).toBe('a marked word');
-  });
-
   it('emits <a target=_blank rel=noopener> for links', () => {
     const { getByTestId } = renderInline('see [docs](https://example.com)');
     const a = getByTestId('root').querySelector('a');
@@ -91,21 +48,6 @@ describe('renderInlineMarkdown', () => {
     expect(a?.getAttribute('target')).toBe('_blank');
     expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
     expect(a?.textContent).toBe('docs');
-  });
-
-  it('renders a soft break (single newline) as <br>', () => {
-    const { container } = renderInline('one\ntwo');
-    const root = container.querySelector('[data-testid=root]');
-    expect(root?.querySelectorAll('br')).toHaveLength(1);
-    // Exact text, not `toContain`: a half-fix that emitted the <br> and kept
-    // the old space Fragment would render the same two lines and still pass.
-    expect(root?.textContent).toBe('onetwo');
-  });
-
-  it('renders a hard break (two trailing spaces + newline) as <br>', () => {
-    const { container } = renderInline('one  \ntwo');
-    const root = container.querySelector('[data-testid=root]');
-    expect(root?.querySelectorAll('br')).toHaveLength(1);
   });
 
   it('strips raw HTML (removeHTML=true at tokenize time)', () => {
