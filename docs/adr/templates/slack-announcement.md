@@ -1,6 +1,6 @@
 # Announce an ADR for feedback in Slack
 
-Use this template in `#carbon-ai-chat` after a proposed architecture decision record (ADR) merges and its RFC discussion opens. It follows the greeting, short explanation, and direct links in the [release announcements](../../publishing-releases.md).
+Use this template in `#carbon-for-ai` after a proposed architecture decision record (ADR) merges and its RFC discussion opens. It follows the greeting, short explanation, and direct links in the [release announcements](../../publishing-releases.md).
 
 Replace each bracketed field. Copy the feedback date from the ADR and link to the record on `main`. Name who needs to review it and what they could lose or need to change. Draw the feedback request from the ADR's Summary.
 
