@@ -15,6 +15,7 @@ import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { getURLHostName } from '../../../utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
 import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
 interface ClickableImageProps {
@@ -126,7 +127,9 @@ function Image(props: ImageProps) {
 
   if (isError) {
     return (
-      <InlineError iconLabel={imageErrorIconLabel}>{imageError}</InlineError>
+      <InlineError iconLabel={imageErrorIconLabel}>
+        <MarkdownWithDefaults removeHTML text={imageError} />
+      </InlineError>
     );
   }
 

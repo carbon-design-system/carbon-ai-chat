@@ -17,6 +17,7 @@ import { AppState } from '../../../../types/state/AppState';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../utils/constants';
 import { MountChildrenOnDelay } from '../../../components/helpers/MountChildrenOnDelay/MountChildrenOnDelay';
 import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 
 interface IFrameComponentProps {
   /**
@@ -142,7 +143,9 @@ function renderLoadingSpinner() {
 function renderErrorMessage(errorText: string, iconLabel: string) {
   return (
     <div className="cds-aichat--i-frame-component__status-container">
-      <InlineError iconLabel={iconLabel}>{errorText}</InlineError>
+      <InlineError iconLabel={iconLabel}>
+        <MarkdownWithDefaults removeHTML text={errorText} />
+      </InlineError>
     </div>
   );
 }

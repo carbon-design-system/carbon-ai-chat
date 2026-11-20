@@ -9,6 +9,7 @@
 
 import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import React from 'react';
+import { MarkdownWithDefaults } from '../../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 
 export class CitationsErrorBoundary extends React.Component<
   { children: React.ReactNode; errorText: string; iconLabel: string },
@@ -23,7 +24,7 @@ export class CitationsErrorBoundary extends React.Component<
   render() {
     return this.state.failed ? (
       <InlineError iconLabel={this.props.iconLabel}>
-        {this.props.errorText}
+        <MarkdownWithDefaults removeHTML text={this.props.errorText} />
       </InlineError>
     ) : (
       this.props.children
