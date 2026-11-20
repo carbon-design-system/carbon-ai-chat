@@ -3,7 +3,7 @@
 Read this before you create, name, move, or remove a git worktree for this repo, by hand or through a tool.
 
 - **Path:** `../<repo>.worktrees/<slug>`, relative to the main checkout. `<repo>` is the main checkout's folder name, such as `carbon-ai-chat`.
-- **Never** in `/tmp`, a session scratchpad, or anywhere inside the main checkout.
+- **Never** in `/tmp`, a session scratchpad, or anywhere inside the main checkout, including Claude Code's `.claude/worktrees/` ([why](worktrees-claude-code.md)).
 - **Remove** with `git worktree remove` after you check for unsaved work. Never `rm -rf`.
 
 ## Location and naming
@@ -83,6 +83,6 @@ None of the three tools can put its own worktrees in the peer folder from a comm
 
 | Tool | Read when |
 | --- | --- |
-| [Claude Code](worktrees-claude-code.md) | you use `--worktree`, `EnterWorktree`, or `isolation: "worktree"`, or work under `.claude/worktrees/` |
+| [Claude Code](worktrees-claude-code.md) | before you would use `--worktree`, `EnterWorktree`, or `isolation: "worktree"`, or when you find yourself under `.claude/worktrees/` |
 | [Codex](worktrees-codex.md) | the Codex app made the worktree, or you'd change its worktree root |
 | [IBM Bob](worktrees-bob.md) | you look for a Bob worktree setting |
