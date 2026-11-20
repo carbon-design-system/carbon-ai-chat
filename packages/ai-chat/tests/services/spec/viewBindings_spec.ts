@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { isTestPath } from '../../architecture/helpers/isTestPath';
 import fs from 'node:fs';
 import path from 'node:path';
 import { cleanup } from '@testing-library/react';
@@ -210,6 +211,9 @@ describe('view handles', () => {
     const walk = (dir: string): string[] =>
       fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
         const file = path.join(dir, entry.name);
+        if (isTestPath(entry.name)) {
+          return [];
+        }
         if (entry.isDirectory()) {
           return walk(file);
         }

@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { isTestPath } from '../../architecture/helpers/isTestPath';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
@@ -14,6 +15,9 @@ import ts from 'typescript';
 export function sourceFiles(root: string): string[] {
   return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(root, entry.name);
+    if (isTestPath(entry.name)) {
+      return [];
+    }
     return entry.isDirectory()
       ? sourceFiles(file)
       : /\.tsx?$/.test(file)

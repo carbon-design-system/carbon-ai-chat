@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { isTestPath } from '../../architecture/helpers/isTestPath';
 import fs from 'node:fs';
 import path from 'node:path';
 import React, { type ReactElement } from 'react';
@@ -27,6 +28,9 @@ import { makeConfigStore, TestChatContext } from '../../test_helpers';
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
+    if (isTestPath(entry.name)) {
+      return [];
+    }
     if (entry.isDirectory()) {
       return sourceFiles(file);
     }

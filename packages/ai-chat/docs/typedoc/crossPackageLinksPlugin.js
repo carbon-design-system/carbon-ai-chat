@@ -64,6 +64,9 @@ const GUIDANCE = {
 function typeSources(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = join(dir, entry.name);
+    if (entry.name === '__tests__') {
+      return [];
+    }
     if (entry.isDirectory()) {
       return typeSources(full);
     }

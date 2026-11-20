@@ -26,6 +26,7 @@
  * regenerated at release time, not per PR).
  */
 
+import { isTestPath } from '../../architecture/helpers/isTestPath';
 import { readdirSync, readFileSync } from 'fs';
 import { join, relative, resolve } from 'path';
 import ts from 'typescript';
@@ -57,6 +58,9 @@ const TYPES_ROOT = resolve(__dirname, '../../../src/types');
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = join(dir, entry.name);
+    if (isTestPath(entry.name)) {
+      return [];
+    }
     if (entry.isDirectory()) {
       return walk(full);
     }

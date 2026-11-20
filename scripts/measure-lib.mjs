@@ -130,7 +130,7 @@ const SIZE_RULES = [
   ['test cases', /(?:^|\/)[^/]*(?:_spec\.|\.test\.|\.spec\.)[^/]*$/],
   [
     'shared test infrastructure',
-    /^examples\/shared\/playwright\/|^(?!examples\/)(?:(?:.*\/)?(?:jest|web-test-runner|playwright|vitest)\.config\.[^/]+$|packages\/ai-chat\/tests\/(?:setup|test_helpers)\.ts$|packages\/ai-chat-components\/src\/testing\/|(?:.*\/)?__tests__\/|demo\/tests\/)/,
+    /^examples\/shared\/playwright\/|^(?!examples\/)(?:(?:.*\/)?(?:jest|web-test-runner|playwright|vitest)\.config\.[^/]+$|packages\/ai-chat\/tests\/(?:setup\/|(?:setup|test_helpers)\.ts$)|packages\/ai-chat-components\/src\/testing\/|(?:.*\/)?__tests__\/|demo\/tests\/)/,
   ],
   ['examples and demo', /^(?:examples|demo)\//],
   ['docs', /\.(?:md|mdx)$|^docs\//],

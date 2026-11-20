@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { isTestPath } from '../helpers/isTestPath';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -127,6 +128,9 @@ const chatServices = [
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
+    if (isTestPath(entry.name)) {
+      return [];
+    }
     if (entry.isDirectory()) {
       return sourceFiles(file);
     }
@@ -206,6 +210,7 @@ it('keeps conversation folders out of chat/', () => {
   }
   const services = fs
     .readdirSync(path.join(root, 'src/chat/services'), { withFileTypes: true })
+    .filter((entry) => !isTestPath(entry.name))
     .map((entry) => (entry.isDirectory() ? `${entry.name}/` : entry.name))
     .sort();
   expect(services).toEqual(chatServices);

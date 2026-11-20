@@ -362,6 +362,19 @@ test('classification follows ordered anchored rules', () => {
     ['demo/tests/helper.ts', 'shared test infrastructure'],
     ['examples/shared/playwright/a.test.ts', 'test cases'],
     ['packages/ai-chat/tests/setup.ts', 'shared test infrastructure'],
+    ['packages/ai-chat/tests/setup/index.ts', 'shared test infrastructure'],
+    [
+      'packages/ai-chat/tests/setup/style-strings.ts',
+      'shared test infrastructure',
+    ],
+    [
+      'packages/ai-chat/src/sdk/__tests__/helpers/store.ts',
+      'shared test infrastructure',
+    ],
+    [
+      'packages/ai-chat/src/chat/__tests__/helpers/render.ts',
+      'shared test infrastructure',
+    ],
     ['packages/ai-chat/tests/test_helpers.ts', 'shared test infrastructure'],
     [
       'packages/ai-chat-components/src/testing/helper.ts',

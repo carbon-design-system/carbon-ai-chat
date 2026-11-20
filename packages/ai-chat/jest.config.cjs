@@ -15,8 +15,13 @@ const requireFromRoot = createRequire(`${__dirname}/../../package.json`);
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
-  roots: ['<rootDir>/tests'],
-  testMatch: ['**/spec/**/*_spec.ts', '**/spec/**/*_spec.tsx'],
+  roots: ['<rootDir>/tests', '<rootDir>/src'],
+  testMatch: [
+    '**/spec/**/*_spec.ts',
+    '**/spec/**/*_spec.tsx',
+    '**/__tests__/**/*.test.ts',
+    '**/__tests__/**/*.test.tsx',
+  ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'mjs'],
   transform: {
     '^.+\\.(ts|tsx)$': [
@@ -62,6 +67,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
+    '!src/**/__tests__/**',
     '!src/**/index.ts',
   ],
   coverageDirectory: 'coverage',

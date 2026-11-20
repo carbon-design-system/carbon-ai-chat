@@ -7,6 +7,7 @@
  *  @license
  */
 
+import { isTestPath } from '../helpers/isTestPath';
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
@@ -24,6 +25,9 @@ const exemptFolders = ['src/chat/state/'];
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
+    if (isTestPath(entry.name)) {
+      return [];
+    }
     if (entry.isDirectory()) {
       return sourceFiles(file);
     }
