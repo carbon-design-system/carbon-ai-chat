@@ -59,6 +59,7 @@ import { useInputCallbacks } from './hooks/useInputCallbacks';
 import { useResizeObserver } from './hooks/useResizeObserver';
 import { useChatViewState } from './hooks/useChatViewState';
 import type { ChatViewStateSnapshot } from './services/chatViewState';
+import type { ExtensionHosts } from './services/extensionHosts';
 import actions from './store/actions';
 import {
   selectHumanAgentDisplayState,
@@ -170,6 +171,7 @@ const selectHumanAgentConfirmation = (snapshot: ChatViewStateSnapshot) =>
   snapshot.humanAgentConfirmation;
 
 interface AppShellProps extends HasServiceManager {
+  hosts: ExtensionHosts;
   hostElement?: Element;
   /**
    * Value-stable signal of which writeable-element slots have host content,
@@ -192,6 +194,7 @@ interface AppShellProps extends HasServiceManager {
 function AppShell({
   hostElement,
   serviceManager,
+  hosts,
   writeableElementsPresentKeys,
 }: AppShellProps) {
   const intl = useIntl();
@@ -966,6 +969,7 @@ function AppShell({
             historyShownAnnouncement={languagePack.history_shown}
             historyHiddenAnnouncement={languagePack.history_hidden}>
             <AppShellPanels
+              hosts={hosts}
               endChatConfirmation={humanAgentConfirmation}
               showEndChatConfirmation={showEndChatConfirmation}
               confirmHumanAgentEndChat={confirmHumanAgentEndChat}
