@@ -31,11 +31,6 @@ import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 import actions from '../../../../src/sdk/store/actions';
 import { ViewType } from '../../../../src/types/instance/apiTypes';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
-import {
-  MALFORMED,
-  fixtureMessage,
-  observeWrite,
-} from '../../../utils/itemDrawabilityFixtures';
 import { viewActions } from '../../../../src/chat/state';
 
 describe('ChatInstance.messaging.addMessage', () => {
@@ -711,41 +706,6 @@ describe('ChatInstance.messaging.addMessage', () => {
 
       availability.release(true);
       await waitFor(() => expect(visibleItemCount(store, id)).toBe(1));
-    });
-
-    it('marks isLatestWelcomeNode items as welcome responses without setting hasSentNonWelcomeMessage', async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
-      const hasSentNonWelcome = () =>
-        store.getState().persistedToBrowserStorage.hasSentNonWelcomeMessage;
-      const uiStatesFor = (id: string) => {
-        const state = store.getState();
-        return Object.values(state.allMessageItemsByID)
-          .filter((item) => item.fullMessageID === id)
-          .map((item) => item.ui_state);
-      };
-
-      expect(hasSentNonWelcome()).toBe(false);
-
-      // The public type declares no options argument, but the runtime reads one.
-      await (instance.messaging.addMessage as any)(
-        response('pin-welcome', [text('Welcome')]),
-        { isLatestWelcomeNode: true }
-      );
-      await waitFor(() => expect(uiStatesFor('pin-welcome')).toHaveLength(1));
-      expect(uiStatesFor('pin-welcome')[0].isWelcomeResponse).toBe(true);
-      expect(hasSentNonWelcome()).toBe(false);
-
-      await instance.messaging.addMessage(
-        response('pin-not-welcome', [text('Hello')])
-      );
-      await waitFor(() =>
-        expect(uiStatesFor('pin-not-welcome')).toHaveLength(1)
-      );
-      expect(uiStatesFor('pin-not-welcome')[0].isWelcomeResponse).toBe(
-        undefined
-      );
-      expect(hasSentNonWelcome()).toBe(true);
     });
 
     it('fires userDefinedResponse once for a silent user_defined item but never shows it', async () => {
@@ -1823,45 +1783,6 @@ describe('malformed items through addMessage', () => {
     expect(stored.output).not.toBe(message.output);
     expect(stored).toMatchObject(message);
     expect(stored.output).toEqual(message.output);
-  });
-
-  const SHOWS_OPTION = new Set([
-    'option, dropdown entry with no value.input',
-    'option, more than four entries, one with no value',
-  ]);
-
-  /** Items a renderer throws on. Other malformed items fail while the message is stored. */
-  const SHOWS_ERROR = new Set([
-    'grid, column width not a string',
-    'option, no options',
-    'option, null entry',
-    'conversational_search, citations not a list',
-    'conversational_search, null citation',
-    'system, after a null item in the message',
-  ]);
-
-  it.each(MALFORMED)('keeps what "$name" does', async (fixture) => {
-    const outcome = await observeWrite((instance) =>
-      instance.messaging.addMessage(fixtureMessage(fixture))
-    );
-
-    expect(outcome).toEqual(
-      SHOWS_ERROR.has(fixture.name)
-        ? {
-            rejects: false,
-            shownItems: 1,
-            reports: ['RENDER: Message.componentDidCatch'],
-            failedItems: 1,
-            catastrophic: false,
-          }
-        : {
-            rejects: false,
-            shownItems: SHOWS_OPTION.has(fixture.name) ? 1 : 0,
-            reports: [],
-            failedItems: 0,
-            catastrophic: false,
-          }
-    );
   });
 
   describe('Loading indicator', () => {

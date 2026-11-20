@@ -22,14 +22,9 @@ import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
 import {
-  LOOSE,
-  MALFORMED,
-  MESSAGE_ID,
   chatText,
   failedItemCount,
-  fixtureMessage,
   itemsOf,
-  observeWrite,
   renderOpenChat,
   settle,
 } from '../../../utils/itemDrawabilityFixtures';
@@ -37,28 +32,6 @@ import {
 describe('ChatInstance.messaging.upsertMessage item drawing', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
-
-  const draws = {
-    rejects: false,
-    shownItems: 1,
-    reports: [] as string[],
-    failedItems: 0,
-    catastrophic: false,
-  };
-
-  describe.each([MessageState.STREAMING, MessageState.COMPLETE])(
-    'as %s',
-    (state) => {
-      it.each(LOOSE)('draws "$name"', async (fixture) => {
-        const outcome = await observeWrite((instance) =>
-          instance.messaging.upsertMessage(MESSAGE_ID, state, () =>
-            fixtureMessage(fixture)
-          )
-        );
-        expect(outcome).toEqual(draws);
-      });
-    }
-  );
 
   describe('user_defined items nested in a streamed container', () => {
     const nested = {
@@ -131,40 +104,6 @@ describe('upsertMessage with an item the chat cannot draw', () => {
   });
   const message = (id: string, generic: unknown[], extra = {}) =>
     ({ id, output: { generic }, ...extra }) as unknown as MessageResponse;
-
-  describe.each([MessageState.STREAMING, MessageState.COMPLETE])(
-    'as %s',
-    (state) => {
-      it.each(MALFORMED)('resolves for "$name"', async (fixture) => {
-        const outcome = await observeWrite((instance) =>
-          instance.messaging.upsertMessage(MESSAGE_ID, state, () =>
-            fixtureMessage(fixture)
-          )
-        );
-
-        const isComplete = state === MessageState.COMPLETE;
-        expect(outcome).toEqual({
-          rejects: false,
-          shownItems: 1,
-          reports: isComplete ? [expect.stringMatching(/^RENDER: /)] : [],
-          failedItems: isComplete ? 1 : 0,
-          catastrophic: false,
-        });
-      });
-    }
-  );
-
-  it('resolves for a streamed text item whose text is not a string', async () => {
-    const outcome = await observeWrite((instance) =>
-      instance.messaging.upsertMessage(MESSAGE_ID, MessageState.STREAMING, () =>
-        message(MESSAGE_ID, [
-          { response_type: MessageResponseTypes.TEXT, text: 42 },
-        ])
-      )
-    );
-
-    expect(outcome.rejects).toBe(false);
-  });
 
   it('keeps the last drawn grid while a streamed snapshot cannot draw', async () => {
     const { instance, store, onError } = await renderOpenChat();

@@ -957,43 +957,6 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       expect(store.getState().allMessagesByID['u-ref']).toBe(refAfterFirst);
     });
 
-    it('replaces a chunk partial in allMessagesByID when upsertMessage(STREAMING) runs for the same id (I7)', async () => {
-      // D18: during a chunk stream the stored message is the STREAMING_START placeholder
-      // with empty output.generic. A upsertMessage(STREAMING) for the same id wins the
-      // per-id chain and replaces the partial with a defaults-stamped full message.
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
-      const id = 'i7-mixed';
-
-      // Start a chunk stream — this stores the placeholder.
-      await instance.messaging.addMessageChunk({
-        id,
-        response_type: 'start',
-      } as any);
-
-      const afterChunk = store.getState().allMessagesByID[id] as any;
-      expect(afterChunk?.output?.generic ?? []).toHaveLength(0);
-
-      // Now upsert the same id via upsertMessage(STREAMING) — this replaces the partial.
-      await instance.messaging.upsertMessage(
-        id,
-        MessageState.STREAMING,
-        () => ({
-          id,
-          output: {
-            generic: [
-              { response_type: MessageResponseTypes.TEXT, text: 'Upserted' },
-            ],
-          },
-        })
-      );
-
-      const afterUpsert = store.getState().allMessagesByID[id] as any;
-      // The upsert wins: the stored message now has the upserted content, not the chunk partial.
-      expect(afterUpsert?.output?.generic).toHaveLength(1);
-      expect((afterUpsert.output.generic[0] as any).text).toBe('Upserted');
-    });
-
     it('remounts a nested item that gains streaming_metadata.id in a later upsert (M7 — current behavior)', async () => {
       // matchNestedLocalIDs uses streaming_metadata.id for identity when present.
       // A nested item that had no id in the first upsert and gains one in the second

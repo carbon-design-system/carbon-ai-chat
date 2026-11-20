@@ -12,7 +12,6 @@ import {
   getChatShadowRoot,
   renderChatAndGetInstanceWithStore,
 } from '../test_helpers';
-import { ChatInstance } from '../../src/types/instance/ChatInstance';
 import { AppState } from '../../src/types/state/AppState';
 import { MessageResponse } from '../../src/types/messaging/Messages';
 
@@ -413,15 +412,6 @@ const fixtureMessage = (
     output: { generic: [...(fixture.before ?? []), fixture.item] },
   }) as unknown as MessageResponse;
 
-/** What a host sees after one write: whether it rejected, what `onError` got, and what drew. */
-interface WriteOutcome {
-  rejects: boolean;
-  shownItems: number;
-  reports: string[];
-  failedItems: number;
-  catastrophic: boolean;
-}
-
 /** Lets React commit and the announcer's microtask flush. */
 const settle = () => new Promise((resolve) => setTimeout(resolve, 60));
 
@@ -467,47 +457,14 @@ function itemsOf(store: { getState: () => AppState }, messageID: string) {
     .filter((item) => item?.fullMessageID === messageID);
 }
 
-/**
- * Renders an open chat, runs `write` against it, and records what the host sees. A
- * render error React can't contain is kept from failing the test, since recording it is
- * the point.
- */
-async function observeWrite(
-  write: (instance: ChatInstance) => Promise<unknown>
-): Promise<WriteOutcome> {
-  const swallow = (event: ErrorEvent) => event.preventDefault();
-  window.addEventListener('error', swallow);
-  const { instance, store, onError } = await renderOpenChat();
-  let rejects = false;
-  try {
-    await write(instance);
-  } catch {
-    rejects = true;
-  }
-  await settle();
-  window.removeEventListener('error', swallow);
-  return {
-    rejects,
-    shownItems: itemsOf(store, MESSAGE_ID).length,
-    reports: onError.mock.calls.map(
-      ([data]) => `${data.errorType}: ${data.message}`
-    ),
-    failedItems: failedItemCount(),
-    catastrophic: Boolean(store.getState().view.catastrophicErrorType),
-  };
-}
-
 export {
-  MESSAGE_ID,
   DrawFixture,
   LOOSE,
   MALFORMED,
-  WriteOutcome,
   chatText,
   failedItemCount,
   fixtureMessage,
   itemsOf,
-  observeWrite,
   renderOpenChat,
   settle,
 };

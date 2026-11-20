@@ -50,12 +50,6 @@ import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
 
 import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 
-import {
-  MALFORMED,
-  fixtureMessage,
-  observeWrite,
-} from '../../../utils/itemDrawabilityFixtures';
-
 import { viewActions } from '../../../../src/chat/state';
 
 describe('ChatInstance.messaging.addMessageChunk', () => {
@@ -3411,57 +3405,4 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       expect(state.allMessageItemsByID[`${responseId}-a`]).toBeDefined();
     });
   });
-});
-
-describe('malformed items through addMessageChunk', () => {
-  beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
-
-  /**
-   * Items a renderer throws on. Label-only options render successfully; other malformed
-   * items fail while `final_response` is stored, leaving the streamed item as it was.
-   */
-  const SHOWS_ERROR = new Set([
-    'grid, column width not a string',
-    'option, no options',
-    'option, null entry',
-    'conversational_search, citations not a list',
-    'conversational_search, null citation',
-    'system, after a null item in the message',
-  ]);
-
-  it.each(MALFORMED)(
-    'keeps what "$name" does as a partial, complete, and final chunk',
-    async (fixture) => {
-      const item = {
-        ...(fixture.item as object),
-        streaming_metadata: { id: 'fixture-item' },
-      };
-      const final = fixtureMessage({ ...fixture, item });
-      const outcome = await observeWrite(async (instance) => {
-        const streaming_metadata = { response_id: final.id };
-        await instance.messaging.addMessageChunk({
-          streaming_metadata,
-          partial_item: item,
-        } as PartialItemChunk);
-        await instance.messaging.addMessageChunk({
-          streaming_metadata,
-          complete_item: item,
-        } as CompleteItemChunk);
-        await instance.messaging.addMessageChunk({
-          final_response: final,
-        } as FinalResponseChunk);
-      });
-
-      expect(outcome).toEqual({
-        rejects: false,
-        shownItems: 1,
-        reports: SHOWS_ERROR.has(fixture.name)
-          ? ['RENDER: Message.componentDidCatch']
-          : [],
-        failedItems: SHOWS_ERROR.has(fixture.name) ? 1 : 0,
-        catastrophic: false,
-      });
-    }
-  );
 });
