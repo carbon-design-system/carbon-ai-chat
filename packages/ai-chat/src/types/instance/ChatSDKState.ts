@@ -115,6 +115,7 @@ export interface ChatSDKMessageItem {
    * The item as the list draws it. While it streams, this is the content so far. For a request, it's a
    * `text` item with the text the user's message shows. As in `messages`, functions, classes, and other
    * values the chat can't copy pass through by reference, and the snapshot doesn't freeze them.
+   * As in {@link ChatSDKState.messages}, copied non-empty typed arrays remain mutable.
    */
   readonly item: Readonly<GenericItem>;
 
@@ -216,7 +217,8 @@ export interface ChatSDKState {
   /**
    * Conversation messages, oldest first, or `[]` when empty. Partial
    * streaming content is included as it arrives. The array and its message
-   * values are immutable snapshots, and internal UI state is omitted.
+   * containers are frozen snapshots, and internal UI state is omitted.
+   * Non-empty typed-array copies remain mutable.
    * Functions, classes, and other values the chat can't copy are the host's
    * own objects. They pass through by reference, and the snapshot doesn't
    * freeze them.

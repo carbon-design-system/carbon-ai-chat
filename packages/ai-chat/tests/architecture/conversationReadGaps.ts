@@ -345,7 +345,7 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'allMessagesByID',
-    count: 1,
+    count: 3,
     owner: '#2969',
   },
   {

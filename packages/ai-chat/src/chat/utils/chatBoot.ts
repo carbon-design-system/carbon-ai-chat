@@ -626,13 +626,19 @@ async function refireSlotlessResponses(
         !local.item.user_defined?.silent
     );
     for (const local of items) {
+      const currentMessage =
+        serviceManager.store.getState().allMessagesByID[messageID] ?? message;
       await serviceManager.messageCoordinator.handleUserDefinedResponseItems(
         local,
-        message,
+        currentMessage,
         state
       );
     }
-    refireUnnamedReasoning(serviceManager, messageID, message);
+    refireUnnamedReasoning(
+      serviceManager,
+      messageID,
+      serviceManager.store.getState().allMessagesByID[messageID] ?? message
+    );
     missed.delete(messageID);
   }
 }

@@ -11,6 +11,7 @@ import { createComponent, type EventName } from '@lit/react';
 import React from 'react';
 import ConversationalSearchShellElement, {
   type CitationToggleEventDetail,
+  type CitationsSelectEventDetail,
 } from '../components/conversational-search/src/conversational-search-shell.js';
 import prefix from '../globals/settings.js';
 import { withWebComponentBridge } from './utils/withWebComponentBridge.js';
@@ -24,6 +25,10 @@ const ConversationalSearchShell = withWebComponentBridge(
       onCitationsToggle:
         ConversationalSearchShellElement.eventCitationsToggle as EventName<
           CustomEvent<CitationToggleEventDetail>
+        >,
+      onCitationsSelect:
+        ConversationalSearchShellElement.eventCitationsSelect as EventName<
+          CustomEvent<CitationsSelectEventDetail>
         >,
     },
   })
