@@ -1,4 +1,9 @@
 kind	file	title	sha256
+context	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"file"	00e762462773ef7e56b1a234fd8e2fe0b80de6ce7d4b241f64a046395e8baf6f
+context	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"registration:describe:'legacy rendered message compatibility'"	3026b066e50a9b4f91db6a013a3d2a6ec51025dbb62cf42d2b42f0c9aa53528c
+context	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"registration:describe:'legacy rendered message compatibility'/it:'contains a streamed renderer failure and displays later messages'"	18261b4b4ead966a963c54e15ca51370fea486e25f014166b18b53968159881b
+context	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"registration:describe:'legacy rendered message compatibility'/it:'contains an addMessage renderer failure and displays later messages'"	da1f1c0b32abaf342777a265bcbef869b6dccc8e4deea7a26d84a77e73a8ac10
+context	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"scope:describe:'legacy rendered message compatibility'"	82fddeeddb56cfc9c6a8d5339beccba4f0b5ae5eeea6500c7ce2787439095df2
 context	packages/ai-chat/src/sdk/__tests__/agentCollaboration.contract.test.ts	"file"	9685e01e793d47afdeac1895752cc0763d2e713b0c2e2fb8c74e38dd8f73dcd7
 context	packages/ai-chat/src/sdk/__tests__/agentCollaboration.contract.test.ts	"registration:describe:'SDK agent collaboration'"	ecd81aae3cfe08a10058f58b6538adeac0027a10b15cf5bb8339eccb6e2f4f49
 context	packages/ai-chat/src/sdk/__tests__/agentCollaboration.contract.test.ts	"registration:describe:'SDK agent collaboration'/it:'checks a new explicit identity after content, position and visibility edits'"	810eec8778668b54930ce13bbfad549eaf8766351e2dfa9824f5920064d524d5
@@ -1735,6 +1740,8 @@ helper	packages/ai-chat/tests/contract/helpers/messages.ts	""	1b6ef1c664cbf47923
 helper	packages/ai-chat/tests/contract/helpers/mount.tsx	""	03ae85fb0f4ba54809ef46b27f187a00514c8092c373536e0cf91b40b1914c8a
 helper	packages/ai-chat/tests/contract/helpers/serviceDesk.ts	""	9a965390f787cac07026924d13be4279f96e801871dd6dd81d8ae626effde62f
 helper	packages/ai-chat/tests/contract/helpers/timing.ts	""	d07ece027b8caaa892d52a9f7cd17f02a412aa1ea19e2d96309505f5c1e9fa64
+test	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"legacy rendered message compatibility contains a streamed renderer failure and displays later messages"	d4fb5120c5e2d2d43ea8bac2445173eb712f0c29e081820e11dc4fcb3d6d1810
+test	packages/ai-chat/src/chat/__tests__/messaging/messageErrorRecovery.contract.test.tsx	"legacy rendered message compatibility contains an addMessage renderer failure and displays later messages"	2692395d6ba156dd013723ef36bbadf26b52441f3f23f24eeef0930a9b1644b6
 test	packages/ai-chat/src/sdk/__tests__/agentCollaboration.contract.test.ts	"SDK agent collaboration checks a new explicit identity after content, position and visibility edits"	d18c53171aa0002796a135bc260901e5adefc872d583be185e5e0706b39252cb
 test	packages/ai-chat/src/sdk/__tests__/agentCollaboration.contract.test.ts	"SDK agent collaboration checks named empty-state reintroductions by explicit identity"	1acb550f5e6a5d9ae499eb235d1411748c4c4b79bad9b46bc27bcb14c070bb10
 test	packages/ai-chat/src/sdk/__tests__/agentCollaboration.contract.test.ts	"SDK agent collaboration checks named empty-state reintroductions by positional identity"	1acb550f5e6a5d9ae499eb235d1411748c4c4b79bad9b46bc27bcb14c070bb10
