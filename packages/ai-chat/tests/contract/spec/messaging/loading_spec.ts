@@ -126,9 +126,6 @@ describe('updateIsMessageLoadingCounter', () => {
 // @covers state.isMessageLoadingCounter instance.messaging.addMessage
 describe('messageLoadingIndicatorTimeoutSecs', () => {
   contractSetup();
-  afterEach(() => {
-    jest.useRealTimers();
-  });
 
   /**
    * Mounts with real timers, then switches to fake ones so the send's

@@ -56,10 +56,6 @@ const add = (chat: ContractDriver, message: MessageResponse) =>
 describeShared(
   'addMessage with paused and user_defined items',
   (makeDriver) => {
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     it('gives each user_defined item its own slot', async () => {
       const chat = await makeDriver();
       const events = recordEvents(chat, [BusEventType.USER_DEFINED_RESPONSE]);
