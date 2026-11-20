@@ -14,7 +14,7 @@ import { InputActionsService } from '../../../src/shared/services/InputActionsSe
 import { PublicStateService } from '../../../src/shared/services/PublicStateService';
 import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
 import { SlotEventService } from '../../../src/shared/services/messaging/presentation/SlotEventService';
-import { ViewService } from '../../../src/chat/services/ViewService';
+import { ViewConnection } from '../../../src/shared/services/viewBindings';
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   BusEvent,
@@ -81,7 +81,7 @@ const createServiceManagerStub = () => {
     fire: jest.fn(async (event: BusEvent) => {
       firedEvents.push(event);
     }),
-    getInputFunctionsRef: (): null => null,
+    view: new ViewConnection(),
   } as unknown as ServiceManager;
   (serviceManager as any).inputActionsService = new InputActionsService(
     serviceManager
@@ -104,7 +104,6 @@ const createServiceManagerStub = () => {
       configurable: true,
     });
   }
-  (serviceManager as any).viewService = new ViewService(serviceManager);
 
   return { serviceManager, firedEvents };
 };

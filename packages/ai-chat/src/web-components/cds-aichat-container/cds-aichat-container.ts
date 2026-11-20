@@ -78,6 +78,7 @@ interface MountState {
   initialViewCommitted: ResolvablePromise;
   afterRenderTimer?: ReturnType<typeof setTimeout>;
   removeWindowListeners?: () => void;
+  detachView?: () => void;
 }
 
 /**
@@ -93,6 +94,7 @@ export const bootModuleLoader = {
       import('../../chat/utils/customPromptLine'),
       import('../../chat/services/chatViewState'),
       import('../../chat/services/extensionHosts'),
+      import('../../chat/services/createViewBindings'),
     ]),
 };
 
@@ -377,6 +379,7 @@ class ChatContainer extends FlattenedConfigElement {
       state.viewState?.disconnect();
       this.viewStateProvider.setValue(undefined);
       state.mount?.unmount();
+      state.detachView?.();
     }
 
     this._instance?.off(this._mountHandlers);
@@ -512,6 +515,7 @@ class ChatContainer extends FlattenedConfigElement {
         { hasCustomPromptLine },
         { ChatViewState },
         { ExtensionHosts },
+        { createViewBindings },
       ] = await bootModuleLoader.loadBootModules();
       if (!isCurrent()) {
         return;
@@ -538,6 +542,11 @@ class ChatContainer extends FlattenedConfigElement {
       state.serviceManager = serviceManager;
       state.viewState = new ChatViewState(serviceManager, getWindowSize());
       state.viewState.connect();
+      // Attach before the host's callbacks and the initial view change, which
+      // both may change the view before the shell renders.
+      state.detachView = serviceManager.view.attach(
+        createViewBindings(state.viewState)
+      );
       state.instance = instance;
       state.hosts = new ExtensionHosts(
         instance,

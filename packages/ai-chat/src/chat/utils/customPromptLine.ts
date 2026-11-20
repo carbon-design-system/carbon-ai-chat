@@ -33,7 +33,7 @@ export function selectCustomPromptLineVisible(state: AppState): boolean {
 
 export function composerHasFocus(manager: ServiceManager): boolean {
   if (!hasCustomPromptLine(manager)) {
-    return manager.inputComponent?.hasFocus() ?? false;
+    return manager.view.current?.instance.input()?.hasFocus() ?? false;
   }
   const content = getWriteableElementContent(
     manager.writeableElements[WriteableElementName.CUSTOM_PROMPT_LINE]
@@ -51,7 +51,7 @@ export function composerHasFocus(manager: ServiceManager): boolean {
 
 export function requestComposerFocus(manager: ServiceManager): boolean {
   if (!hasCustomPromptLine(manager)) {
-    return manager.inputComponent?.requestFocus() ?? false;
+    return manager.view.current?.instance.input()?.requestFocus() ?? false;
   }
   const state = manager.store.getState();
   if (

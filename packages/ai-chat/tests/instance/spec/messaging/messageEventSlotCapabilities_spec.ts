@@ -13,6 +13,7 @@ import { MessagePresentationAdapter } from '../../../../src/chat/services/Messag
 import { SlotEventService } from '../../../../src/shared/services/messaging/presentation/SlotEventService';
 import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { withMessagingView } from '../../../services/helpers/viewBindings';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {
   BusEventType,
@@ -127,7 +128,10 @@ it('delivers and awaits response events when a real adapter has no slot capabili
     isResponsePanelOpen: () => false,
     closeResponsePanel: jest.fn(),
   });
-  manager.messageCoordinator = new MessageCoordinator(manager, adapter);
+  // The boot coordinator goes headless once cleanup detaches the view; retire it.
+  manager.messageCoordinator.disposeReasoningObserver();
+  withMessagingView(manager, adapter);
+  manager.messageCoordinator = new MessageCoordinator(manager);
   const allocate = jest.spyOn(
     manager.slotEventService,
     'getOrCreateUserDefinedElement'

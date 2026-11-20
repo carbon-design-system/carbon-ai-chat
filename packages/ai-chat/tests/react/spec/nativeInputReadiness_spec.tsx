@@ -21,6 +21,7 @@ import { useSelector } from '../../../src/chat/hooks/useSelector';
 import { selectInputFieldVisible } from '../../../src/shared/store/selectors';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
@@ -78,6 +79,11 @@ function readInputTargets(instance: ChatInstance) {
       serviceManager: ServiceManager;
     }
   ).serviceManager;
+  // The shell publishes its handles to the mount's view state.
+  const { viewState } = deepQuerySelector(
+    document,
+    'cds-aichat-chat-shell'
+  ) as unknown as { viewState: ChatViewState };
   return {
     native,
     prompt,
@@ -86,9 +92,9 @@ function readInputTargets(instance: ChatInstance) {
     directEditorSlot:
       prompt.parentElement.localName === 'cds-aichat-prompt-line-shell' &&
       assignedSlot.name === 'editor',
-    registered: manager.getInputFunctionsRef() === handle,
-    shellHandle: manager.inputComponent === handle,
-    focusDelegate: typeof manager.appWindow?.requestFocus === 'function',
+    registered: manager.view.current?.instance.input() === handle,
+    shellHandle: viewState.inputComponent === handle,
+    focusDelegate: typeof viewState.appWindow?.requestFocus === 'function',
     mainWindow: instance.getState().viewState.mainWindow,
   };
 }
@@ -236,7 +242,7 @@ it.each([
         instance.serviceManager.actions as unknown as {
           serviceManager: ServiceManager;
         }
-      ).serviceManager.getInputFunctionsRef()
+      ).serviceManager.view.current?.instance.input()
     ).toBe(observations[0].handle);
     expect(observations[0].handle.requestFocus()).toBe(false);
     await act(async () => {

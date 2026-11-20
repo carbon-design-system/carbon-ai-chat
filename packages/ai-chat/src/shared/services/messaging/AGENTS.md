@@ -8,12 +8,12 @@ flowchart LR
   C --> DATA[Pure inbound, outbound and state helpers]
   C --> EFFECTS[Store, events, transport and lifetimes]
   C --> PORT[Narrow presentation port]
-  PORT --> VIEW[View adapter]
+  PORT --> VIEW[Attached view's adapter]
 ```
 
 - C owns assistant message writes, lifecycle changes, event delivery and transport effects. Keep queue execution, promises, controllers and effect closures in C-owned workflows.
 - Keep `inbound/`, `outbound/` and `state/` data-only. Pass values and opaque tokens, not managers, stores or effect callbacks. Opaque callable host data can pass through unchanged. Allocate IDs and read clocks in core callers. Preserve each queue and lifetime domain.
-- Use the view port only for view work. With no adapter, preserve callback waits, public results, conversation data and lifecycle. View-only state can differ. Mounted reasoning keeps its component lifetime; headless reasoning uses the committed-state observer. Both use the shared event queue.
+- Use the view port only for view work. C looks it up at the start of each call through the attached view's bindings; never store it on an object that outlives the call. With no view attached, preserve callback waits, public results, conversation data and lifecycle. View-only state can differ. Reasoning items share one session per visible item: the mounted view fires them while attached, and the committed-state observer fires them while not, so a switch neither repeats nor drops one. Both use the shared event queue.
 - Keep human-agent writes and sends in their own path. Route shared UI metadata through `messageMetadataCommands`; its private store provenance selects C or the existing human-agent action. Do not trust speaker fields supplied by the caller.
 - Keep public types, event order, aliases and waits unchanged. That includes which payloads are copied, aliased or frozen. Before you change a payload copy, read the `cloneDeep`, `captureMessageEvent`, `copyNativeMessage`, `deepFreeze` and `Object.freeze` call sites under `src/chat`.
 

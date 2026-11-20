@@ -22,7 +22,9 @@ export class HeadlessReasoningObserver {
   >();
   private disposed = false;
   private unsubscribe: () => void;
+  private unsubscribeView: () => void;
   private restartCount: number;
+  private reconciledIDs?: readonly string[];
 
   constructor(
     private manager: ServiceManager,
@@ -34,6 +36,8 @@ export class HeadlessReasoningObserver {
   ) {
     this.restartCount = manager.restartCount;
     this.unsubscribe = manager.store.subscribe(this.observe);
+    // A view that detaches leaves delivery here; rescan what it didn't fire.
+    this.unsubscribeView = manager.view?.subscribe(this.observe) ?? (() => {});
     void Promise.resolve().then(() => {
       if (!this.disposed) {
         this.observe();
@@ -53,6 +57,7 @@ export class HeadlessReasoningObserver {
       return { state, ids: [] as string[] };
     }
     const ids = state.assistantMessageState.localMessageIDs;
+    this.reconciledIDs = ids;
     const visible = new Set(ids);
     for (const id of this.sessions.keys()) {
       if (!visible.has(id) || !state.allMessageItemsByID[id]) {
@@ -70,11 +75,39 @@ export class HeadlessReasoningObserver {
   dispose() {
     this.disposed = true;
     this.unsubscribe();
+    this.unsubscribeView();
     this.sessions.clear();
   }
 
+  /**
+   * The fired set for a visible local item, shared with the mounted view.
+   * Returns undefined for an item outside the visible list.
+   */
+  sessionFor(localItemID: string): Set<string> | undefined {
+    if (!this.disposed && !this.sessions.has(localItemID)) {
+      this.reconcile();
+    }
+    return this.sessions.get(localItemID)?.fired;
+  }
+
   observe = () => {
-    if (this.disposed || !this.manager.instance) {
+    if (this.disposed) {
+      return;
+    }
+    if (this.manager.view?.current) {
+      // The mounted view fires reasoning; keep sessions in step with the list
+      // only when it changes, so streaming adds no scan per chunk.
+      const state = this.manager.store.getState();
+      if (
+        this.restartCount !== this.manager.restartCount ||
+        state.isRestarting ||
+        state.assistantMessageState.localMessageIDs !== this.reconciledIDs
+      ) {
+        this.reconcile();
+      }
+      return;
+    }
+    if (!this.manager.instance) {
       return;
     }
     // Nested commits may retire sessions or create new visible items.
