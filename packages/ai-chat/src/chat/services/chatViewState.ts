@@ -38,6 +38,10 @@ class ChatViewState {
   private snapshot: ChatViewStateSnapshot;
   private listeners = new Set<() => void>();
   private unsubscribeIntl: (() => void) | null = null;
+  private initialReactHolds = new Set<object>();
+  private initialReactWaiters = new Set<() => void>();
+  private initialReactCheckQueued = false;
+  private initialReactGeneration = 0;
 
   constructor(
     readonly serviceManager: ServiceManager,
@@ -93,6 +97,49 @@ class ChatViewState {
   disconnect(): void {
     this.unsubscribeIntl?.();
     this.unsubscribeIntl = null;
+    this.initialReactGeneration += 1;
+    this.initialReactHolds.clear();
+    this.initialReactWaiters.clear();
+    this.initialReactCheckQueued = false;
+  }
+
+  holdInitialReactCommit(): () => void {
+    const token = {};
+    this.initialReactHolds.add(token);
+    return () => {
+      if (this.initialReactHolds.delete(token)) {
+        this.checkInitialReactCommit();
+      }
+    };
+  }
+
+  whenInitialReactCommitReady(callback: () => void): () => void {
+    this.initialReactWaiters.add(callback);
+    this.checkInitialReactCommit();
+    return () => {
+      this.initialReactWaiters.delete(callback);
+    };
+  }
+
+  private checkInitialReactCommit(): void {
+    if (this.initialReactCheckQueued) {
+      return;
+    }
+    this.initialReactCheckQueued = true;
+    const generation = this.initialReactGeneration;
+    // StrictMode can release and reacquire holds in the same effect replay.
+    queueMicrotask(() => {
+      if (generation !== this.initialReactGeneration) {
+        return;
+      }
+      this.initialReactCheckQueued = false;
+      if (this.initialReactHolds.size) {
+        return;
+      }
+      const waiters = Array.from(this.initialReactWaiters);
+      this.initialReactWaiters.clear();
+      waiters.forEach((callback) => callback());
+    });
   }
 
   setWindowSize(windowSize: Dimension): void {

@@ -143,3 +143,58 @@ it('announces with the formatter from the latest change', async () => {
   expect(mockAnnounce).toHaveBeenCalledWith('Bonjour', 'polite');
   viewState.announcer.disconnect();
 });
+
+it('waits for every retained React commit without notifying view subscribers', async () => {
+  const state = createViewState();
+  const changed = jest.fn();
+  state.subscribe(changed);
+  const first = state.holdInitialReactCommit();
+  const second = state.holdInitialReactCommit();
+  const committed = jest.fn();
+  state.whenInitialReactCommitReady(committed);
+  first();
+  first();
+  await Promise.resolve();
+  expect(committed).not.toHaveBeenCalled();
+  second();
+  await Promise.resolve();
+  expect(committed).toHaveBeenCalledTimes(1);
+  expect(changed).not.toHaveBeenCalled();
+});
+
+it('rechecks a hold acquired during effect replay before acknowledging a commit', async () => {
+  const state = createViewState();
+  const retired = jest.fn();
+  const first = state.holdInitialReactCommit();
+  const cancel = state.whenInitialReactCommitReady(retired);
+  first();
+  cancel();
+  const second = state.holdInitialReactCommit();
+  const committed = jest.fn();
+  state.whenInitialReactCommitReady(committed);
+  first();
+  await Promise.resolve();
+  expect(retired).not.toHaveBeenCalled();
+  expect(committed).not.toHaveBeenCalled();
+  second();
+  await Promise.resolve();
+  expect(committed).toHaveBeenCalledTimes(1);
+});
+
+it('drops queued callbacks and stale holds when a mount disconnects', async () => {
+  const state = createViewState();
+  const first = state.holdInitialReactCommit();
+  const retired = jest.fn();
+  state.whenInitialReactCommitReady(retired);
+  state.disconnect();
+  const second = state.holdInitialReactCommit();
+  const current = jest.fn();
+  state.whenInitialReactCommitReady(current);
+  first();
+  await Promise.resolve();
+  expect(retired).not.toHaveBeenCalled();
+  expect(current).not.toHaveBeenCalled();
+  second();
+  await Promise.resolve();
+  expect(current).toHaveBeenCalledTimes(1);
+});

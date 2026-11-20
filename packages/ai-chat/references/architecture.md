@@ -37,6 +37,10 @@ ChatContainer (React) ──────────→ cds-aichat-container (Li
 
 Private native views in `src/chat/components/` render in light DOM inside the existing container shadow root. `NativeChatView` selects store and view-state values, releases subscriptions on detach, and routes render errors through the existing error callback. The home screen, header, and launcher use it behind temporary React wrappers. The header adapter passes React's icon normalizer to its native view, which converts configured React icons before the base header receives them. The launcher's plain owner releases timers and animation listeners on detach. Consumer content stays in its existing React tree.
 
+Built-in loading, disclaimer, iframe, error, and confirmation bodies also use native views. React still owns each panel frame and its direct slots. Error markdown and iframe error content use stable, connected targets in that same React tree. The native bodies add no shadow root. Plain owners manage loading delays, iframe source lifetimes, and the disclaimer's read flag; detach releases their pending work.
+
+The initial error target can arrive after the first React commit. Its wrapper holds the initial acknowledgment in `ChatViewState` until retained content effects finish, or an empty fallback commits. `ChatAppEntry` then acknowledges the commit to the container. This does not change the listener-ready gate or start services from React.
+
 | Layer | Files | Concerns |
 | --- | --- | --- |
 | Lit | [src/web-components/](../src/web-components) | Registration, shadow DOM, slot forwarding, renderer selection, mount cleanup |
