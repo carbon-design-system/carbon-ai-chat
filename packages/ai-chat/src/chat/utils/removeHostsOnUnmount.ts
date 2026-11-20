@@ -28,19 +28,3 @@ export function placeHosts(wrapper: HTMLElement, hosts: HTMLElement[]): void {
     wrapper.insertBefore(host, before);
   });
 }
-
-export function attachHosts(
-  hosts: Map<string, HTMLElement>,
-  chatWrapper: HTMLElement | undefined
-): void {
-  if (chatWrapper) {
-    placeHosts(
-      chatWrapper,
-      [...hosts.values()].filter((host) => !host.isConnected)
-    );
-  }
-}
-
-export function detachHosts(hosts: Map<string, HTMLElement>): void {
-  hosts.forEach((host) => host.remove());
-}

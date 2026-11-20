@@ -614,6 +614,26 @@ describe('how each host mounts the chat', () => {
       expect(retiredState.getSnapshot().intl).toBe(retiredIntl);
     });
 
+    it('leaves a writeable element the host moved elsewhere when it releases', async () => {
+      const { element, instances, onAfterRender } = createElementChat(
+        'cds-aichat-container'
+      );
+      document.body.appendChild(element);
+      await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1), {
+        timeout: 5000,
+      });
+      const [borrowed, kept] = Object.values(instances[0].writeableElements);
+      const elsewhere = document.createElement('section');
+      document.body.appendChild(elsewhere);
+      elsewhere.appendChild(borrowed);
+
+      element.remove();
+      await settle();
+
+      expect(borrowed.parentNode).toBe(elsewhere);
+      expect(kept.parentNode).toBeNull();
+    });
+
     it('cds-aichat-custom-element ignores view changes from the retired instance', async () => {
       const { element, instances, onAfterRender } = createElementChat(
         'cds-aichat-custom-element',
