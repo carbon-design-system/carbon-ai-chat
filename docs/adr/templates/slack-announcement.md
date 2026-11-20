@@ -5,6 +5,8 @@ Use this template in `#carbon-ai-chat` after a proposed architecture decision re
 Replace each bracketed field. Copy the feedback date from the ADR and link to the record on `main`. Name who needs to review it and what they could lose or need to change. Draw the feedback request from the ADR's Summary.
 
 ```text
+:carbon10: :carbon10: :carbon10:
+
 Hi all! A new architecture decision record (ADR) proposes [the change and target release].
 
 If you [affected workflow], [the impact you need to review]. The proposal [migration path or main tradeoff].
