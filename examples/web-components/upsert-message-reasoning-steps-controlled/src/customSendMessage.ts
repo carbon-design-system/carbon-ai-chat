@@ -14,8 +14,8 @@
  * scenario, where the host owns the in-progress affordance via
  * `instance.updateIsMessageLoadingCounter` and the parent reasoning panel
  * stays collapsed until the user opens it. The static welcome is delivered
- * through `upsertMessage` — a brand-new COMPLETE insert under a fresh
- * `messageID` fires `receive` once, exactly like the `addMessage` it replaces.
+ * through `upsertMessage` as a brand-new COMPLETE insert under a fresh
+ * `messageID`, which fires `receive` once.
  *
  * APIs exercised:
  *   - `customSendMessage`
