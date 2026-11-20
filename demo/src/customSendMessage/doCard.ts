@@ -151,6 +151,9 @@ function doCard(instance: ChatInstance, requestID?: MessageRequest['id']) {
               button_type: ButtonItemType.URL,
               response_type: MessageResponseTypes.BUTTON,
               icon: ArrowRight16,
+              // Show only the arrow, pinned to the end of the footer. The label stays as the accessible name.
+              hide_label: true,
+              icon_alignment: 'end',
             },
           ],
           response_type: MessageResponseTypes.CARD,
