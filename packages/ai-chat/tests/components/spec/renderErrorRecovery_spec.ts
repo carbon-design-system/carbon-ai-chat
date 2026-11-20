@@ -26,6 +26,7 @@ import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageClass } from '../../../src/chat/components-legacy/MessageComponent';
 import actions from '../../../src/shared/store/actions';
 import enLanguagePack from '../../../src/shared/languages/en.json';
+import { viewActions } from '../../../src/view/state';
 
 // Records every announcement instead of speaking it.
 const mockAnnounce = jest.fn();
@@ -157,7 +158,7 @@ describe('render errors in a message item', () => {
     expect(data.errorType).toBe(OnErrorType.RENDER);
     expect(data.message).toBe('Message.componentDidCatch');
     expect(data.catastrophicErrorType).toBeUndefined();
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
   });
 
   it('announces a failed addMessage item as it did before', async () => {
@@ -496,7 +497,7 @@ describe('a still-broken message item', () => {
 
     expect(onError).toHaveBeenCalledTimes(1);
     expect(chatText()).toContain(ERROR_TEXT);
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
     const updateDepthErrors = (console.error as jest.Mock).mock.calls.filter(
       (args) => String(args[0]).includes('Maximum update depth')
     );
@@ -540,7 +541,7 @@ describe('a still-broken message item', () => {
     await waitFor(() => expect(renderErrors(onError)).toHaveLength(2));
     await waitFor(() => expect(chatText()).toContain(ERROR_TEXT));
     expect(onError).toHaveBeenCalledTimes(2);
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
   });
 });
 
@@ -613,7 +614,7 @@ describe('renderer exceptions in upserted message items', () => {
     expect(firstLocalID(store, 'renderer-recovery')).toBe(localID);
     expect(chatText()).not.toContain(ERROR_TEXT);
     expect(onError).not.toHaveBeenCalled();
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
   });
 
   it.each([MessageState.COMPLETE, MessageState.ERROR])(
@@ -649,7 +650,7 @@ describe('renderer exceptions in upserted message items', () => {
       await waitFor(() => expect(chatText()).toContain('Recovered image'));
       expect(chatText()).not.toContain(ERROR_TEXT);
       expect(onError).toHaveBeenCalledTimes(1);
-      expect(store.getState().catastrophicErrorType).toBeUndefined();
+      expect(store.getState().view.catastrophicErrorType).toBeUndefined();
     }
   );
 });
@@ -714,11 +715,11 @@ async function closePanel(store: any) {
     panelBackAction().onClick();
   });
   await settle();
-  expect(store.getState().responsePanelState.isOpen).toBe(false);
+  expect(store.getState().view.responsePanelState.isOpen).toBe(false);
   // The panel clears its content when its close animation ends, which jsdom
   // never runs, so do what that handler does.
   act(() => {
-    store.dispatch(actions.setResponsePanelContent(null, false));
+    store.dispatch(viewActions.setResponsePanelContent(null, false));
   });
   await settle();
 }
@@ -735,7 +736,7 @@ describe('render errors in response panel content', () => {
 
     await openPanel();
 
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
     await waitFor(() =>
       expect(deepText(panelError('body'))).toContain(ERROR_TEXT)
     );
@@ -759,7 +760,7 @@ describe('render errors in response panel content', () => {
 
     await openPanel();
 
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
     await waitFor(() => expect(panelError('footer')).toBeTruthy());
     await waitFor(() =>
       expect(deepText(responsePanelBody())).toContain('Panel body text')
@@ -787,7 +788,7 @@ describe('render errors in response panel content', () => {
     await upsertPanelMessage(instance, { body: [panelText('Body one')] });
     await settle();
 
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
     await waitFor(() => expect(panelError('body')).toBeTruthy());
     expect(panelErrors(onError)).toHaveLength(1);
     expect(onError).toHaveBeenCalledTimes(1);
@@ -808,7 +809,7 @@ describe('render errors in response panel content', () => {
     await settle();
     await openPanel();
 
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
     await closePanel(store);
     expect(
       getChatShadowRoot()?.querySelector('.BaseButtonItemComponent__ShowPanel')
@@ -817,7 +818,7 @@ describe('render errors in response panel content', () => {
     await instance.send({ input: { text: 'hello' } } as any);
     await waitFor(() => expect(mockCustomSendMessage).toHaveBeenCalled());
     await waitFor(() => expect(chatText()).toContain('hello'));
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
   });
 
   it('reopens a failed panel without escalating', async () => {
@@ -833,7 +834,7 @@ describe('render errors in response panel content', () => {
     await waitFor(() => expect(panelErrors(onError)).toHaveLength(2));
     expect(panelError('body')).toBeTruthy();
     expect(onError).toHaveBeenCalledTimes(2);
-    expect(store.getState().catastrophicErrorType).toBeUndefined();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
 
     await closePanel(store);
     await upsertPanelMessage(instance, { body: [panelText('Fixed body')] });

@@ -8,32 +8,33 @@
  */
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { selectInputIsReadonly } from '../../../src/shared/store/selectors';
+
 import { createAppStore } from '../../../src/shared/store/appStore';
-import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
-import { reducers } from '../../../src/shared/store/reducers';
+
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { AppState } from '../../../src/types/state/AppState';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
 import { enLanguagePack } from '../../../src/types/config/LanguagePack';
+
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
+
+import { appRootReducer } from '../../test_helpers';
+
+import { createInitialViewState } from '../../../src/view/state/initialState';
+
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 // Mock ServiceManager for testing
 const createMockServiceManager = (initialState: AppState): ServiceManager => {
-  const store = createAppStore(
-    (
-      state: AppState,
-      action: { type: string; [key: string]: unknown } | undefined
-    ): AppState => {
-      return action && reducers[action.type]
-        ? reducers[action.type](state, action)
-        : state;
-    },
-    initialState
-  );
+  const store = createAppStore(appRootReducer, initialState);
 
   return {
     store,
@@ -44,7 +45,13 @@ const createMockServiceManager = (initialState: AppState): ServiceManager => {
 };
 
 function createInitialAppState(config: PublicConfig = {}): AppState {
-  return createInitialState(createAppConfig(config));
+  const appConfig = createAppConfig(config);
+  return {
+    ...createInitialState(appConfig),
+    // The same object; restated so the state is typed with the whole config.
+    config: appConfig,
+    view: createInitialViewState(config, null),
+  };
 }
 
 describe('Dynamic Config Updates', () => {
@@ -78,7 +85,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
       expect(updatedState.config.public.debug).toBe(true);
       expect(updatedState.config.derived.header?.title).toBe('Updated Title');
       expect(updatedState.config.derived.header?.showRestartButton).toBe(false);
@@ -94,7 +101,7 @@ describe('Dynamic Config Updates', () => {
       // A partial config inherits the other fields one by one rather than replacing the
       // whole default object.
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: false });
     });
@@ -108,7 +115,7 @@ describe('Dynamic Config Updates', () => {
 
       // What the demo's keyboard-shortcut switcher dispatches: the toggle alone.
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: true });
     });
@@ -126,19 +133,19 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: true });
 
       // Retract with an explicit `isOn: false` — the toggle alone, which is what
       // the demo's switcher dispatches.
       await applyConfigChangesDynamically(
-        serviceManager.store.getState().config.public,
+        chatStore(serviceManager).getState().config.public,
         { keyboardShortcuts: { messageFocusToggle: { isOn: false } } },
         serviceManager
       );
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
@@ -158,12 +165,12 @@ describe('Dynamic Config Updates', () => {
       // `createAppConfig`, so an omitted `keyboardShortcuts` is not "unchanged"
       // — it drops back to the factory default rather than carrying F7 forward.
       await applyConfigChangesDynamically(
-        serviceManager.store.getState().config.public,
+        chatStore(serviceManager).getState().config.public,
         {},
         serviceManager
       );
       expect(
-        serviceManager.store.getState().config.derived.keyboardShortcuts
+        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
           .messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
@@ -202,7 +209,7 @@ describe('Dynamic Config Updates', () => {
         serviceManagerWithFullHeader
       );
 
-      const updatedState = serviceManagerWithFullHeader.store.getState();
+      const updatedState = chatStore(serviceManagerWithFullHeader).getState();
       const header = updatedState.config.derived.header;
 
       // Property that was updated should be present
@@ -229,7 +236,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
       const header = updatedState.config.derived.header;
 
       expect(header?.name).toBe('New Assistant');
@@ -254,7 +261,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       expect(updatedState.config.public.strings).toEqual(stringOverrides);
       const languagePack = updatedState.languagePack;
@@ -290,7 +297,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // Config should be updated
       expect(updatedState.config.public.homescreen?.isOn).toBe(true);
@@ -300,8 +307,8 @@ describe('Dynamic Config Updates', () => {
 
       // Homescreen state should be opened since messageIDs length is 0
       expect(
-        (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen
+        (updatedState as AppState).view.persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen
       ).toBe(true);
     });
 
@@ -313,10 +320,11 @@ describe('Dynamic Config Updates', () => {
       const stateWithHomescreenOpen = createInitialAppState(
         initialConfigWithHomescreen
       );
-      stateWithHomescreenOpen.persistedToBrowserStorage = {
-        ...stateWithHomescreenOpen.persistedToBrowserStorage,
+      stateWithHomescreenOpen.view.persistedToBrowserStorage = {
+        ...stateWithHomescreenOpen.view.persistedToBrowserStorage,
         homeScreenState: {
-          ...stateWithHomescreenOpen.persistedToBrowserStorage.homeScreenState,
+          ...stateWithHomescreenOpen.view.persistedToBrowserStorage
+            .homeScreenState,
           isHomeScreenOpen: true,
         },
       };
@@ -342,8 +350,8 @@ describe('Dynamic Config Updates', () => {
 
       // Homescreen state should be closed
       expect(
-        (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen
+        (updatedState as AppState).view.persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen
       ).toBe(false);
     });
 
@@ -358,7 +366,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // Config should be updated
       expect(updatedState.config.public.isReadonly).toBe(true);
@@ -460,7 +468,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // Config should be updated
       expect(updatedState.config.public.messaging?.messageTimeoutSecs).toBe(60);
@@ -488,7 +496,7 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
 
-      const updatedState = serviceManager.store.getState();
+      const updatedState = chatStore(serviceManager).getState();
 
       // All changes should be applied
       expect(updatedState.config.public.debug).toBe(true);
@@ -504,20 +512,43 @@ describe('Dynamic Config Updates', () => {
       // Effective readonly derives from config; homescreen state is applied.
       expect(selectInputIsReadonly(updatedState as AppState)).toBe(true);
       expect(
-        (updatedState as AppState).persistedToBrowserStorage.homeScreenState
-          .isHomeScreenOpen
+        (updatedState as AppState).view.persistedToBrowserStorage
+          .homeScreenState.isHomeScreenOpen
       ).toBe(true);
     });
 
     describe('disclaimer invalidation', () => {
+      it('saves nothing when the acceptance is already cleared', async () => {
+        const hostname = window.location.hostname;
+        const state = createInitialAppState({
+          disclaimer: { isOn: true, disclaimerHTML: '<p>Original</p>' },
+        });
+        state.view.persistedToBrowserStorage = {
+          ...state.view.persistedToBrowserStorage,
+          disclaimersAccepted: { [hostname]: false },
+        };
+        const sm = createMockServiceManager(state);
+        const before = chatStore(sm).getState().view.persistedToBrowserStorage;
+
+        await applyConfigChangesDynamically(
+          state.config.public,
+          { disclaimer: { isOn: true, disclaimerHTML: '<p>Updated</p>' } },
+          sm
+        );
+
+        expect(chatStore(sm).getState().view.persistedToBrowserStorage).toBe(
+          before
+        );
+      });
+
       it('clears the recorded acceptance for the current hostname when the disclaimer content changes', async () => {
         const hostname = window.location.hostname;
 
         const stateWithAcceptance = createInitialAppState({
           disclaimer: { isOn: true, disclaimerHTML: '<p>Original</p>' },
         });
-        stateWithAcceptance.persistedToBrowserStorage = {
-          ...stateWithAcceptance.persistedToBrowserStorage,
+        stateWithAcceptance.view.persistedToBrowserStorage = {
+          ...stateWithAcceptance.view.persistedToBrowserStorage,
           disclaimersAccepted: {
             [hostname]: true,
             'other-host.example': true,
@@ -535,7 +566,8 @@ describe('Dynamic Config Updates', () => {
         );
 
         const accepted =
-          sm.store.getState().persistedToBrowserStorage.disclaimersAccepted;
+          chatStore(sm).getState().view.persistedToBrowserStorage
+            .disclaimersAccepted;
         // This hostname must re-accept the new disclaimer. Acceptance is a truthy
         // read, and the value is set false (not deleted) so it survives the
         // reducer's deep merge of persistedToBrowserStorage.
@@ -559,7 +591,7 @@ describe('Dynamic Config Updates', () => {
           );
         }).not.toThrow();
 
-        const updatedState = serviceManager.store.getState();
+        const updatedState = chatStore(serviceManager).getState();
         expect(updatedState.config.derived.header).toBeNull();
       });
     });

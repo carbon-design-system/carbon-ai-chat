@@ -179,7 +179,7 @@ it.each([false, true])(
   'retains clone provenance when a callback changes local full ID, new local ID=%s',
   async (changeLocalID) => {
     const store = makeConfigStore({});
-    const manager = { store, restartCount: 0 } as ServiceManager;
+    const manager = { store, restartCount: 0 } as unknown as ServiceManager;
     const message: MessageResponse = {
       id: 'source',
       history: {},

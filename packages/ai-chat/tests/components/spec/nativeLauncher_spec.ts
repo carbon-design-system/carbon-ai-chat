@@ -36,6 +36,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 jest.mock('../../../src/shared/utils/browserUtils', () => ({
   ...jest.requireActual('../../../src/shared/utils/browserUtils'),
@@ -72,11 +73,15 @@ async function createLauncher({
 } = {}) {
   const config = { launcher };
   const store = makeConfigStore(config);
-  store.dispatch(actions.setViewState({ mainWindow: false, launcher: true }));
-  store.dispatch(actions.setInitialViewChangeComplete(true));
-  store.dispatch(actions.setLauncherProperty('launcherIsExpanded', expanded));
   store.dispatch(
-    actions.setLauncherProperty(
+    viewActions.setViewState({ mainWindow: false, launcher: true })
+  );
+  store.dispatch(viewActions.setInitialViewChangeComplete(true));
+  store.dispatch(
+    viewActions.setLauncherProperty('launcherIsExpanded', expanded)
+  );
+  store.dispatch(
+    viewActions.setLauncherProperty(
       'showUnreadIndicator',
       Boolean(launcher.showUnreadIndicator)
     )
@@ -167,12 +172,16 @@ describe('native launcher', () => {
     expect(view.getRootNode()).toBe(host.shadowRoot);
     expect(view.buttonElement().getAttribute('role')).toBe('complementary');
     expect(view.launcherContainerElement()).toBe(view.containerElement());
-    store.dispatch(actions.setViewState({ mainWindow: true, launcher: false }));
+    store.dispatch(
+      viewActions.setViewState({ mainWindow: true, launcher: false })
+    );
     await flush(view);
     expect(hasState(view, 'hidden')).toBe(true);
     expect(view.buttonElement().getAttribute('tabindex')).toBe('-1');
     expect(focus).not.toHaveBeenCalled();
-    store.dispatch(actions.setViewState({ mainWindow: false, launcher: true }));
+    store.dispatch(
+      viewActions.setViewState({ mainWindow: false, launcher: true })
+    );
     expect(focus).not.toHaveBeenCalled();
     await flush(view);
     expect(focus).toHaveBeenCalledTimes(1);
@@ -191,11 +200,11 @@ describe('native launcher', () => {
       mainWindowOpenReason: MainWindowOpenReason.DEFAULT_LAUNCHER,
     });
     await flush(view);
-    expect(store.getState().persistedToBrowserStorage.launcherIsExpanded).toBe(
-      false
-    );
     expect(
-      store.getState().persistedToBrowserStorage
+      store.getState().view.persistedToBrowserStorage.launcherIsExpanded
+    ).toBe(false);
+    expect(
+      store.getState().view.persistedToBrowserStorage
         .launcherShouldStartCallToActionCounterIfEnabled
     ).toBe(false);
     expect(hasState(view, 'closed')).toBe(true);
@@ -208,9 +217,7 @@ describe('native launcher', () => {
     });
     const renderView = jest.spyOn(view as any, 'renderView');
     jest.advanceTimersByTime(500);
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     store.dispatch(
       actions.setAppStateValue('humanAgentState', {
         ...store.getState().humanAgentState,
@@ -222,9 +229,9 @@ describe('native launcher', () => {
     expect(renderView).not.toHaveBeenCalled();
     jest.advanceTimersByTime(500);
     await flush(view);
-    expect(store.getState().persistedToBrowserStorage.launcherIsExpanded).toBe(
-      true
-    );
+    expect(
+      store.getState().view.persistedToBrowserStorage.launcherIsExpanded
+    ).toBe(true);
     expect(hasState(view, 'opening')).toBe(true);
     jest.advanceTimersByTime(600);
     await flush(view);
@@ -255,12 +262,7 @@ describe('native launcher', () => {
     expect(
       view.querySelector('.cds-aichat--count-indicator')?.textContent
     ).toBe('1');
-    store.dispatch(
-      actions.setAppStateValue('humanAgentState', {
-        ...store.getState().humanAgentState,
-        numUnreadMessages: 1234,
-      })
-    );
+    store.dispatch(viewActions.setViewValue('numUnreadMessages', 1234));
     await flush(view);
     expect(view.buttonElement().getAttribute('aria-label')).toContain('1,234');
     const renderView = jest.spyOn(view as any, 'renderView');
@@ -276,17 +278,12 @@ describe('native launcher', () => {
     expect(view.buttonElement().getAttribute('aria-label')).toContain(
       `${new Intl.NumberFormat('fr').format(1234)} messages non lus`
     );
-    store.dispatch(
-      actions.setAppStateValue('humanAgentState', {
-        ...store.getState().humanAgentState,
-        numUnreadMessages: 0,
-      })
-    );
+    store.dispatch(viewActions.setViewValue('numUnreadMessages', 0));
     await flush(view);
     expect(
       view.querySelector('.cds-aichat--count-indicator')?.textContent
     ).toBe('1');
-    store.dispatch(actions.setLauncherProperty('launcherIsExpanded', true));
+    store.dispatch(viewActions.setLauncherProperty('launcherIsExpanded', true));
     await flush(view);
     expect(view.querySelector('.cds-aichat--count-indicator')).toBeNull();
   });
@@ -338,7 +335,7 @@ describe('native launcher', () => {
   it('settles reduced-motion open and close immediately with the current labels', async () => {
     jest.spyOn(reducedMotion, 'prefersReducedMotion').mockReturnValue(true);
     const { view, store } = await createLauncher();
-    store.dispatch(actions.setLauncherProperty('launcherIsExpanded', true));
+    store.dispatch(viewActions.setLauncherProperty('launcherIsExpanded', true));
     await flush(view);
     expect(hasState(view, 'open')).toBe(true);
     expect(hasState(view, 'opening')).toBe(false);
@@ -369,15 +366,10 @@ describe('native launcher', () => {
     view.remove();
     expect(subscriptions.size).toBe(0);
     jest.advanceTimersByTime(2000);
-    expect(store.getState().persistedToBrowserStorage.launcherIsExpanded).toBe(
-      false
-    );
-    store.dispatch(
-      actions.setAppStateValue('humanAgentState', {
-        ...store.getState().humanAgentState,
-        numUnreadMessages: 7,
-      })
-    );
+    expect(
+      store.getState().view.persistedToBrowserStorage.launcherIsExpanded
+    ).toBe(false);
+    store.dispatch(viewActions.setViewValue('numUnreadMessages', 7));
     await Promise.resolve();
     expect(renderView).not.toHaveBeenCalled();
     host.shadowRoot.appendChild(view);
@@ -388,16 +380,11 @@ describe('native launcher', () => {
     ).toBe('7');
     jest.advanceTimersByTime(1000);
     await flush(view);
-    expect(store.getState().persistedToBrowserStorage.launcherIsExpanded).toBe(
-      true
-    );
+    expect(
+      store.getState().view.persistedToBrowserStorage.launcherIsExpanded
+    ).toBe(true);
     renderView.mockClear();
-    store.dispatch(
-      actions.setAppStateValue('humanAgentState', {
-        ...store.getState().humanAgentState,
-        numUnreadMessages: 8,
-      })
-    );
+    store.dispatch(viewActions.setViewValue('numUnreadMessages', 8));
     await flush(view);
     expect(renderView).toHaveBeenCalledTimes(1);
     view.remove();

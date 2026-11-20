@@ -9,21 +9,30 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Card, CardFooter } from '@carbon/ai-chat-components/es/react/card.js';
+
 import Maximize16 from '@carbon/icons/es/maximize/16.js';
 import View16 from '@carbon/icons/es/view/16.js';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
+
 import { PanelType } from '../../../../types/instance/apiTypes';
+
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+
 import { AppState } from '../../../../types/state/AppState';
+
 import { useSelector } from '../../../hooks/useSelector';
+
 import { shallowEqual } from '../../../../shared/store/appStore';
+
 import {
   PreviewCardItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import actions from '../../../../shared/store/actions';
-import { closeWorkspaceForNext } from '../../../../shared/services/CustomPanelInstance';
+
+import { viewActions } from '../../../../view/state';
+import { closeWorkspaceForNext } from '../../../services/CustomPanelInstance';
+import { chatStore } from '../../../services/attachChatView';
 import { consoleError } from '../../../../shared/utils/miscUtils';
 
 interface PreviewCardComponentProps {
@@ -43,8 +52,8 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
   const serviceManager = useServiceManager();
   const { isOpen, workspaceID, viewDetailsLabel, viewingLabel } = useSelector(
     (state: AppState) => ({
-      isOpen: state.workspacePanelState.isOpen,
-      workspaceID: state.workspacePanelState.workspaceID,
+      isOpen: state.view.workspacePanelState.isOpen,
+      workspaceID: state.view.workspacePanelState.workspaceID,
       viewDetailsLabel: state.languagePack.previewCard_viewDetails,
       viewingLabel: state.languagePack.previewCard_viewing,
     }),
@@ -58,13 +67,13 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
 
   const handleClick = useCallback(async () => {
     // Close the open workspace before storing this card's data, so its close events carry its own data.
-    if (serviceManager.store.getState().workspacePanelState.isOpen) {
+    if (chatStore(serviceManager).getState().view.workspacePanelState.isOpen) {
       await closeWorkspaceForNext(() => panel.close(), serviceManager);
     }
 
     // Store workspace panel data in Redux before opening
     serviceManager.store.dispatch(
-      actions.setWorkspacePanelData({
+      viewActions.setWorkspacePanelData({
         workspaceID: workspace_id,
         localMessageItem,
         fullMessage,

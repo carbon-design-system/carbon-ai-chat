@@ -7,7 +7,6 @@
  *  @license
  */
 
-import actions from '../store/actions';
 import { getSpeakerName } from '../utils/messageUtils';
 import type { MessageResponse } from '../../types/messaging/Messages';
 import { ChatInstanceService } from './ChatInstanceService';
@@ -19,31 +18,33 @@ import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
-import { createCustomPanelManager } from './CustomPanelManager';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
-import { doCreateStore } from '../store/doCreateStore';
 import {
-  copyToSessionStorage,
-  refreshLocalizationOnChange,
-} from '../store/subscriptions';
-import { PublicConfig } from '../../types/config/PublicConfig';
+  humanAgentStateConfig,
+  reportHumanAgentStateOnChange,
+} from '../store/humanAgentStatePersistence';
+import { doCreateStore } from '../store/doCreateStore';
+import { refreshLocalizationOnChange } from '../store/subscriptions';
+import type { ConversationAppConfig } from '../../types/state/ConversationState';
 import { WriteableElementName } from '../utils/constants';
 import { assertType, setEnableDebugLog } from '../utils/miscUtils';
 import { setIntl } from '../utils/intlUtils';
 import { isBrowser } from '../utils/browserUtils';
 
 type CreateServiceManagerFunction = (
-  publicConfig: PublicConfig
+  appConfig: ConversationAppConfig
 ) => ServiceManager;
 
 /**
  * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
  * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
-function createServiceManager(publicConfig: PublicConfig) {
+function createServiceManager(appConfig: ConversationAppConfig) {
+  const publicConfig = appConfig.public;
+
   const serviceManager = new ServiceManager();
 
   // Create all the services we will be using.
@@ -76,27 +77,29 @@ function createServiceManager(publicConfig: PublicConfig) {
 
       const speakerName = getSpeakerName(messageWithProfile, assistantName);
 
-      store.dispatch(
-        actions.announceMessage({
-          messageID: languageKey,
-          messageValues: { sender: speakerName },
-        })
-      );
+      serviceManager.view?.current?.messaging.announce?.({
+        messageID: languageKey,
+        messageValues: { sender: speakerName },
+      });
     },
   });
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
   serviceManager.eventBus = new EventBus();
-  serviceManager.store = doCreateStore(publicConfig, serviceManager);
+  serviceManager.store = doCreateStore(appConfig, serviceManager);
   serviceManager.publicStateService = new PublicStateService(serviceManager);
   serviceManager.messageCoordinator = new MessageCoordinator(serviceManager);
   serviceManager.historyService = new HistoryService(serviceManager);
   serviceManager.messageCoordinator.configureMessageTimeout(publicConfig);
-  serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the
   // strings or locale change. Boot's `setIntl` below seeds the formatter before
   // first paint (no dispatch fires during boot, so this subscription can't).
   serviceManager.store.subscribe(refreshLocalizationOnChange(serviceManager));
+  if (humanAgentStateConfig(publicConfig)?.onStateChange) {
+    serviceManager.store.subscribe(
+      reportHumanAgentStateOnChange(serviceManager)
+    );
+  }
 
   // Subscribe to theme changes to start/stop the theme watcher as needed
   let currentOriginalTheme =
@@ -112,7 +115,6 @@ function createServiceManager(publicConfig: PublicConfig) {
       currentOriginalTheme = newOriginalTheme;
     }
   });
-  serviceManager.customPanelManager = createCustomPanelManager(serviceManager);
   serviceManager.themeWatcherService = new ThemeWatcherService(
     serviceManager.store,
     serviceManager.container

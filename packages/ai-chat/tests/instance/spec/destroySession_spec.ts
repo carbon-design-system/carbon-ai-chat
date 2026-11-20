@@ -16,6 +16,7 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 describe('ChatInstance.destroySession', () => {
   beforeEach(setupBeforeEach);
@@ -59,18 +60,20 @@ describe('ChatInstance.destroySession', () => {
 
     // Verify the state is set
     let state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      true
+    );
 
     // Add some disclaimer acceptance to test that it gets cleared
-    store.dispatch(actions.acceptDisclaimer());
+    store.dispatch(viewActions.acceptDisclaimer());
 
     // Verify disclaimer was accepted
     state = store.getState();
     const hostname =
       typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    expect(state.persistedToBrowserStorage.disclaimersAccepted[hostname]).toBe(
-      true
-    );
+    expect(
+      state.view.persistedToBrowserStorage.disclaimersAccepted[hostname]
+    ).toBe(true);
 
     // Now destroy the session with keepOpenState=false
     await instance.destroySession(false);
@@ -79,11 +82,15 @@ describe('ChatInstance.destroySession', () => {
     state = store.getState();
 
     // Disclaimer acceptance should be cleared
-    expect(state.persistedToBrowserStorage.disclaimersAccepted).toEqual({});
+    expect(state.view.persistedToBrowserStorage.disclaimersAccepted).toEqual(
+      {}
+    );
 
     // View state should be reset to launcher open (default)
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      false
+    );
   });
 
   it('should preserve view state when keepOpenState=true', async () => {
@@ -95,19 +102,21 @@ describe('ChatInstance.destroySession', () => {
 
     // Verify the state is set
     let state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
-    const originalViewState = state.persistedToBrowserStorage.viewState;
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      true
+    );
+    const originalViewState = state.view.persistedToBrowserStorage.viewState;
 
     // Add disclaimer acceptance
-    store.dispatch(actions.acceptDisclaimer());
+    store.dispatch(viewActions.acceptDisclaimer());
 
     // Verify disclaimer was accepted
     state = store.getState();
     const hostname =
       typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    expect(state.persistedToBrowserStorage.disclaimersAccepted[hostname]).toBe(
-      true
-    );
+    expect(
+      state.view.persistedToBrowserStorage.disclaimersAccepted[hostname]
+    ).toBe(true);
 
     // Destroy session with keepOpenState=true
     await instance.destroySession(true);
@@ -116,10 +125,12 @@ describe('ChatInstance.destroySession', () => {
     state = store.getState();
 
     // Disclaimer acceptance should still be cleared
-    expect(state.persistedToBrowserStorage.disclaimersAccepted).toEqual({});
+    expect(state.view.persistedToBrowserStorage.disclaimersAccepted).toEqual(
+      {}
+    );
 
     // But view state should be preserved
-    expect(state.persistedToBrowserStorage.viewState).toEqual(
+    expect(state.view.persistedToBrowserStorage.viewState).toEqual(
       originalViewState
     );
   });
@@ -150,12 +161,12 @@ describe('ChatInstance.destroySession', () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     // Set home screen to open
-    store.dispatch(actions.setHomeScreenIsOpen(true));
+    store.dispatch(viewActions.setHomeScreenIsOpen(true));
 
     // Verify the state is set
     let state = store.getState();
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+      state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(true);
 
     // Destroy session
@@ -164,7 +175,7 @@ describe('ChatInstance.destroySession', () => {
     // Verify homeScreenState has been reset
     state = store.getState();
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+      state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(false);
   });
 
@@ -174,16 +185,18 @@ describe('ChatInstance.destroySession', () => {
 
     // Set up some initial state
     await instance.changeView(ViewType.MAIN_WINDOW);
-    store.dispatch(actions.acceptDisclaimer());
+    store.dispatch(viewActions.acceptDisclaimer());
     store.dispatch(actions.updateHasSentNonWelcomeMessage(true));
-    store.dispatch(actions.setHomeScreenIsOpen(true));
+    store.dispatch(viewActions.setHomeScreenIsOpen(true));
 
     // Verify initial state is set
     let state = store.getState();
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      true
+    );
     expect(state.persistedToBrowserStorage.hasSentNonWelcomeMessage).toBe(true);
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+      state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(true);
 
     // Destroy session
@@ -191,14 +204,18 @@ describe('ChatInstance.destroySession', () => {
 
     // Verify all persistent state was reset
     state = store.getState();
-    expect(state.persistedToBrowserStorage.disclaimersAccepted).toEqual({});
+    expect(state.view.persistedToBrowserStorage.disclaimersAccepted).toEqual(
+      {}
+    );
     expect(state.persistedToBrowserStorage.hasSentNonWelcomeMessage).toBe(
       false
     );
     expect(
-      state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+      state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
     ).toBe(false);
-    expect(state.persistedToBrowserStorage.viewState.launcher).toBe(true);
-    expect(state.persistedToBrowserStorage.viewState.mainWindow).toBe(false);
+    expect(state.view.persistedToBrowserStorage.viewState.launcher).toBe(true);
+    expect(state.view.persistedToBrowserStorage.viewState.mainWindow).toBe(
+      false
+    );
   });
 });

@@ -15,6 +15,7 @@ import {
 } from '../../test_helpers';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { ViewType } from '../../../src/types/instance/apiTypes';
+import { joinPersistedState } from '../../../src/view/state';
 
 describe('ChatInstance.getState', () => {
   beforeEach(setupBeforeEach);
@@ -25,7 +26,10 @@ describe('ChatInstance.getState', () => {
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);
 
     const state = instance.getState();
-    const reduxPersisted = store.getState().persistedToBrowserStorage;
+    const reduxPersisted = joinPersistedState(
+      store.getState().persistedToBrowserStorage,
+      store.getState().view.persistedToBrowserStorage
+    );
 
     expect(state.version).toBe(reduxPersisted.version);
     expect(state.viewState).toEqual(reduxPersisted.viewState);

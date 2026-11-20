@@ -20,7 +20,7 @@ type AriaAnnouncerFunctionType = (
 ) => void;
 
 interface AnnouncementStore {
-  getState(): { announceMessage?: AnnounceMessage };
+  getState(): { view: { announceMessage?: AnnounceMessage } };
   subscribe(listener: () => void): () => void;
 }
 
@@ -69,7 +69,7 @@ class AriaAnnouncer {
       assertiveCount: 2,
     });
     this.unsubscribe = this.store.subscribe(() => {
-      const message = this.store.getState().announceMessage;
+      const message = this.store.getState().view.announceMessage;
       if (message !== this.previousAnnounceMessage) {
         this.announce(message);
         this.previousAnnounceMessage = message;

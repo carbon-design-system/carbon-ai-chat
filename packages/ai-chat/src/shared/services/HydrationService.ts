@@ -7,15 +7,9 @@
  *  @license
  */
 
-import cloneDeep from 'lodash-es/cloneDeep.js';
-
 import { LoadedHistory } from '../schema/historyToMessages';
 import actions from '../store/actions';
-import {
-  DEFAULT_PERSISTED_TO_BROWSER,
-  VIEW_STATE_LAUNCHER_OPEN,
-} from '../store/reducerUtils';
-import { AppState } from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
 import { createWelcomeRequest } from '../utils/messageUtils';
 import { consoleError, consoleWarn, debugLog } from '../utils/miscUtils';
 import {
@@ -357,7 +351,7 @@ class HydrationService {
       if (!skipHydration && !serviceManager.store.getState().isHydrated) {
         // Trigger re-hydration.
         this.hydrationPromise = null;
-        if (store.getState().persistedToBrowserStorage.viewState.mainWindow) {
+        if (this.isMainWindowOpen()) {
           didHydrate = true;
           await serviceManager.actions.hydrateChat();
         }
@@ -375,6 +369,13 @@ class HydrationService {
     }
   }
 
+  /** True while the attached view's main window is open. False with no view. */
+  private isMainWindowOpen() {
+    return Boolean(
+      this.serviceManager.view?.current?.instance.isMainWindowOpen?.()
+    );
+  }
+
   /**
    * Remove any record of the current session from the browser's SessionStorage.
    *
@@ -382,29 +383,13 @@ class HydrationService {
    */
   async destroySession(keepOpenState: boolean) {
     const { store } = this.serviceManager;
-    const { persistedToBrowserStorage } = store.getState();
-    const originalViewState = persistedToBrowserStorage.viewState;
-    const newPersistedToBrowserStorage = cloneDeep(
-      DEFAULT_PERSISTED_TO_BROWSER
-    );
-
-    if (keepOpenState) {
-      // If we want to keep the open state then copy it from browser storage.
-      newPersistedToBrowserStorage.viewState = originalViewState;
-    } else {
-      // If we don't want to keep the open state then set the launcher to be open.
-      newPersistedToBrowserStorage.viewState = VIEW_STATE_LAUNCHER_OPEN;
-    }
     this.serviceManager.messageCoordinator.cancelAllMessageRequests();
     this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageCoordinator.clearAllIncomingWrites();
 
     this.serviceManager.store.dispatch(
-      actions.setAppStateValue(
-        'persistedToBrowserStorage',
-        newPersistedToBrowserStorage
-      )
+      actions.resetPersistedState(keepOpenState)
     );
 
     // The store subscription saves the reset synchronously, so the record is cleared after the
@@ -425,7 +410,7 @@ class HydrationService {
    * @param state The current application state
    * @returns true if welcome messages should be skipped, false otherwise
    */
-  private shouldSkipWelcomeForAgentSession(state: AppState): boolean {
+  private shouldSkipWelcomeForAgentSession(state: ConversationState): boolean {
     const { humanAgentState } = state.persistedToBrowserStorage;
 
     // Skip welcome if currently connected to an agent

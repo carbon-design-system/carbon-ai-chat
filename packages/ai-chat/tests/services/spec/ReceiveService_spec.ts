@@ -28,7 +28,7 @@ import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
-import { withMessagingView } from '../helpers/viewBindings';
+import { withMessagingView, withViewCounters } from '../helpers/viewBindings';
 
 function createHarness(config: PublicConfig = {}) {
   const store = makeConfigStore({ messaging: {}, ...config });
@@ -71,6 +71,7 @@ function createHarness(config: PublicConfig = {}) {
     });
   }
   manager.hydrationService = new HydrationService(manager);
+  withViewCounters(manager);
   const service = manager.messageCoordinator;
 
   const localItems = () => {
@@ -130,9 +131,7 @@ describe('Full response core', () => {
     expect(localItems().map((local) => local.item)).toEqual([
       textItem('Before'),
     ]);
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      1
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(1);
 
     await jest.advanceTimersByTimeAsync(999);
     expect(localItems()).toHaveLength(1);
@@ -142,9 +141,7 @@ describe('Full response core', () => {
       textItem('Before'),
       textItem('After'),
     ]);
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
   });
 
   it('retains the write until a delayed receive callback finishes after its reveal', async () => {
@@ -421,9 +418,7 @@ describe('Full response core', () => {
 
     expect(localItems()).toEqual([]);
     expect(store.getState().allMessagesByID).toEqual({});
-    expect(store.getState().assistantMessageState.isMessageLoadingCounter).toBe(
-      0
-    );
+    expect(store.getState().view.isMessageLoadingCounter).toBe(0);
   });
 
   it('drops a message when the conversation restarts during pre:receive', async () => {

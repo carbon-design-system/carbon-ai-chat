@@ -9,17 +9,24 @@
 
 import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
+
 import React from 'react';
 import { useIntl } from '../../../hooks/useIntl';
+
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import actions from '../../../../shared/store/actions';
+
 import { AppState } from '../../../../types/state/AppState';
+
 import { getURLHostName } from '../../../../shared/utils/browserUtils';
+
 import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { IFrameItem } from '../../../../types/messaging/Messages';
+
 import { Image } from '../image/Image';
+
+import { viewActions } from '../../../../view/state';
 
 interface IFramePreviewCardComponentProps {
   /**
@@ -54,7 +61,7 @@ function IFramePreviewCardComponent({
     // If tanya has authored an iframe response type and has provided no page source, we don't want the preview card to
     // open the iframe panel.
     if (source) {
-      store.dispatch(actions.setIFrameContent(messageItem));
+      store.dispatch(viewActions.setIFrameContent(messageItem));
     }
   }
 

@@ -9,16 +9,29 @@
 
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import { createBaseTestProps } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { HomeScreenConfig } from '../../../src/types/config/HomeScreenConfig';
+
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
+import { chatStore } from '../../../src/chat/services/attachChatView';
+
+import { withView } from '../../test_helpers';
 
 describe('Config Homescreen', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
@@ -69,7 +82,7 @@ describe('Config Homescreen', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.homescreen).toEqual(homescreen);
     });
 
@@ -99,7 +112,7 @@ describe('Config Homescreen', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.homescreen).toEqual(homescreen);
     });
 
@@ -124,7 +137,7 @@ describe('Config Homescreen', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.homescreen).toBeUndefined();
     });
 
@@ -136,13 +149,16 @@ describe('Config Homescreen', () => {
           assistantName: 'Test Assistant',
         };
 
-        const store = doCreateStore(initialConfig, {} as ServiceManager);
+        const store = withView(
+          doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
+          initialConfig
+        );
         serviceManager = {
           store,
           namespace: new NamespaceService('test'),
           messageCoordinator: { timeoutMS: 30000 } as any,
           humanAgentService: null,
-        } as ServiceManager;
+        } as unknown as ServiceManager;
       });
 
       it('should handle homescreen config changes dynamically', async () => {
@@ -167,7 +183,7 @@ describe('Config Homescreen', () => {
           serviceManager
         );
 
-        const state: AppState = serviceManager.store.getState();
+        const state = serviceManager.store.getState();
         expect(state.config.public.homescreen?.isOn).toBe(false);
         expect(state.config.public.homescreen?.greeting).toBe('New greeting');
         expect(state.config.public.homescreen?.customContentOnly).toBe(true);
@@ -189,10 +205,10 @@ describe('Config Homescreen', () => {
           serviceManager
         );
 
-        const state: AppState = serviceManager.store.getState();
+        const state = chatStore(serviceManager).getState();
         expect(state.config.public.homescreen?.isOn).toBe(undefined);
         expect(
-          state.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
+          state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen
         ).toBe(false);
       });
     });

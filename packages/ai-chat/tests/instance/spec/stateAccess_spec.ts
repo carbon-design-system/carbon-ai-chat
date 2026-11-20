@@ -25,6 +25,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
 
 describe('ChatInstance.state', () => {
   beforeEach(setupBeforeEach);
@@ -277,7 +278,7 @@ describe('ChatInstance.state', () => {
     expect(listener).not.toHaveBeenCalled();
     act(() => {
       store.dispatch(
-        actions.setAppStateValue('announceMessage', {
+        viewActions.setViewValue('announceMessage', {
           messageText: 'Private update',
         })
       );

@@ -13,6 +13,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import type { JSONContent } from '@tiptap/core';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
@@ -288,7 +289,7 @@ describe('the mounted input custom-list send regression', () => {
     });
     expect(counter.textContent).toBe('host context:1');
 
-    const config = store.getState().config.public;
+    const config = chatStore({ store }).getState().config.public;
     applyConfigChange(store, {
       ...config,
       header: { ...config.header, title: 'Unrelated header update' },

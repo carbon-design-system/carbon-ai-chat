@@ -254,10 +254,6 @@ const transcriptWrites = new Set([
   'upsertMessage',
   'endMessageStreaming',
   'messageSetOptionSelected',
-  'addIsLoadingCounter',
-  'resetIsLoadingCounter',
-  'addIsHydratingCounter',
-  'resetIsHydratingCounter',
   'setConversationLifecycle',
   'setActiveResponseId',
   'setMessageUIProperty',
@@ -285,7 +281,6 @@ const sharedWrites: Record<string, string[]> = {
   'src/shared/services/haa/HumanAgentServiceImpl.ts': [
     'updateMessage',
     'updateLocalMessageItem',
-    'addIsLoadingCounter',
     'setMessageUIStateInternalProperty',
     'setMessageErrorState',
     'setMessageResponseHistoryProperty',
@@ -298,7 +293,7 @@ const captureRoots = new Set([
   messaging + 'ChunkWorkflow.ts',
   'src/shared/services/haa/HumanAgentServiceImpl.ts',
   'src/shared/services/haa/humanAgentUtils.ts',
-  'src/shared/services/CustomPanelInstance.ts',
+  'src/chat/services/CustomPanelInstance.ts',
 ]);
 const calls = callsIn(
   checker,
@@ -572,8 +567,7 @@ function isAllowedStateField(
       'chatHeight',
       'chatWidthBreakpoint',
     ],
-    'src/shared/services/ChatInstanceService.ts': ['catastrophicErrorType'],
-    'src/shared/services/HydrationService.ts': ['persistedToBrowserStorage'],
+    'src/chat/services/createViewBindings.ts': ['catastrophicErrorType'],
     'src/chat/utils/dynamicConfigUpdates.ts': ['languagePack'],
     'src/shared/utils/intlUtils.ts': ['loadedLocale'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
@@ -700,6 +694,21 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
     closeHomeScreen: ['setHomeScreenIsOpen'],
     isResponsePanelOpen: [],
     closeResponsePanel: ['setResponsePanelIsOpen'],
+    // The loading counters and announcements are view state (#1831).
+    announce: ['announceMessage'],
+    changeMessageLoadingCounter: ['addIsLoadingCounter'],
+    updateMessageLoadingCounter: [
+      'resetIsLoadingCounter',
+      'addIsLoadingCounter',
+      'addIsLoadingCounter',
+      'addIsLoadingCounter',
+    ],
+    changeChatLoadingCounter: ['addIsHydratingCounter'],
+    updateChatLoadingCounter: [
+      'resetIsHydratingCounter',
+      'addIsHydratingCounter',
+      'addIsHydratingCounter',
+    ],
   };
   const port = get(messaging + 'presentationPort.ts').statements.find(
     (n): n is ts.InterfaceDeclaration =>
@@ -720,6 +729,11 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
       'closeHomeScreenIfOpen',
       'closeResponsePanelIfOpen',
       'closeHomeScreen',
+      'announce',
+      'changeMessageLoadingCounter',
+      'updateMessageLoadingCounter',
+      'changeChatLoadingCounter',
+      'updateChatLoadingCounter',
     ].sort()
   );
   let found = false;
@@ -761,7 +775,10 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
             checker,
             call,
             path.join(root, 'src/shared/store/appStore.ts'),
-            path.join(root, 'src/shared/store/actions.ts')
+            [
+              path.join(root, 'src/shared/store/actions.ts'),
+              path.join(root, 'src/view/state/actions.ts'),
+            ]
           )
         ).toBe(false);
         if (!ts.isCallExpression(call)) {
@@ -772,7 +789,11 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
           return;
         }
         const target = relative(signature.getSourceFile().fileName);
-        if (target === 'src/shared/store/actions.ts') {
+        // View actions are the sinks a view adapter may reach (#1831).
+        if (
+          target === 'src/shared/store/actions.ts' ||
+          target === 'src/view/state/actions.ts'
+        ) {
           const name = (signature as ts.MethodDeclaration).name?.getText();
           if (name) {
             actual.push(name);
@@ -835,8 +856,15 @@ it('keeps the adapter types and actual boot bindings view-only', () => {
       if (file === 'src/shared/store/actions.ts') {
         sinks.push((d as ts.MethodDeclaration).name.getText());
       }
+      // The announcement reaches the view only through its port (#1831).
+      if (
+        file === messaging + 'presentationPort.ts' &&
+        ts.isPropertyAccessExpression(call.expression)
+      ) {
+        sinks.push(`port.${call.expression.name.text}`);
+      }
     });
-    expect(sinks).toEqual(['announceMessage']);
+    expect(sinks).toEqual(['port.announce']);
   });
   expect(foundStream).toBe(true);
   // Other boot dispatches remain view-only too.
@@ -1379,6 +1407,8 @@ it('rejects raw store writes throughout the package except exact existing view s
   const creatorFiles = new Set([
     actionsFile,
     path.join(root, 'src/shared/store/humanAgentActions.ts'),
+    // The view partition's own creators (#1831).
+    path.join(root, 'src/view/state/actions.ts'),
   ]);
   const ownershipFile = path.join(root, 'src/shared/store/messageOwnership.ts');
   const issues: string[] = [];

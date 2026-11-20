@@ -10,8 +10,10 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 
-import { AppConfig } from '../../types/state/AppConfig';
-import { AppState } from '../../types/state/AppState';
+import {
+  ConversationAppConfig,
+  ConversationState,
+} from '../../types/state/ConversationState';
 import { FileUpload } from '../../types/config/ServiceDeskConfig';
 import {
   LocalMessageItem,
@@ -634,7 +636,7 @@ function renderAsUserDefinedMessage(
 /**
  * Indicates if the given remote config indicates that a service desk is configured.
  */
-function hasServiceDesk(config: AppConfig): boolean {
+function hasServiceDesk(config: ConversationAppConfig): boolean {
   return Boolean(config.public.serviceDeskFactory);
 }
 
@@ -737,7 +739,7 @@ function getMediaDimensions(item: MediaItem) {
 /**
  * Returns the last response message from the bot (excludes agent messages) that has a context object on it.
  */
-function getLastAssistantResponseWithContext(state: AppState) {
+function getLastAssistantResponseWithContext(state: ConversationState) {
   const messageIDs = state.assistantMessageState.messageIDs || [];
   return findLastWithMap(
     messageIDs,

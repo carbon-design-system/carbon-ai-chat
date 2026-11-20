@@ -19,6 +19,7 @@ import React, {
   useRef,
 } from 'react';
 import { useSelector } from '../../hooks/useSelector';
+import { usePublicChatState } from '../../hooks/usePublicChatState';
 import { shallowEqual } from '../../../shared/store/appStore';
 
 import { useServiceManager } from '../../hooks/useServiceManager';
@@ -63,15 +64,14 @@ function HumanAgentBanner(
     shallowEqual
   );
   const serviceManager = useServiceManager();
-  const persistedHumanAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.humanAgentState
+  const responseUserProfile = usePublicChatState(
+    (state) => state.humanAgent.responseUserProfile
   );
   const humanAgentState = useSelector(
     (state: AppState) => state.humanAgentState
   );
   const { isConnecting, availability, isScreenSharing } = humanAgentState;
   const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
-  const { responseUserProfile } = persistedHumanAgentState;
   const buttonRef = useRef<CDSButton>(undefined);
 
   let line1;

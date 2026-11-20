@@ -18,6 +18,15 @@ interface StreamAnnouncementContent {
 
 import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 
+/** A language-pack message for screen readers, with plain string values. */
+interface PortAnnouncement {
+  messageID: string;
+  messageValues?: Record<string, string>;
+}
+
+/** How a loading counter changes. With no direction, only its text changes. */
+type LoadingDirection = 'increase' | 'decrease' | 'reset' | undefined;
+
 interface MessagePresentationPort {
   openHomeScreen?(): void;
   openHistoryResponsePanel?(local: LocalMessageItem): void;
@@ -35,6 +44,19 @@ interface MessagePresentationPort {
   closeHomeScreenIfOpen(): void;
   closeResponsePanelIfOpen(): void;
   closeHomeScreen(): void;
+  announce?(message: PortAnnouncement): void;
+  changeMessageLoadingCounter?(amount: number): void;
+  updateMessageLoadingCounter?(
+    direction: LoadingDirection,
+    message?: string
+  ): void;
+  changeChatLoadingCounter?(amount: number): void;
+  updateChatLoadingCounter?(direction: LoadingDirection): void;
 }
 
-export type { MessagePresentationPort, StreamAnnouncementContent };
+export type {
+  LoadingDirection,
+  MessagePresentationPort,
+  PortAnnouncement,
+  StreamAnnouncementContent,
+};

@@ -31,7 +31,7 @@ function createHarness() {
   let announceMessage: AnnounceMessage;
   const listeners = new Set<() => void>();
   const store = {
-    getState: () => ({ announceMessage }),
+    getState: () => ({ view: { announceMessage } }),
     subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => listeners.delete(listener);

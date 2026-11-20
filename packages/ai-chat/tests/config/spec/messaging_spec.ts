@@ -9,15 +9,25 @@
 
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
+
 import { createBaseTestProps, mockCustomSendMessage } from '../../test_helpers';
-import { AppState } from '../../../src/types/state/AppState';
+
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
+
 import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
+
 import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+
+import { withView } from '../../test_helpers';
 
 describe('Config Messaging', () => {
   const createBaseProps = (): Partial<ChatContainerProps> => ({
@@ -63,7 +73,7 @@ describe('Config Messaging', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.messaging).toEqual(messaging);
     });
 
@@ -93,7 +103,7 @@ describe('Config Messaging', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.messaging).toEqual(messaging);
     });
 
@@ -129,7 +139,7 @@ describe('Config Messaging', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.messaging).toEqual(messaging);
     });
 
@@ -165,7 +175,7 @@ describe('Config Messaging', () => {
       );
 
       const store = (capturedInstance as any).serviceManager.store;
-      const state: AppState = store.getState();
+      const state = store.getState();
       expect(state.config.public.messaging).toEqual(messaging);
     });
 
@@ -177,13 +187,16 @@ describe('Config Messaging', () => {
           assistantName: 'Test Assistant',
         };
 
-        const store = doCreateStore(initialConfig, {} as ServiceManager);
+        const store = withView(
+          doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
+          initialConfig
+        );
         serviceManager = {
           store,
           namespace: new NamespaceService('test'),
           messageCoordinator: { timeoutMS: 30000 } as any,
           humanAgentService: null,
-        } as ServiceManager;
+        } as unknown as ServiceManager;
       });
 
       it('should handle messaging config changes and update message service', async () => {
@@ -205,7 +218,7 @@ describe('Config Messaging', () => {
           serviceManager
         );
 
-        const state: AppState = serviceManager.store.getState();
+        const state = serviceManager.store.getState();
         expect(state.config.public.messaging?.messageTimeoutSecs).toBe(60);
         expect(serviceManager.messageCoordinator?.timeoutMS).toBe(60000);
       });
@@ -242,7 +255,7 @@ describe('Config Messaging', () => {
           );
 
           const store = (capturedInstance as any).serviceManager.store;
-          const state: AppState = store.getState();
+          const state = store.getState();
           expect(state.config.public.messaging?.showStopButtonImmediately).toBe(
             true
           );
@@ -279,7 +292,7 @@ describe('Config Messaging', () => {
           );
 
           const store = (capturedInstance as any).serviceManager.store;
-          const state: AppState = store.getState();
+          const state = store.getState();
           expect(state.config.public.messaging?.showStopButtonImmediately).toBe(
             false
           );
@@ -315,7 +328,7 @@ describe('Config Messaging', () => {
           );
 
           const store = (capturedInstance as any).serviceManager.store;
-          const state: AppState = store.getState();
+          const state = store.getState();
           expect(
             state.config.public.messaging?.showStopButtonImmediately
           ).toBeUndefined();

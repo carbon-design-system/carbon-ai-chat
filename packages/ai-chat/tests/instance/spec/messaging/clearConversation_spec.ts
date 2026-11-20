@@ -150,8 +150,8 @@ describe('ChatInstance.messaging.clearConversation', () => {
       expect(state.assistantMessageState.localMessageIDs).toHaveLength(0);
 
       // Loading states should be reset
-      expect(state.assistantMessageState.isMessageLoadingCounter).toBe(0);
-      expect(state.assistantMessageState.isHydratingCounter).toBe(0);
+      expect(state.view.isMessageLoadingCounter).toBe(0);
+      expect(state.view.isHydratingCounter).toBe(0);
     });
 
     it('should handle multiple calls to clearConversation', async () => {
@@ -224,8 +224,8 @@ describe('ChatInstance.messaging.clearConversation', () => {
       expect(finalState.humanAgentState.isReconnecting).toBe(
         initialHumanAgentState.isReconnecting
       );
-      expect(finalState.humanAgentState.numUnreadMessages).toBe(
-        initialHumanAgentState.numUnreadMessages
+      expect(finalState.view.numUnreadMessages).toBe(
+        initialState.view.numUnreadMessages
       );
     });
 

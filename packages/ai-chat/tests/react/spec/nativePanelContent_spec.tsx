@@ -15,17 +15,24 @@ import React, {
   useState,
 } from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+
 import {
   PanelContentAdapter,
   type PanelContentParts,
 } from '../../../src/chat/components/panels/PanelContentAdapter';
+
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
+
 import { ChatContainer } from '../../../src/react/ChatContainer';
+
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
+
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
+
 import type { ConversationalSearchItemCitation } from '../../../src/types/messaging/Messages';
-import actions from '../../../src/shared/store/actions';
+
 import {
   createBaseConfig,
   getChatShadowRoot,
@@ -33,6 +40,8 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
 
 const Context = createContext('missing');
 const firstEffects: Array<{
@@ -167,8 +176,8 @@ it.each([
         output: { generic: [] },
       });
       const store = chat.serviceManager.store;
-      store.dispatch(actions.setResponsePanelContent(item, false));
-      store.dispatch(actions.setViewSourcePanelIsOpen(false, citation));
+      store.dispatch(viewActions.setResponsePanelContent(item, false));
+      store.dispatch(viewActions.setViewSourcePanelIsOpen(false, citation));
     };
     const config = createBaseConfig();
     const tree = (context: string) => (
@@ -212,7 +221,7 @@ it.each([
     const store = instance.serviceManager.store;
     await act(async () => {
       store.dispatch(
-        actions.setResponsePanelContent(
+        viewActions.setResponsePanelContent(
           {
             ...item,
             item: { ...item.item, panel: { title: 'retained title changed' } },
@@ -221,14 +230,12 @@ it.each([
         )
       );
       store.dispatch(
-        actions.setViewSourcePanelIsOpen(false, {
+        viewActions.setViewSourcePanelIsOpen(false, {
           ...citation,
           text: 'Updated citation',
         })
       );
-      store.dispatch(
-        actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-      );
+      store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     });
     await waitFor(() =>
       expect(root.querySelector('[data-retained-panel="title"]')).toBe(

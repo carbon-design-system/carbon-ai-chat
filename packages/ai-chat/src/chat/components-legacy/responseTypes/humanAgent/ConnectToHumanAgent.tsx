@@ -14,6 +14,7 @@ import { AppState } from '../../../../types/state/AppState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { useSelector } from '../../../hooks/useSelector';
+import { usePublicChatState } from '../../../hooks/usePublicChatState';
 import { shallowEqual } from '../../../../shared/store/appStore';
 import { selectHumanAgentDisplayState } from '../../../../shared/store/selectors';
 import { RealConnectToHumanAgent } from './RealConnectToHumanAgent';
@@ -68,8 +69,8 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
     (state: AppState) => state.humanAgentState,
     shallowEqual
   );
-  const persistedHumanAgentState = useSelector(
-    (state: AppState) => state.persistedToBrowserStorage.humanAgentState,
+  const humanAgent = usePublicChatState(
+    (state) => state.humanAgent,
     shallowEqual
   );
 
@@ -89,7 +90,7 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
         serviceManager={serviceManager}
         disableUserInputs={childDisableUserInputs}
         humanAgentState={humanAgentState}
-        persistedHumanAgentState={persistedHumanAgentState}
+        persistedHumanAgentState={humanAgent}
         agentDisplayState={agentDisplayState}
         requestFocus={requestFocus}
       />

@@ -20,6 +20,9 @@ import actions from '../../shared/store/actions';
 import { selectInputIsReadonly } from '../../shared/store/selectors';
 
 import { ServiceManager } from '../../shared/services/ServiceManager';
+import { createAppConfig } from './appConfig';
+import { createCustomPanelManager } from '../services/CustomPanelManager';
+import { attachChatView, chatStore } from '../services/attachChatView';
 import { setIntl } from '../../shared/utils/intlUtils';
 import {
   consoleDebug,
@@ -56,6 +59,7 @@ import {
   ViewType,
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
+import { viewActions } from '../../view/state';
 
 let bootContainerRulesInstalled = false;
 
@@ -121,7 +125,9 @@ export async function initServiceManagerAndInstance(options: {
   dayjs.extend(LocalizedFormat);
 
   // Create service manager
-  const serviceManager = createServiceManager(publicConfig);
+  const appConfig = createAppConfig(publicConfig);
+  const serviceManager = createServiceManager(appConfig);
+  attachChatView(serviceManager, publicConfig);
 
   // Set container + hosting information
   serviceManager.container = container;
@@ -236,7 +242,7 @@ export async function initServiceManagerAndInstance(options: {
         isVisible
       );
       serviceManager.store.dispatch(
-        actions.setLauncherProperty('showUnreadIndicator', isVisible)
+        viewActions.setLauncherProperty('showUnreadIndicator', isVisible)
       );
     },
 
@@ -320,21 +326,19 @@ export async function initServiceManagerAndInstance(options: {
 
       if (
         panelState.isOpen &&
-        serviceManager.store.getState().catastrophicErrorType !== true
+        chatStore(serviceManager).getState().view.catastrophicErrorType !== true
       ) {
-        serviceManager.store.dispatch({
-          type: 'SET_APP_STATE_VALUE',
-          key: 'catastrophicErrorType',
-          value: true,
-        });
+        serviceManager.store.dispatch(
+          viewActions.setViewValue('catastrophicErrorType', true)
+        );
       }
 
       serviceManager.store.dispatch(
-        actions.updateCatastrophicErrorPanel(panelState)
+        viewActions.updateCatastrophicErrorPanel(panelState)
       );
     },
 
-    customPanels: serviceManager.customPanelManager,
+    customPanels: createCustomPanelManager(serviceManager),
 
     restartConversation: async () => {
       debugLog('Called instance.restartConversation');
@@ -465,7 +469,8 @@ export async function initServiceManagerAndInstance(options: {
 
   // Add serviceManager for testing if the flag is enabled (exclude instance to avoid circular reference)
   if (
-    serviceManager.store.getState().config.public.exposeServiceManagerForTesting
+    chatStore(serviceManager).getState().config.public
+      .exposeServiceManagerForTesting
   ) {
     const { instance: _, ...serviceManagerForTesting } = serviceManager;
     instance.serviceManager = serviceManagerForTesting as ServiceManager;
@@ -487,9 +492,9 @@ export async function initServiceManagerAndInstance(options: {
  * tests and callers can reason about what happens immediately after boot.
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
-  const initialState = serviceManager.store.getState();
-  const { wasLoadedFromBrowser } = initialState.persistedToBrowserStorage;
-  const { targetViewState } = initialState;
+  const initialState = chatStore(serviceManager).getState();
+  const { wasLoadedFromBrowser } = initialState.view.persistedToBrowserStorage;
+  const { targetViewState } = initialState.view;
   const { openChatByDefault } = initialState.config.public;
 
   if (targetViewState.mainWindow) {

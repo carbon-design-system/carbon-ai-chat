@@ -22,12 +22,14 @@ import {
 } from '../../../src/shared/services/viewBindings';
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 import { idleInstancePort } from '../../services/helpers/viewBindings';
+import { viewActions } from '../../../src/view/state';
 
 function setup(visible = true) {
   const store = makeConfigStore({ input: { isVisible: visible } });
   store.dispatch(
-    actions.changeState({
-      persistedToBrowserStorage: { viewState: { mainWindow: true } },
+    viewActions.setLauncherProperty('viewState', {
+      ...store.getState().view.persistedToBrowserStorage.viewState,
+      mainWindow: true,
     })
   );
   const host = document.createElement('div');
@@ -138,8 +140,9 @@ it('leaves focus in place when the main window is hidden', () => {
   const { manager, store, host, outside } = setup();
   host.append(document.createElement('input'));
   store.dispatch(
-    actions.changeState({
-      persistedToBrowserStorage: { viewState: { mainWindow: false } },
+    viewActions.setLauncherProperty('viewState', {
+      ...store.getState().view.persistedToBrowserStorage.viewState,
+      mainWindow: false,
     })
   );
   expect(requestComposerFocus(manager)).toBe(false);
