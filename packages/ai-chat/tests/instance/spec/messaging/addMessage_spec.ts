@@ -946,23 +946,43 @@ describe('ChatInstance.messaging.addMessage', () => {
       const unsubscribe = store.subscribe(() => counts.push(loadingCounter()));
       const id = 'pin-pause-quiet';
 
-      await instance.messaging.addMessage(
-        response(id, [
-          {
-            response_type: MessageResponseTypes.PAUSE,
-            time: 300,
-            typing: false,
-          },
-          text('After'),
-        ])
-      );
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(visibleTexts(store, id)).toEqual([]);
-
-      await waitFor(() => expect(visibleTexts(store, id)).toEqual(['After']), {
-        timeout: 2000,
+      jest.useFakeTimers({
+        doNotFake: [
+          'queueMicrotask',
+          'nextTick',
+          'setImmediate',
+          'performance',
+        ],
       });
-      unsubscribe();
+      try {
+        await instance.messaging.addMessage(
+          response(id, [
+            {
+              response_type: MessageResponseTypes.PAUSE,
+              time: 300,
+              typing: false,
+            },
+            text('After'),
+          ])
+        );
+        await act(async () => {
+          await jest.advanceTimersByTimeAsync(100);
+        });
+        expect(visibleTexts(store, id)).toEqual([]);
+
+        await act(async () => {
+          await jest.advanceTimersByTimeAsync(200);
+        });
+        await waitFor(
+          () => expect(visibleTexts(store, id)).toEqual(['After']),
+          {
+            timeout: 2000,
+          }
+        );
+      } finally {
+        unsubscribe();
+        jest.useRealTimers();
+      }
       expect(counts.every((count) => count === baseline)).toBe(true);
     });
 

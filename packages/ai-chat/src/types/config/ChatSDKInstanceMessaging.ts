@@ -31,6 +31,15 @@ export interface ChatSDKInstanceMessaging {
    * calls {@link ChatSDKConfigMessaging.customSendMessage}. Messages sent while another turn runs
    * wait in a queue and go out in order.
    *
+   * In the prebuilt chat, sends during a human agent conversation still call
+   * {@link ChatSDKConfigMessaging.customSendMessage}. Only what the user types in the chat's input
+   * reaches the service desk.
+   *
+   * If a send starts loading the prebuilt chat, that send and sends queued behind it during loading
+   * wait until every `chat:ready` handler settles. A handler that never settles holds those sends,
+   * so they never reach `customSendMessage`. If opening the chat starts loading first, sends wait
+   * for that load alone. Sends made after `chat:ready` fires don't wait.
+   *
    * **When the promise resolves:**
    * - When `customSendMessage` resolves and the chat records the turn as sent. It doesn't wait
    *   for a reply: a response that's still streaming keeps streaming after the promise resolves.
@@ -43,6 +52,8 @@ export interface ChatSDKInstanceMessaging {
    *   ({@link ChatSDKConfigMessaging.messageTimeoutSecs}), or you mark the turn failed with
    *   {@link ChatSDKInstanceMessaging.failTurn} before `customSendMessage` resolves. The
    *   conversation's `status` becomes `'error'`.
+   * - In the prebuilt chat, when a `pre:send` or `send` handler throws. The promise rejects with
+   *   that handler's own error, `customSendMessage` isn't called, and `status` stays `'ready'`.
    * - In read-only mode, or while a file upload is still running. In these cases the message isn't
    *   sent and `pre:send` doesn't fire. `state.get().hasInFlightUploads` is `true` while an upload
    *   runs. Files that finished uploading, in `state.get().pendingUploads`, go out with the message.
@@ -229,6 +240,12 @@ export interface ChatSDKInstanceMessaging {
    * the {@link MessageResponse} currently stored under `messageID` (or `undefined` when no
    * message with that ID exists) and returns the message that should replace it.
    *
+   * This is the recommended way to add messages for new work, especially more complex UI. One
+   * method covers inserting, streaming, correcting, and regenerating a message.
+   * {@link ChatInstanceMessaging.addMessage} and {@link ChatInstanceMessaging.addMessageChunk}
+   * remain fully supported as the legacy flow, and there are no plans to remove them. Nothing
+   * stops you from mixing the two flows, but it isn't recommended or fully tested.
+   *
    * Calls targeting the same `messageID` are serialized — each call awaits the previous
    * call for that ID before running. Calls targeting different `messageID`s run
    * independently.
@@ -263,7 +280,41 @@ export interface ChatSDKInstanceMessaging {
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for
    *   calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.
-   * @experimental Upsert semantics and the updater signature may evolve based on consumer feedback.
+   *
+   * @example Insert a complete message
+   * ```ts
+   * await instance.messaging.upsertMessage('welcome', MessageState.COMPLETE, () => ({
+   *   id: 'welcome',
+   *   output: {
+   *     generic: [{ response_type: MessageResponseTypes.TEXT, text: 'Hi! How can I help?' }],
+   *   },
+   * }));
+   * // The message shows, and the chat fires pre:receive and receive once.
+   * ```
+   *
+   * @example Stream a reply, then complete it
+   * ```ts
+   * // Inside customSendMessage(request, options, instance).
+   * // streamAnswer stands in for your own async iterable of text pieces.
+   * const messageID = `${request.id}-reply`;
+   * const toMessage = (text: string): MessageResponse => ({
+   *   id: messageID,
+   *   request_id: request.id,
+   *   output: {
+   *     generic: [
+   *       { response_type: MessageResponseTypes.TEXT, text, streaming_metadata: { id: 'answer' } },
+   *     ],
+   *   },
+   * });
+   *
+   * let text = '';
+   * for await (const piece of streamAnswer(request)) {
+   *   text += piece;
+   *   await instance.messaging.upsertMessage(messageID, MessageState.STREAMING, () => toMessage(text));
+   * }
+   * await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () => toMessage(text));
+   * // receive fires once, on the final call.
+   * ```
    */
   upsertMessage: (
     messageID: string,
@@ -284,7 +335,7 @@ export interface ChatSDKInstanceMessaging {
 
   /**
    * Inserts the given messages into the conversation as history. Fires the `history:begin` and
-   * `history:end` events.
+   * `history:end` events. These messages fire no `pre:receive` or `receive` events.
    */
   insertHistory: (messages: HistoryItem[]) => Promise<void>;
 
@@ -292,6 +343,12 @@ export interface ChatSDKInstanceMessaging {
    * Restarts the conversation with the assistant. Clears the current assistant messages, cancels any
    * outstanding messages, and clears the assistant session, so the next message starts a new one. A
    * conversation with a human agent is unchanged.
+   *
+   * In a prebuilt chat, if the main window is open and {@link ChatSDKConfigMessaging.skipWelcome}
+   * is not set, the chat sends a new welcome request. The promise resolves after
+   * {@link ChatSDKConfigMessaging.customSendMessage} finishes with that request. It sends no welcome
+   * request when {@link HomeScreenConfig.isOn} is set, or when the user has a conversation with a human
+   * agent, now or earlier in the session.
    */
   restartConversation: () => Promise<void>;
 }

@@ -387,20 +387,23 @@ class ChatContainer extends FlattenedConfigElement {
     const state = this.current;
     if (state) {
       this.current = undefined;
-      clearTimeout(state.afterRenderTimer);
-      // Settle the private waits so a boot paused on one resumes, finds it is
-      // retired, and stops.
-      state.initialViewCommitted.doResolve();
-      const unmountApp = () => {
-        this.viewStateProvider.setValue(undefined);
-        state.mount?.unmount();
-      };
-      if (state.view) {
-        state.view.detach(unmountApp);
-      } else {
-        unmountApp();
+      try {
+        clearTimeout(state.afterRenderTimer);
+        // Settle the private waits so a boot paused on one resumes, finds it is
+        // retired, and stops.
+        state.initialViewCommitted.doResolve();
+        const unmountApp = () => {
+          this.viewStateProvider.setValue(undefined);
+          state.mount?.unmount();
+        };
+        if (state.view) {
+          state.view.detach(unmountApp);
+        } else {
+          unmountApp();
+        }
+      } finally {
+        state.handle?.release();
       }
-      state.handle?.release();
     }
 
     this._instance?.off(this._mountHandlers);
