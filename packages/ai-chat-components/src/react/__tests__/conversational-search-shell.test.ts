@@ -87,3 +87,27 @@ test('forwards the controlled props, slots, and the toggle callback', async () =
   await element.updateComplete;
   expect(citationsRegion.hidden).toBe(false);
 });
+
+test('forwards the selected index and the selection callback', async () => {
+  const onCitationsSelect = jest.fn();
+  await act(async () =>
+    root.render(
+      React.createElement(ConversationalSearchShell, {
+        selectedCitationIndex: 1,
+        onCitationsSelect,
+      })
+    )
+  );
+  const element = container.querySelector(
+    'cds-aichat-conversational-search-shell'
+  ) as ConversationalSearchShellElement;
+  await element.updateComplete;
+  expect(element.selectedCitationIndex).toBe(1);
+  element.dispatchEvent(
+    new CustomEvent(ConversationalSearchShellElement.eventCitationsSelect, {
+      detail: { index: 2 },
+    })
+  );
+  expect(onCitationsSelect).toHaveBeenCalledTimes(1);
+  expect(onCitationsSelect.mock.calls[0][0].detail).toEqual({ index: 2 });
+});
