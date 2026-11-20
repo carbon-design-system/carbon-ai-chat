@@ -13,12 +13,14 @@ import {
   hasRequestFooter,
   isResponse,
   streamItemID,
+  isLiveHumanAgentMessage,
   isResponseWithNestedItems,
   renderAsUserDefinedMessage,
 } from '../../utils/messageUtils';
 import {
   captureMessageEvent,
   eventLocalItems,
+  watchPayloadEdits,
 } from '../../utils/messageEventOwnership';
 import {
   BusEventType,
@@ -40,6 +42,29 @@ import type { AppStateMessages } from '../../../types/state/ChatMessagesState';
 import type { DeepPartial } from '../../../types/utilities/DeepPartial';
 import type { ServiceManager } from '../ServiceManager';
 import type { MessagePresentationPort } from './presentationPort';
+
+/**
+ * Fires a slot event for one item and warns once per type if a handler edits its payload.
+ * A frozen message can't take edits. An agent's item is on the human-agent path, whose
+ * edits stay, so it isn't watched.
+ */
+async function fireWatchingEdits(
+  serviceManager: ServiceManager,
+  event: BusEventUserDefinedResponse | BusEventCustomFooterSlot,
+  localMessage: LocalMessageItem,
+  originalMessage: Message,
+  isCurrent: () => boolean
+) {
+  const checkEdits =
+    Object.isFrozen(originalMessage) || isLiveHumanAgentMessage(localMessage)
+      ? undefined
+      : watchPayloadEdits(serviceManager, event.type, event.data);
+  try {
+    await serviceManager.fire(event, isCurrent);
+  } finally {
+    checkEdits?.();
+  }
+}
 
 /** Delivers response-tree events and commits guarded legacy callback edits. */
 export async function coordinateUserDefinedResponseItems(
@@ -125,7 +150,13 @@ export async function coordinateUserDefinedResponseItems(
       },
     };
 
-    await serviceManager.fire(userDefinedResponseEvent, isCurrent);
+    await fireWatchingEdits(
+      serviceManager,
+      userDefinedResponseEvent,
+      localMessage,
+      originalMessage,
+      isCurrent
+    );
   } else if (isResponseWithNestedItems(localMessage.item)) {
     const {
       itemsLocalMessageItemIDs,
@@ -210,7 +241,18 @@ export async function handleUserDefinedResponseItemsChunk(
       },
     };
 
-    await serviceManager.fire(userDefinedResponseEvent, isCurrent);
+    const checkEdits = Object.isFrozen(messageItem)
+      ? undefined
+      : watchPayloadEdits(
+          serviceManager,
+          userDefinedResponseEvent.type,
+          userDefinedResponseEvent.data
+        );
+    try {
+      await serviceManager.fire(userDefinedResponseEvent, isCurrent);
+    } finally {
+      checkEdits?.();
+    }
   }
 }
 
@@ -274,7 +316,13 @@ export async function handleCustomFooterSlot(
       },
     };
 
-    await serviceManager.fire(customFooterSlotEvent, isCurrent);
+    await fireWatchingEdits(
+      serviceManager,
+      customFooterSlotEvent,
+      localMessage,
+      originalMessage,
+      isCurrent
+    );
   }
 }
 
