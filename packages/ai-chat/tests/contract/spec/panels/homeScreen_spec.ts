@@ -14,11 +14,14 @@ import {
   HomeScreenConfig,
   MessageSendSource,
   PageObjectId,
+  ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   allByRole,
   byRole,
   click,
+  changeView,
+  contractChat,
   contractSetup,
   getByTestId,
   isHidden,
@@ -75,6 +78,31 @@ describe('homescreen.greeting', () => {
   it('shows the greeting on the home screen', async () => {
     await openHomeScreen({ greeting: GREETING });
     expect(homeScreenText()).toContain(GREETING);
+  });
+
+  it('updates the greeting without an after-starters element', async () => {
+    const onError = jest.fn();
+    const config = {
+      homescreen: { isOn: true, greeting: GREETING },
+      messaging: { skipWelcome: true },
+      strings: STRINGS,
+      onError,
+    };
+    const mount = await contractChat(config);
+    await changeView(mount.instance, ViewType.MAIN_WINDOW);
+    delete mount.instance.writeableElements.homeScreenAfterStartersElement;
+
+    await mount.rerender({
+      ...config,
+      homescreen: {
+        ...config.homescreen,
+        greeting: 'Updated contract greeting',
+      },
+    });
+    await waitFor(() =>
+      expect(homeScreenText()).toContain('Updated contract greeting')
+    );
+    expect(onError).not.toHaveBeenCalled();
   });
 });
 

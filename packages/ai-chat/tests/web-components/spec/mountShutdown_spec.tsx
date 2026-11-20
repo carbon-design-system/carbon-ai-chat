@@ -111,6 +111,66 @@ describe('shutdown through the mount path', () => {
       expect(shutDownManagers()[0].isShutdown).toBe(true);
     });
 
+    it('shuts down even when the renderer cleanup throws', async () => {
+      const error = new Error('Renderer cleanup failed');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      const { element } = await mountElement();
+
+      expect(() =>
+        (element as unknown as { releaseMount: () => void }).releaseMount()
+      ).toThrow(error);
+      expect(shutdown).toHaveBeenCalledTimes(1);
+      expect(shutDownManagers()[0].isShutdown).toBe(true);
+    });
+
+    it('aborts a pending send when renderer cleanup throws on removal', async () => {
+      const error = new Error('Renderer cleanup failed during removal');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      let requestSignal: AbortSignal;
+      const { element, instance } = await mountElement({
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: (_request, options) => {
+            requestSignal = options.signal;
+            return new Promise<never>(() => {});
+          },
+        },
+      });
+      await instance.changeView(ViewType.MAIN_WINDOW);
+      void instance.send('pending during removal').catch(() => {});
+      await waitFor(() => expect(requestSignal).toBeDefined());
+      expect(requestSignal.aborted).toBe(false);
+
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent) => {
+        if (event.error === error) {
+          errors.push(event.error);
+          event.preventDefault();
+        }
+      };
+      window.addEventListener('error', onError);
+      try {
+        element.remove();
+        await flushMicrotasks();
+        expect(errors).toEqual([error]);
+        expect(requestSignal.aborted).toBe(true);
+      } finally {
+        window.removeEventListener('error', onError);
+      }
+    });
+
     it('a web component moved within one task keeps running', async () => {
       const { element } = await mountElement();
       const other = document.createElement('div');
