@@ -407,27 +407,30 @@ class ChatContainer extends FlattenedConfigElement {
       // The abort reads the same setting, so it destroys a chat that is
       // still booting too.
       const destroys = Boolean(state.reuse && state.destroysOnUnmount?.());
-      state.released.abort();
-      const unmountApp = () => {
-        this.viewStateProvider.setValue(undefined);
-        state.mount?.unmount();
-      };
-      if (state.view) {
-        state.view.detach(unmountApp);
-      } else {
-        unmountApp();
-      }
-      if (destroys) {
-        // The host's handlers stay, so they see the end-of-chat events. The
-        // chat drops them as it shuts down.
-        state.handle.destroy();
-      } else {
-        // A reused chat keeps running for the next mount; the host's handlers
-        // from this one stop, as they do when the chat shuts down.
-        if (state.reuse) {
-          state.dropSubscriptions?.(state.instance);
+      try {
+        state.released.abort();
+        const unmountApp = () => {
+          this.viewStateProvider.setValue(undefined);
+          state.mount?.unmount();
+        };
+        if (state.view) {
+          state.view.detach(unmountApp);
+        } else {
+          unmountApp();
         }
-        state.handle?.release();
+      } finally {
+        if (destroys) {
+          // The host's handlers stay, so they see the end-of-chat events. The
+          // chat drops them as it shuts down.
+          state.handle.destroy();
+        } else {
+          // A reused chat keeps running for the next mount; the host's handlers
+          // from this one stop, as they do when the chat shuts down.
+          if (state.reuse) {
+            state.dropSubscriptions?.(state.instance);
+          }
+          state.handle?.release();
+        }
       }
     }
 
