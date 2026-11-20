@@ -24,13 +24,6 @@ describe('ChatInstance.requestFocus', () => {
     window.sessionStorage.clear();
   });
 
-  it('should have requestFocus method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.requestFocus).toBe('function');
-  });
-
   it('should execute without throwing', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

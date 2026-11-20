@@ -19,13 +19,6 @@ describe('ChatInstance.updateCatastrophicErrorPanel', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have updateCatastrophicErrorPanel method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.updateCatastrophicErrorPanel).toBe('function');
-  });
-
   it('should execute without throwing any errors', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

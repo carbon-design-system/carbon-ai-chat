@@ -27,13 +27,6 @@ describe('ChatInstance.serviceDesk', () => {
   });
 
   describe('endConversation', () => {
-    it('should have endConversation method available', async () => {
-      const config = createBaseConfig();
-      const instance = await renderChatAndGetInstance(config);
-
-      expect(typeof instance.serviceDesk.endConversation).toBe('function');
-    });
-
     it('should return a Promise', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
@@ -65,13 +58,6 @@ describe('ChatInstance.serviceDesk', () => {
   });
 
   describe('updateIsSuspended', () => {
-    it('should have updateIsSuspended method available', async () => {
-      const config = createBaseConfig();
-      const instance = await renderChatAndGetInstance(config);
-
-      expect(typeof instance.serviceDesk.updateIsSuspended).toBe('function');
-    });
-
     it('should return a Promise', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);

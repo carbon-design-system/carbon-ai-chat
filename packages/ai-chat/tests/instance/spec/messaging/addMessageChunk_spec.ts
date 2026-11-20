@@ -62,13 +62,6 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have addMessageChunk method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.messaging.addMessageChunk).toBe('function');
-  });
-
   it('drops a queued chunk event when a restart interrupts its upsert', async () => {
     const { instance, store, serviceManager } =
       await renderChatAndGetInstanceWithStore(createBaseConfig());

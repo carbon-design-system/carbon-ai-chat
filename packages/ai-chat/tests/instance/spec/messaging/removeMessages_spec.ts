@@ -20,13 +20,6 @@ describe('ChatInstance.messaging.removeMessages', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have removeMessages method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.messaging.removeMessages).toBe('function');
-  });
-
   it('should accept array of message IDs', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

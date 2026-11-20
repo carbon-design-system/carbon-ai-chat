@@ -31,13 +31,6 @@ describe('ChatInstance.changeView', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have changeView method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.changeView).toBe('function');
-  });
-
   it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

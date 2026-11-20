@@ -19,13 +19,6 @@ describe('ChatInstance Event Handlers', () => {
   afterEach(setupAfterEach);
 
   describe('on', () => {
-    it('should have on method available', async () => {
-      const config = createBaseConfig();
-      const instance = await renderChatAndGetInstance(config);
-
-      expect(typeof instance.on).toBe('function');
-    });
-
     it('should return the instance for method chaining', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);
@@ -99,13 +92,6 @@ describe('ChatInstance Event Handlers', () => {
   });
 
   describe('once', () => {
-    it('should have once method available', async () => {
-      const config = createBaseConfig();
-      const instance = await renderChatAndGetInstance(config);
-
-      expect(typeof instance.once).toBe('function');
-    });
-
     it('should return the instance for method chaining', async () => {
       const config = createBaseConfig();
       const instance = await renderChatAndGetInstance(config);

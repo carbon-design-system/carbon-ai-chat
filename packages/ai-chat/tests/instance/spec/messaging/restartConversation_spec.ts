@@ -33,13 +33,6 @@ describe('ChatInstance.messaging.restartConversation', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have messaging.restartConversation method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.messaging.restartConversation).toBe('function');
-  });
-
   it('should return a Promise', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

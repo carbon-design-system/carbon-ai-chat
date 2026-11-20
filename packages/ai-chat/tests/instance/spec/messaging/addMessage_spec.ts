@@ -42,13 +42,6 @@ describe('ChatInstance.messaging.addMessage', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have addMessage method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.messaging.addMessage).toBe('function');
-  });
-
   it('hides the immediate stop button after addMessage while customSendMessage is still pending', async () => {
     let allowResponse: () => void;
     let reportStarted: () => void;

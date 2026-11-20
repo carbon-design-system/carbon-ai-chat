@@ -148,13 +148,6 @@ describe('ChatInstance.messaging.insertHistory', () => {
     expect(canonical).toEqual(original);
   });
 
-  it('should have insertHistory method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.messaging.insertHistory).toBe('function');
-  });
-
   it('should accept array of history items', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

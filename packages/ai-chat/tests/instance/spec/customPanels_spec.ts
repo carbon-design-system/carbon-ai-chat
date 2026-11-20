@@ -35,28 +35,6 @@ describe('ChatInstance.customPanels', () => {
     expect(typeof instance.customPanels).toBe('object');
   });
 
-  it('should provide custom panel management interface', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    // The customPanels should be the CustomPanelManager instance
-    // We can't test specific methods without knowing the exact interface
-    // but we can verify it exists and is an object
-    expect(instance.customPanels).toBeTruthy();
-  });
-
-  it('should be accessible without throwing errors', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    // Should be able to access the property without errors
-    expect(() => {
-      const panels = instance.customPanels;
-      // Basic property access should work
-      expect(panels).toBeDefined();
-    }).not.toThrow();
-  });
-
   it('should maintain consistent reference', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);

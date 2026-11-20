@@ -23,13 +23,6 @@ describe('ChatInstance.input.updateStructuredData', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have updateStructuredData method available', async () => {
-    const config = createBaseConfig();
-    const { instance } = await renderChatAndGetInstanceWithStore(config);
-
-    expect(typeof instance.input.updateStructuredData).toBe('function');
-  });
-
   it('sets pending structured data in the store', async () => {
     const config = createBaseConfig();
     const { instance, store } = await renderChatAndGetInstanceWithStore(config);

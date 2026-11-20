@@ -28,13 +28,6 @@ describe('ChatInstance.messaging.clearConversation', () => {
   beforeEach(setupBeforeEach);
   afterEach(setupAfterEach);
 
-  it('should have clearConversation method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.messaging.clearConversation).toBe('function');
-  });
-
   it('should execute without parameters', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
