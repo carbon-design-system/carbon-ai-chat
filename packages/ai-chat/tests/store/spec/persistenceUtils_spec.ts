@@ -10,9 +10,9 @@
 import {
   fromPersistableState,
   toPersistableState,
-} from '../../../src/chat/store/persistenceUtils';
-import { DEFAULT_PERSISTED_TO_BROWSER } from '../../../src/chat/store/reducerUtils';
-import { VERSION } from '../../../src/chat/utils/environmentVariables';
+} from '../../../src/shared/store/persistenceUtils';
+import { DEFAULT_PERSISTED_TO_BROWSER } from '../../../src/shared/store/reducerUtils';
+import { VERSION } from '../../../src/shared/utils/environmentVariables';
 import { PersistableState } from '../../../src/types/config/PersistedStateConfig';
 import { PersistedState } from '../../../src/types/state/AppState';
 

@@ -16,7 +16,7 @@ import '../../../src/chat/components/panels/NativePanels';
 import type NativePanels from '../../../src/chat/components/panels/NativePanels';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type {
   PanelViewInputs,
   PanelCompositionCallbacks,
@@ -24,10 +24,10 @@ import type {
 } from '../../../src/chat/utils/panelComposition';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import actions from '../../../src/chat/store/actions';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import actions from '../../../src/shared/store/actions';
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
-import { EventBus } from '../../../src/chat/events/EventBus';
+import { EventBus } from '../../../src/shared/events/EventBus';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { ScreenShareState } from '../../../src/types/config/ServiceDeskConfig';
 import {

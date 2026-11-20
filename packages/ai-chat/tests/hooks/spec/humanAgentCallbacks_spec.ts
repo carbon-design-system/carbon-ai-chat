@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { HumanAgentCallbacks } from '../../../src/chat/services/haa/humanAgentCallbacks';
+import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallbacks';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
 function setup() {
   const state = {

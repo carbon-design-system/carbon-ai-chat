@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import * as events from '../../../src/chat/services/messaging/coordinateMessageEvents';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import * as events from '../../../src/shared/services/messaging/coordinateMessageEvents';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 
 it('returns the exact response-tree workflow Promise from the coordinator facade', () => {
   const result = Promise.resolve();

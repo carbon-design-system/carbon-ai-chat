@@ -8,12 +8,12 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import {
   isHumanAgentLocalOwner,
   isHumanAgentMessageOwner,
   markHumanAgentIngress,
-} from '../../../src/chat/store/messageOwnership';
+} from '../../../src/shared/store/messageOwnership';
 import {
   MessageResponseTypes,
   type MessageResponse,

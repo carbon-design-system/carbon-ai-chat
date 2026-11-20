@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { MessagePresentationAdapter } from '../../../src/chat/services/messaging/presentation/MessagePresentationAdapter';
-import { StreamAnnouncerService } from '../../../src/chat/services/messaging/presentation/StreamAnnouncerService';
+import { MessagePresentationAdapter } from '../../../src/chat/services/MessagePresentationAdapter';
+import { StreamAnnouncerService } from '../../../src/shared/services/messaging/presentation/StreamAnnouncerService';
 
 function capabilities() {
   return {

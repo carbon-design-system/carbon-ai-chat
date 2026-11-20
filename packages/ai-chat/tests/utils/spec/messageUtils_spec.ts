@@ -46,7 +46,7 @@ import {
   renderAsUserDefinedMessage,
   resolveChoiceText,
   streamItemID,
-} from '../../../src/chat/utils/messageUtils';
+} from '../../../src/shared/utils/messageUtils';
 import {
   ButtonItemType,
   HumanAgentMessageType,
@@ -54,7 +54,7 @@ import {
   MessageResponseTypes,
   SelectionDisplay,
 } from '../../../src/types/messaging/Messages';
-import { FileStatusValue } from '../../../src/chat/utils/constants';
+import { FileStatusValue } from '../../../src/shared/utils/constants';
 
 describe('messageUtils', () => {
   it('addDefaultsToMessage applies ids, thread, timestamps, and flags', () => {

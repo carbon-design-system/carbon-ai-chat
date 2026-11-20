@@ -22,7 +22,7 @@ import {
 } from '../types/events/eventBusTypes';
 import { ChatContainer, ChatContainerProps } from './ChatContainer';
 import { FLATTENED_PUBLIC_CONFIG_FIELDS } from '../web-components/shared/flattenedPublicConfig';
-import { isBrowser } from '../chat/utils/browserUtils';
+import { isBrowser } from '../shared/utils/browserUtils';
 
 /**
  * Properties for the ChatContainer React component. This interface extends

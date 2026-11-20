@@ -14,7 +14,7 @@ Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENT
 - Keep reducers pure; pass in time values instead of calling `Date.now()`.
 - Read through `selectors.ts`; dispatch through `serviceManager.store.dispatch` with an `actions.ts` creator.
 - Put side effects in services or `subscriptions.ts` handlers.
-- Use the local `useSelector` from `../hooks/`; for object selections, use `shallowEqual` from `appStore.ts`.
+- Use the local `useSelector` from `src/chat/hooks/`; for object selections, use `shallowEqual` from `appStore.ts`.
 
 ## Action conventions
 

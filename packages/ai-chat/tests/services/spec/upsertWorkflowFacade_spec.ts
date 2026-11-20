@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import { UpsertWorkflow } from '../../../src/chat/services/messaging/UpsertWorkflow';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { UpsertWorkflow } from '../../../src/shared/services/messaging/UpsertWorkflow';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type { MessageResponse } from '../../../src/types/messaging/Messages';
 

@@ -11,7 +11,7 @@ import Card from '@carbon/ai-chat-components/es/react/card.js';
 import React, { useState } from 'react';
 
 import { useServiceManager } from '../../../../hooks/useServiceManager';
-import actions from '../../../../store/actions';
+import actions from '../../../../../shared/store/actions';
 import { HasClassName } from '../../../../../types/utilities/HasClassName';
 import {
   CitationCardContent,

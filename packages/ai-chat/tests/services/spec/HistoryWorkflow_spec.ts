@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { HistoryWorkflow } from '../../../src/chat/services/messaging/HistoryWorkflow';
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
-import type { LoadedHistory } from '../../../src/chat/schema/historyToMessages';
+import { HistoryWorkflow } from '../../../src/shared/services/messaging/HistoryWorkflow';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import type { LoadedHistory } from '../../../src/shared/schema/historyToMessages';
 import type { AppStateMessages } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 
 function messages(): AppStateMessages {
   return {

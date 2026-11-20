@@ -12,7 +12,7 @@ import React from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { AppState } from '../../../../types/state/AppState';
-import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
+import { MessageTypeComponentProps } from '../../../components-legacy/MessageTypeComponentProps';
 
 interface FooterButtonComponentsProps extends MessageTypeComponentProps {
   renderMessageComponent: (

@@ -15,11 +15,11 @@ import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { createBaseTestProps, setupAfterEach } from '../../test_helpers';
 import { AppState } from '../../../src/types/state/AppState';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
-import { doCreateStore } from '../../../src/chat/store/doCreateStore';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import { NamespaceService } from '../../../src/chat/services/NamespaceService';
+import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { NamespaceService } from '../../../src/shared/services/NamespaceService';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 

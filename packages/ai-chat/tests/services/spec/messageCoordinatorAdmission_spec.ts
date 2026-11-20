@@ -8,17 +8,17 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import actions from '../../../src/chat/store/actions';
-import { PublicStateService } from '../../../src/chat/services/PublicStateService';
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import { MessagePresentationAdapter } from '../../../src/chat/services/messaging/presentation/MessagePresentationAdapter';
+import actions from '../../../src/shared/store/actions';
+import { PublicStateService } from '../../../src/shared/services/PublicStateService';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { MessagePresentationAdapter } from '../../../src/chat/services/MessagePresentationAdapter';
 import type { PublicChatState } from '../../../src/types/instance/PublicChatState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 import { PendingUploadStatus } from '../../../src/types/state/AppState';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 
 function harness(
   presentation?:

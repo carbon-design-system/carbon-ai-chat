@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { RESPONSE_TYPE_TIMEOUT_MS } from './constants';
+import { RESPONSE_TYPE_TIMEOUT_MS } from '../../shared/utils/constants';
 
 interface HydrationBodyOptions {
   isHydrated: boolean;

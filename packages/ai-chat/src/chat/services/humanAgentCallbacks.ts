@@ -7,9 +7,9 @@
  *  @license
  */
 
-import type { ChatViewState } from '../chatViewState';
-import type { ServiceManager } from '../ServiceManager';
-import type { FileUpload } from '../../../types/state/AppState';
+import type { ChatViewState } from './chatViewState';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { FileUpload } from '../../types/state/AppState';
 
 export class HumanAgentCallbacks {
   private serviceManager: ServiceManager;

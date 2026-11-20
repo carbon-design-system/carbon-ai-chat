@@ -8,7 +8,7 @@
  */
 
 import { ViewType } from '../../../src/types/instance/apiTypes';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import {
   createBaseConfig,
   renderChatAndGetInstance,

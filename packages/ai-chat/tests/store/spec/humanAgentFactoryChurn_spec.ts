@@ -17,17 +17,17 @@
  */
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
-import { createAppStore } from '../../../src/chat/store/appStore';
+import { createAppStore } from '../../../src/shared/store/appStore';
 import {
   createAppConfig,
   createInitialState,
-} from '../../../src/chat/store/doCreateStore';
-import { reducers } from '../../../src/chat/store/reducers';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+} from '../../../src/shared/store/doCreateStore';
+import { reducers } from '../../../src/shared/store/reducers';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { AppState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-jest.mock('../../../src/chat/services/haa/HumanAgentServiceImpl', () => ({
+jest.mock('../../../src/shared/services/haa/HumanAgentServiceImpl', () => ({
   __esModule: true,
   default: jest.fn(() => ({
     hasInitialized: false,
@@ -35,7 +35,7 @@ jest.mock('../../../src/chat/services/haa/HumanAgentServiceImpl', () => ({
     endChat: jest.fn(),
   })),
 }));
-import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
+import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
 
 function createStore(initialState: AppState) {
   return createAppStore(

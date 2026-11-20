@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
-import { ConversationState } from '../../../src/chat/services/messaging/state/ConversationState';
+import { ConversationState } from '../../../src/shared/services/messaging/state/ConversationState';
 
 describe('ConversationState', () => {
   let service: ConversationState;
@@ -250,7 +250,7 @@ describe('ConversationState', () => {
 describe('conversation state boundary', () => {
   const file = path.resolve(
     __dirname,
-    '../../../src/chat/services/messaging/state/ConversationState.ts'
+    '../../../src/shared/services/messaging/state/ConversationState.ts'
   );
   const text = fs.readFileSync(file, 'utf8');
 

@@ -8,7 +8,7 @@
  */
 
 import type { CarbonTheme } from '../config/CarbonTheme';
-import type { CornersType } from '../../chat/utils/constants';
+import type { CornersType } from '../config/CornersType';
 
 /**
  * The theme state.

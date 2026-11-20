@@ -8,7 +8,7 @@
  */
 
 import { act } from '@testing-library/react';
-import { UpsertWorkflow } from '../../../../src/chat/services/messaging/UpsertWorkflow';
+import { UpsertWorkflow } from '../../../../src/shared/services/messaging/UpsertWorkflow';
 import {
   CancellationReason,
   MessageState,

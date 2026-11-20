@@ -2,19 +2,19 @@
 
 Load this when adding, editing, or testing a service. Services are orchestration boundaries that coordinate the store, external APIs, and browser APIs.
 
-For view-owned classes, follow [the hook core contract](../src/chat/hooks/AGENTS.md). The initialization, manager lookup, and teardown rules below apply to chat-instance services.
+Chat-instance services live in `src/shared/services/`. View-owned classes, the ones that touch the DOM or `ChatViewState`, live in `src/chat/services/`; follow [the hook core contract](../src/chat/hooks/AGENTS.md) for them. The initialization, manager lookup, and teardown rules below apply to chat-instance services.
 
-For assistant message flows, read [messaging ownership](../src/chat/services/messaging/AGENTS.md). `MessageCoordinator` owns the private workflows. Pure data helpers live in `inbound/`, `outbound/`, and `state/`; view work goes through the narrow `presentation/` port. Human-agent sends and writes stay in `services/haa/`.
+For assistant message flows, read [messaging ownership](../src/shared/services/messaging/AGENTS.md). `MessageCoordinator` owns the private workflows. Pure data helpers live in `inbound/`, `outbound/`, and `state/`; view work goes through the narrow `presentation/` port. Human-agent sends and writes stay in `shared/services/haa/`.
 
 Keep the outbound queue, chunk FIFO, per-ID native write chains, and event queues separate. Their waits and release points differ. Shared event capture still serves legacy and human-agent paths; it is not a second assistant flow owner.
 
 ## Initialization order
 
-See [`createServiceManager()`](../src/chat/services/loadServices.ts) for service initialization order.
+See [`createServiceManager()`](../src/shared/services/loadServices.ts) for service initialization order.
 
 ## Dependency pattern
 
-Chat-instance services **do not hold direct references to each other**. They resolve collaborators on-demand through [`ServiceManager`](../src/chat/services/ServiceManager.ts):
+Chat-instance services **do not hold direct references to each other**. They resolve collaborators on-demand through [`ServiceManager`](../src/shared/services/ServiceManager.ts):
 
 ```typescript
 class MyService {
@@ -31,13 +31,13 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 ## Archetypes
 
-- **Simple data adapter:** [`HistoryService`](../src/chat/services/HistoryService.ts) loads and transforms history data.
-- **Lifecycle watcher:** [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
-- **Orchestration engine:** [`MessageCoordinator`](../src/chat/services/messaging/MessageCoordinator.ts) owns assistant flows through private workflows and pure state models.
+- **Simple data adapter:** [`HistoryService`](../src/shared/services/HistoryService.ts) loads and transforms history data.
+- **Lifecycle watcher:** [`ThemeWatcherService`](../src/shared/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
+- **Orchestration engine:** [`MessageCoordinator`](../src/shared/services/messaging/MessageCoordinator.ts) owns assistant flows through private workflows and pure state models.
 
 ## When to create a service
 
-Put state transformations in reducers and pure utilities or small setup/cleanup helpers in `src/chat/utils/`.
+Put state transformations in reducers. Put pure utilities that conversation code uses in `src/shared/utils/`, and view setup/cleanup helpers in `src/chat/utils/`.
 
 ## Who starts services
 
@@ -46,7 +46,7 @@ Put state transformations in reducers and pure utilities or small setup/cleanup 
 ## Wiring & teardown
 
 - Keep messaging workflows private to `MessageCoordinator`; do not register them or pure data helpers as services.
-- Register new chat-instance services through [`ServiceManager`](../src/chat/services/ServiceManager.ts) and [`loadServices`](../src/chat/services/loadServices.ts).
+- Register new chat-instance services through [`ServiceManager`](../src/shared/services/ServiceManager.ts) and [`loadServices`](../src/shared/services/loadServices.ts).
 - **Full chat-instance teardown is still pending.** Detaching a host retires its mount — the renderer unmounts, listeners and bus handlers go, pending callbacks are dropped — but every store subscription, timer, and in-flight request a service owns keeps running. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
 - Public methods on `ChatInstanceService` must be reflected on the `ChatInstance` type in [`src/types/instance/ChatInstance.ts`](../src/types/instance/ChatInstance.ts). The instance object is constructed in [`src/chat/utils/chatBoot.ts`](../src/chat/utils/chatBoot.ts).
 
@@ -57,4 +57,4 @@ Follow [tests.md](tests.md#service-example) when testing a service.
 ## Related guidance
 
 - [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [src/chat/store/AGENTS.md](../src/chat/store/AGENTS.md) — store rules
+- [src/shared/store/AGENTS.md](../src/shared/store/AGENTS.md) — store rules

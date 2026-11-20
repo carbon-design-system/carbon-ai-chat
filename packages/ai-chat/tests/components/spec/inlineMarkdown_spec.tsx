@@ -21,8 +21,8 @@ import { MessageRichUserContent } from '../../../src/chat/components-legacy/Mess
 import type { JSONContent } from '@tiptap/core';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import type { MarkdownConfig } from '../../../src/types/config/MarkdownConfig';
-import actions from '../../../src/chat/store/actions';
-import * as miscUtils from '../../../src/chat/utils/miscUtils';
+import actions from '../../../src/shared/store/actions';
+import * as miscUtils from '../../../src/shared/utils/miscUtils';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 function renderInline(text: string) {

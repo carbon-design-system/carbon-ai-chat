@@ -8,8 +8,8 @@
  */
 
 import { act } from '@testing-library/react';
-import type { ServiceManager } from '../../../../src/chat/services/ServiceManager';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
 import {

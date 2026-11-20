@@ -8,13 +8,16 @@
  */
 
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
-import type { ServiceManager } from '../services/ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from '../store/selectors';
+} from '../../shared/store/selectors';
 import { hasCustomPromptLine } from './customPromptLine';
-import { isPlainTextDoc, literalTextToDoc } from './inputContent';
+import {
+  isPlainTextDoc,
+  literalTextToDoc,
+} from '../../shared/utils/inputContent';
 
 export async function restoreInputDraft(
   serviceManager: ServiceManager,

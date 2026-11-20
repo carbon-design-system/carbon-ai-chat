@@ -21,15 +21,15 @@ import type InputActions from '../../../src/chat/components/input/native/InputAc
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type {
   InputFunctions,
   InputProps,
 } from '../../../src/chat/utils/inputTypes';
 import type { InputConfig } from '../../../src/types/config/InputConfig';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import actions from '../../../src/chat/store/actions';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import actions from '../../../src/shared/store/actions';
 import {
   makeConfigStore,
   setupAfterEach,

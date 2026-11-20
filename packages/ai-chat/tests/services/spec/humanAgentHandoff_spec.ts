@@ -8,13 +8,13 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { outputItemToLocalItem } from '../../../src/chat/schema/outputItemToLocalItem';
-import { ChatInstanceService } from '../../../src/chat/services/ChatInstanceService';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import { HumanAgentsOnlineStatus } from '../../../src/chat/services/haa/HumanAgentService';
-import createHumanAgentService from '../../../src/chat/services/haa/HumanAgentServiceImpl';
-import actions from '../../../src/chat/store/actions';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
+import { ChatInstanceService } from '../../../src/shared/services/ChatInstanceService';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { HumanAgentsOnlineStatus } from '../../../src/shared/services/haa/HumanAgentService';
+import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
+import actions from '../../../src/shared/store/actions';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import {
   MessageResponse,

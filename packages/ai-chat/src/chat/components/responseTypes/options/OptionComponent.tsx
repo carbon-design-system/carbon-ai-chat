@@ -20,7 +20,7 @@ import {
   findSelectedChoiceIndex,
   getOptionType,
   resolveChoiceText,
-} from '../../../utils/messageUtils';
+} from '../../../../shared/utils/messageUtils';
 import SelectComponent from './SelectComponent';
 import {
   Message,
@@ -29,7 +29,7 @@ import {
 } from '../../../../types/messaging/Messages';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
-import { consoleError } from '../../../utils/miscUtils';
+import { consoleError } from '../../../../shared/utils/miscUtils';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;

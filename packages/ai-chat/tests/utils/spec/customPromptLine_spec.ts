@@ -12,9 +12,9 @@ import {
   requestComposerFocus,
 } from '../../../src/chat/utils/customPromptLine';
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import { makeConfigStore } from '../../test_helpers';
 
 function setup(visible = true) {

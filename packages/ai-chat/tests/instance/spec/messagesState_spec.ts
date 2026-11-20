@@ -24,8 +24,8 @@ import {
   MessageResponseTypes,
   TextItem,
 } from '../../../src/types/messaging/Messages';
-import { PublicMessagesProjection } from '../../../src/chat/utils/publicMessages';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { PublicMessagesProjection } from '../../../src/shared/utils/publicMessages';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 
 function localItem(
   fullMessageID: string,

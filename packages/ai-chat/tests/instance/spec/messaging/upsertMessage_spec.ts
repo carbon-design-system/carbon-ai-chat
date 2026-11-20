@@ -8,7 +8,7 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 
 import {
   createBaseConfig,
@@ -32,7 +32,7 @@ import {
   BusEventUserDefinedResponse,
   BusEventCustomFooterSlot,
 } from '../../../../src/types/events/eventBusTypes';
-import actions from '../../../../src/chat/store/actions';
+import actions from '../../../../src/shared/store/actions';
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
 import {
   HumanAgentsOnlineStatus,

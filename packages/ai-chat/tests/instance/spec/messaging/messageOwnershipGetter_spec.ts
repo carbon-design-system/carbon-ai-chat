@@ -10,8 +10,8 @@
 import { act } from '@testing-library/react';
 import type { MessageResponse } from '../../../../src/types/messaging/Messages';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
-import type { ServiceManager } from '../../../../src/chat/services/ServiceManager';
-import { addMessages } from '../../../../src/chat/services/haa/humanAgentUtils';
+import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { addMessages } from '../../../../src/shared/services/haa/humanAgentUtils';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

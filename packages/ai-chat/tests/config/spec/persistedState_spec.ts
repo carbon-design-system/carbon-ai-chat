@@ -7,7 +7,7 @@
  *  @license
  */
 
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import { PersistableState } from '../../../src/types/config/PersistedStateConfig';
 import {
   createBaseConfig,

@@ -8,11 +8,11 @@
  */
 
 import { cleanup, waitFor } from '@testing-library/react';
-import { MessageCoordinator } from '../../../../src/chat/services/messaging/MessageCoordinator';
-import { MessagePresentationAdapter } from '../../../../src/chat/services/messaging/presentation/MessagePresentationAdapter';
-import { SlotEventService } from '../../../../src/chat/services/messaging/presentation/SlotEventService';
-import type { ServiceManager } from '../../../../src/chat/services/ServiceManager';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
+import { MessagePresentationAdapter } from '../../../../src/chat/services/MessagePresentationAdapter';
+import { SlotEventService } from '../../../../src/shared/services/messaging/presentation/SlotEventService';
+import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {
   BusEventType,

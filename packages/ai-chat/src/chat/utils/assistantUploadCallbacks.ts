@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ServiceManager } from '../services/ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { FileUpload } from '../../types/config/ServiceDeskConfig';
 
 export function createAssistantUploadCallbacks(serviceManager: ServiceManager) {
