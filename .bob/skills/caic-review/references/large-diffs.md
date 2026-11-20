@@ -14,7 +14,7 @@ Sort the changed files by risk per line, then spend attention in that order.
 
 - Pure renames and moves. `git diff -M --summary` reports a similarity index; at 100% there is nothing to review but the new path.
 - `package-lock.json`. Review the `package.json` change that caused it.
-- Generated output this repo does not commit, per the never-edit list in [AGENTS.md](../../../../AGENTS.md). An edit there is a **Blocker** on sight and costs no reading at all. The telemetry configs are the exception on that list: `packages/ai-chat/telemetry.yml` and `packages/ai-chat-components/telemetry.yml` are committed and regenerated, so they belong in the diff. Glance and move on.
+- Generated output this repo does not commit, per the never-edit list in [AGENTS.md](../../../../AGENTS.md). An edit there is a **Blocker** on sight and costs no reading at all. The telemetry configs are the exception on that list: `packages/ai-chat/telemetry.yml` and `packages/ai-chat-components/telemetry.yml` are committed, and each full release regenerates them. A diff may carry a regenerated copy or none; neither is a finding. Glance and move on.
 
 **Read in full**
 
