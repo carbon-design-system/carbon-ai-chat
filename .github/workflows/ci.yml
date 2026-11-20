@@ -30,7 +30,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'patches/**') }}
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
@@ -90,7 +90,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'patches/**') }}
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
@@ -132,7 +132,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'patches/**') }}
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
@@ -159,7 +159,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'patches/**') }}
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
@@ -228,7 +228,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'patches/**') }}
       - name: Install dependencies
         if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
@@ -285,7 +285,7 @@ jobs:
           path: |
             node_modules
             */**/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json', 'patches/**') }}
       - name: Install dependencies
         if: github.event_name != 'merge_group' && steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline
