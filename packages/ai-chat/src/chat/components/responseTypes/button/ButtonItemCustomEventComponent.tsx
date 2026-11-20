@@ -9,6 +9,7 @@
 
 import TouchInteraction16 from '@carbon/icons/es/touch--interaction/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
+import { getButtonIconProps } from '../../../utils/buttonIconProps';
 import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
@@ -59,7 +60,10 @@ function ButtonItemCustomEventComponent({
       size={size}
       is={is}
       disabled={isDisabled}
-      renderIcon={(image_url && TouchInteraction) || undefined}
+      {...getButtonIconProps(
+        messageItem,
+        image_url ? TouchInteraction : undefined
+      )}
       onClick={onClickHandler}
     />
   );

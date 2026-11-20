@@ -25,9 +25,17 @@ import { CHAT_BUTTON_SIZE as _CHAT_BUTTON_SIZE } from '@carbon/ai-chat-component
 import { ChainOfThoughtStepStatus as _ChainOfThoughtStepStatus } from '@carbon/ai-chat-components/es/components/chain-of-thought/defs.js';
 import { WorkspaceCustomPanelConfigOptions } from '../instance/apiTypes';
 import type { JSONContent } from '@tiptap/core';
+import type { ComponentType } from 'react';
+import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon-loader-utils.js';
 
 /**
  * This is the main interface that represents a request from a user sent to an assistant.
+ *
+ * A request can carry fields of your own, such as an ID from your back-end. The chat never reads them. It keeps
+ * them unchanged in event data, in {@link PublicConfigMessaging.customSendMessage}, in chat state, and on
+ * messages you load from history. To set them with type checking, declare them on your own type that extends
+ * this one. Messages the chat hands back are typed without your fields, so check that a field is there before
+ * you use it.
  *
  * @category Messaging
  */
@@ -62,14 +70,20 @@ interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
   context?: unknown;
 
   /**
-   * The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
-   * responses.
+   * An ID for the thread this request belongs to. If you leave it out, the chat sets it to `"main"`. The chat
+   * doesn't use the value.
+   *
+   * @deprecated Removed in 2.0.0, and the chat stops setting it. Nothing replaces it, because the chat never used
+   * it. If you keep your own value here, you can go on setting it. From 2.0.0, the chat carries it like any field
+   * of your own, typed `unknown`.
    */
   thread_id?: string;
 
   /**
-   * The parent ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
-   * responses.
+   * An ID for the parent of the thread this request belongs to. The chat doesn't set or use it.
+   *
+   * @deprecated Removed in 2.0.0. Nothing replaces it, because the chat never used it. If you keep your own value
+   * here, you can go on setting it. From 2.0.0, the chat carries it like any field of your own, typed `unknown`.
    */
   parent_thread_id?: string;
 }
@@ -338,6 +352,11 @@ interface MessageInput extends BaseMessageInput {
  * This interface represents the main response content that is received by a client from an assistant. It is generally
  * in response to a previous message request.
  *
+ * A response can carry fields of your own, such as an ID from your back-end. The chat never reads them. It keeps
+ * them unchanged in event data, in chat state, and on messages you load from history. To set them with type
+ * checking, declare them on your own type that extends this one. Messages the chat hands back are typed without
+ * your fields, so check that a field is there before you use it.
+ *
  * @category Messaging
  */
 interface MessageResponse<TGenericType = GenericItem[]> {
@@ -366,8 +385,12 @@ interface MessageResponse<TGenericType = GenericItem[]> {
   context?: unknown;
 
   /**
-   * The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating
-   * responses.
+   * An ID for the thread this response belongs to. If you leave it out, the chat sets it to `"main"`. The chat
+   * doesn't use the value.
+   *
+   * @deprecated Removed in 2.0.0, and the chat stops setting it. Nothing replaces it, because the chat never used
+   * it. If you keep your own value here, you can go on setting it. From 2.0.0, the chat carries it like any field
+   * of your own, typed `unknown`.
    */
   thread_id?: string;
 
@@ -660,8 +683,11 @@ export interface ItemStreamingMetadata {
   cancellable?: boolean;
 
   /**
-   * Indicates if the stream has stopped which will trigger the UI to respond with appropriate a11y states
-   * and messaging.
+   * Marks the item as stopped before it finished, for example after the user clicks the stop
+   * streaming button. Set it on the last version of the item you send, including its copy in a
+   * final response. The chat shows a "Response stopped" line below every item that carries the
+   * flag, so set it on one item per response. Version 2.0.0 removes the line; render your own
+   * indicator from this flag instead.
    */
   stream_stopped?: boolean;
 }
@@ -1873,6 +1899,59 @@ interface ButtonItem<
    * is focused on the item.
    */
   alt_text?: string;
+
+  /**
+   * The icon to render inside the button. Accepts an icon from `@carbon/icons`, e.g.
+   * `import ArrowRight from '@carbon/icons/es/arrow--right/16.js'`, or a component from `@carbon/icons-react`.
+   *
+   * Supported on all button types. Overrides the default icon for `url` (`Launch`) and
+   * the `image_url`-gated defaults for `post_back`, `custom_event`, and `show_panel`.
+   * The icon is placed on the trailing side of the button label.
+   *
+   * @example
+   * ```ts
+   * import ArrowRight from '@carbon/icons/es/arrow--right/16.js';
+   * { response_type: 'button', button_type: 'post_back', label: 'Next', icon: ArrowRight }
+   * ```
+   */
+  icon?: CarbonIcon | ComponentType<any>;
+
+  /**
+   * When true, the button shows only its icon and hides its text. Screen readers still announce the text as the
+   * button's name. That text is the {@link ButtonItem.label}. A `post_back` button without a label uses its
+   * `value.input.text`, and a `url` button without a label uses its URL.
+   *
+   * This applies only when the button shows an icon, either one set with {@link ButtonItem.icon} or the default for
+   * its type. Without an icon the button keeps its text. It does not apply to a `url` button of kind `LINK` or to a
+   * button with an {@link ButtonItem.image_url}.
+   *
+   * @default false
+   *
+   * @example
+   * ```ts
+   * import ArrowRight from '@carbon/icons/es/arrow--right/16.js';
+   * {
+   *   response_type: 'button',
+   *   button_type: 'post_back',
+   *   kind: 'ghost',
+   *   label: 'Learn what actions you can take',
+   *   hide_label: true,
+   *   icon: ArrowRight,
+   *   icon_alignment: 'end',
+   *   value: { input: { text: 'Which tools and actions do I have access to?' } },
+   * }
+   * ```
+   */
+  hide_label?: boolean;
+
+  /**
+   * Where the icon sits in the button when {@link ButtonItem.hide_label} is true. The `start` and `end` values follow
+   * the reading direction, so `end` is the right edge in left-to-right languages. This has no effect while the button
+   * shows its text.
+   *
+   * @default 'end'
+   */
+  icon_alignment?: 'start' | 'center' | 'end';
 }
 
 /**

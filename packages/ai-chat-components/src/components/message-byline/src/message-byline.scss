@@ -1,0 +1,57 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+
+$block-class: #{$prefix}-message-byline;
+
+:host(#{$block-class}) {
+  @include type.type-style('caption-01');
+
+  display: flex;
+  align-items: center;
+  color: theme.$text-secondary;
+}
+
+// The box is always the same size, so labels line up across avatars. The host
+// sizes the avatar itself; the box centers it.
+.#{$block-class}__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: layout.$spacing-07;
+  inline-size: layout.$spacing-07;
+}
+
+// The byline's secondary text color is for the label. The avatar draws its
+// initial and border with `currentcolor`, so give it the default text color.
+::slotted([slot='avatar']) {
+  color: theme.$text-primary;
+}
+
+.#{$block-class}__label {
+  line-height: layout.$spacing-05;
+  padding-inline-start: layout.$spacing-03;
+}
+
+.#{$block-class}__reasoning {
+  display: flex;
+  align-items: center;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.#{$block-class}__reasoning-separator {
+  margin-inline: layout.$spacing-03;
+}

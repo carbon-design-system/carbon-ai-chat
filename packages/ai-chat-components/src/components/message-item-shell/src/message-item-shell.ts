@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { LitElement, html } from 'lit';
+import { LitElement, PropertyValues, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
@@ -30,7 +30,7 @@ export type MessageItemShellRowType = 'request' | 'response';
  * @experimental
  * @element cds-aichat-message-item-shell
  *
- * @slot byline - The byline area. Contains the user name, timestamp, and avatar.
+ * @slot byline - The byline area. Slot a `cds-aichat-message-byline` here.
  * @slot - default slot. The message content.
  * @slot attachment - File upload chips or other attachments. The shell adds no announcements; the slotted content decides what screen readers hear.
  * @slot footer - Footer content from the host.
@@ -53,20 +53,91 @@ class CDSAIChatMessageItemShell extends LitElement {
   fullWidth = false;
 
   /**
-   * Hides the avatar within the byline slot. The name and timestamp remain
+   * Hides the avatar within the byline slot. The label and timestamp remain
    * visible. Applies to both row types.
    *
-   * The avatar must be a direct child of the shell with `slot="byline"` and
-   * the class `cds-aichat-message-item-shell__byline-avatar`. Avatars nested
-   * inside another slotted element are not hidden.
+   * The shell sets `hidden` on the `slot="avatar"` child of the slotted
+   * `cds-aichat-message-byline`, and the byline then renders no avatar box.
+   * An avatar nested deeper is not hidden.
    */
   @property({ type: Boolean, attribute: 'hide-avatar', reflect: true })
   hideAvatar = false;
 
+  /**
+   * Watches the slotted byline for an avatar added, removed, or re-slotted
+   * after the byline itself was slotted. `slotchange` does not report those.
+   */
+  private _bylineObserver = new MutationObserver(() => this._syncAvatar());
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.hasUpdated) {
+      this._observeByline();
+    }
+  }
+
+  disconnectedCallback() {
+    this._bylineObserver.disconnect();
+    super.disconnectedCallback();
+  }
+
+  protected firstUpdated() {
+    this._observeByline();
+    this._syncAvatar();
+  }
+
+  protected updated(changed: PropertyValues<this>) {
+    if (changed.has('hideAvatar')) {
+      this._syncAvatar();
+    }
+  }
+
+  private _getByline(): Element | undefined {
+    const slot = this.renderRoot.querySelector<HTMLSlotElement>(
+      'slot[name="byline"]'
+    );
+    return slot
+      ?.assignedElements({ flatten: true })
+      .find((el) => el.localName === `${prefix}-message-byline`);
+  }
+
+  /**
+   * Sets `hidden` on the byline's avatar to match `hideAvatar`.
+   */
+  private _syncAvatar = (): void => {
+    const avatar = this._getByline()?.querySelector<HTMLElement>(
+      ':scope > [slot="avatar"]'
+    );
+    if (avatar) {
+      avatar.hidden = this.hideAvatar;
+    }
+  };
+
+  /**
+   * Re-targets the observer at the current byline, then syncs the avatar.
+   */
+  private _handleBylineSlotChange = (): void => {
+    this._observeByline();
+    this._syncAvatar();
+  };
+
+  private _observeByline(): void {
+    this._bylineObserver.disconnect();
+    const byline = this._getByline();
+    if (byline) {
+      this._bylineObserver.observe(byline, {
+        childList: true,
+        attributes: true,
+        attributeFilter: ['slot'],
+        subtree: true,
+      });
+    }
+  }
+
   render() {
     return html`
       <div class="${blockClass}__byline">
-        <slot name="byline"></slot>
+        <slot name="byline" @slotchange=${this._handleBylineSlotChange}></slot>
       </div>
       <div class="${blockClass}__body">
         <div class="${blockClass}__content">

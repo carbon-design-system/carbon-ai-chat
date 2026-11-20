@@ -17,12 +17,12 @@ Use `MessageItemShell` as the frame for one message row. It provides slots for t
 
 Request and response rows use the same shell. Set `rowType` to `request` or `response` to choose the layout.
 
-| Slot         | Region                                                    |
-| ------------ | --------------------------------------------------------- |
-| `byline`     | Name, timestamp, and avatar. Available on both row types. |
-| default      | The message content.                                      |
-| `attachment` | File upload status.                                       |
-| `footer`     | Footer content from the host.                             |
+| Slot         | Region                                          |
+| ------------ | ----------------------------------------------- |
+| `byline`     | A `MessageByline`. Available on both row types. |
+| default      | The message content.                            |
+| `attachment` | File upload status.                             |
+| `footer`     | Footer content from the host.                   |
 
 The shell adds no screen reader announcements. Your slotted content decides what is announced, including file upload status.
 
@@ -50,25 +50,21 @@ function Row() {
 
 ### Hidden avatar
 
-Set `hideAvatar` to hide the avatar image within the byline. The name and timestamp remain visible.
+Set `hideAvatar` to hide the avatar in the byline. The label and timestamp remain visible.
 
-Give the avatar `slot="byline"` and the class `cds-aichat-message-item-shell__byline-avatar` directly on it. Avatars nested inside another slotted element are not hidden.
+Slot a `MessageByline` in `byline` and give its avatar `slot="avatar"` directly. The shell sets `hidden` on that avatar, and the byline then renders no avatar box. An avatar nested inside another element is not hidden.
 
 ```jsx
+import MessageByline from '@carbon/ai-chat-components/es/react/message-byline.js';
 import MessageItemShell from '@carbon/ai-chat-components/es/react/message-item-shell.js';
+import UserAvatar from '@carbon/ai-chat-components/es/react/user-avatar.js';
 
 function Row() {
   return (
     <MessageItemShell rowType="response" hideAvatar>
-      <img
-        slot="byline"
-        className="cds-aichat-message-item-shell__byline-avatar"
-        src="..."
-        alt="Assistant"
-      />
-      <span slot="byline" style={{ paddingInlineStart: '0.5rem' }}>
-        Assistant 10:42 AM
-      </span>
+      <MessageByline slot="byline" label="Assistant" timestamp="10:42 AM">
+        <UserAvatar slot="avatar" name="Assistant" />
+      </MessageByline>
       <div>Content</div>
     </MessageItemShell>
   );

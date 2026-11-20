@@ -14,6 +14,7 @@ import {
   MessageResponseTypes,
   SelectionDisplay,
 } from '@carbon/ai-chat';
+import ArrowRight16 from '@carbon/icons/es/arrow--right/16.js';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import {
   CHAT_BUTTON_KIND,
@@ -50,6 +51,8 @@ function doButton(instance: ChatInstance, requestID?: MessageRequest['id']) {
           kind: CHAT_BUTTON_KIND.SECONDARY,
           label: 'Send a message to your server',
           button_type: ButtonItemType.POST_BACK,
+          // Pass a custom icon from `@carbon/icons` to replace the default.
+          icon: ArrowRight16,
           value: {
             input: {
               text: 'button',

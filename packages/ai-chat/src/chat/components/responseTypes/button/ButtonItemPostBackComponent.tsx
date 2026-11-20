@@ -9,6 +9,7 @@
 
 import Send16 from '@carbon/icons/es/send/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
+import { getButtonIconProps } from '../../../utils/buttonIconProps';
 import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
@@ -93,7 +94,7 @@ function ButtonItemPostBackComponent({
       size={size}
       is={is}
       onClick={onClickHandler}
-      renderIcon={(image_url && Send) || undefined}
+      {...getButtonIconProps(messageItem, image_url ? Send : undefined)}
       disabled={isDisabled}
       selected={isSelected}
     />

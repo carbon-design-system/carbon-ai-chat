@@ -9,8 +9,9 @@
 
 /* eslint-disable */
 import React from 'react';
-import '../../user-avatar/index';
+import MessageByline from '../../../react/message-byline';
 import MessageItemShell from '../../../react/message-item-shell';
+import UserAvatar from '../../../react/user-avatar';
 import './story-styles.scss';
 import { storyClass } from './story-data';
 import {
@@ -32,15 +33,14 @@ const renderRow = (args) => (
     rowType={args.rowType}
     fullWidth={args.fullWidth}
     hideAvatar={args.hideAvatar}>
-    {args.rowType === 'response' && (
-      <cds-aichat-user-avatar
-        slot="byline"
-        className="cds-aichat-message-item-shell__byline-avatar"
-      />
-    )}
-    <span slot="byline" className={`${storyClass}-byline-text`}>
-      {args.rowType === 'request' ? 'You' : 'Assistant'} 10:42 AM
-    </span>
+    <MessageByline
+      slot="byline"
+      label={args.rowType === 'request' ? 'You' : 'Assistant'}
+      timestamp="10:42 AM">
+      {args.rowType === 'response' && (
+        <UserAvatar slot="avatar" width="28px" height="28px" />
+      )}
+    </MessageByline>
     <div className={`${storyClass}-content`}>
       {args.rowType === 'request'
         ? 'How do I reset my password?'

@@ -17,12 +17,12 @@ Use `cds-aichat-message-item-shell` as the frame for one message row. It provide
 
 Request and response rows use the same shell. Set `row-type` to `request` or `response` to choose the layout.
 
-| Slot         | Region                                                    |
-| ------------ | --------------------------------------------------------- |
-| `byline`     | Name, timestamp, and avatar. Available on both row types. |
-| default      | The message content.                                      |
-| `attachment` | File upload status.                                       |
-| `footer`     | Footer content from the host.                             |
+| Slot         | Region                                                      |
+| ------------ | ----------------------------------------------------------- |
+| `byline`     | A `cds-aichat-message-byline`. Available on both row types. |
+| default      | The message content.                                        |
+| `attachment` | File upload status.                                         |
+| `footer`     | Footer content from the host.                               |
 
 The shell adds no screen reader announcements. Your slotted content decides what is announced, including file upload status.
 
@@ -44,20 +44,20 @@ Set `full-width` to break the content out of the inset column.
 
 ### Hidden avatar
 
-Set `hide-avatar` to hide the avatar image within the byline. The name and timestamp remain visible.
+Set `hide-avatar` to hide the avatar in the byline. The label and timestamp remain visible.
 
-Give the avatar `slot="byline"` and the class `cds-aichat-message-item-shell__byline-avatar` directly on it. Avatars nested inside another slotted element are not hidden.
+Slot a `cds-aichat-message-byline` in `byline` and give its avatar `slot="avatar"` directly. The shell sets `hidden` on that avatar, and the byline then renders no avatar box. An avatar nested inside another element is not hidden.
 
 ```html
 <cds-aichat-message-item-shell row-type="response" hide-avatar>
-  <img
+  <cds-aichat-message-byline
     slot="byline"
-    class="cds-aichat-message-item-shell__byline-avatar"
-    src="..."
-    alt="Assistant" />
-  <span slot="byline" style="padding-inline-start: 0.5rem">
-    Assistant 10:42 AM
-  </span>
+    label="Assistant"
+    timestamp="10:42 AM">
+    <cds-aichat-user-avatar
+      slot="avatar"
+      name="Assistant"></cds-aichat-user-avatar>
+  </cds-aichat-message-byline>
   <div>Content</div>
 </cds-aichat-message-item-shell>
 ```

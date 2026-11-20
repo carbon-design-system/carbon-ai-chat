@@ -34,12 +34,6 @@ $block-class: #{$prefix}-message-item-shell;
   align-items: center;
 }
 
-// The host slots the avatar as a direct child of the shell with this class.
-// `::slotted()` only matches that direct child, never its descendants.
-:host(#{$block-class}[hide-avatar]) ::slotted(.#{$block-class}__byline-avatar) {
-  display: none;
-}
-
 .#{$block-class}__body {
   display: flex;
   flex-direction: column;
@@ -78,6 +72,7 @@ $block-class: #{$prefix}-message-item-shell;
 
   .#{$block-class}__body {
     align-items: flex-start;
+    padding-block-start: layout.$spacing-02;
   }
 
   .#{$block-class}__attachment,
