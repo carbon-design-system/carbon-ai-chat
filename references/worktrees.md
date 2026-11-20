@@ -79,46 +79,10 @@ When you or the OS delete a worktree folder, git keeps its record. `git worktree
 
 ## Per-tool defaults
 
-None of the three tools can put its own worktrees in the peer folder from a committed file. Agents that run `git worktree add` themselves follow this file whatever the tool.
+None of the three tools can put its own worktrees in the peer folder from a committed file. Agents that run `git worktree add` themselves follow this file whatever the tool. When a tool makes the worktree for you, read its file too:
 
-### Claude Code
-
-`--worktree`, the `EnterWorktree` tool, and subagents with `isolation: "worktree"` create `.claude/worktrees/<name>` on branch `worktree-<name>`, inside the checkout. No setting moves them: `worktree.location` is user-level and only the desktop app reads it ([settings reference](https://code.claude.com/docs/en/settings-reference.md)).
-
-For work you'll keep, create the worktree with git as above, then enter that path. Claude Code asks for approval when it enters a path outside `.claude/worktrees/` ([worktrees](https://code.claude.com/docs/en/worktrees.md)). Inside a harness-made worktree, set `NX_WORKSPACE_ROOT_PATH` before any build.
-
-A `WorktreeCreate` hook replaces the git step and can return the peer path ([hooks](https://code.claude.com/docs/en/hooks.md#worktreecreate)). It's an opt-in for your own `.claude/settings.local.json`, which git ignores, because it has costs ([worktrees](https://code.claude.com/docs/en/worktrees.md)):
-
-- Subagent and workflow worktrees are never removed for you, and the periodic sweep skips hook-made worktrees.
-- With no `WorktreeRemove` hook, exiting a session or `ExitWorktree` removes the worktree as `git worktree remove --force` would, dirty files included.
-- Claude Code never deletes the `worktree-<name>` branch.
-- `worktree.baseRef`, `.worktreeinclude`, and `--worktree '#<PR>'` stop working.
-
-The snippet needs `jq`. It branches from your local `origin/HEAD`, so run `git fetch` first:
-
-```json
-{
-  "hooks": {
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'set -e; n=$(jq -r .name); m=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\"); d=\"$(dirname \"$m\")/$(basename \"$m\").worktrees/$n\"; git -C \"$m\" worktree add --no-track -b \"worktree-$n\" \"$d\" origin/HEAD >&2; echo \"$d\"'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Codex
-
-The Codex app creates worktrees in `$CODEX_HOME/worktrees` (default `~/.codex/worktrees/<id>/<repo>`). That's outside the checkout, so the Nx problem doesn't apply. The app keeps the 15 newest and deletes older ones ([Codex worktrees](https://learn.chatgpt.com/docs/environments/git-worktrees)).
-
-The root is `git-worktree-root` in the `[desktop]` table of your user `~/.codex/config.toml`, or **Settings > Worktrees** in the app. It takes an absolute path, applies to every repo, and still adds an `<id>/<repo>` layer ([`settings.rs`](https://github.com/openai/codex/blob/main/codex-rs/worktree/src/settings.rs), [`paths.rs`](https://github.com/openai/codex/blob/main/codex-rs/worktree/src/paths.rs)). Leave it at the default; don't point it at `<repo>.worktrees`. The committed [.codex/config.toml](../.codex/config.toml) doesn't set it.
-
-### IBM Bob
-
-The installed Bob IDE has no worktree feature or setting, and the [Bob Shell configuration](https://bob.ibm.com/docs/shell/configuration/configuring) lists none. Nothing to configure.
+| Tool | Read when |
+| --- | --- |
+| [Claude Code](worktrees-claude-code.md) | you use `--worktree`, `EnterWorktree`, or `isolation: "worktree"`, or work under `.claude/worktrees/` |
+| [Codex](worktrees-codex.md) | the Codex app made the worktree, or you'd change its worktree root |
+| [IBM Bob](worktrees-bob.md) | you look for a Bob worktree setting |
