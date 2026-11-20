@@ -7,32 +7,69 @@
  *  @license
  */
 
-import React from 'react';
-
-import { IFrameComponent } from '../../components-legacy/responseTypes/iframe/IFrameComponent';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { createComponent, type EventName } from '@lit/react';
+import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
+import { InlineError } from '../responseTypes/error/InlineError';
+import IFrameBody, { type IFramePanelMessage } from './native/IFrameBody';
+import { PanelBodyContentAdapter } from './PanelBodyContentAdapter';
+import type {
+  PanelBodyContentDetail,
+  PanelBodyContentReadyEvent,
+} from './native/panelBodyContent';
 
 interface IFramePanelProps {
-  messageItem?: {
-    source?: string;
-    title?: string;
-  };
+  messageItem?: IFramePanelMessage;
 }
 
-const IFramePanel: React.FC<IFramePanelProps> = ({ messageItem }) => {
-  const iframeTitle = messageItem?.title || messageItem?.source;
+const nativeIFrameBodyEvents = {
+  onPanelContentReady:
+    'panel-content-ready' as EventName<PanelBodyContentReadyEvent>,
+};
 
+// The bridge sets the view's properties in DOM shims, where @lit/react's node
+// build passes them only to server rendering.
+const NativeIFrameBody = withWebComponentBridge(
+  createComponent({
+    tagName: 'cds-aichat-iframe-body',
+    elementClass: IFrameBody,
+    react: React,
+    events: nativeIFrameBodyEvents,
+  }),
+  { events: nativeIFrameBodyEvents }
+);
+
+const IFramePanel = ({ messageItem }: IFramePanelProps) => {
+  const [content, setContent] = useState<PanelBodyContentDetail>();
+  const active = useRef(true);
+  useLayoutEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
+  const onContentReady = useCallback((event: PanelBodyContentReadyEvent) => {
+    if (active.current) {
+      const next = event.detail ?? undefined;
+      setContent((previous) =>
+        previous?.target === next?.target && previous?.text === next?.text
+          ? previous
+          : next
+      );
+    }
+  }, []);
   return (
-    <div className="cds-aichat--panel-content cds-aichat--i-frame-panel">
-      <div className="cds-aichat--i-frame-panel__content">
-        {messageItem?.source && (
-          <IFrameComponent
-            key={messageItem.source}
-            source={messageItem.source}
-            title={iframeTitle}
-          />
-        )}
-      </div>
-    </div>
+    <>
+      <NativeIFrameBody
+        messageItem={messageItem}
+        onPanelContentReady={onContentReady}
+      />
+      {content && (
+        <PanelBodyContentAdapter target={content.target}>
+          <InlineError text={content.text} />
+        </PanelBodyContentAdapter>
+      )}
+    </>
   );
 };
 

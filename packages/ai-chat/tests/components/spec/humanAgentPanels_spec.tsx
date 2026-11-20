@@ -8,11 +8,38 @@
  */
 
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render as renderReact,
+  screen,
+} from '@testing-library/react';
+import { ContextProvider } from '@lit/context';
+import { LitElement, nothing } from 'lit';
 import { EndHumanAgentChatPanel } from '../../../src/chat/components/panels/EndHumanAgentChatPanel';
 import { RequestScreenSharePanel } from '../../../src/chat/components/panels/RequestScreenSharePanel';
 import { ScreenShareState } from '../../../src/types/config/ServiceDeskConfig';
 import languagePack from '../../../src/chat/languages/en.json';
+import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { createTestViewState } from '../../test_helpers';
+
+class PromptProvider extends LitElement {
+  readonly provider = new ContextProvider(this, {
+    context: chatViewStateContext,
+  });
+
+  render() {
+    return nothing;
+  }
+}
+customElements.define('test-native-prompt-provider', PromptProvider);
+
+let promptHost: PromptProvider;
+let promptRoot: HTMLDivElement;
+
+function render(children: React.ReactElement) {
+  return renderReact(children, { container: promptRoot });
+}
 
 const mockAnnounce = jest.fn();
 const mockFocus = jest.fn();
@@ -104,7 +131,16 @@ beforeEach(() => {
       humanAgentState: { isConnected: true, isSuspended: false },
     },
   };
+  promptHost = document.createElement(
+    'test-native-prompt-provider'
+  ) as PromptProvider;
+  promptHost.provider.setValue(createTestViewState());
+  promptRoot = document.createElement('div');
+  promptHost.appendChild(promptRoot);
+  document.body.appendChild(promptHost);
 });
+
+afterEach(() => promptHost.remove());
 
 describe('end human agent chat panel', () => {
   it.each([
@@ -131,7 +167,7 @@ describe('end human agent chat panel', () => {
     ],
   ] as const)(
     'uses the connected=%s and suspended=%s language variant',
-    (isConnected, isSuspended, title, message, confirmLabel) => {
+    async (isConnected, isSuspended, title, message, confirmLabel) => {
       mockState.persistedToBrowserStorage.humanAgentState = {
         isConnected,
         isSuspended,
@@ -147,7 +183,7 @@ describe('end human agent chat panel', () => {
       );
 
       expect(
-        screen.getByRole('heading', { name: languagePack[title] })
+        await screen.findByRole('heading', { name: languagePack[title] })
       ).toBeTruthy();
       expect(screen.getByText(languagePack[message])).toBeTruthy();
       fireEvent.click(
@@ -163,7 +199,7 @@ describe('end human agent chat panel', () => {
     }
   );
 
-  it('uses host title and message overrides', () => {
+  it('uses host title and message overrides', async () => {
     render(
       <EndHumanAgentChatPanel
         open
@@ -175,7 +211,7 @@ describe('end human agent chat panel', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: 'Finish support' })
+      await screen.findByRole('heading', { name: 'Finish support' })
     ).toBeTruthy();
     expect(screen.getByText('Leave this conversation?')).toBeTruthy();
     act(() =>
@@ -184,6 +220,39 @@ describe('end human agent chat panel', () => {
       )
     );
     expect(mockAnnounce).toHaveBeenCalledWith('Leave this conversation?');
+  });
+
+  it('updates native prompt text without interpreting host text as markup', async () => {
+    const props = { open: true, onConfirm: jest.fn(), onCancel: jest.fn() };
+    const { rerender } = render(
+      <EndHumanAgentChatPanel
+        {...props}
+        title="<strong>Finish support</strong>"
+        message="<img src=x onerror=alert(1)>"
+      />
+    );
+    const heading = await screen.findByRole('heading', {
+      name: '<strong>Finish support</strong>',
+    });
+    const body = heading.closest('cds-aichat-confirmation-body');
+    expect(body.shadowRoot).toBeNull();
+    expect(body.getAttribute('slot')).toBe('body');
+    expect(body.querySelector('strong, img')).toBeNull();
+    expect(screen.getByText('<img src=x onerror=alert(1)>')).toBeTruthy();
+
+    rerender(
+      <EndHumanAgentChatPanel
+        {...props}
+        title="Leave support"
+        message="You can start another conversation."
+      />
+    );
+    expect(await screen.findByRole('heading', { name: 'Leave support' })).toBe(
+      heading
+    );
+    expect(
+      screen.getByText('You can start another conversation.')
+    ).toBeTruthy();
   });
 });
 
