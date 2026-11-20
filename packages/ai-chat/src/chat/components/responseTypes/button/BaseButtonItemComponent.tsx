@@ -16,6 +16,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 import { consoleError } from '../../../utils/miscUtils';
 
+import { ButtonItem } from '../../../../types/messaging/Messages';
 import { AppState } from '../../../../types/state/AppState';
 import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { Image } from '../../../components-legacy/responseTypes/image/Image';
@@ -80,6 +81,17 @@ interface BaseButtonComponentProps extends HasClassName {
   renderIcon?: any;
 
   /**
+   * Whether to show only the icon. The label stays in the DOM, visually hidden, as the accessible name. Ignored when
+   * there is no icon or when an image is shown.
+   */
+  hideLabel?: boolean;
+
+  /**
+   * Where the icon sits when the label is hidden. Defaults to `end`.
+   */
+  iconAlignment?: ButtonItem['icon_alignment'];
+
+  /**
    * The callback function to fire when the button is clicked.
    */
   onClick?: () => void;
@@ -99,6 +111,8 @@ function BaseButtonItemComponent({
   selected,
   is,
   renderIcon,
+  hideLabel,
+  iconAlignment = 'end',
   imageURL,
   altText,
   onClick,
@@ -163,14 +177,21 @@ function BaseButtonItemComponent({
       />
     );
   }
-  const RenderIcon = renderIcon; // todo: enable passing custom icon
+  const RenderIcon = renderIcon;
   const buttonKind = getButtonKind(kind) || 'primary';
   const isStandard = is === 'standard-button';
+  const isLabelHidden = Boolean(hideLabel && renderIcon && text);
+  // The label names the button, so the icon is hidden from screen readers when the label is.
+  const iconAccessibilityProps = isLabelHidden
+    ? { 'aria-hidden': true }
+    : { 'aria-label': text };
 
   const commonBtnProps = {
     'aria-pressed': selected,
     className: cx('cds-aichat--button-item', className, {
       'cds-aichat--button-item--selected': selected,
+      'cds-aichat--button-item--hidden-label': isLabelHidden,
+      [`cds-aichat--button-item--icon-${iconAlignment}`]: isLabelHidden,
     }),
     disabled,
     href: url,
@@ -184,10 +205,16 @@ function BaseButtonItemComponent({
     ref: setButtonRef,
   };
 
+  // A hidden label stays a real element in the default slot. Without it `cds-button` treats the button as icon-only
+  // and shrinks it to a square.
   const body = (
     <>
-      {renderIcon && <RenderIcon slot="icon" aria-label={text} />}
-      {text}
+      {renderIcon && <RenderIcon slot="icon" {...iconAccessibilityProps} />}
+      {isLabelHidden ? (
+        <span className="cds-aichat--visually-hidden">{text}</span>
+      ) : (
+        text
+      )}
     </>
   );
 
