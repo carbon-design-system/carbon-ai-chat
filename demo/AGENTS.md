@@ -58,4 +58,4 @@ npm test -- --ui
 
 These commands preserve the script's `NODE_OPTIONS` preload.
 
-When `CI` is unset, Playwright reuses any server already on port 3001 and skips its own build and preview. The suite expects the production preview. If a server answers on port 3001, such as the `aiChat:start` dev server, do not run the suite against it. Ask the user to stop that server, build the packages after asking, then run the suite.
+The suite runs on a port derived from the checkout's path, in 3100–3999, so it never meets the dev server on 3001 or another worktree's suite. `PORT` overrides it. When `CI` is unset, Playwright reuses a server already on that port and skips its own demo build and preview. Global setup then fails the run unless the server serves this checkout's `demo/dist/index.html`. On that failure, stop the server on the port or set `PORT` to a free one. Don't work around the check.

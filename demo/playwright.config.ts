@@ -5,6 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
+import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +16,13 @@ import type { DemoModeOptions } from './tests/fixtures';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const port = Number(process.env.PORT) || 3001;
+// Each checkout gets its own port in 3100-3999, so suites in two worktrees
+// never share a server, and none collides with the dev server on 3001. Every
+// Playwright process derives the same port from the same path. `PORT` wins.
+const checkoutPort =
+  3100 +
+  (createHash('sha256').update(__dirname).digest().readUInt32BE(0) % 900);
+const port = Number(process.env.PORT) || checkoutPort;
 
 export default defineConfig<DemoModeOptions>({
   testDir: './tests',
@@ -29,7 +36,8 @@ export default defineConfig<DemoModeOptions>({
   // runs get 0 retries so devs see flakes immediately.
   retries: process.env.CI ? 1 : 0,
   // Serve production build. Vite's `@vite/client` injects inline <style>
-  // to trip CSP tests (`style-src 'self'`)
+  // to trip CSP tests (`style-src 'self'`). A reused server must serve this
+  // checkout's `dist/`; global setup checks that before any test runs.
   webServer: {
     command: `npm run build && npm run preview -- --host 127.0.0.1 --port ${port} --strictPort`,
     port,
