@@ -16,7 +16,8 @@ import type { JSONContent } from '@tiptap/core';
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
  *
- * - `loading`: history and the welcome are loading.
+ * - `loading`: the chat itself is loading history and the welcome. Calls to
+ *   {@link ChatInstance.updateIsChatLoadingCounter} don't set it.
  * - `submitted`: a send is waiting for its first associated response.
  * - `streaming`: a response is active, or its sender is still pending after a response arrives.
  *   This includes the gap after the response completes and before the sender settles.
@@ -185,7 +186,9 @@ export type PublicChatState = Readonly<
     /**
      * Counter that indicates if the chat is hydrating and a full screen loading state should be displayed.
      *
-     * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` — removed in 2.0.0.
+     * @deprecated Read `status` as a {@link ConversationStatus} and check for `loading` to know when the chat itself is
+     * hydrating. `status` doesn't follow {@link ChatInstance.updateIsChatLoadingCounter}, so if you drive that counter,
+     * track its value yourself. Removed in 2.0.0.
      */
     isHydratingCounter: number;
 

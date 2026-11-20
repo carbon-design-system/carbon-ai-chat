@@ -28,7 +28,11 @@ import { ServiceManager } from './ServiceManager';
 import { PendingMessageRequest } from './MessageService';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import { consoleError, debugLog } from '../utils/miscUtils';
-import { BusEventSend, BusEventType } from '../../types/events/eventBusTypes';
+import {
+  BusEventSend,
+  BusEventType,
+  MessageSendSource,
+} from '../../types/events/eventBusTypes';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { addDefaultsToMessage } from '../utils/messageUtils';
 
@@ -43,6 +47,9 @@ function getSendErrorText(error: unknown, processingError: boolean): string {
     return error instanceof Error
       ? error.message
       : 'The chat could not process the message chunk.';
+  }
+  if (error instanceof Error) {
+    return error.message || 'There was an unidentified error.';
   }
   return (
     (error && (typeof error === 'string' ? error : JSON.stringify(error))) ||
@@ -93,6 +100,19 @@ class OutboundMessageCoordinator {
   }
 
   /**
+   * A failed silent send has no user message to mark, so it adds an inline error message instead. The welcome
+   * request is silent too, but its failure stays quiet.
+   */
+  private addErrorMessageIfSilent(pendingRequest: PendingMessageRequest) {
+    if (
+      pendingRequest.requestOptions.silent &&
+      pendingRequest.source !== MessageSendSource.WELCOME_REQUEST
+    ) {
+      this.addErrorMessage();
+    }
+  }
+
+  /**
    * Process a message returned from the assistant send path with an error. Custom senders handle retries upstream;
    * we mark this attempt as failed and advance the queue.
    */
@@ -101,8 +121,7 @@ class OutboundMessageCoordinator {
     resultText: string,
     reportSendError = true
   ) {
-    const { timeFirstRequest, timeLastRequest, isProcessed, requestOptions } =
-      pendingRequest;
+    const { timeFirstRequest, timeLastRequest, isProcessed } = pendingRequest;
 
     // If this message was already invalidated, don't do anything.
     if (isProcessed) {
@@ -112,10 +131,7 @@ class OutboundMessageCoordinator {
     pendingRequest.trackData.lastRequestTime = Date.now() - timeLastRequest;
     pendingRequest.trackData.totalRequestTime = Date.now() - timeFirstRequest;
 
-    if (requestOptions.silent) {
-      // If the message that was sent was silent, we have to throw an error manually since there isn't any user message to reference.
-      this.addErrorMessage();
-    }
+    this.addErrorMessageIfSilent(pendingRequest);
 
     this.serviceManager.conversationLifecycleService.fail(
       { messageID: pendingRequest.message.id },
@@ -160,11 +176,39 @@ class OutboundMessageCoordinator {
   }
 
   /**
-   * Marks a message as failed.
+   * Fails a request whose `pre:send` or `send` handler threw, before it reached `customSendMessage`. The request
+   * fails like a rejected send, but the conversation doesn't read `error`, and `send()` rejects with the handler's
+   * own error. A welcome request is the exception: its failure reads `error`, as a rejected welcome send does, and
+   * hydration reports no second error for it.
+   */
+  processHandlerError(pendingRequest: PendingMessageRequest, error: unknown) {
+    if (pendingRequest.isProcessed) {
+      return;
+    }
+
+    const resultText = getSendErrorText(error, false);
+    this.addErrorMessageIfSilent(pendingRequest);
+    if (pendingRequest.source === MessageSendSource.WELCOME_REQUEST) {
+      this.serviceManager.conversationLifecycleService.fail(
+        { messageID: pendingRequest.message.id },
+        pendingRequest.generation
+      );
+    }
+    this.serviceManager.actions.errorOccurred({
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: 'An error occurred sending a message',
+      otherData: resultText,
+    });
+    this.rejectFinalErrorOnMessage(pendingRequest, resultText, error);
+  }
+
+  /**
+   * Marks a message as failed and rejects its send with `rejection`, an `Error` with the result text by default.
    */
   rejectFinalErrorOnMessage(
     pendingRequest: PendingMessageRequest,
-    resultText = 'An undefined error occurred trying to send your message.'
+    resultText = 'An undefined error occurred trying to send your message.',
+    rejection: unknown = new Error(resultText)
   ) {
     const { sendMessagePromise } = pendingRequest;
 
@@ -185,7 +229,7 @@ class OutboundMessageCoordinator {
 
     // Reject the promise that lets the original caller who sent the message know that the message failed to be sent.
     this.finishStreamingResponse(pendingRequest);
-    sendMessagePromise.doReject(new Error(resultText));
+    sendMessagePromise.doReject(rejection);
     pendingRequest.isProcessed = true;
     this.serviceManager.conversationLifecycleService.requestFinished(
       pendingRequest.message.id,
