@@ -29,6 +29,9 @@ const CUSTOM_ICON = {
 } as any;
 
 const CUSTOM_ICON_SELECTOR = 'svg[data-icon="custom"]';
+const HIDDEN_LABEL_SELECTOR = '.cds-aichat--visually-hidden';
+const HIDDEN_LABEL_CLASS_SELECTOR = '.cds-aichat--button-item--hidden-label';
+const IMAGE_URL = 'https://example.com/image.png';
 
 const COMMON_ITEM = {
   response_type: MessageResponseTypes.BUTTON,
@@ -37,8 +40,6 @@ const COMMON_ITEM = {
 
 interface ButtonCase {
   name: string;
-  /** Whether the component shows a default icon when `image_url` is set and no custom icon is given. */
-  defaultIconWithImage: boolean;
   item: Record<string, unknown>;
   renderComponent: (localMessageItem: any) => React.ReactElement;
 }
@@ -46,7 +47,6 @@ interface ButtonCase {
 const CASES: ButtonCase[] = [
   {
     name: 'post_back',
-    defaultIconWithImage: true,
     item: {
       ...COMMON_ITEM,
       button_type: ButtonItemType.POST_BACK,
@@ -62,7 +62,6 @@ const CASES: ButtonCase[] = [
   },
   {
     name: 'custom_event',
-    defaultIconWithImage: true,
     item: {
       ...COMMON_ITEM,
       button_type: ButtonItemType.CUSTOM_EVENT,
@@ -77,7 +76,6 @@ const CASES: ButtonCase[] = [
   },
   {
     name: 'show_panel',
-    defaultIconWithImage: true,
     item: {
       ...COMMON_ITEM,
       button_type: ButtonItemType.SHOW_PANEL,
@@ -92,7 +90,6 @@ const CASES: ButtonCase[] = [
   },
   {
     name: 'url',
-    defaultIconWithImage: true,
     item: {
       ...COMMON_ITEM,
       button_type: ButtonItemType.URL,
@@ -103,6 +100,12 @@ const CASES: ButtonCase[] = [
     ),
   },
 ];
+
+const CASES_WITHOUT_DEFAULT_ICON = CASES.filter(({ name }) => name !== 'url');
+
+function getCase(name: string): ButtonCase {
+  return CASES.find((buttonCase) => buttonCase.name === name);
+}
 
 function renderButton(
   { item, renderComponent }: ButtonCase,
@@ -140,7 +143,7 @@ describe.each(CASES)('$name button icon', (buttonCase) => {
   it('renders the custom icon instead of the default when `image_url` is also set', () => {
     const { container } = renderButton(buttonCase, {
       icon: CUSTOM_ICON,
-      image_url: 'https://example.com/image.png',
+      image_url: IMAGE_URL,
     });
 
     expect(container.querySelector(CUSTOM_ICON_SELECTOR)).toBeInTheDocument();
@@ -148,9 +151,7 @@ describe.each(CASES)('$name button icon', (buttonCase) => {
   });
 
   it('keeps the default icon when `icon` is absent and `image_url` is set', () => {
-    const { container } = renderButton(buttonCase, {
-      image_url: 'https://example.com/image.png',
-    });
+    const { container } = renderButton(buttonCase, { image_url: IMAGE_URL });
 
     expect(container.querySelector(CUSTOM_ICON_SELECTOR)).toBeNull();
     expect(container.querySelector('svg')).toBeInTheDocument();
@@ -158,7 +159,7 @@ describe.each(CASES)('$name button icon', (buttonCase) => {
 });
 
 describe('icon defaults without `image_url`', () => {
-  it.each(CASES.filter(({ name }) => name !== 'url'))(
+  it.each(CASES_WITHOUT_DEFAULT_ICON)(
     '$name renders no icon when `icon` is absent',
     (buttonCase) => {
       const { container } = renderButton(buttonCase);
@@ -168,9 +169,7 @@ describe('icon defaults without `image_url`', () => {
   );
 
   it('url keeps the default Launch icon when `icon` is absent', () => {
-    const { container } = renderButton(
-      CASES.find(({ name }) => name === 'url')
-    );
+    const { container } = renderButton(getCase('url'));
 
     expect(container.querySelector('svg')).toBeInTheDocument();
     expect(container.querySelector(CUSTOM_ICON_SELECTOR)).toBeNull();
@@ -178,7 +177,7 @@ describe('icon defaults without `image_url`', () => {
 });
 
 describe('url button of kind LINK without `image_url`', () => {
-  const urlCase = CASES.find(({ name }) => name === 'url');
+  const urlCase = getCase('url');
 
   it('renders the custom icon and labels it with the link text', () => {
     const { container } = renderButton(urlCase, {
@@ -198,6 +197,101 @@ describe('url button of kind LINK without `image_url`', () => {
     expect(container.querySelector('svg')).toHaveAttribute(
       'aria-label',
       'Launch'
+    );
+  });
+});
+
+describe.each(CASES)('$name button with `hide_label`', (buttonCase) => {
+  const hiddenLabelItem = { icon: CUSTOM_ICON, hide_label: true };
+
+  it('keeps the label in the DOM as visually hidden text', () => {
+    const { container } = renderButton(buttonCase, hiddenLabelItem);
+
+    expect(container.querySelector(HIDDEN_LABEL_SELECTOR)).toHaveTextContent(
+      'Visible label'
+    );
+    expect(
+      container.querySelector(HIDDEN_LABEL_CLASS_SELECTOR)
+    ).toBeInTheDocument();
+  });
+
+  it('hides the icon from assistive technology so the label is announced once', () => {
+    const { container } = renderButton(buttonCase, hiddenLabelItem);
+
+    expect(container.querySelector(CUSTOM_ICON_SELECTOR)).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    );
+  });
+
+  it.each(['start', 'center', 'end'] as const)(
+    'applies the %s alignment class',
+    (alignment) => {
+      const { container } = renderButton(buttonCase, {
+        ...hiddenLabelItem,
+        icon_alignment: alignment,
+      });
+
+      expect(
+        container.querySelector(`.cds-aichat--button-item--icon-${alignment}`)
+      ).toBeInTheDocument();
+    }
+  );
+
+  it('defaults the alignment to end', () => {
+    const { container } = renderButton(buttonCase, hiddenLabelItem);
+
+    expect(
+      container.querySelector('.cds-aichat--button-item--icon-end')
+    ).toBeInTheDocument();
+  });
+
+  it('shows the label as normal text when `hide_label` is not set', () => {
+    const { container } = renderButton(buttonCase, { icon: CUSTOM_ICON });
+
+    expect(container.querySelector(HIDDEN_LABEL_SELECTOR)).toBeNull();
+    expect(container.querySelector(HIDDEN_LABEL_CLASS_SELECTOR)).toBeNull();
+    expect(container.querySelector(CUSTOM_ICON_SELECTOR)).toHaveAttribute(
+      'aria-label',
+      'Visible label'
+    );
+  });
+});
+
+describe('`hide_label` without an icon', () => {
+  it.each(CASES_WITHOUT_DEFAULT_ICON)(
+    '$name keeps the visible label',
+    (buttonCase) => {
+      const { container } = renderButton(buttonCase, { hide_label: true });
+
+      expect(container.querySelector(HIDDEN_LABEL_SELECTOR)).toBeNull();
+      expect(container).toHaveTextContent('Visible label');
+    }
+  );
+});
+
+describe('hidden accessible name fallbacks', () => {
+  it('uses `value.input.text` for a post_back button with no label', () => {
+    const { container } = renderButton(getCase('post_back'), {
+      label: undefined,
+      icon: CUSTOM_ICON,
+      hide_label: true,
+    });
+
+    expect(container.querySelector(HIDDEN_LABEL_SELECTOR)).toHaveTextContent(
+      'sent text'
+    );
+  });
+
+  it('uses the URL for a url button with no label', () => {
+    const { container } = renderButton(getCase('url'), {
+      label: undefined,
+      icon: CUSTOM_ICON,
+      hide_label: true,
+    });
+
+    expect(container.querySelector(HIDDEN_LABEL_SELECTOR)).toHaveTextContent(
+      'https://example.com'
     );
   });
 });
