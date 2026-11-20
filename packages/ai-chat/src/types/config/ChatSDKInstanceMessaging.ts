@@ -29,6 +29,12 @@ export interface ChatSDKInstanceMessaging {
    * the {@link MessageResponse} currently stored under `messageID` (or `undefined` when no
    * message with that ID exists) and returns the message that should replace it.
    *
+   * This is the recommended way to add messages for new work, especially more complex UI. One
+   * method covers inserting, streaming, correcting, and regenerating a message.
+   * {@link ChatInstanceMessaging.addMessage} and {@link ChatInstanceMessaging.addMessageChunk}
+   * remain fully supported as the legacy flow, and there are no plans to remove them. Nothing
+   * stops you from mixing the two flows, but it isn't recommended or fully tested.
+   *
    * Calls targeting the same `messageID` are serialized — each call awaits the previous
    * call for that ID before running. Calls targeting different `messageID`s run
    * independently.
@@ -63,7 +69,41 @@ export interface ChatSDKInstanceMessaging {
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
    *   `false` indefinitely. The host is responsible for sending a terminal write, or for
    *   calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.
-   * @experimental Upsert semantics and the updater signature may evolve based on consumer feedback.
+   *
+   * @example Insert a complete message
+   * ```ts
+   * await instance.messaging.upsertMessage('welcome', MessageState.COMPLETE, () => ({
+   *   id: 'welcome',
+   *   output: {
+   *     generic: [{ response_type: MessageResponseTypes.TEXT, text: 'Hi! How can I help?' }],
+   *   },
+   * }));
+   * // The message shows, and the chat fires pre:receive and receive once.
+   * ```
+   *
+   * @example Stream a reply, then complete it
+   * ```ts
+   * // Inside customSendMessage(request, options, instance).
+   * // streamAnswer stands in for your own async iterable of text pieces.
+   * const messageID = `${request.id}-reply`;
+   * const toMessage = (text: string): MessageResponse => ({
+   *   id: messageID,
+   *   request_id: request.id,
+   *   output: {
+   *     generic: [
+   *       { response_type: MessageResponseTypes.TEXT, text, streaming_metadata: { id: 'answer' } },
+   *     ],
+   *   },
+   * });
+   *
+   * let text = '';
+   * for await (const piece of streamAnswer(request)) {
+   *   text += piece;
+   *   await instance.messaging.upsertMessage(messageID, MessageState.STREAMING, () => toMessage(text));
+   * }
+   * await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () => toMessage(text));
+   * // receive fires once, on the final call.
+   * ```
    */
   upsertMessage: (
     messageID: string,
