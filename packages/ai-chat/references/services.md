@@ -32,7 +32,7 @@ This supports lazy initialization, handles circular dependencies, and makes test
 ## Archetypes
 
 - **Simple data adapter:** [`HistoryService`](../src/shared/services/HistoryService.ts) loads and transforms history data.
-- **Lifecycle watcher:** [`ThemeWatcherService`](../src/shared/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
+- **Mount-owned watcher:** [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts) watches the page's theme. It reads the DOM, so it lives in `chat/services/`: the container connects it at mount and disconnects it on release.
 - **Orchestration engine:** [`MessageCoordinator`](../src/shared/services/messaging/MessageCoordinator.ts) owns assistant flows through private workflows and pure state models.
 
 ## When to create a service
@@ -41,13 +41,20 @@ Put state transformations in reducers. Put pure utilities that conversation code
 
 ## Who starts services
 
-[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host application's `onBeforeRender`, then lets the renderer show the app. Right after it creates `ChatViewState`, it attaches the view's ports from [`createViewBindings`](../src/chat/services/createViewBindings.ts); release detaches them. **Conversation services reach the view only through `serviceManager.view.current`**, which is `undefined` with no view attached, so each view call there must do nothing without one. **A Lit element reads the chat's view state, which holds the manager, from the context in [chat-view-state-context.ts](../src/web-components/shared/chat-view-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
+[`cds-aichat-container`](../src/web-components/cds-aichat-container/cds-aichat-container.ts) starts them, for every host. React starts nothing. The container calls [`initServiceManagerAndInstance`](../src/chat/utils/chatBoot.ts), runs the host application's `onBeforeRender`, then lets the renderer show the app. Right after it creates `ChatViewState`, it attaches the view's ports from [`createViewBindings`](../src/chat/services/createViewBindings.ts); release detaches them, then shuts the chat down (see below). **Conversation services reach the view only through `serviceManager.view.current`**, which is `undefined` with no view attached, so each view call there must do nothing without one. **A Lit element reads the chat's view state, which holds the manager, from the context in [chat-view-state-context.ts](../src/web-components/shared/chat-view-state-context.ts)**, never from a singleton. The value is `undefined` before startup and after detach.
 
 ## Wiring & teardown
 
 - Keep messaging workflows private to `MessageCoordinator`; do not register them or pure data helpers as services.
 - Register new chat-instance services through [`ServiceManager`](../src/shared/services/ServiceManager.ts) and [`loadServices`](../src/shared/services/loadServices.ts).
-- **Full chat-instance teardown is still pending.** Detaching a host retires its mount — the renderer unmounts, listeners and bus handlers go, pending callbacks are dropped — but every store subscription, timer, and in-flight request a service owns keeps running. Keep the unsubscribe handle and the timer id you create, so the teardown that #1681 builds can dispose them. `destroySession()` resets session data; it is not a teardown.
+- **Removing a host shuts its chat down.** The container's release retires the mount, then calls `ServiceManager.shutdown()`; boot calls it too when the host left while services were starting. Hosts never call it. Shutdown runs once; a repeat call returns the same promise. In order, it:
+  - closes the store: every subscription goes, and later dispatches change nothing, so saved session state stays as it was at removal;
+  - clears the event bus;
+  - disconnects the human-agent service from the desk without ending the conversation there (`HumanAgentServiceImpl.shutdown()`). This comes before anything aborts, so an abort listener can't reach the real desk;
+  - destroys `PublicStateService` and aborts uploads in `InputActionsService`;
+  - stops `MessageCoordinator` through restart's own steps (`MessageCoordinator.shutdown()`), which cancels every request and ends its timers.
+- **A new service with live work adds its stop to `ServiceManager.shutdown()`.** Keep the timer id or controller you create, so you can stop it there. A store subscription needs nothing more; closing the store drops it. Late async work that reaches outside the store, such as a host callback or a global, checks `serviceManager.isShutdown` first.
+- `destroySession()` resets session data; it is not a shutdown.
 - Public methods on `ChatInstanceService` must be reflected on the `ChatInstance` type in [`src/types/instance/ChatInstance.ts`](../src/types/instance/ChatInstance.ts). The instance object is constructed in [`src/chat/utils/chatBoot.ts`](../src/chat/utils/chatBoot.ts).
 
 ## Testing services

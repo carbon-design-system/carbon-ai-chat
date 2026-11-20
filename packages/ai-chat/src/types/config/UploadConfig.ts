@@ -73,7 +73,8 @@ export interface UploadConfig {
    *   completes, if the conversation restarts or clears, or its session is
    *   destroyed ({@link ChatInstanceMessaging.restartConversation},
    *   {@link ChatInstanceMessaging.clearConversation},
-   *   {@link ChatInstance.destroySession}), or if the chat unmounts.
+   *   {@link ChatInstance.destroySession}), or with reason
+   *   {@link CancellationReason.CHAT_REMOVED} if the chat is removed from the page.
    */
   onFileUpload?: (
     file: File,

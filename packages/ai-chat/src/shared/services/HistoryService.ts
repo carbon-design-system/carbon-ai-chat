@@ -36,6 +36,10 @@ class HistoryService {
   async loadHistory(useHistory?: {
     notes: HistoryNote[];
   }): Promise<LoadedHistory> {
+    // A chat that shut down asks the host for nothing.
+    if (this.serviceManager.isShutdown) {
+      return null;
+    }
     const state = this.serviceManager.store.getState();
     const { config } = state;
     const publicConfig = config.public;

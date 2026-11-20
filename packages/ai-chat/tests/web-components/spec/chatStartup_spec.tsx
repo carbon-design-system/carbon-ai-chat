@@ -36,6 +36,7 @@ import type { ChatRenderer } from '../../../src/web-components/shared/react-rend
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
+import { ThemeWatcherService } from '../../../src/chat/services/ThemeWatcherService';
 import {
   BusEventType,
   BusEventUserDefinedResponse,
@@ -655,7 +656,8 @@ describe('cds-aichat-container startup', () => {
     expect(test.renders.length).toBe(rendersBefore);
   });
 
-  it('stops the theme watcher when the mount goes', async () => {
+  it('starts the theme watcher with the mount and stops it when the mount goes', async () => {
+    const connect = jest.spyOn(ThemeWatcherService.prototype, 'connect');
     const test = createTestRenderer();
     const element = createChatElement(test.renderer);
     element.onAfterRender = jest.fn();
@@ -664,15 +666,26 @@ describe('cds-aichat-container startup', () => {
       timeout: 5000,
     });
 
-    // The watcher polls on an interval and observes the document, so a mount
-    // that never stops it keeps both running for the life of the page.
-    const { themeWatcherService } = test.last().serviceManager;
-    const stopWatching = jest.spyOn(themeWatcherService, 'stopWatching');
+    // With no theme set, the chat inherits the page's, so the watcher polls
+    // on an interval and observes the document. A mount that never stops it
+    // keeps both running for the life of the page.
+    const watcher = connect.mock.contexts[0] as unknown as {
+      isWatching: boolean;
+      observer: MutationObserver | null;
+      pollInterval: number | null;
+    };
+    expect(connect).toHaveBeenCalledTimes(1);
+    expect(watcher.isWatching).toBe(true);
+    expect(watcher.pollInterval).not.toBeNull();
+    const disconnect = jest.spyOn(watcher.observer, 'disconnect');
 
     element.remove();
     await flushMicrotasks();
 
-    expect(stopWatching).toHaveBeenCalled();
+    expect(watcher.isWatching).toBe(false);
+    expect(watcher.pollInterval).toBeNull();
+    expect(disconnect).toHaveBeenCalled();
+    connect.mockRestore();
   });
 
   it('keeps extension content the host emits from onBeforeRender', async () => {

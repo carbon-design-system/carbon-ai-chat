@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { cleanup, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
 import { MessagePresentationAdapter } from '../../../../src/chat/services/MessagePresentationAdapter';
 import { SlotEventService } from '../../../../src/shared/services/messaging/presentation/SlotEventService';
@@ -27,6 +27,7 @@ import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
+  unmountKeepingServices,
   setupBeforeEach,
 } from '../../../test_helpers';
 
@@ -118,7 +119,7 @@ it('delivers and awaits response events when a real adapter has no slot capabili
   const { instance, serviceManager } =
     await renderChatAndGetInstanceWithStore(createBaseConfig());
   const manager = liveManager(serviceManager);
-  cleanup();
+  unmountKeepingServices(instance);
   const adapter = new MessagePresentationAdapter({
     hasCustomPromptLine: () => false,
     announceSending: jest.fn(),
@@ -128,7 +129,7 @@ it('delivers and awaits response events when a real adapter has no slot capabili
     isResponsePanelOpen: () => false,
     closeResponsePanel: jest.fn(),
   });
-  // The boot coordinator goes headless once cleanup detaches the view; retire it.
+  // The boot coordinator goes headless once the view detaches; retire it.
   manager.messageCoordinator.disposeReasoningObserver();
   withMessagingView(manager, adapter);
   manager.messageCoordinator = new MessageCoordinator(manager);

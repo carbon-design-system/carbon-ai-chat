@@ -239,6 +239,7 @@ pinMembers('CancellationReason', {
   STOP_STREAMING: 'Stop streaming',
   CONVERSATION_RESTARTED: 'Conversation restarted',
   TIMEOUT: 'Request timeout',
+  CHAT_REMOVED: 'Chat removed',
 });
 
 // @covers export.aiChatEntry.MessageState
