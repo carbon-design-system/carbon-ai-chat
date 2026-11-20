@@ -1,0 +1,72 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './citation-card.stories';
+
+<Meta of={Stories} />
+
+# Citation card
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/conversational-search) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `cds-aichat-citation-card` to show one source for a conversational search answer. Place cards in the shell's `citations` slot, usually inside a carousel.
+
+<Canvas of={Stories.Default} />
+
+## Variants
+
+The card picks its variant from what you give it.
+
+| You set | The card is | A click fires |
+| --- | --- | --- |
+| `url` | A link that opens in a new tab | `cds-aichat-citation-select`, then the browser follows the link |
+| `expandable`, or the text overflows | A button | `cds-aichat-citation-expand`, then `cds-aichat-citation-select` |
+| Neither, and the text fits | Static and not focusable | Nothing |
+
+Focusing a link or button also fires `cds-aichat-citation-select`. A card with a `url` is never expandable. Pass only URLs you've validated.
+
+### Expandable
+
+Set `expandable` when you have more of the source to show, such as a full search result. Open your own view on `cds-aichat-citation-expand`.
+
+<Canvas of={Stories.Expandable} />
+
+### Plain
+
+A short source with no URL stays static. The carousel still reaches it.
+
+<Canvas of={Stories.Plain} />
+
+### Overflowing text
+
+The card measures its text whenever its size changes. Text longer than five lines makes it expandable. Widen the card and it's static again.
+
+<Canvas of={Stories.Overflowing} />
+
+### Markdown body
+
+The `body` slot takes any block element, including `cds-aichat-markdown`. Use block elements in both slots, because the card can't measure inline ones. Keep links and buttons out of `body`, because the card's click target covers it.
+
+<Canvas of={Stories.MarkdownBody} />
+
+## Selection
+
+The shell, not the card, owns selection. `cds-aichat-conversational-search-shell` sets `selected` on the card whose `index` matches its `selectedCitationIndex`. It also turns the card's events into `cds-aichat-citations-select`. `selected` adds no styles of its own. See the shell's [example with citation cards](/docs/preview-conversational-search-shell--overview#with-citation-cards).
+
+This element is in preview. A Carbon core card is planned to replace it.
+
+## Component API
+
+### `cds-aichat-citation-card`
+
+<ArgTypes of="cds-aichat-citation-card" />
+
+## JS (via import)
+
+```javascript
+import '@carbon/ai-chat-components/es/components/conversational-search/index.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
