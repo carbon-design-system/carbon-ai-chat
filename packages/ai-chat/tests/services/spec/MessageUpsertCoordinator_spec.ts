@@ -63,6 +63,7 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
   const manager = {
     restartCount: 0,
     store: {
+      subscribe: jest.fn(() => jest.fn()),
       getState: () => state,
       dispatch,
     },
