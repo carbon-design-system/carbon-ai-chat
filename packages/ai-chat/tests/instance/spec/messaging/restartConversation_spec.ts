@@ -392,7 +392,7 @@ describe('ChatInstance.messaging.restartConversation', () => {
         const releaseSlot = resolvablePromise();
         jest
           .spyOn(
-            serviceManager.slotEventService,
+            serviceManager.messageCoordinator,
             'handleUserDefinedResponseItemsChunk'
           )
           .mockReturnValueOnce(releaseSlot);

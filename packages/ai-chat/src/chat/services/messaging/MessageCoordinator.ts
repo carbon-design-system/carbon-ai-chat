@@ -26,6 +26,20 @@ import { RequestQueue, type RequestToken } from './state/RequestQueue';
 import type { PendingMessageRequest } from './pendingRequestTypes';
 import { ConversationState } from './state/ConversationState';
 
+import { coordinateUserDefinedResponseItems } from './coordinateMessageEvents';
+import type { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import type { Message } from '../../../types/messaging/Messages';
+import type { MessageState } from '../../../types/config/MessagingConfig';
+
+import * as messageEvents from './coordinateMessageEvents';
+import type {
+  GenericItem,
+  MessageResponse,
+  PartialOrCompleteItemChunk,
+} from '../../../types/messaging/Messages';
+import type { DeepPartial } from '../../../types/utilities/DeepPartial';
+import type { AppStateMessages } from '../../../types/state/AppState';
+
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
@@ -36,6 +50,76 @@ function messageTimeoutMS(timeoutSecs: number | undefined): number {
 }
 
 class MessageCoordinator {
+  handleUserDefinedResponseItemsChunk(
+    messageID: string,
+    chunk: PartialOrCompleteItemChunk,
+    item: DeepPartial<GenericItem>,
+    isCurrent?: () => boolean
+  ) {
+    return messageEvents.handleUserDefinedResponseItemsChunk(
+      this.serviceManager,
+      this.presentation,
+      messageID,
+      chunk,
+      item,
+      isCurrent
+    );
+  }
+
+  handleCustomFooterSlot(
+    local: LocalMessageItem,
+    message: MessageResponse,
+    isCurrent?: () => boolean
+  ) {
+    return messageEvents.handleCustomFooterSlot(
+      this.serviceManager,
+      local,
+      message,
+      isCurrent
+    );
+  }
+
+  handleCustomRequestFooterSlot(
+    local: LocalMessageItem,
+    message: MessageRequest
+  ) {
+    return messageEvents.handleCustomRequestFooterSlot(
+      this.serviceManager,
+      local,
+      message
+    );
+  }
+
+  createElementsForUserDefinedResponses(messages: AppStateMessages) {
+    return messageEvents.createElementsForUserDefinedResponses(
+      this.serviceManager,
+      this.presentation,
+      messages
+    );
+  }
+
+  replayFooterSlots(messages: AppStateMessages) {
+    return messageEvents.replayFooterSlots(this.serviceManager, messages);
+  }
+
+  handleUserDefinedResponseItems(
+    localMessage: LocalMessageItem,
+    originalMessage: Message,
+    messageState?: MessageState,
+    localItemsByID?: Record<string, LocalMessageItem>,
+    isCurrent?: () => boolean
+  ) {
+    return coordinateUserDefinedResponseItems(
+      this.serviceManager,
+      this.presentation,
+      localMessage,
+      originalMessage,
+      messageState,
+      localItemsByID,
+      isCurrent
+    );
+  }
+
   private state = new ConversationState();
   private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;

@@ -9,7 +9,8 @@
 
 import type { MessagePresentationPort } from '../presentationPort';
 
-interface SendPresentationCapabilities {
+interface MessagePresentationCapabilities {
+  getUserDefinedResponseSlot?(messageItemID: string): string | undefined;
   hasCustomPromptLine(): boolean;
   announceSending(): void;
   requestComposerFocus(): boolean;
@@ -20,7 +21,11 @@ interface SendPresentationCapabilities {
 }
 
 class MessagePresentationAdapter implements MessagePresentationPort {
-  constructor(private capabilities: SendPresentationCapabilities) {}
+  constructor(private capabilities: MessagePresentationCapabilities) {}
+
+  getUserDefinedResponseSlot(messageItemID: string) {
+    return this.capabilities.getUserDefinedResponseSlot?.(messageItemID);
+  }
 
   hasCustomPromptLine() {
     return this.capabilities.hasCustomPromptLine();
