@@ -28,8 +28,6 @@ import type {
   PanelName,
 } from '../../../src/chat/utils/panelComposition';
 
-import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
-
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 
 import { createIntl } from '../../../src/shared/utils/i18n';
@@ -47,6 +45,7 @@ import {
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
+  slotSourceOf,
 } from '../../test_helpers';
 
 import { viewActions } from '../../../src/view/state';
@@ -119,7 +118,7 @@ async function fixture(
   ) as NativePanels;
   view.slot = 'panels';
   const hosts = new ExtensionHosts(
-    eventBus as unknown as ChatInstance,
+    slotSourceOf(eventBus),
     provider,
     store,
     () => false

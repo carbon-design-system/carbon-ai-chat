@@ -17,6 +17,10 @@ import {
 } from '../../../../src/types/messaging/Messages';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import {
+  bootPrebuiltChat,
+  mergePublicConfig,
+} from '../../../../src/chat/utils/chatBoot';
+import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
@@ -51,19 +55,28 @@ const response = (id: string, value: string): MessageResponse => ({
 beforeEach(setupBeforeEach);
 afterEach(setupAfterEach);
 
+/**
+ * A chat booted through `createChatSDK` with no view ever attached, so its
+ * coordinator delivers reasoning headlessly from the start.
+ */
 async function headless() {
-  const boot = await renderChatAndGetInstanceWithStore(createBaseConfig());
-  // The debug helper exposes a shallow manager copy; use the actual boot manager.
-  const manager = (boot.serviceManager.messageCoordinator as any)
-    .serviceManager as ServiceManager;
-  unmountKeepingServices(boot.instance);
-  // The boot coordinator goes headless once the view detaches; retire it.
-  manager.messageCoordinator.disposeReasoningObserver();
-  expect(manager.instance).toBe(boot.instance);
-  const core = new MessageCoordinator(manager);
-  manager.messageCoordinator = core;
-  return { ...boot, manager, core };
+  const { instance, serviceManager: manager } = await bootPrebuiltChat({
+    publicConfig: mergePublicConfig(createBaseConfig()),
+  });
+  chats.add(manager);
+  return {
+    instance,
+    manager,
+    store: manager.store,
+    core: manager.messageCoordinator,
+  };
 }
+
+const chats = new Set<ServiceManager>();
+afterEach(async () => {
+  await Promise.all([...chats].map((chat) => chat.shutdown()));
+  chats.clear();
+});
 
 it('automatically delivers native reasoning from a public upsert without awaiting its handler', async () => {
   const { instance, core } = await headless();

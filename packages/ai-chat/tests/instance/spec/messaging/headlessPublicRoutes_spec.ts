@@ -8,7 +8,6 @@
  */
 
 import { act, cleanup } from '@testing-library/react';
-import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
 import { requestStopFromInput } from '../../../../src/shared/services/assistantInputCommands';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
@@ -24,11 +23,14 @@ import {
 } from '../../../../src/types/messaging/Messages';
 import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import {
+  bootPrebuiltChat,
+  mergePublicConfig,
+} from '../../../../src/chat/utils/chatBoot';
+import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-  unmountKeepingServices,
 } from '../../../test_helpers';
 
 beforeEach(setupBeforeEach);
@@ -52,6 +54,13 @@ const response = (
   output: { generic: values.map(text) },
 });
 
+async function viewlessChat(config: PublicConfig) {
+  const { instance, serviceManager } = await bootPrebuiltChat({
+    publicConfig: mergePublicConfig(config),
+  });
+  return { instance, serviceManager, store: serviceManager.store };
+}
+
 async function bootMode(
   withAdapter: boolean,
   customSendMessage: NonNullable<
@@ -63,17 +72,13 @@ async function bootMode(
     ...createBaseConfig(),
     messaging: { skipWelcome: true, messageTimeoutSecs: 0, customSendMessage },
   };
-  const boot = await renderChatAndGetInstanceWithStore(config);
+  // With no adapter, the chat boots through `createChatSDK` and never gets a
+  // view; otherwise it's a mounted chat.
+  const boot = withAdapter
+    ? await renderChatAndGetInstanceWithStore(config)
+    : await viewlessChat(config);
   const manager = (boot.serviceManager.messageCoordinator as any)
     .serviceManager as ServiceManager;
-  if (!withAdapter) {
-    unmountKeepingServices(boot.instance);
-    // The boot coordinator goes headless once the view detaches; retire it.
-    manager.messageCoordinator.disposeReasoningObserver();
-    manager.messageCoordinator = new MessageCoordinator(manager);
-    manager.messageCoordinator.configureMessageTimeout(config);
-    manager.messageCoordinator.onInstanceReady();
-  }
   const trace: string[] = [];
   const cancellationIDs = new Map<string, string>();
   const traceResponseID = (message: MessageResponse) => {
@@ -131,8 +136,12 @@ async function bootMode(
     visible,
     cancellationIDs,
     dispose: () => {
-      manager.messageCoordinator.disposeReasoningObserver();
-      cleanup();
+      if (withAdapter) {
+        manager.messageCoordinator.disposeReasoningObserver();
+        cleanup();
+      } else {
+        void manager.shutdown();
+      }
     },
   };
 }

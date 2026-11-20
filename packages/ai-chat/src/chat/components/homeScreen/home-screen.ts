@@ -26,6 +26,7 @@ import { MessageSendSource } from '../../../types/events/eventBusTypes';
 import { PageObjectId } from '../../../testing/PageObjectId';
 import { shallowEqual } from '../../../shared/store/appStore';
 import { NativeChatView } from '../shared/NativeChatView';
+import { writeableElementsOf } from '../../utils/writeableElements';
 
 interface HomeScreenProps {
   isHydrated: boolean;
@@ -97,10 +98,9 @@ class HomeScreenView extends NativeChatView implements HomeScreenProps {
     const { greeting, starters, customContentOnly } = this.homescreen || {};
     const homeScreenWithStarters =
       starters?.isOn && Boolean(starters.buttons?.length);
-    const hasCustomContent =
-      this.serviceManager.writeableElements[
-        WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
-      ].hasChildNodes();
+    const hasCustomContent = writeableElementsOf(this.serviceManager)[
+      WriteableElementName.HOME_SCREEN_AFTER_STARTERS_ELEMENT
+    ]?.hasChildNodes();
 
     return html`
       <div

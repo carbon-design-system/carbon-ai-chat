@@ -13,9 +13,8 @@ import merge from 'lodash-es/merge.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 
-import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
-
-import { createServiceManager } from '../../shared/services/loadServices';
+import { createChatSDK } from '../../sdk/createChatSDK';
+import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
 import actions from '../../shared/store/actions';
 import { selectInputIsReadonly } from '../../shared/store/selectors';
 
@@ -30,7 +29,8 @@ import {
   consoleWarn,
   debugLog,
 } from '../../shared/utils/miscUtils';
-import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
+import { createConversationInstance } from '../../shared/services/conversationInstance';
+import { createWriteableElements } from './writeableElements';
 
 import {
   MainWindowOpenReason,
@@ -44,10 +44,8 @@ import {
   IncreaseOrDecrease,
   SendOptions,
 } from '../../types/instance/ChatInstance';
-import { TypeAndHandler } from '../../types/instance/EventHandlers';
 import { AddMessageOptions } from '../../types/config/MessagingConfig';
 import { loadLocale } from '../../shared/utils/languageUtils';
-import { HistoryItem } from '../../types/messaging/History';
 import {
   MessageRequest,
   MessageResponse,
@@ -60,28 +58,6 @@ import {
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import { viewActions } from '../../view/state';
-
-let bootContainerRulesInstalled = false;
-
-/**
- * Install boot-container size rules on the shared dynamic stylesheet. The
- * container fills the host element when one is provided and otherwise stays
- * collapsed (0×0) until the chat floats out.
- */
-function ensureBootContainerStyleRules(): void {
-  if (bootContainerRulesInstalled) {
-    return;
-  }
-  setVarsForSelector('.cds-aichat--boot-container--filled', {
-    width: '100% !important',
-    height: '100% !important',
-  });
-  setVarsForSelector('.cds-aichat--boot-container--collapsed', {
-    width: '0 !important',
-    height: '0 !important',
-  });
-  bootContainerRulesInstalled = true;
-}
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -104,64 +80,61 @@ export const DEFAULT_PUBLIC_CONFIG: Partial<PublicConfig> = {
  * produce a complete `PublicConfig` used throughout the app.
  */
 export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
+  // Merging into a new object copies plain objects and arrays and keeps
+  // functions and class instances by reference, so the host editing its
+  // object later changes nothing (#1833).
   return merge({}, DEFAULT_PUBLIC_CONFIG, config) as PublicConfig;
 }
 
 /**
- * Creates a {@link ServiceManager}, initializes localization, wires the
- * `humanAgentService`, and constructs the {@link ChatInstance}.
+ * Boots the prebuilt chat through `createChatSDK`, with what only the prebuilt
+ * chat has: the view partition, session storage, the formatter's locale, and
+ * the full {@link ChatInstance}. History waits for the main window to open.
  *
- * This function does not render. Its caller, `cds-aichat-container`, renders
- * the app after the host's `onBeforeRender`.
+ * This function does not render. Its caller, `cds-aichat-container`, attaches
+ * the view and renders the app after the host's `onBeforeRender`.
  */
-export async function initServiceManagerAndInstance(options: {
+export async function bootPrebuiltChat(options: {
   publicConfig: PublicConfig;
-  container: HTMLElement;
-  customHostElement?: HTMLElement;
-}): Promise<{ serviceManager: ServiceManager; instance: ChatInstance }> {
-  const { publicConfig, container, customHostElement } = options;
+}): Promise<{
+  handle: ChatSDKHandle;
+  serviceManager: ServiceManager;
+  instance: ChatInstance;
+}> {
+  const { publicConfig } = options;
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
-
-  // Create service manager
+  // Before the locale loads, as before, so config warnings print first.
   const appConfig = createAppConfig(publicConfig);
-  const serviceManager = createServiceManager(appConfig);
-  attachChatView(serviceManager, publicConfig);
+  const localePack = await loadLocale(publicConfig.locale || 'en');
 
-  // Set container + hosting information
-  serviceManager.container = container;
-  serviceManager.customHostElement = customHostElement;
+  const handle = await createChatSDK(undefined, {
+    appConfig,
+    sessionStorage: true,
+    loadHistory: false,
+    onServicesCreated: (serviceManager) => {
+      attachChatView(serviceManager, publicConfig);
+      // Update Redux with new values for language, locale, and messages
+      setIntl(
+        serviceManager,
+        localePack.name,
+        serviceManager.store.getState().languagePack
+      );
+      // Tell dayjs to globally use the locale
+      dayjs.locale(localePack);
+    },
+    createInstance: createPrebuiltInstance,
+  });
+  const serviceManager = chatOf(handle);
+  return { handle, serviceManager, instance: serviceManager.instance };
+}
 
-  ensureBootContainerStyleRules();
-  container.classList.add('cds-aichat--boot-container');
-  container.classList.toggle(
-    'cds-aichat--boot-container--filled',
-    !!serviceManager.customHostElement
-  );
-  container.classList.toggle(
-    'cds-aichat--boot-container--collapsed',
-    !serviceManager.customHostElement
-  );
-
-  // Load language and locale
-  const languagePack = serviceManager.store.getState().languagePack;
-  const localePack = await loadLocale(
-    serviceManager.store.getState().config.public.locale || 'en'
-  );
-
-  // Set up human agent service (created once here; may be recreated
-  // dynamically later by config updates)
-  serviceManager.humanAgentService = createHumanAgentService(serviceManager);
-
-  // Update Redux with new values for language, locale, and messages
-  setIntl(serviceManager, localePack.name, languagePack);
-
-  // Tell dayjs to globally use the locale
-  dayjs.locale(localePack);
-
-  // Validate UploadConfig at startup so misconfiguration is surfaced early,
-  // regardless of whether the main window is open.
+/**
+ * Validates UploadConfig at startup so misconfiguration is surfaced early,
+ * regardless of whether the main window is open.
+ */
+function warnAboutUploadConfig(serviceManager: ServiceManager) {
   const uploadConfig = serviceManager.store.getState().config.public.upload;
   if (uploadConfig?.isOn && !uploadConfig.onFileUpload) {
     consoleError(
@@ -174,29 +147,23 @@ export async function initServiceManagerAndInstance(options: {
         'File upload will be disabled. Set isOn: true in config.upload to enable it.'
     );
   }
+}
 
-  // Create the chat instance
-  const state = {
-    get: serviceManager.publicStateService.get,
-    subscribe: serviceManager.publicStateService.subscribe,
-    select: serviceManager.publicStateService.select,
-  };
+/**
+ * Builds the prebuilt chat's {@link ChatInstance}: the conversation members a
+ * chat `createChatSDK` starts has, plus the members that drive the view.
+ */
+function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
+  warnAboutUploadConfig(serviceManager);
+
+  // Create the chat instance. Its conversation members are the ones a chat
+  // `createChatSDK` starts has; the rest drive the view.
+  const conversation = createConversationInstance(
+    serviceManager,
+    () => instance
+  );
   const instance: ChatInstance = {
-    state,
-    on: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      serviceManager.eventBus.on(handlers);
-      return instance;
-    },
-
-    off: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      serviceManager.eventBus.off(handlers);
-      return instance;
-    },
-
-    once: (handlers: TypeAndHandler | TypeAndHandler[]) => {
-      serviceManager.eventBus.once(handlers);
-      return instance;
-    },
+    ...conversation,
 
     send: async (message: MessageRequest | string, options?: SendOptions) => {
       debugLog('Called instance.send', message, options);
@@ -314,7 +281,7 @@ export async function initServiceManagerAndInstance(options: {
 
     getState: serviceManager.publicStateService.getLive,
 
-    writeableElements: serviceManager.writeableElements,
+    writeableElements: createWriteableElements(),
 
     scrollToMessage: (messageID: string, animate?: boolean) => {
       debugLog('Called instance.scrollToMessage', messageID, animate);
@@ -402,46 +369,7 @@ export async function initServiceManagerAndInstance(options: {
         }
       },
 
-      upsertMessage: async (messageID, state, updater) => {
-        debugLog('Called instance.messaging.upsertMessage', messageID, state);
-        const { restartCount } = serviceManager;
-        try {
-          await serviceManager.messageCoordinator.upsertMessage(
-            messageID,
-            state,
-            updater
-          );
-        } catch (error) {
-          if (restartCount === serviceManager.restartCount) {
-            serviceManager.messageCoordinator.messageLoadingManager.end();
-          }
-          throw error;
-        }
-      },
-
-      removeMessages: async (messageIDs: string[]) => {
-        debugLog('Called instance.messaging.removeMessages', messageIDs);
-        return serviceManager.actions.removeMessages(messageIDs);
-      },
-
-      clearConversation: () => {
-        debugLog('Called instance.messaging.clearConversation');
-        return serviceManager.actions.restartConversation({
-          skipHydration: true,
-          endHumanAgentConversation: false,
-          fireEvents: false,
-        });
-      },
-
-      insertHistory: (messages: HistoryItem[]) => {
-        debugLog('Called instance.messaging.insertHistory', messages);
-        return serviceManager.actions.insertHistory(messages);
-      },
-
-      restartConversation: async () => {
-        debugLog('Called instance.messaging.restartConversation');
-        return serviceManager.actions.restartConversation();
-      },
+      ...conversation.messaging,
     },
 
     requestFocus: () => {
@@ -449,17 +377,7 @@ export async function initServiceManagerAndInstance(options: {
       return serviceManager.view.current?.instance.requestFocus() === true;
     },
 
-    serviceDesk: {
-      endConversation: () => {
-        debugLog('Called instance.serviceDesk.endConversation');
-        return serviceManager.actions.agentEndConversation(false);
-      },
-
-      updateIsSuspended: async (isSuspended: boolean) => {
-        debugLog('Called instance.serviceDesk.updateIsSuspended', isSuspended);
-        return serviceManager.actions.agentUpdateIsSuspended(isSuspended);
-      },
-    },
+    serviceDesk: conversation.serviceDesk,
 
     destroySession: async (keepOpenState: boolean) => {
       debugLog('Called instance.destroySession', keepOpenState);
@@ -480,10 +398,7 @@ export async function initServiceManagerAndInstance(options: {
     consoleDebug('[chatBoot] Created chat instance', instance);
   }
 
-  serviceManager.instance = instance;
-  serviceManager.messageCoordinator.onInstanceReady();
-
-  return { serviceManager, instance };
+  return instance;
 }
 
 /**

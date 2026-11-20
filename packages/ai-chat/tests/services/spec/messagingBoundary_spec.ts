@@ -172,7 +172,7 @@ it('keeps core runtime imports and capabilities independent of the view', () => 
         !/\/ai-chat-components\/src\/components\/(chat-button|chain-of-thought)\/defs\.ts$/.test(
           file
         ) &&
-        !/\/ai-chat-components\/src\/components\/prompt-line\/src\/types\.ts$/.test(
+        !/\/ai-chat-components\/src\/components\/prompt-line\/src\/file-upload-types\.ts$/.test(
           file
         )
     )
@@ -568,12 +568,10 @@ function isAllowedStateField(
       'chatWidthBreakpoint',
     ],
     'src/chat/services/createViewBindings.ts': ['catastrophicErrorType'],
-    'src/chat/utils/dynamicConfigUpdates.ts': ['languagePack'],
+    // Config changes use the shared update path.
+    'src/shared/services/applyConfig.ts': ['languagePack'],
     'src/shared/utils/intlUtils.ts': ['loadedLocale'],
     'src/chat/utils/appConfigUpdates.ts': ['markdownConfig'],
-    'src/web-components/cds-aichat-container/cds-aichat-container.ts': [
-      'markdownConfig',
-    ],
   };
   return Boolean(
     key && ts.isStringLiteral(key) && allowed[file]?.includes(key.text)
@@ -592,7 +590,7 @@ it('limits broad state writes to exact non-transcript fields', () => {
     }
     if (call.name === 'changeState') {
       const value = call.node.arguments?.[0];
-      expect(file).toBe('src/chat/utils/dynamicConfigUpdates.ts');
+      expect(file).toBe('src/shared/services/applyConfig.ts');
       expect(value && ts.isObjectLiteralExpression(value)).toBe(true);
       if (value && ts.isObjectLiteralExpression(value)) {
         expect(

@@ -9,11 +9,23 @@
 
 /**
  * The headless SDK's entry. It's internal in 1.x: no package entry point
- * exports it, and `@carbon/ai-chat/sdk` publishes it in a 2.x minor release (#1834). Until
- * `createChatSDK` lands (#1732), it re-exports the SDK types that the root
- * entry already exports, so the boundary and surface checks have a root.
+ * exports it, and `@carbon/ai-chat/sdk` publishes it in a 2.x minor release
+ * (#1834).
  */
 
+import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
+import { createChatSDK as bootChatSDK } from './createChatSDK';
+import type { ChatSDKHandle } from './handle';
+
+/**
+ * Starts a conversation with no interface. Takes no DOM element, touches no
+ * DOM, and reads or writes no browser storage. Resolves once services are
+ * built and history has loaded; rejects if either fails.
+ */
+export const createChatSDK: (
+  config?: ChatSDKConfig
+) => Promise<ChatSDKHandle> = (config) => bootChatSDK(config);
+export type { ChatSDKHandle } from './handle';
 export type {
   ChatSDKEventType,
   ChatSDKHandlers,

@@ -36,13 +36,16 @@ interface NativeAutocomplete extends HTMLElement {
 }
 
 interface Container extends HTMLElement {
+  // The container's private mount state; its view holds these since #1732.
   current?: {
-    hosts: { autocompleteContent: ContentOwner };
-    viewState: {
-      serviceManager: {
-        store: {
-          getState(): {
-            view: { chatHeight: number; chatWidthBreakpoint: string };
+    view?: {
+      hosts: { autocompleteContent: ContentOwner };
+      viewState: {
+        serviceManager: {
+          store: {
+            getState(): {
+              view: { chatHeight: number; chatWidthBreakpoint: string };
+            };
           };
         };
       };
@@ -157,11 +160,11 @@ export function installNativeAutocompleteHarness(
             .getElementById('host-compat-wc')
             ?.shadowRoot?.querySelector<Container>('cds-aichat-container')
         : document.querySelector<Container>('cds-aichat-container');
-    if (!container?.current || !container.shadowRoot) {
+    if (!container?.current?.view || !container.shadowRoot) {
       throw new Error(`The ${host} chat container is not ready.`);
     }
     await customElements.whenDefined('cds-aichat-native-autocomplete');
-    const current = container.current;
+    const current = container.current.view;
     const { autocompleteContent } = current.hosts;
     const originalShells = Array.from(
       container.shadowRoot.querySelectorAll<HTMLElement>(

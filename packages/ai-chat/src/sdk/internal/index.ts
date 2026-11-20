@@ -20,3 +20,4 @@ export {
   extendPublicState,
   type PublicStateFieldDefinition,
 } from './extendPublicState';
+export { chatOf } from '../handle';

@@ -343,6 +343,14 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2693',
   },
   {
+    // Hands the instance builder, which wraps the two reads around it, to
+    // createChatSDK; it goes when they do.
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'createPrebuiltInstance()',
+    count: 1,
+    owner: '#2747',
+  },
+  {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'selectInputIsReadonly()',
     count: 1,
@@ -363,7 +371,7 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/utils/dynamicConfigUpdates.ts',
     read: 'assistantMessageState.messageIDs',
-    count: 2,
+    count: 1,
     owner: '#2693',
   },
   {

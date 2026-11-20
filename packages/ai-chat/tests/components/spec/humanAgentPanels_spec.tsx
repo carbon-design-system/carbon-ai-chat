@@ -19,7 +19,6 @@ import NativePanels from '../../../src/chat/components/panels/NativePanels';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type {
   PanelViewInputs,
   PanelCompositionCallbacks,
@@ -37,6 +36,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
   withPublicState,
+  slotSourceOf,
 } from '../../test_helpers';
 import { viewActions } from '../../../src/view/state';
 
@@ -115,7 +115,7 @@ async function fixture(
   ) as NativePanels;
   view.slot = 'panels';
   const hosts = new ExtensionHosts(
-    eventBus as unknown as ChatInstance,
+    slotSourceOf(eventBus),
     provider,
     store,
     () => false

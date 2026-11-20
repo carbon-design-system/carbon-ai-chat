@@ -16,25 +16,25 @@ const ENABLE_CONSOLE_LOGGING = false;
 // Mock Symbol.for for Lit's use of symbols and ensure all needed symbols exist
 global.Symbol.for = global.Symbol.for || ((key: string) => Symbol(key));
 
-(globalThis as any).document = global.document;
+// DOM mocks for jsdom specs. A spec that runs in Node (`@jest-environment node`),
+// such as the headless SDK's, has no window and skips them.
+function installDomMocks() {
+  (globalThis as any).document = global.document;
 
-// Mock CSS template literal functions
-(global as any).__CSS_TAG_SYMBOL__ = Symbol('css-tag');
+  // Mock CSS template literal functions
+  (global as any).__CSS_TAG_SYMBOL__ = Symbol('css-tag');
 
-// Mock CSS functions that might not be available in test environment
-if (!global.CSSStyleSheet) {
-  (global as any).CSSStyleSheet = class {
-    replaceSync() {}
-    insertRule() {
-      return 0;
-    }
-    deleteRule() {}
-  };
-}
+  // Mock CSS functions that might not be available in test environment
+  if (!global.CSSStyleSheet) {
+    (global as any).CSSStyleSheet = class {
+      replaceSync() {}
+      insertRule() {
+        return 0;
+      }
+      deleteRule() {}
+    };
+  }
 
-// Every DOM mock below needs a window. A spec that runs in Jest's node
-// environment (no DOM) skips them.
-if (typeof window !== 'undefined') {
   // Mock window.matchMedia since it's not available in jsdom
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -89,14 +89,18 @@ if (typeof window !== 'undefined') {
       },
     });
   }
+
+  // Mock ResizeObserver since it's not available in jsdom
+  (global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
 }
 
-// Mock ResizeObserver since it's not available in jsdom
-(global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+if (typeof window !== 'undefined') {
+  installDomMocks();
+}
 
 // Suppress console output during tests unless debugging
 if (!ENABLE_CONSOLE_LOGGING) {

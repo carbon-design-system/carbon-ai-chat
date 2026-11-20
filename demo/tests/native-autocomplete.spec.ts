@@ -48,10 +48,12 @@ async function prepare(page: Page, host: Host, width = 760, both = false) {
     const current = (
       container as HTMLElement & {
         current?: {
-          viewState?: {
-            serviceManager: {
-              store: {
-                getState(): { initialViewChangeComplete: boolean };
+          view?: {
+            viewState?: {
+              serviceManager: {
+                store: {
+                  getState(): { initialViewChangeComplete: boolean };
+                };
               };
             };
           };
@@ -59,7 +61,7 @@ async function prepare(page: Page, host: Host, width = 760, both = false) {
       }
     )?.current;
     return Boolean(
-      current?.viewState?.serviceManager.store.getState().view
+      current?.view?.viewState?.serviceManager.store.getState().view
         .initialViewChangeComplete
     );
   }, host);

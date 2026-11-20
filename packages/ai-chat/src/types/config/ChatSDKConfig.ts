@@ -49,8 +49,10 @@ export interface ChatSDKConfig<I extends ChatSDKInstance = ChatSDKInstance> {
    * Creates the {@link ServiceDesk} that connects the user to a human agent, when the conversation
    * asks for one.
    *
-   * If it changes during a human agent conversation, that conversation is disconnected. The factory
-   * is compared by reference, so pass a stable function rather than a new one each time.
+   * A new factory never cuts off a live human agent conversation: the running service desk stays
+   * until that conversation ends, and the new factory takes over after it. To switch desks at
+   * once, call `serviceDesk.endConversation()` before changing it. The factory is compared by
+   * reference, so pass a stable function rather than a new one each time.
    */
   serviceDeskFactory?: (
     parameters: ServiceDeskFactoryParameters<I>
