@@ -16,6 +16,7 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 
 - Theme switching, layout config, direction switching (LTR/RTL)
 - Header, launcher, homescreen configuration
+- Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`tests/homescreen.spec.ts`).
 - Chat instance controls (focus, scroll, input visibility, restart)
 - Slots, layout frame/content width settings
 - Writeable elements, layout frame/content width settings
