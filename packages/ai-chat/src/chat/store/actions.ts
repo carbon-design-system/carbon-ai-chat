@@ -253,9 +253,7 @@ const actions = {
     };
   },
 
-  updateCatastrophicErrorPanel(
-    panelState: Partial<CatastrophicErrorPanelState>
-  ) {
+  updateCatastrophicErrorPanel(panelState: CatastrophicErrorPanelState) {
     return {
       type: UPDATE_CATASTROPHIC_ERROR_PANEL,
       panelState,

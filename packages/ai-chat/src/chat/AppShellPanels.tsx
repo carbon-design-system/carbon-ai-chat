@@ -31,6 +31,7 @@ import { Header } from './components/header/Header';
 import { useSelector } from './hooks/useSelector';
 import actions from './store/actions';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from './store/reducerUtils';
+import { fireUserEvent } from './services/fireUserEvent';
 import type {
   CustomPanelConfigOptions,
   DefaultCustomPanelConfigOptions,
@@ -224,7 +225,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         aiEnabled={aiEnabled ? true : false}
         priority={100}
         fullWidth={false}
-        showChatHeader={true}>
+        showChatHeader={true}
+        data-testid={PageObjectId.CATASTROPHIC_PANEL}>
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <CatastrophicErrorPanel
             title={catastrophicErrorPanelState?.title}
@@ -248,7 +250,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         onCloseStart={onPanelCloseStart}
         onCloseEnd={() => {
           onPanelCloseEnd(false);
-        }}>
+        }}
+        data-testid={PageObjectId.HYDRATING_PANEL}>
         <div slot="body" className="cds-aichat--widget--expand-to-fit">
           <HydrationPanel isHydrated={isHydratingComplete} />
         </div>
@@ -306,31 +309,27 @@ export const AppShellPanels = React.memo(function AppShellPanels({
             : false
         }
         onOpenStart={() => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_PRE_OPEN },
-            serviceManager.instance
-          );
+          fireUserEvent(serviceManager, {
+            type: BusEventType.CUSTOM_PANEL_PRE_OPEN,
+          });
           onPanelOpenStart(true);
         }}
         onOpenEnd={(event: CustomEvent) => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_OPEN },
-            serviceManager.instance
-          );
+          fireUserEvent(serviceManager, {
+            type: BusEventType.CUSTOM_PANEL_OPEN,
+          });
           onPanelOpenEnd(event);
         }}
         onCloseStart={(event: CustomEvent) => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_PRE_CLOSE },
-            serviceManager.instance
-          );
+          fireUserEvent(serviceManager, {
+            type: BusEventType.CUSTOM_PANEL_PRE_CLOSE,
+          });
           onPanelCloseStart(event);
         }}
         onCloseEnd={() => {
-          serviceManager.eventBus.fire(
-            { type: BusEventType.CUSTOM_PANEL_CLOSE },
-            serviceManager.instance
-          );
+          fireUserEvent(serviceManager, {
+            type: BusEventType.CUSTOM_PANEL_CLOSE,
+          });
           serviceManager.store.dispatch(
             actions.setCustomPanelConfigOptions(
               DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS

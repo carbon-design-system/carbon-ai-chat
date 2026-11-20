@@ -36,3 +36,14 @@ export async function advance(ms: number): Promise<void> {
     await jest.advanceTimersByTimeAsync(ms);
   });
 }
+
+/**
+ * Waits `ms` of real time inside `act`, to give the chat a chance to do
+ * something a test expects it not to do. Never use it to wait for something
+ * to happen: use `waitFor` or an awaited promise.
+ */
+export async function pause(ms = 50): Promise<void> {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+  });
+}

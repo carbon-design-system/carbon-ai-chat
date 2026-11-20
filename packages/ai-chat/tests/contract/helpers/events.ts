@@ -14,6 +14,7 @@ import {
   EventHandlers,
   TypeAndHandler,
 } from '../../../src/aiChatEntry';
+import { pause } from './timing';
 
 /** Every event type a host can subscribe to. */
 export const ALL_EVENT_TYPES = Object.values(BusEventType) as BusEventType[];
@@ -92,5 +93,41 @@ export function countChatReady(): ChatReadyCounter {
       });
     },
     count: () => count,
+  };
+}
+
+/** Checks what the chat logs when a host's event handler throws. */
+export interface HandlerErrorLog {
+  /** Starts recording `console.error`. Call it after mounting. */
+  watch(): void;
+  /** Waits a moment, then expects the chat to have logged `error` for `type`. */
+  expectLogged(type: BusEventType, error: Error): Promise<void>;
+}
+
+/**
+ * Spies on `console.error` for tests that register a throwing handler, and
+ * restores it after each test. Jest fails a test whose promise rejection goes
+ * unhandled, so a passing test also shows the chat caught the error.
+ */
+export function handlerErrorLog(): HandlerErrorLog {
+  let consoleError: jest.SpyInstance | undefined;
+  afterEach(() => {
+    consoleError?.mockRestore();
+    consoleError = undefined;
+  });
+  return {
+    watch() {
+      consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+      consoleError.mockClear();
+    },
+    async expectLogged(type, error) {
+      await pause();
+      expect(consoleError).toHaveBeenCalledWith(
+        expect.stringContaining(`"${type}"`),
+        error
+      );
+    },
   };
 }

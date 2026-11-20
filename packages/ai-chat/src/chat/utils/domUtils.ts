@@ -122,15 +122,24 @@ function getScrollbarWidth(): number {
  *
  * @param element The element to move focus to.
  * @param preventScroll Indicates if scrolling should be prevented as a result of the focus change.
+ * @returns False only when the element is missing, and true otherwise. True doesn't mean the element has focus:
+ * the `tabbable()` check returns a list, so it never fails, and nothing checks where `focus()` moved focus.
  */
-function doFocus(element: HTMLElement | SVGElement, preventScroll = false) {
-  if (
-    element &&
-    getDeepActiveElement() !== element &&
-    tabbable(element, { getShadowRoot: true })
-  ) {
-    element.focus({ preventScroll });
+function doFocus(
+  element: HTMLElement | SVGElement,
+  preventScroll = false
+): boolean {
+  if (!element) {
+    return false;
   }
+  if (getDeepActiveElement() === element) {
+    return true;
+  }
+  if (!tabbable(element, { getShadowRoot: true })) {
+    return false;
+  }
+  element.focus({ preventScroll });
+  return true;
 }
 
 /**
