@@ -41,6 +41,7 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
 | Building, testing, linting, or using prettier | [commands.md](references/commands.md) |
 | Adding a root-level Node script (`scripts/` vs `tools/`) | [commands.md](references/commands.md#scripts-vs-tools) |
+| Creating, naming, or cleaning up a worktree | [worktrees.md](references/worktrees.md) |
 | Choosing a gate before shipping, and reporting its result | [definition-of-done.md](references/definition-of-done.md) |
 | Measuring a diff before review (PR size, complexity, coupling, smells, size vs precedent) | [measuring.md](references/measuring.md) |
 | Writing copy of any kind — how the words sound | [tone.md](references/tone.md) |
