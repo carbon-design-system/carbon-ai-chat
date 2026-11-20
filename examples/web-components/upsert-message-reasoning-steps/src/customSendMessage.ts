@@ -13,8 +13,8 @@
  * Demonstrates: dispatching user input to either the discrete reasoning-steps
  * runner or the long-form reasoning-content runner, and surfacing a dropdown
  * of those scenarios on first load. The static welcome is delivered through
- * `upsertMessage` — a brand-new COMPLETE insert under a fresh `messageID` fires
- * `receive` once, exactly like the `addMessage` it replaces.
+ * `upsertMessage` as a brand-new COMPLETE insert under a fresh `messageID`, which fires
+ * `receive` once.
  *
  * APIs exercised:
  *   - `instance.messaging.upsertMessage` (welcome + dropdown options)
