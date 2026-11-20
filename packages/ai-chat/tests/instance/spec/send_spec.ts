@@ -54,13 +54,6 @@ describe('ChatInstance.send', () => {
     }
   );
 
-  it('should have send method available', async () => {
-    const config = createBaseConfig();
-    const instance = await renderChatAndGetInstance(config);
-
-    expect(typeof instance.send).toBe('function');
-  });
-
   it('should accept string message', async () => {
     const config = createBaseConfig();
     const instance = await renderChatAndGetInstance(config);
