@@ -9,12 +9,34 @@
 
 import { createHash } from 'node:crypto';
 import { isUtf8 } from 'node:buffer';
-import { lstatSync, readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 
 export const CONTRACT = 'packages/ai-chat/tests/contract';
 export const MANIFEST = `${CONTRACT}/MANIFEST.tsv`;
+const PACKAGE = 'packages/ai-chat';
+const COLOCATED_ROOTS = ['sdk', 'chat', 'react', 'web-components'].map(
+  (area) => `${PACKAGE}/src/${area}/__tests__`
+);
+const COLOCATED_HELPERS = new Set([
+  `${PACKAGE}/src/sdk/__tests__/helpers/publicContract.ts`,
+]);
+const PUBLIC_ENTRIES = new Set([
+  `${PACKAGE}/src/aiChatEntry.tsx`,
+  `${PACKAGE}/src/serverEntry.ts`,
+  `${PACKAGE}/src/sdk/index.ts`,
+  `${PACKAGE}/src/web-components/cds-aichat-container/index.ts`,
+  `${PACKAGE}/src/web-components/cds-aichat-custom-element/index.ts`,
+]);
+const PUBLIC_IMPORTS = new Set([
+  '@carbon/ai-chat',
+  '@carbon/ai-chat/es-custom',
+  '@carbon/ai-chat/server',
+  ...['cds-aichat-container', 'cds-aichat-custom-element'].map(
+    (tag) => `@carbon/ai-chat/dist/es/web-components/${tag}/index.js`
+  ),
+]);
 const HEADER = 'kind\tfile\ttitle\tsha256\n';
 const KINDS = new Set(['test', 'helper', 'context']);
 const REGISTRATIONS = new Set(['it', 'test', 'describe', 'describeShared']);
@@ -27,6 +49,117 @@ export const hash = (value) =>
 const posix = (path) => path.replaceAll('\\', '/');
 const identity = (row) =>
   `${row.kind}\t${row.file}\t${JSON.stringify(row.title)}`;
+
+function isContractSpec(file) {
+  return (
+    (file.startsWith(`${CONTRACT}/spec/`) && /_spec\.tsx?$/.test(file)) ||
+    (COLOCATED_ROOTS.some((root) => file.startsWith(`${root}/`)) &&
+      /\.contract(?:\.browser)?\.test\.tsx?$/.test(file))
+  );
+}
+
+function isContractHelper(file) {
+  return file.startsWith(`${CONTRACT}/helpers/`) || COLOCATED_HELPERS.has(file);
+}
+
+export function contractInventory(root) {
+  const read = (path) =>
+    existsSync(join(root, path)) ? filesIn(root, path) : [];
+  const specs = [
+    ...read(`${CONTRACT}/spec`),
+    ...COLOCATED_ROOTS.flatMap(read),
+  ].filter(isContractSpec);
+  const helpers = [
+    ...read(`${CONTRACT}/helpers`),
+    ...[...COLOCATED_HELPERS].filter((file) => existsSync(join(root, file))),
+  ];
+  for (const file of [...specs, ...helpers]) {
+    if (lstatSync(join(root, file)).isSymbolicLink()) {
+      throw new Error(`Unexpected symlink: ${file}`);
+    }
+    assertContractImports(root, file);
+  }
+  return { specs, helpers };
+}
+
+function importedModule(node) {
+  if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+    return node.moduleSpecifier;
+  }
+  if (
+    ts.isImportEqualsDeclaration(node) &&
+    ts.isExternalModuleReference(node.moduleReference)
+  ) {
+    return node.moduleReference.expression;
+  }
+  if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+    return node.argument.literal;
+  }
+  if (
+    ts.isCallExpression(node) &&
+    (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+      (ts.isIdentifier(node.expression) && node.expression.text === 'require'))
+  ) {
+    return node.arguments[0] ?? node;
+  }
+  return undefined;
+}
+
+function assertContractImports(root, file) {
+  if (!/\.[cm]?[jt]sx?$/.test(file)) {
+    return;
+  }
+  const bytes = readFileSync(join(root, file));
+  if (!isUtf8(bytes) || bytes.includes(0)) {
+    return;
+  }
+  const source = ts.createSourceFile(
+    file,
+    bytes.toString('utf8'),
+    ts.ScriptTarget.Latest,
+    true
+  );
+  if (source.parseDiagnostics.length) {
+    throw new Error(`Cannot parse ${file}`);
+  }
+  walk(source, (node) => {
+    const module = importedModule(node);
+    if (!module) {
+      return;
+    }
+    if (!ts.isStringLiteralLike(module)) {
+      throw new Error(`Nonliteral contract import in ${file}`);
+    }
+    const specifier = module.text;
+    if (!specifier.startsWith('.') && !isAbsolute(specifier)) {
+      if (
+        specifier.startsWith('@carbon/ai-chat/') &&
+        !PUBLIC_IMPORTS.has(specifier)
+      ) {
+        throw new Error(`Private contract import: ${file} -> ${specifier}`);
+      }
+      return;
+    }
+    const resolved = ts.resolveModuleName(
+      specifier,
+      resolve(root, file),
+      { moduleResolution: ts.ModuleResolutionKind.Bundler },
+      ts.sys
+    ).resolvedModule?.resolvedFileName;
+    const target = resolved ? posix(relative(root, resolved)) : '';
+    const publicSupport =
+      !target.includes('/__tests__/') &&
+      (target.startsWith(`${PACKAGE}/src/types/`) ||
+        target.startsWith(`${PACKAGE}/src/testing/`));
+    const allowed =
+      PUBLIC_ENTRIES.has(target) || isContractHelper(target) || publicSupport;
+    if (!target || !allowed) {
+      throw new Error(
+        `Private or unresolved contract import: ${file} -> ${specifier}`
+      );
+    }
+  });
+}
 
 export function filesIn(root, path) {
   if (lstatSync(join(root, path)).isSymbolicLink()) {
@@ -380,9 +513,7 @@ function helperRow(root, file) {
 
 export function rowsFromReport(root, report) {
   assertDiscoveryPassed(report);
-  const specs = filesIn(root, `${CONTRACT}/spec`).filter((file) =>
-    /_spec\.tsx?$/.test(file)
-  );
+  const { specs, helpers } = contractInventory(root);
   const suites = indexSuites(root, report, specs);
   const rows = specs.flatMap((file) => testRows(root, file, suites.get(file)));
   if (
@@ -390,12 +521,136 @@ export function rowsFromReport(root, report) {
   ) {
     throw new Error('Runtime case count mismatch');
   }
-  return [
-    ...rows,
-    ...filesIn(root, `${CONTRACT}/helpers`).map((file) =>
-      helperRow(root, file)
-    ),
+  return [...rows, ...helpers.map((file) => helperRow(root, file))];
+}
+
+function rowsInManifest(text) {
+  return [...parseManifest(text)].map(([key, sha256]) => {
+    const [kind, file, title] = key.split('\t');
+    return { kind, file, title: JSON.parse(title), sha256 };
+  });
+}
+
+function legacyRows(root, frozen, inventory) {
+  const rows = rowsInManifest(frozen);
+  const legacy = (file) => file.startsWith(`${CONTRACT}/`);
+  if (
+    !rows.length ||
+    rows.some((row) => !legacy(row.file)) ||
+    serialize(rows) !== frozen
+  ) {
+    throw new Error(
+      'Colocated carry requires a canonical legacy-only base manifest'
+    );
+  }
+  const current = rowsInManifest(readFileSync(join(root, MANIFEST), 'utf8'));
+  if (
+    JSON.stringify(current.filter((row) => legacy(row.file))) !==
+    JSON.stringify(rows)
+  ) {
+    throw new Error('Current legacy manifest rows differ from the frozen base');
+  }
+  const specs = inventory.specs.filter(legacy);
+  const helpers = inventory.helpers.filter(legacy);
+  const selected = [...specs, ...helpers].sort();
+  const frozenFiles = [...new Set(rows.map((row) => row.file))].sort();
+  if (JSON.stringify(selected) !== JSON.stringify(frozenFiles)) {
+    throw new Error('Current legacy inventory differs from the frozen base');
+  }
+  const checked = [];
+  for (const file of specs) {
+    const { registrations, contexts } = analyze(
+      file,
+      readFileSync(join(root, file), 'utf8')
+    );
+    const tests = rows.filter(
+      (row) => row.file === file && row.kind === 'test'
+    );
+    const bodies = new Set(registrations.map((item) => item.sha256));
+    if (
+      !registrations.length ||
+      tests.some((row) => !bodies.has(row.sha256)) ||
+      registrations.some(
+        (item) => !tests.some((row) => row.sha256 === item.sha256)
+      ) ||
+      tests.length < registrations.length
+    ) {
+      throw new Error(
+        `Frozen legacy callback hashes do not match source: ${file}`
+      );
+    }
+    checked.push(...tests, ...contexts);
+  }
+  checked.push(...helpers.map((file) => helperRow(root, file)));
+  if (serialize(checked) !== frozen) {
+    throw new Error('Frozen legacy helper or context rows do not match source');
+  }
+  return rows;
+}
+
+function assertCompleteColocatedReport(report, specs) {
+  assertDiscoveryPassed(report);
+  if (
+    report.wasInterrupted !== false ||
+    report.numTotalTestSuites !== specs.length ||
+    report.numPassedTestSuites !== specs.length ||
+    report.numPassedTests !== report.numTotalTests ||
+    !Number.isInteger(report.numTotalTests) ||
+    report.numTotalTests <= 0 ||
+    [
+      'numFailedTestSuites',
+      'numFailedTests',
+      'numPendingTestSuites',
+      'numPendingTests',
+      'numRuntimeErrorTestSuites',
+      'numTodoTests',
+    ].some((field) => report[field] !== 0)
+  ) {
+    throw new Error(
+      'Colocated carry requires a complete unfiltered passing colocated report'
+    );
+  }
+}
+
+export function rowsFromColocatedReport(root, report, frozen) {
+  const inventory = contractInventory(root);
+  const colocated = (file) => !file.startsWith(`${CONTRACT}/`);
+  const specs = inventory.specs.filter(colocated);
+  if (!specs.length) {
+    throw new Error(
+      'Colocated carry requires at least one colocated contract suite'
+    );
+  }
+  const carried = legacyRows(root, frozen, inventory);
+  assertCompleteColocatedReport(report, specs);
+  const suites = indexSuites(root, report, specs);
+  const executed = specs.flatMap((file) =>
+    testRows(root, file, suites.get(file))
+  );
+  const executedCases = executed.filter((row) => row.kind === 'test').length;
+  if (executedCases !== report.numTotalTests) {
+    throw new Error('Runtime case count mismatch');
+  }
+  const rows = [
+    ...carried,
+    ...executed,
+    ...inventory.helpers.filter(colocated).map((file) => helperRow(root, file)),
   ];
+  const represented = [...new Set(rows.map((row) => row.file))].sort();
+  const selected = [...inventory.specs, ...inventory.helpers].sort();
+  if (JSON.stringify(represented) !== JSON.stringify(selected)) {
+    throw new Error(
+      'Colocated carry output does not match the full contract inventory'
+    );
+  }
+  serialize(rows);
+  return {
+    rows,
+    carriedRows: carried.length,
+    carriedCases: carried.filter((row) => row.kind === 'test').length,
+    executedCases,
+    executedSuites: specs,
+  };
 }
 
 export function serialize(rows) {
@@ -415,9 +670,11 @@ function manifestFields(line) {
   if (
     fields.length !== 4 ||
     !KINDS.has(kind) ||
-    !file?.startsWith(`${CONTRACT}/`) ||
+    !file ||
     file.includes('\\') ||
-    file.split('/').includes('..') ||
+    file
+      .split('/')
+      .some((part) => part === '' || part === '.' || part === '..') ||
     !/^[a-f0-9]{64}$/.test(sha256)
   ) {
     throw new Error('Malformed manifest row');
@@ -441,10 +698,8 @@ function manifestTitle(title) {
 function assertRowShape(kind, file, title) {
   const invalid =
     kind === 'helper'
-      ? !file.startsWith(`${CONTRACT}/helpers/`) || title !== ''
-      : !file.startsWith(`${CONTRACT}/spec/`) ||
-        !/_spec\.tsx?$/.test(file) ||
-        title === '';
+      ? !isContractHelper(file) || title !== ''
+      : !isContractSpec(file) || title === '';
   if (invalid) {
     throw new Error('Manifest kind does not match its file or title');
   }

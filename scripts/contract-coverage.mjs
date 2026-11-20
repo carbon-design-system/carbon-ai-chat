@@ -32,6 +32,7 @@ const INPUTS = [
   'package-lock.json',
   'scripts/contract-coverage.mjs',
   'scripts/contract-coverage-jest.mjs',
+  'tools/contract-manifest-lib.mjs',
   `${PACKAGE}/package.json`,
   `${PACKAGE}/jest.config.cjs`,
   `${PACKAGE}/tsconfig.json`,
@@ -337,6 +338,14 @@ export function readVerifiedCoverage(report, expected) {
   return JSON.parse(bytes.toString('utf8'));
 }
 
+function isRuntimeSource(file) {
+  return (
+    RUNTIME.test(file) &&
+    !file.endsWith('.d.ts') &&
+    !/(?:^|\/)(?:__tests__|tests)(?:\/|$)/.test(file)
+  );
+}
+
 function changedRuntimeLines(base, source) {
   const rows = addedLines(base, source);
   if (source === 'worktree') {
@@ -355,9 +364,7 @@ function changedRuntimeLines(base, source) {
     if (result.status !== 0) {
       throw new Error('cannot discover untracked runtime source');
     }
-    for (const file of result.stdout
-      .split('\0')
-      .filter((path) => RUNTIME.test(path) && !path.endsWith('.d.ts'))) {
+    for (const file of result.stdout.split('\0').filter(isRuntimeSource)) {
       readFileSync(file, 'utf8')
         .split('\n')
         .forEach((text, index) => {
@@ -365,9 +372,7 @@ function changedRuntimeLines(base, source) {
         });
     }
   }
-  return rows.filter(
-    ({ file }) => RUNTIME.test(file) && !file.endsWith('.d.ts')
-  );
+  return rows.filter(({ file }) => isRuntimeSource(file));
 }
 
 function selectionIdentity(source) {
@@ -398,9 +403,7 @@ function deletedRuntimeLines(base, source) {
   }
   return parseNumstat(result.stdout)
     .filter(({ path, oldPath }) =>
-      [path, oldPath].some(
-        (file) => file && RUNTIME.test(file) && !file.endsWith('.d.ts')
-      )
+      [path, oldPath].some((file) => file && isRuntimeSource(file))
     )
     .reduce((total, row) => total + row.deleted, 0);
 }

@@ -9,9 +9,14 @@
 
 import { spawnSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { contractInventory } from '../tools/contract-manifest-lib.mjs';
 
 export function produceCoverage(directory) {
+  const { specs } = contractInventory(process.cwd());
+  if (!specs.length) {
+    throw new Error('No contract suites found');
+  }
   const environment = { ...process.env };
   delete environment.CONTRACT_COVERAGE_REPORT;
   const result = spawnSync(
@@ -21,13 +26,15 @@ export function produceCoverage(directory) {
       'test',
       '--workspace=@carbon/ai-chat',
       '--',
-      'tests/contract',
+      '--runTestsByPath',
+      ...specs.map((file) => resolve(file)),
       '--maxWorkers=2',
       '--coverage',
       '--coverageReporters=json',
       `--coverageDirectory=${directory}`,
       '--collectCoverageFrom=src/**/*.{ts,tsx}',
       '--collectCoverageFrom=!src/**/*.d.ts',
+      '--collectCoverageFrom=!src/**/__tests__/**',
     ],
     { encoding: 'utf8', maxBuffer: Infinity, env: environment }
   );
