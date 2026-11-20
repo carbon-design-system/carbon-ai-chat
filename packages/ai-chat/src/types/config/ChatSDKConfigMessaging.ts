@@ -46,6 +46,10 @@ export interface ChatSDKConfigMessaging<
    *
    * The abort signal in `options` fires when the send times out, is stopped, or the conversation
    * restarts.
+   *
+   * Without it, every send fails, the welcome request included. The message shows as failed,
+   * {@link PublicConfig.onError} reports a message communication error, and {@link ChatInstance.send}
+   * rejects with an error that names this field.
    */
   customSendMessage?: (
     request: MessageRequest,
