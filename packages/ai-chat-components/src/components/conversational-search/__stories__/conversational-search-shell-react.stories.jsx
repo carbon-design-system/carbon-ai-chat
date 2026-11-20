@@ -12,8 +12,17 @@ import React, { useEffect, useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { action } from 'storybook/actions';
 import ConversationalSearchShell from '../../../react/conversational-search-shell';
+import CitationCard from '../../../react/citation-card';
+import Carousel from '../../../react/carousel';
 import Markdown from '../../../react/markdown';
-import { Default as DefaultWC } from './conversational-search-shell.stories';
+import {
+  Default as DefaultWC,
+  WithCitationCards as WithCitationCardsWC,
+} from './conversational-search-shell.stories';
+import { insertHighlightMarkdown } from '../src/citation-utils';
+import { citations } from './story-data';
+// The chat loads the carousel's slide CSS globally; the story has to.
+import '../../carousel/__stories__/story-styles.scss';
 
 function Answer({ args, onToggle }) {
   return (
@@ -149,4 +158,64 @@ export const Streaming = {
   ...Default,
   args: { ...Default.args, streaming: true },
   render: (args) => <StreamingAnswer args={args} />,
+};
+
+const {
+  '@cds-aichat-citations-toggle': cardsToggleEvent,
+  '@cds-aichat-citations-select': cardsSelectEvent,
+  ...cardsArgTypes
+} = WithCitationCardsWC.argTypes;
+
+export const WithCitationCards = {
+  args: { ...WithCitationCardsWC.args },
+  argTypes: {
+    ...cardsArgTypes,
+    onCitationsToggle: { ...cardsToggleEvent, control: 'none' },
+    onCitationsSelect: { ...cardsSelectEvent, control: 'none' },
+  },
+  parameters: { docs: { source: { type: 'code' } } },
+  render: (args) => {
+    const [, updateArgs] = useArgs();
+    const markdown = insertHighlightMarkdown(
+      args.markdown,
+      args.citationsOpen ? citations[args.selectedCitationIndex] : null
+    );
+    return (
+      <div style={{ maxInlineSize: '40rem' }}>
+        <ConversationalSearchShell
+          citationsOpen={args.citationsOpen}
+          showCitationsToggle={args.showCitationsToggle}
+          citationsLabel={args.citationsLabel}
+          toggleLabel={args.toggleLabel}
+          selectedCitationIndex={args.selectedCitationIndex}
+          onCitationsToggle={(event) => {
+            updateArgs({ citationsOpen: event.detail.open });
+            action('citations-toggle')(event.detail);
+          }}
+          onCitationsSelect={(event) => {
+            updateArgs({ selectedCitationIndex: event.detail.index });
+            action('citations-select')(event.detail);
+          }}>
+          <Markdown markdown={markdown} />
+          <Carousel
+            slot="citations"
+            nextBtnText={args.nextBtnText}
+            previousBtnText={args.previousBtnText}>
+            <div>
+              {citations.map((citation, index) => (
+                <CitationCard
+                  key={citation.title}
+                  index={index}
+                  url={citation.url}
+                  sourceLabel={citation.url ? undefined : args.sourceLabel}>
+                  <div slot="title">{citation.title}</div>
+                  <div slot="body">{citation.text}</div>
+                </CitationCard>
+              ))}
+            </div>
+          </Carousel>
+        </ConversationalSearchShell>
+      </div>
+    );
+  },
 };
