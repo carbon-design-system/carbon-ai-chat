@@ -14,7 +14,7 @@ superseded-by:
 
 Hosts that collect dates, pace replies, or embed web pages need a migration path before the next major release. Removing those built-in behaviors can leave a working backend with a missing control, an early reply, or hidden content.
 
-Deprecate `date`, `pause`, and `iframe` in 1.x, then delete all three built-in implementations in 2.0.0. Implementors who need these experiences write their own UI and behavior through `user_defined`. They can use `upsertMessage` to update custom content while their own code controls timing. Planned A2UI support, for interfaces described by agents, also includes date picker controls. The loading and reasoning proposal may offer another pause path. Future MCP Apps support may offer another way to embed interactive content. Keep `image`, `button`, `carousel`, and `option` through 2.0.0.
+Deprecate `date`, `pause`, and `iframe` in 1.x, then delete all three built-in implementations in 2.0.0. Implementors who need these experiences write their own UI and behavior through `user_defined`. They can use `upsertMessage` to update custom content while their own code controls timing. Possible A2UI support, for interfaces described by agents, also includes date picker controls. The loading and reasoning proposal may offer another pause path. Future MCP Apps support may offer another way to embed interactive content. Keep `image`, `button`, `carousel`, and `option` through 2.0.0.
 
 Feedback wanted
 
@@ -24,7 +24,7 @@ Feedback wanted
 
 ## Motivation
 
-A date control needs access to your form rules, locale, and backend format. The built-in picker ties those choices to the chat's message store and send service. Its port also needs changes around Carbon's calendar internals. A host-rendered control can use the same date picker as the rest of your app.
+A date control needs access to your form rules, locale, and backend format. The built-in picker ties those choices to the chat's message store and send service. Carrying it into the rebuilt 2.0.0 chat also means reworking how it hooks into the calendar library inside Carbon's date picker. A host-rendered control can use the same date picker as the rest of your app.
 
 A pause currently delays later items in a response and can show the typing indicator. The chat skips it when it loads history. A host can pace delivery and show progress through the existing message-update API. Repository tests exercise pauses, but external usage remains an open question.
 
@@ -55,49 +55,63 @@ A `user_defined` response carries application-defined data. The chat passes the 
 For pacing, insert a custom indicator, then replace it with the answer after your host's delay or work completes. An update replaces the full message, so include any earlier content you want to keep.
 
 ```ts
-import { MessageResponseTypes, MessageState } from '@carbon/ai-chat';
+import {
+  CancellationReason,
+  GenericItem,
+  MessageResponse,
+  MessageResponseTypes,
+  MessageState,
+  TextItem,
+} from '@carbon/ai-chat';
 
 // Inside customSendMessage(request, requestOptions, instance).
 // wait(ms, signal) is your helper. It returns true when the delay finishes.
 // On abort, it clears its timer and returns false.
 // Your renderer handles user_defined_type: 'typing_indicator'.
 const messageID = crypto.randomUUID();
-await instance.messaging.upsertMessage(
-  messageID,
-  MessageState.STREAMING,
-  () => ({
-    request_id: request.id,
-    output: {
-      generic: [
-        {
-          response_type: MessageResponseTypes.USER_DEFINED,
-          streaming_metadata: { id: 'reply', cancellable: true },
-          user_defined: { user_defined_type: 'typing_indicator' },
-        },
-      ],
+const intro: TextItem = {
+  response_type: MessageResponseTypes.TEXT,
+  streaming_metadata: { id: 'intro' },
+  text: 'Checking availability.',
+};
+const snapshot = (items: GenericItem[]): MessageResponse => ({
+  request_id: request.id,
+  output: { generic: [intro, ...items] },
+});
+
+// First snapshot: the opening text and your indicator.
+await instance.messaging.upsertMessage(messageID, MessageState.STREAMING, () =>
+  snapshot([
+    {
+      response_type: MessageResponseTypes.USER_DEFINED,
+      streaming_metadata: { id: 'reply', cancellable: true },
+      user_defined: { user_defined_type: 'typing_indicator' },
     },
-  })
+  ])
 );
 
-// The chat settles registered streams on Stop or restart.
-if (!(await wait(1500, requestOptions.signal))) return;
-if (requestOptions.signal?.aborted) return;
+if (!(await wait(1500, requestOptions.signal))) {
+  // Stop leaves the last snapshot in place, so settle it without the indicator.
+  // After a restart or clear, skip this. The chat ignores the old request ID.
+  if (requestOptions.signal?.reason === CancellationReason.STOP_STREAMING) {
+    await instance.messaging.upsertMessage(
+      messageID,
+      MessageState.COMPLETE,
+      () => snapshot([])
+    );
+  }
+  return;
+}
 
-await instance.messaging.upsertMessage(
-  messageID,
-  MessageState.COMPLETE,
-  () => ({
-    request_id: request.id,
-    output: {
-      generic: [
-        {
-          response_type: MessageResponseTypes.TEXT,
-          streaming_metadata: { id: 'reply' },
-          text: 'Your answer is ready.',
-        },
-      ],
+// Second snapshot: the answer replaces the indicator.
+await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () =>
+  snapshot([
+    {
+      response_type: MessageResponseTypes.TEXT,
+      streaming_metadata: { id: 'reply' },
+      text: 'Your answer is ready.',
     },
-  })
+  ])
 );
 ```
 
@@ -115,12 +129,17 @@ The loading and reasoning proposal will likely offer another way to show progres
 | 2.0.0 | Remove the nine named symbols from the browser and server entry points, including the three generic-item union members. |
 | 2.0.0 | Delete the date response render path, picker components, Carbon wrapper, helpers, guards, and styles. Remove the `datePicker_chooseDate` and `datePicker_confirmDate` locale keys. |
 | 2.0.0 | Delete pause processing, its guards, timing and typing branches, and its history exclusion. |
-| 2.0.0 | Delete inline iframe rendering, the preview card, and the dedicated iframe panel, including their state, helpers, and styles. |
+| 2.0.0 | Delete inline iframe rendering, the iframe preview card (not the separate `preview_card` response type), and the dedicated iframe panel, including their state, helpers, and styles. |
 | 2.0.0 | Remove the iframe-only language keys listed below from every locale and from `LanguagePack`. |
 | 2.0.0 | Delete all remaining response-specific dispatch, schema, streaming, and history handling for the three types. Generic unknown-type handling supplies any fallback. |
 | 2.0.0 | Remove `iframe` from the supported nested built-in types. Convert nested iframe payloads to `user_defined` before delivery or history loading. |
 
 Convert live and saved payloads to explicit `user_defined` items. After deletion, top-level legacy items reach the generic unknown-type path with their original data. Nested items pass through a supported-type filter first, so convert nested iframe items too. Your application writes every replacement control, embed, or delay. The sender controls when later content reaches the chat.
+
+| Payload source | Where to convert |
+| --- | --- |
+| Live responses | Your backend, or a `pre:receive` handler |
+| Saved history | Your `customLoadHistory` handler, or your code before `insertHistory`. History loading does not fire `pre:receive`. |
 
 Remove overrides for these retired `LanguagePack` keys when upgrading.
 
@@ -137,6 +156,20 @@ Remove overrides for these retired `LanguagePack` keys when upgrading.
 
 The host writes any embedded content, preview action, and panel behavior it needs. It can use the generic custom panel container. The dedicated iframe panel and its response-driven state are deleted.
 
+The built-in iframe made these choices. Use them as a reference when you choose your own.
+
+| Behavior | Built-in iframe |
+| --- | --- |
+| Sandbox | `allow-scripts allow-downloads allow-forms allow-popups allow-same-origin` |
+| Referrer policy | `origin` |
+| Role and keyboard | `role="application"`, in the tab order |
+| Loading | Spinner after 1.5 seconds |
+| Timeout | Error message after 20 seconds without a load |
+| Announcement | Announces when the page loads |
+| Nested items | Always inline, never a preview card |
+
+Choose your own sandbox rather than copying this one. With both `allow-scripts` and `allow-same-origin`, a same-origin page can remove its own sandbox.
+
 The deprecation follow-up covers the 1.x tags and migration guidance. The date and pause removal issues cover their 2.0.0 implementation. If this proposal is accepted, the earlier iframe port scope needs revision to carry its retirement. [Deprecation follow-up #3014](https://github.com/carbon-design-system/carbon-ai-chat/issues/3014), [Date removal #1851](https://github.com/carbon-design-system/carbon-ai-chat/issues/1851), [Pause removal #2032](https://github.com/carbon-design-system/carbon-ai-chat/issues/2032), [Earlier iframe port scope #1856](https://github.com/carbon-design-system/carbon-ai-chat/issues/1856)
 
 | Retained type | 2.0.0 contract | Reason |
@@ -144,7 +177,7 @@ The deprecation follow-up covers the 1.x tags and migration guidance. The date a
 | `image` | Supported, untagged | Platform authors can emit it. The built-in renderer owns alt-text fallback, loading errors, and interaction. Image buttons also need that renderer. |
 | `button`, `carousel`, `option` | Supported, untagged | Keep platform-authored actions and choices available. |
 
-The iframe preview card is the only path that opens the dedicated iframe panel. Retiring the whole response experience lets its renderer and panel leave together. The image renderer also serves image buttons, so its shared code continues to have consumers. Expand image usage guidance as follow-up.
+The iframe preview card (`IFramePreviewCard`, not the `preview_card` response type) is the only path that opens the dedicated iframe panel. Retiring the whole response experience lets its renderer and panel leave together. The image renderer also serves image buttons, so its shared code continues to have consumers. Expand image usage guidance as follow-up.
 
 ## Consumer impact
 
@@ -158,17 +191,7 @@ Before, the chat supplies the picker and sends the selected date.
 { "response_type": "date" }
 ```
 
-After, your host renders the date picker for this wire item.
-
-```json
-{
-  "response_type": "user_defined",
-  "user_defined": {
-    "user_defined_type": "date_picker",
-    "label": "Choose a date"
-  }
-}
-```
+After, send the `date_picker` item shown under Proposal. Your control sends the chosen date.
 
 ```ts
 // Your date control's confirmation handler. This example uses an ISO date.
@@ -178,13 +201,17 @@ await instance.send({
     text: '2026-12-18',
     structured_data: { user_defined: { date: '2026-12-18' } },
   },
-  history: { label: 'December 18, 2026' },
+  history: {
+    label: 'December 18, 2026',
+    // ID of the message that held your date picker.
+    related_message_id: dateMessageID,
+  },
 });
 ```
 
 You can also offer a fixed set of dates as an `option` response. Your control owns selected and disabled states, accessibility, and restoration from history. Programmatic sends use `MessageSendSource.INSTANCE_SEND`, which replaces date-picker-specific event handling.
 
-Planned A2UI support also includes date picker controls. Its basic catalog defines `DateTimeInput` for date and time entry. The Carbon AI Chat integration and its release are still being explored. [A2UI integration #1526](https://github.com/carbon-design-system/carbon-ai-chat/issues/1526), [A2UI date and time input](https://a2ui.org/reference/components/#datetimeinput)
+Possible A2UI support also includes date picker controls. Its basic catalog defines `DateTimeInput` for date and time entry. The Carbon AI Chat integration and its release are still being explored. [A2UI integration #1526](https://github.com/carbon-design-system/carbon-ai-chat/issues/1526), [A2UI date and time input](https://a2ui.org/specification/v1.0-basic-catalog-implementation-guide/#datetimeinput)
 
 ### Replace the pause item with host-driven updates
 
@@ -202,36 +229,9 @@ Before, the chat waits between two items and shows its typing indicator.
 }
 ```
 
-After, the first snapshot contains the first text and your custom indicator.
+After, the pacing sample under Proposal sends two snapshots with the same message ID. The first holds the opening text and your indicator. The second replaces the indicator with the answer.
 
-```json
-{
-  "output": {
-    "generic": [
-      { "response_type": "text", "text": "Checking availability." },
-      {
-        "response_type": "user_defined",
-        "user_defined": { "user_defined_type": "typing_indicator" }
-      }
-    ]
-  }
-}
-```
-
-After the host's wait, a second `upsertMessage` with the same message ID replaces it with this snapshot.
-
-```json
-{
-  "output": {
-    "generic": [
-      { "response_type": "text", "text": "Checking availability." },
-      { "response_type": "text", "text": "Your answer is ready." }
-    ]
-  }
-}
-```
-
-Send the first snapshot as `STREAMING` and the second as `COMPLETE`, with the same `request_id` on both. Keep completed content in saved history. A custom placeholder has no automatic history exclusion, so your host must settle or normalize it.
+Send the first snapshot as `STREAMING` and the second as `COMPLETE`, with the same `request_id` on both. On Stop, settle the message as `COMPLETE` without the indicator. Keep completed content in saved history. A custom placeholder has no automatic history exclusion, so your host must settle or normalize it.
 
 ### Replace the iframe item and its panel behavior
 
@@ -265,10 +265,10 @@ The fields inside `user_defined` are data for code you write. Your renderer inte
 | Existing presentation | Host migration |
 | --- | --- |
 | `display: "inline"` | Render the iframe inside your custom response. |
-| `display: "panel"`, or omitted | Implement your own preview action and panel content, optionally using a generic custom panel container. |
+| `display: "panel"`, or omitted | Replace the iframe preview card with your own preview action and panel content, optionally using a generic custom panel container. |
 | Iframe inside a card, grid, or button panel | Convert that nested item to `user_defined`, including copies in saved history. |
 
-Your host takes on sizing, labels, keyboard access, loading feedback, timeouts, and load or error announcements. Panel users also own the preview and panel controls. Test selectors for the retired `PageObjectId.IFRAME_PANEL` need to target your custom panel. Remove overrides for the retired language keys. [Custom panels](../../packages/ai-chat/docs/CustomPanels.md)
+Your host takes on sizing, labels, keyboard access, loading feedback, timeouts, and load or error announcements, starting from the built-in choices listed under Reference. Panel users also own the preview and panel controls. Test selectors for the retired `PageObjectId.IFRAME_PANEL` need to target your custom panel. Remove overrides for the retired language keys. [Custom panels](../../packages/ai-chat/docs/CustomPanels.md)
 
 MCP Apps may offer another path for interactive content after Carbon AI Chat adopts the component another Carbon squad is building. MCP Apps use UI resources associated with MCP tools, so migration requires adapting content to that protocol. The integration's API and timing remain open. [MCP Apps adoption direction](https://github.com/carbon-design-system/carbon-ai-chat/issues/906#issuecomment-6989441469), [MCP Apps protocol](https://github.com/modelcontextprotocol/ext-apps/blob/main/README.md#how-it-works)
 
