@@ -23,17 +23,17 @@ import { AppState } from '../../../../types/state/AppState';
 
 import { useSelector } from '../../../hooks/useSelector';
 
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 
 import {
   PreviewCardItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
 
-import { viewActions } from '../../../../view/state';
+import { viewActions } from '../../../state';
 import { closeWorkspaceForNext } from '../../../services/CustomPanelInstance';
 import { chatStore } from '../../../services/attachChatView';
-import { consoleError } from '../../../../shared/utils/miscUtils';
+import { consoleError } from '../../../../sdk/utils/miscUtils';
 
 interface PreviewCardComponentProps {
   localMessageItem: LocalMessageItem;

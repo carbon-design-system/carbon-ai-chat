@@ -16,9 +16,9 @@ import {
   setupAfterEach,
 } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
-import { joinPersistedState } from '../../../src/view/state';
+import { joinPersistedState } from '../../../src/chat/state';
 
 const HOSTNAME =
   typeof window !== 'undefined' ? window.location.hostname : 'localhost';

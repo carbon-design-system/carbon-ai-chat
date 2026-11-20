@@ -10,7 +10,7 @@
 import {
   sleep,
   resolveOrTimeout,
-} from '../../../src/shared/utils/lang/promiseUtils';
+} from '../../../src/sdk/utils/lang/promiseUtils';
 
 describe('promiseUtils', () => {
   describe('sleep', () => {

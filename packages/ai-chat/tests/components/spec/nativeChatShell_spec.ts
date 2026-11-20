@@ -37,7 +37,7 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 import { chatStore } from '../../../src/chat/services/attachChatView';
 

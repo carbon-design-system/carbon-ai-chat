@@ -54,9 +54,9 @@ import {
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
 
 import { WindowOpenState } from '../services/windowOpenState';
-import { fireUserEvent } from '../../shared/services/fireUserEvent';
+import { fireUserEvent } from '../services/fireUserEvent';
 
-import { shallowEqual } from '../../shared/store/appStore';
+import { shallowEqual } from '../../sdk/store/appStore';
 
 import {
   humanAgentDisplayStateOf,
@@ -65,7 +65,7 @@ import {
   selectInputFieldVisible,
   selectInputUploadAndStreamingFields,
   selectStopStreamingButtonVisible,
-} from '../../shared/store/selectors';
+} from '../../sdk/store/selectors';
 
 import { getDerivedState } from './derivedState';
 import type { PublicChatState } from '../../types/instance/PublicChatState';
@@ -100,23 +100,20 @@ import {
   consoleError,
   consoleWarn,
   isEnableDebugLog,
-} from '../../shared/utils/miscUtils';
+} from '../../sdk/utils/miscUtils';
 
 import {
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
   isBrowser,
-} from '../../shared/utils/browserUtils';
+} from '../../sdk/utils/browserUtils';
 
-import {
-  convertCSSVariablesToString,
-  getThemeClassNames,
-} from '../../shared/utils/styleUtils';
+import { convertCSSVariablesToString, getThemeClassNames } from './styleUtils';
 
 import {
   WriteableElementName,
   FileStatusValue,
-} from '../../shared/utils/constants';
+} from '../../sdk/utils/constants';
 
 import {
   hasMeaningfulContent,
@@ -129,14 +126,11 @@ import {
 } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 import styles from '../AppShell.scss';
-import {
-  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  viewActions,
-} from '../../view/state';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 
 import { chatStore } from '../services/attachChatView';
 
-import { joinPersistedState } from '../../view/state';
+import { joinPersistedState } from '../state';
 import { writeableElementsOf } from './writeableElements';
 
 const applicationStylesheet =

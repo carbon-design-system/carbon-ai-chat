@@ -27,7 +27,7 @@ import {
   ServiceDesk,
 } from '../../../../src/types/config/ServiceDeskConfig';
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
-import actions from '../../../../src/shared/store/actions';
+import actions from '../../../../src/sdk/store/actions';
 import { ViewType } from '../../../../src/types/instance/apiTypes';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {
@@ -35,7 +35,7 @@ import {
   fixtureMessage,
   observeWrite,
 } from '../../../utils/itemDrawabilityFixtures';
-import { viewActions } from '../../../../src/view/state';
+import { viewActions } from '../../../../src/chat/state';
 
 describe('ChatInstance.messaging.addMessage', () => {
   beforeEach(setupBeforeEach);

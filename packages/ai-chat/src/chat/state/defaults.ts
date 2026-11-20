@@ -7,11 +7,11 @@
  *  @license
  */
 
-import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
 import {
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
-} from '../../shared/utils/constants';
+} from '../../sdk/utils/constants';
 import {
   DefaultCustomPanelConfigOptions,
   PanelConfigOptionsByType,

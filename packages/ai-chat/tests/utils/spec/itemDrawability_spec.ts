@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { findDrawIssues } from '../../../src/shared/schema/outputItemToLocalItem';
+import { findDrawIssues } from '../../../src/sdk/schema/outputItemToLocalItem';
 import { GenericItem } from '../../../src/types/messaging/Messages';
 import {
   DrawFixture,

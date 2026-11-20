@@ -9,7 +9,7 @@
 
 import React, { type ReactNode } from 'react';
 import type { OnErrorData } from '../../../types/config/ErrorConfig';
-import { createDidCatchErrorData } from '../../../shared/utils/miscUtils';
+import { createDidCatchErrorData } from '../../../sdk/utils/miscUtils';
 import { InlineError } from '../responseTypes/error/InlineError';
 
 interface PanelContentErrorBoundaryProps {

@@ -10,13 +10,14 @@
 /**
  * The prebuilt chat's view partition: its state, actions, reducer, and the
  * view half of saved state. It lives under `view` in the chat's one store, and
- * only `chat/` and `view/` use it. Internal; nothing here is exported from a
+ * only the prebuilt chat uses it. Internal; nothing here is exported from a
  * package entry point.
  */
 
-import { attachStorePartition, extendPublicState } from '../../sdk/internal';
-import type { PublicStateService } from '../../shared/services/PublicStateService';
-import type { AppStore } from '../../shared/store/appStore';
+import { attachStorePartition } from '../../sdk/store/attachStorePartition';
+import { extendPublicState } from '../../sdk/store/extendPublicState';
+import type { PublicStateService } from '../../sdk/services/PublicStateService';
+import type { AppStore } from '../../sdk/store/appStore';
 import type { PublicConfig } from '../../types/config/PublicConfig';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPersistedState } from '../../types/state/ViewPartitionState';

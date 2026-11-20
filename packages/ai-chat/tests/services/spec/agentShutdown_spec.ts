@@ -8,9 +8,9 @@
  */
 
 import { waitFor } from '@testing-library/react';
-import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type {
   ServiceDesk,
   ServiceDeskCallback,
@@ -26,7 +26,7 @@ import {
 } from '../../../src/types/messaging/Messages';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
-import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
+import createHumanAgentService from '../../../src/sdk/services/haa/HumanAgentServiceImpl';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

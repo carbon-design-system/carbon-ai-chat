@@ -9,11 +9,11 @@
 
 import type { AppState } from '../../types/state/AppState';
 
-import type { AppStore } from '../../shared/store/appStore';
+import type { AppStore } from '../../sdk/store/appStore';
 
-import type { LoadingDirection } from '../../shared/services/messaging/presentationPort';
+import type { LoadingDirection } from '../../sdk/services/messaging/presentationPort';
 
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 
 /**
  * The view's message and chat loading counters, as the conversation layer

@@ -9,8 +9,8 @@
 
 import { createChatSDK } from '../../../src/sdk';
 import { createChatSDK as bootChatSDK } from '../../../src/sdk/createChatSDK';
-import { chatOf } from '../../../src/sdk/internal';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { chatOf } from '../../../src/sdk/handle';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ChatSDKHandle } from '../../../src/sdk/handle';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type {

@@ -14,7 +14,7 @@ import React, { useLayoutEffect, useRef } from 'react';
 
 import { useSelector } from '../../../../hooks/useSelector';
 import { useWindowSize } from '../../../../hooks/useWindowSize';
-import { shallowEqual } from '../../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../../sdk/store/appStore';
 import {
   ConversationalSearchItemCitation,
   SearchResult,

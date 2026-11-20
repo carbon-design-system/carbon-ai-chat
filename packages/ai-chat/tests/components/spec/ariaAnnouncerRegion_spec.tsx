@@ -52,7 +52,7 @@ import ChatElement from '../../../src/web-components/cds-aichat-container/cds-ai
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
 import type { ChatAppEntryProps } from '../../../src/chat/ChatAppEntry';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { useAriaAnnouncer } from '../../../src/chat/hooks/useAriaAnnouncer';
 import { ProcessingWithText } from '../../../src/chat/components/helpers/ProcessingWithText/ProcessingWithText';

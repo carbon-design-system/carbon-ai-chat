@@ -25,10 +25,10 @@ import type { MessageRequest } from '../../../src/types/messaging/Messages';
 
 import type { MarkdownConfig } from '../../../src/types/config/MarkdownConfig';
 
-import * as miscUtils from '../../../src/shared/utils/miscUtils';
+import * as miscUtils from '../../../src/sdk/utils/miscUtils';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 function renderInline(text: string) {
   return render(

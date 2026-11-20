@@ -14,7 +14,7 @@ import ChatButton, {
 import cx from 'classnames';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
-import { consoleError } from '../../../../shared/utils/miscUtils';
+import { consoleError } from '../../../../sdk/utils/miscUtils';
 
 import { ButtonItem } from '../../../../types/messaging/Messages';
 import { AppState } from '../../../../types/state/AppState';

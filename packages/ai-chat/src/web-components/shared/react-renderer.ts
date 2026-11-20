@@ -10,7 +10,7 @@
 import type { ComponentType } from 'react';
 
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
-import { resolvablePromise } from '../../shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../sdk/utils/resolvablePromise';
 
 /**
  * Private seam between `cds-aichat-container` and whatever renders the React

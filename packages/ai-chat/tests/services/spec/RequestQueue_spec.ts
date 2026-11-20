@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { RequestQueue } from '../../../src/shared/services/messaging/state/RequestQueue';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import type { PendingMessageRequest } from '../../../src/shared/services/messaging/pendingRequestTypes';
+import { RequestQueue } from '../../../src/sdk/services/messaging/state/RequestQueue';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import type { PendingMessageRequest } from '../../../src/sdk/services/messaging/pendingRequestTypes';
 
 it('keeps opaque operations in FIFO order until the current operation releases', () => {
   const queue = new RequestQueue();

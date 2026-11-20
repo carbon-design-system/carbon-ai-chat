@@ -32,11 +32,11 @@ import { AutocompleteContent } from '../../../src/chat/services/autocompleteCont
 
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 
-import { createIntl } from '../../../src/shared/utils/i18n';
+import { createIntl } from '../../../src/sdk/utils/i18n';
 
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
 
@@ -46,7 +46,7 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 class AutocompleteProvider extends LitElement {
   readonly provider = new ContextProvider(this, {

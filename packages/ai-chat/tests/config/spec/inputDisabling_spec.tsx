@@ -30,7 +30,7 @@ import {
 import {
   selectInputIsDisabled,
   selectInputIsReadonly,
-} from '../../../src/shared/store/selectors';
+} from '../../../src/sdk/store/selectors';
 
 describe('Disabling the assistant input', () => {
   beforeEach(setupBeforeEach);

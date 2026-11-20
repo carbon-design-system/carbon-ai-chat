@@ -10,7 +10,7 @@
 import {
   StreamState,
   type StreamControllerToken,
-} from '../../../src/shared/services/messaging/state/StreamState';
+} from '../../../src/sdk/services/messaging/state/StreamState';
 import {
   chunkHasDisplayableContent,
   deriveStreamingItemText,
@@ -19,9 +19,9 @@ import {
   resolveChunkContext,
   shouldShowStopStreaming,
   syncStopStreamingButton,
-} from '../../../src/shared/utils/streamingUtils';
-import { applyChunkData } from '../../../src/shared/services/messaging/inbound/prepareChunk';
-import actions from '../../../src/shared/store/actions';
+} from '../../../src/sdk/utils/streamingUtils';
+import { applyChunkData } from '../../../src/sdk/services/messaging/inbound/prepareChunk';
+import actions from '../../../src/sdk/store/actions';
 
 describe('streamingUtils', () => {
   const createStore = (isVisible = true) => {

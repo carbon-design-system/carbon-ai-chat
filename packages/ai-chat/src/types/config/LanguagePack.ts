@@ -7,7 +7,7 @@
  *  @license
  */
 
-import enLanguagePackData from '../../shared/languages/en.json';
+import enLanguagePackData from '../../languages/en.json';
 
 /**
  * The raw strings used for {@link PublicConfig.strings}. Presented in ICU format.

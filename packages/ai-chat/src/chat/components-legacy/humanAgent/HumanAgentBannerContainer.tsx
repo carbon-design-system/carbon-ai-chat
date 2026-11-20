@@ -9,7 +9,7 @@
 
 import React from 'react';
 
-import { humanAgentDisplayStateOf } from '../../../shared/store/selectors';
+import { humanAgentDisplayStateOf } from '../../../sdk/store/selectors';
 import { usePublicChatState } from '../../hooks/usePublicChatState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { HumanAgentBanner } from './HumanAgentBanner';

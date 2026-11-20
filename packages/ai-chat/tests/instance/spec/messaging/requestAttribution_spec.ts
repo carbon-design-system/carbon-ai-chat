@@ -28,7 +28,7 @@ import {
   BusEventPreReceive,
   BusEventType,
 } from '../../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 
 function response(id: string, requestID?: string): MessageResponse {
   return {

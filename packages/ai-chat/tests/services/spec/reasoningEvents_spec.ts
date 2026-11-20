@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { coordinateReasoningEvents } from '../../../src/shared/services/messaging/coordinateReasoningEvents';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { coordinateReasoningEvents } from '../../../src/sdk/services/messaging/coordinateReasoningEvents';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   MessageResponse,
   MessageResponseTypes,

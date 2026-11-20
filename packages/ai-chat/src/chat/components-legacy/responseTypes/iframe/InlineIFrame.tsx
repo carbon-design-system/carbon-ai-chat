@@ -15,8 +15,8 @@ import {
   applyDynamicStyles,
   clearDynamicStyles,
 } from '../../../utils/cspStyleUtils';
-import { getMediaDimensions } from '../../../../shared/utils/messageUtils';
-import { getResponsiveElementPaddingValue } from '../../../../shared/utils/miscUtils';
+import { getMediaDimensions } from '../../../../sdk/utils/messageUtils';
+import { getResponsiveElementPaddingValue } from '../../../../sdk/utils/miscUtils';
 import { InlineError } from '../../../components/responseTypes/error/InlineError';
 import { IFrameComponent } from './IFrameComponent';
 import { IFrameItem } from '../../../../types/messaging/Messages';

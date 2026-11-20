@@ -23,9 +23,9 @@ import frLocaleData from 'dayjs/locale/fr.js';
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
-import { localeLoaders } from '../../../src/shared/utils/languageUtils';
-import actions from '../../../src/shared/store/actions';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import { localeLoaders } from '../../../src/sdk/utils/languageUtils';
+import actions from '../../../src/sdk/store/actions';
 import { useIntl } from '../../../src/chat/hooks/useIntl';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -37,7 +37,7 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 import { chatStore } from '../../../src/chat/services/attachChatView';
-import * as applyConfigModule from '../../../src/shared/services/applyConfig';
+import * as applyConfigModule from '../../../src/sdk/services/applyConfig';
 
 type ContainerElement = HTMLElement & {
   config: PublicConfig;

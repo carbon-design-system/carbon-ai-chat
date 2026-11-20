@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { ChunkWorkflow } from '../../../src/shared/services/messaging/ChunkWorkflow';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { ChunkWorkflow } from '../../../src/sdk/services/messaging/ChunkWorkflow';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type {
   PauseItem,
   StreamChunk,
 } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { withMessagingView } from '../helpers/viewBindings';
 
 it('returns the original chunk and pause promises from the core', () => {

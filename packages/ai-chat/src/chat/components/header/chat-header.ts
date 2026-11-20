@@ -29,9 +29,9 @@ import type {
 import { WriteableElementName } from '../../../types/instance/WriteableElements';
 import type { BusEventHeaderMenuClick } from '../../../types/events/eventBusTypes';
 import { NativeChatView } from '../shared/NativeChatView';
-import { fireUserEvent } from '../../../shared/services/fireUserEvent';
-import { shallowEqual } from '../../../shared/store/appStore';
-import { humanAgentDisplayStateOf } from '../../../shared/store/selectors';
+import { fireUserEvent } from '../../services/fireUserEvent';
+import { shallowEqual } from '../../../sdk/store/appStore';
+import { humanAgentDisplayStateOf } from '../../../sdk/store/selectors';
 import { isDirectionRTL } from '../../utils/domUtils';
 import { observeWriteableElementPresence } from '../../utils/writeableElementPresence';
 import {

@@ -29,14 +29,14 @@ import { useWriteableElementPresence } from './hooks/useWriteableElementPresence
 import { useChatViewStateInstance } from './hooks/useChatViewState';
 import { useIntl } from './hooks/useIntl';
 import { useSelector } from './hooks/useSelector';
-import { selectLoadedLocale } from '../shared/store/selectors';
+import { selectLoadedLocale } from '../sdk/store/selectors';
 import { useAppShellPanels } from './AppShellPanels';
 import AppShellErrorBoundary from './AppShellErrorBoundary';
 import MessagesComponent, {
   type MessagesComponentClass,
 } from './components-legacy/MessagesComponent';
-import { createUnmappingMemoizer } from '../shared/utils/memoizerUtils';
-import { createDidCatchErrorData } from '../shared/utils/miscUtils';
+import { createUnmappingMemoizer } from '../sdk/utils/memoizerUtils';
+import { createDidCatchErrorData } from '../sdk/utils/miscUtils';
 import type { LocalMessageItem } from '../types/messaging/LocalMessageItem';
 import type { AppState } from '../types/state/AppState';
 import type { ExtensionHosts } from './services/extensionHosts';

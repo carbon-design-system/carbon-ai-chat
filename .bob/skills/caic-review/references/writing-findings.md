@@ -27,7 +27,7 @@ Write your findings to [review-comments.md](../../caic-copy-writer/references/re
 
 Two Importants, written the same way, with the orientation dropped to show the diagnosis line alone. Neither ships broken code; a user waits on the first, and a caller guesses at the second:
 
-- **Important** in `packages/ai-chat/src/shared/store/fooReducer.ts:88`: the reducer rebuilds every item, so one changed message re-renders the whole list. Copy the array and replace the one index.
+- **Important** in `packages/ai-chat/src/sdk/store/fooReducer.ts:88`: the reducer rebuilds every item, so one changed message re-renders the whole list. Copy the array and replace the one index.
 - **Important** in `packages/ai-chat/src/types/config/FooConfig.ts:12`: the JSDoc says "the timeout" with no unit, so a caller guesses seconds. Say "in milliseconds."
 
 Cap the diagnosis at three sentences; the orientation line and fix block are separate. Put a design question or a pattern spanning the diff in the summary's **Across the diff** section. For a settled fix that exceeds inline suggestions, include the complete patch required by [reviewing-a-pr.md](reviewing-a-pr.md#when-suggestions-cannot-carry-the-whole-fix).

@@ -15,8 +15,8 @@
 
 import { waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
-import enLanguagePack from '../../../../src/shared/languages/en.json';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import enLanguagePack from '../../../../src/languages/en.json';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
 import {
   CancellationReason,

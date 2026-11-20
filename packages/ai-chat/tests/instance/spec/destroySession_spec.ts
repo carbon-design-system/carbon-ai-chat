@@ -8,7 +8,7 @@
  */
 
 import { ViewType } from '../../../src/types/instance/apiTypes';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import {
   createBaseConfig,
   renderChatAndGetInstance,
@@ -16,7 +16,7 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 describe('ChatInstance.destroySession', () => {
   beforeEach(setupBeforeEach);

@@ -7,12 +7,12 @@
  *  @license
  */
 
-import { createAppStore } from '../../../src/shared/store/appStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
 
-import { buildLanguagePack } from '../../../src/shared/store/doCreateStore';
+import { buildLanguagePack } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { AppState } from '../../../src/types/state/AppState';
 
 import {
@@ -25,18 +25,18 @@ import {
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
-} from '../../../src/shared/store/reducerUtils';
+} from '../../../src/sdk/store/reducerUtils';
 
 import {
   DEFAULT_HISTORY_PANEL_STATE,
   DEFAULT_WORKSPACE_PANEL_STATE,
   viewActions,
-} from '../../../src/view/state';
+} from '../../../src/chat/state';
 import { appRootReducer } from '../../test_helpers';
 
-import { createInitialViewState } from '../../../src/view/state/initialState';
+import { createInitialViewState } from '../../../src/chat/state/initialState';
 
-import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/view/state';
+import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/chat/state';
 import type { AppConfig } from '../../../src/types/state/AppConfig';
 import type { ConversationState } from '../../../src/types/state/ConversationState';
 import type { DeepPartial } from '../../../src/types/utilities/DeepPartial';

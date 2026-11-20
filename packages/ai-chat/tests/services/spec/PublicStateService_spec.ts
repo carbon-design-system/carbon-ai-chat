@@ -7,16 +7,16 @@
  *  @license
  */
 
-import * as publicMessages from '../../../src/shared/utils/publicMessages';
-import { EventBus } from '../../../src/shared/events/EventBus';
-import { PublicStateService } from '../../../src/shared/services/PublicStateService';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import actions from '../../../src/shared/store/actions';
+import * as publicMessages from '../../../src/sdk/utils/publicMessages';
+import { EventBus } from '../../../src/sdk/events/EventBus';
+import { PublicStateService } from '../../../src/sdk/services/PublicStateService';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import actions from '../../../src/sdk/store/actions';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { createBaseConfig, makeConfigStore } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
-import { viewPublicFields } from '../../../src/view/state/publicFields';
+import { viewActions } from '../../../src/chat/state';
+import { viewPublicFields } from '../../../src/chat/state/publicFields';
 
 function createService() {
   const counts = new Map<string, number>();

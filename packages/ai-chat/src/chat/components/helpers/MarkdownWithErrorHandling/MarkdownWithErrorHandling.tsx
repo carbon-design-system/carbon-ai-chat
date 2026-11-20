@@ -10,12 +10,12 @@
 import React from 'react';
 
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItemStreamingState } from '../../../../types/messaging/LocalMessageItem';
 import { InlineError } from '../../responseTypes/error/InlineError';
 import { MarkdownWithDefaults } from '../MarkdownWithDefaults/MarkdownWithDefaults';
-import { deriveStreamingItemText } from '../../../../shared/utils/streamingUtils';
+import { deriveStreamingItemText } from '../../../../sdk/utils/streamingUtils';
 import { TextItem } from '../../../../types/messaging/Messages';
 
 interface MarkdownWithErrorHandlingProps {

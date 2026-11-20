@@ -10,7 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
-import { IncomingWriteLifetime } from '../../../src/shared/services/messaging/IncomingWriteLifetime';
+import { IncomingWriteLifetime } from '../../../src/sdk/services/messaging/IncomingWriteLifetime';
 
 it('keeps a released guard valid while a reveal lease retains the same entry', () => {
   let restartCount = 0;
@@ -108,7 +108,7 @@ it('skips a queued worker after its upsert generation changes', async () => {
 it('keeps the state model free of runtime imports and effect capabilities', () => {
   const file = path.resolve(
     __dirname,
-    '../../../src/shared/services/messaging/state/IncomingWriteState.ts'
+    '../../../src/sdk/services/messaging/state/IncomingWriteState.ts'
   );
   const source = ts.createSourceFile(
     file,

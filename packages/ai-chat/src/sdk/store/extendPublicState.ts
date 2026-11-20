@@ -7,8 +7,8 @@
  *  @license
  */
 
-import type { PublicStateService } from '../../shared/services/PublicStateService';
-import type { PublicStateFieldDefinition } from '../../shared/utils/publicState';
+import type { PublicStateService } from '../services/PublicStateService';
+import type { PublicStateFieldDefinition } from '../utils/publicState';
 
 /**
  * Adds public state fields that a store partition builds. The prebuilt chat's
