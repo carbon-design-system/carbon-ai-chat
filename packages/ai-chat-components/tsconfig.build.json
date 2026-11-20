@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/**",
+    "**/__stories__/**",
+    "**/*.test.*",
+    "**/*.stories.*",
+    "tests",
+    ".storybook",
+    ".storybook-react",
+    "src/globals/internal/storybook-cdn.ts"
+  ]
+}

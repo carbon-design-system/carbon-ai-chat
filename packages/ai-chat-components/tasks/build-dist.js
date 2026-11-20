@@ -128,6 +128,7 @@ function getRollupConfig({ folders = [] } = {}) {
         sourceMap: true,
       }),
       typescript({
+        tsconfig: path.resolve(__dirname, '../tsconfig.build.json'),
         noEmitOnError: true,
         declaration: false,
         compilerOptions: {

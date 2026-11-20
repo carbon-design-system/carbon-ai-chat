@@ -76,9 +76,12 @@ async function build() {
     'src/**/*.ts',
     'src/**/*.tsx',
     '!src/**/*.test.ts',
+    '!src/**/*.test.tsx',
     '!src/**/*.stories.ts',
+    '!src/**/*.stories.tsx',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
+    '!src/**/__stories__/**',
     '!src/globals/internal/storybook-cdn.ts',
   ]);
 
@@ -208,6 +211,7 @@ function getRollupConfig(input, rootDir, outDir) {
         },
       }),
       typescript({
+        tsconfig: path.resolve(__dirname, '../tsconfig.build.json'),
         noEmitOnError: true,
         compilerOptions: {
           rootDir,
