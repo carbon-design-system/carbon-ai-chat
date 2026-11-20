@@ -14,7 +14,7 @@ superseded-by:
 
 Hosts that collect dates, pace replies, or embed web pages need a migration path before the next major release. Removing those built-in behaviors can leave a working backend with a missing control, an early reply, or hidden content.
 
-Deprecate `date`, `pause`, and `iframe` in 1.x, then delete all three built-in implementations in 2.0.0. Implementors who need these experiences write their own UI and behavior through `user_defined`. They can use `upsertMessage` to update custom content while their own code controls timing. Possible A2UI support, for interfaces described by agents, also includes date picker controls. The loading and reasoning proposal may offer another pause path. Future MCP Apps support may offer another way to embed interactive content. Keep `image`, `button`, `carousel`, and `option` through 2.0.0.
+Deprecate `date`, `pause`, and `iframe` in 1.x, then delete all three built-in implementations in 2.0.0. Each has little evidence of use, and porting it into the rebuilt 2.0.0 chat costs more than a host-built version that fits the app. Implementors who need these experiences write their own UI and behavior through `user_defined`. They can use `upsertMessage` to update custom content while their own code controls timing. Possible A2UI support, for interfaces described by agents, also includes date picker controls. The loading and reasoning proposal may offer another pause path. Future MCP Apps support may offer another way to embed interactive content. Keep `image`, `button`, `carousel`, and `option` through 2.0.0.
 
 Feedback wanted
 
@@ -84,7 +84,7 @@ await instance.messaging.upsertMessage(messageID, MessageState.STREAMING, () =>
   snapshot([
     {
       response_type: MessageResponseTypes.USER_DEFINED,
-      streaming_metadata: { id: 'reply', cancellable: true },
+      streaming_metadata: { id: 'indicator', cancellable: true },
       user_defined: { user_defined_type: 'typing_indicator' },
     },
   ])
@@ -108,7 +108,7 @@ await instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () =>
   snapshot([
     {
       response_type: MessageResponseTypes.TEXT,
-      streaming_metadata: { id: 'reply' },
+      streaming_metadata: { id: 'answer' },
       text: 'Your answer is ready.',
     },
   ])
@@ -138,8 +138,8 @@ Convert live and saved payloads to explicit `user_defined` items. After deletion
 
 | Payload source | Where to convert |
 | --- | --- |
-| Live responses | Your backend, or a `pre:receive` handler |
-| Saved history | Your `customLoadHistory` handler, or your code before `insertHistory`. History loading does not fire `pre:receive`. |
+| Live responses | Your backend, where you produce the payload. A `pre:receive` handler sees only complete messages. With `upsertMessage`, it fires when a message reaches `COMPLETE`, after earlier streaming snapshots have drawn. |
+| Saved history | Your `customLoadHistory` handler, your code before `insertHistory`, or a `history:begin` handler. History loading does not fire `pre:receive`. |
 
 Remove overrides for these retired `LanguagePack` keys when upgrading.
 
@@ -148,7 +148,7 @@ Remove overrides for these retired `LanguagePack` keys when upgrading.
 | `errors_iframeSource`         | Load error               |
 | `iframe_ariaSourceLoaded`     | Load announcement        |
 | `iframe_ariaImageAltText`     | Preview image label      |
-| `iframe_ariaClosePanel`       | Close control label      |
+| `iframe_ariaClosePanel`       | Close label, unused      |
 | `iframe_ariaOpenedPanel`      | Panel-open announcement  |
 | `iframe_ariaClosedPanel`      | Panel-close announcement |
 | `iframe_ariaClickPreviewCard` | Preview action label     |
@@ -167,6 +167,11 @@ The built-in iframe made these choices. Use them as a reference when you choose 
 | Timeout | Error message after 20 seconds without a load |
 | Announcement | Announces when the page loads |
 | Nested items | Always inline, never a preview card |
+| Preview card | Image, title, and description, with hidden text that names the source |
+| Panel title | The item's `title`, or its `source` |
+| Panel announcements | Announces when the panel opens and when it closes |
+
+The generic custom panel still supplies its header, back button, and focus handling. Your host supplies the preview card, the panel content, and the announcements.
 
 Choose your own sandbox rather than copying this one. With both `allow-scripts` and `allow-same-origin`, a same-origin page can remove its own sandbox.
 
@@ -268,7 +273,7 @@ The fields inside `user_defined` are data for code you write. Your renderer inte
 | `display: "panel"`, or omitted | Replace the iframe preview card with your own preview action and panel content, optionally using a generic custom panel container. |
 | Iframe inside a card, grid, or button panel | Convert that nested item to `user_defined`, including copies in saved history. |
 
-Your host takes on sizing, labels, keyboard access, loading feedback, timeouts, and load or error announcements, starting from the built-in choices listed under Reference. Panel users also own the preview and panel controls. Test selectors for the retired `PageObjectId.IFRAME_PANEL` need to target your custom panel. Remove overrides for the retired language keys. [Custom panels](../../packages/ai-chat/docs/CustomPanels.md)
+Your host takes on sizing, labels, keyboard access, loading feedback, timeouts, and load or error announcements, starting from the built-in choices listed under Reference. Panel users also own the preview and panel controls. No element carries the retired `PageObjectId.IFRAME_PANEL` test identifier today, so selectors that use it already find nothing. Point them at your custom panel. Remove overrides for the retired language keys. [Custom panels](../../packages/ai-chat/docs/CustomPanels.md)
 
 MCP Apps may offer another path for interactive content after Carbon AI Chat adopts the component another Carbon squad is building. MCP Apps use UI resources associated with MCP tools, so migration requires adapting content to that protocol. The integration's API and timing remain open. [MCP Apps adoption direction](https://github.com/carbon-design-system/carbon-ai-chat/issues/906#issuecomment-6989441469), [MCP Apps protocol](https://github.com/modelcontextprotocol/ext-apps/blob/main/README.md#how-it-works)
 
@@ -286,8 +291,9 @@ TypeScript hosts also need to remove imports and enum references for the nine re
 
 ## Open questions
 
-- Which integrations make removal of `date`, `pause`, or `iframe` too costly despite the host-owned alternatives?
-- Which date, pause, or iframe workflows need a shared migration example before removal?
+- Should 1.x warn at runtime when a retired type arrives live or from history? Today the 1.x deprecation reaches only TypeScript builds, so a backend that sends JSON learns nothing until 2.0.0. Options: warn once per type in 1.x; also warn in 2.0.0 when a known retired type reaches the unknown-type path; or send no runtime signal.
+- Is handling the raw legacy `response_type` in `renderUserDefinedResponse` a supported migration? After deletion, top-level legacy items reach custom rendering with their original data, so a host could skip converting them. Options: document it as a shortcut for top-level items only; or keep conversion to `user_defined` as the contract, since the raw route may change.
+- Should the removed renderers ship as copyable examples instead of built-ins? That would give hosts a starting point without a public API.
 - Which embedded pages can migrate to MCP Apps once the shared component and Carbon AI Chat integration are ready?
 
 ## Decision
