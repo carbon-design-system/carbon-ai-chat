@@ -7,7 +7,6 @@
  *  @license
  */
 
-import { findLast } from 'lodash-es';
 import {
   asArray,
   asyncForEach,
@@ -68,36 +67,6 @@ describe('arrayUtils', () => {
       const callback = jest.fn();
       await asyncForEach([], callback);
       expect(callback).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('findLast', () => {
-    it('should find last matching element', () => {
-      const array = [1, 2, 3, 2, 4];
-      const result = findLast(array, (value) => value === 2);
-      expect(result).toBe(2);
-    });
-
-    it('should return undefined if no match found', () => {
-      const array = [1, 2, 3];
-      const result = findLast(array, (value) => value === 5);
-      expect(result).toBeUndefined();
-    });
-
-    it('should start from specified index', () => {
-      const array = [1, 2, 3, 2, 4];
-      const result = findLast(array, (value) => value === 2, 2);
-      expect(result).toBe(2);
-    });
-
-    it('should handle empty array', () => {
-      const result = findLast([], (value) => value === 1);
-      expect(result).toBeUndefined();
-    });
-
-    it('should handle null array', () => {
-      const result = findLast(null as any, (value) => value === 1);
-      expect(result).toBeUndefined();
     });
   });
 
