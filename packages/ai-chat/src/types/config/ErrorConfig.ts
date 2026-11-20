@@ -32,8 +32,9 @@ export enum OnErrorType {
   RENDER = 'RENDER',
 
   /**
-   * This indicates a known error with the configuration for a service desk. Fired when a connect_to_agent
-   * response type is received, but none is configured.
+   * This indicates a known error in the chat's configuration. Fired when a connect_to_agent response type is
+   * received but no service desk is configured, and when a chat with {@link LifecycleConfig.reuseInstance} on
+   * doesn't start because another chat on the page holds its namespace.
    */
   INTEGRATION_ERROR = 'INTEGRATION_ERROR',
 

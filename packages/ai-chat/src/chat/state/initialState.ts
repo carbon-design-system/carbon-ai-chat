@@ -8,6 +8,8 @@
  */
 
 import type { PublicConfig } from '../../types/config/PublicConfig';
+import type { DerivedConfig } from '../../types/state/AppConfig';
+import { createDerivedConfig } from '../utils/appConfig';
 import type {
   ViewPartitionState,
   ViewPersistedState,
@@ -54,11 +56,13 @@ function restoreViewPersistedState(
 
 /**
  * The view partition's first value, from the host's config and the saved view
- * half, if a session was saved.
+ * half, if a session was saved. Boot passes the values it already derived from
+ * the config, so they're computed once.
  */
 function createInitialViewState(
   config: PublicConfig,
-  saved: ViewPersistedState | null
+  saved: ViewPersistedState | null,
+  derivedConfig: DerivedConfig = createDerivedConfig(config)
 ): ViewPartitionState {
   const persistedToBrowserStorage = saved
     ? restoreViewPersistedState(saved)
@@ -71,6 +75,55 @@ function createInitialViewState(
   return {
     catastrophicErrorType: undefined,
     catastrophicErrorPanelState: undefined,
+    ...createMountViewState(config),
+    initialViewChangeComplete: false,
+    // A saved session reopens where it was. Otherwise, openChatByDefault opens the main window on first load.
+    targetViewState: saved
+      ? saved.viewState
+      : config.openChatByDefault
+        ? VIEW_STATE_MAIN_WINDOW_OPEN
+        : VIEW_STATE_LAUNCHER_OPEN,
+    isBrowserPageVisible: true,
+    prompt: null,
+
+    // Set from the `markdown` prop; `undefined` when the host omits it.
+    markdownConfig: undefined,
+    derivedConfig,
+
+    isMessageLoadingCounter: 0,
+    isMessageLoadingText: undefined,
+    isHydratingCounter: 0,
+    numUnreadMessages: 0,
+
+    persistedToBrowserStorage,
+  };
+}
+
+/** The view fields that belong to one mount, not the chat. */
+type MountViewState = Pick<
+  ViewPartitionState,
+  | 'iFramePanelState'
+  | 'viewSourcePanelState'
+  | 'customPanelState'
+  | 'workspacePanelState'
+  | 'historyPanelState'
+  | 'responsePanelState'
+  | 'chatWidthBreakpoint'
+  | 'chatWidth'
+  | 'chatHeight'
+  | 'viewChanging'
+  | 'showNonHeaderBackgroundCover'
+  | 'suspendScrollDetection'
+  | 'announceMessage'
+>;
+
+/**
+ * The view fields a mount starts with: closed panels, nothing measured, and
+ * nothing to announce. A reused chat gets them again for each new mount,
+ * since a panel's content and the sizes belonged to the mount that left.
+ */
+function createMountViewState(config: PublicConfig): MountViewState {
+  return {
     iFramePanelState: DEFAULT_IFRAME_PANEL_STATE,
     viewSourcePanelState: DEFAULT_CITATION_PANEL_STATE,
     customPanelState: DEFAULT_CUSTOM_PANEL_STATE,
@@ -82,33 +135,15 @@ function createInitialViewState(
       isOpen: config.history?.startClosed ? false : true,
     },
     responsePanelState: DEFAULT_MESSAGE_PANEL_STATE,
-
     chatWidthBreakpoint: null,
     chatWidth: null,
     chatHeight: null,
     viewChanging: false,
-    initialViewChangeComplete: false,
-    // A saved session reopens where it was. Otherwise, openChatByDefault opens the main window on first load.
-    targetViewState: saved
-      ? saved.viewState
-      : config.openChatByDefault
-        ? VIEW_STATE_MAIN_WINDOW_OPEN
-        : VIEW_STATE_LAUNCHER_OPEN,
     showNonHeaderBackgroundCover: false,
     suspendScrollDetection: false,
-    isBrowserPageVisible: true,
-
     announceMessage: undefined,
-    // Set from the `markdown` prop; `undefined` when the host omits it.
-    markdownConfig: undefined,
-
-    isMessageLoadingCounter: 0,
-    isMessageLoadingText: undefined,
-    isHydratingCounter: 0,
-    numUnreadMessages: 0,
-
-    persistedToBrowserStorage,
   };
 }
 
-export { createInitialViewState };
+export { createInitialViewState, createMountViewState };
+export type { MountViewState };

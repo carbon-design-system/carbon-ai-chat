@@ -61,7 +61,7 @@ describe('config-change re-render counts', () => {
     };
 
     function HeaderProbe(): ReactElement {
-      useSelector((s: AppState) => s.config.derived.header);
+      useSelector((s: AppState) => s.view.derivedConfig.header);
       counts.header += 1;
       return null;
     }
@@ -123,7 +123,7 @@ describe('config-change re-render counts', () => {
     };
 
     function HeaderProbe(): ReactElement {
-      useSelector((s: AppState) => s.config.derived.header);
+      useSelector((s: AppState) => s.view.derivedConfig.header);
       counts.header += 1;
       return null;
     }
@@ -177,7 +177,7 @@ describe('config-change re-render counts', () => {
     const counts = { header: 0, languagePack: 0, inputDisabled: 0 };
 
     function HeaderProbe(): ReactElement {
-      useSelector((s: AppState) => s.config.derived.header);
+      useSelector((s: AppState) => s.view.derivedConfig.header);
       counts.header += 1;
       return null;
     }

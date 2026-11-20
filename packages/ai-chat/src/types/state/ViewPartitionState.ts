@@ -12,6 +12,7 @@ import type { ChatWidthBreakpoint } from './ChatWidthBreakpoint';
 import type { PersistedState } from './PersistedState';
 import type { ViewState } from '../instance/apiTypes';
 import type { MarkdownConfig } from '../config/MarkdownConfig';
+import type { DerivedConfig } from './AppConfig';
 import type { CatastrophicErrorPanelState } from './panels/CatastrophicErrorPanelState';
 import type { IFramePanelState } from './panels/IFramePanelState';
 import type { ViewSourcePanelState } from './panels/ViewSourcePanelState';
@@ -28,6 +29,21 @@ type ViewPersistedState = Omit<
   PersistedState,
   'humanAgentState' | 'hasSentNonWelcomeMessage'
 >;
+
+/**
+ * A confirmation the chat is asking: the end-chat prompt from the header, or
+ * a connect card's prompt to leave a suspended agent chat. It holds the
+ * question only; the answers live outside the store for as long as the chat.
+ */
+interface ChatPrompt {
+  /** Names this opening of the prompt, so a stale answer does nothing. */
+  id: string;
+  kind: 'endChat' | 'humanAgent';
+  /** Replaces the panel's default title. */
+  title?: string;
+  /** Replaces the panel's default message. */
+  message?: string;
+}
 
 /**
  * The prebuilt chat's view partition, under `view` in the chat's one store.
@@ -55,11 +71,17 @@ interface ViewPartitionState {
   suspendScrollDetection: boolean;
   isBrowserPageVisible: boolean;
 
+  /** The confirmation the chat is asking, if any. It outlives a mount. */
+  prompt: ChatPrompt | null;
+
   /** An ARIA message, announced whenever it changes. */
   announceMessage?: AnnounceMessage;
 
   /** Host markdown renderers and plugins. */
   markdownConfig?: MarkdownConfig;
+
+  /** The values the chat computes from its public config: header, layout, theme, and the like. */
+  derivedConfig: DerivedConfig;
 
   /** Shows the message loading indicator while above 0. */
   isMessageLoadingCounter: number;
@@ -75,4 +97,4 @@ interface ViewPartitionState {
   persistedToBrowserStorage: ViewPersistedState;
 }
 
-export type { ViewPartitionState, ViewPersistedState };
+export type { ChatPrompt, ViewPartitionState, ViewPersistedState };

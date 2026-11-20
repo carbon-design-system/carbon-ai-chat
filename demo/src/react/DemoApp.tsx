@@ -44,6 +44,7 @@ import React, {
 } from 'react';
 
 import { addCustomFooterSlots } from '../framework/custom-footer-slots';
+import { REMOUNT_CHAT_EVENT } from '../framework/demo-lifecycle-switcher';
 import { Settings } from '../framework/types';
 import { UserDefinedResponseExample } from './UserDefinedResponseExample';
 import { WriteableElementExample } from './WriteableElementExample';
@@ -106,6 +107,14 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
     }
     const id = setInterval(() => setStateText(Date.now().toString()), 2000);
     return () => clearInterval(id);
+  }, []);
+
+  // Changing it renders a new chat element; see the lifecycle switcher.
+  const [mountKey, setMountKey] = useState(0);
+  useEffect(() => {
+    const remount = () => setMountKey((key) => key + 1);
+    window.addEventListener(REMOUNT_CHAT_EVENT, remount);
+    return () => window.removeEventListener(REMOUNT_CHAT_EVENT, remount);
   }, []);
   /**
    * Handler for user_defined response types. You can just have a switch statement here and return the right component
@@ -485,6 +494,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
 
   return settings.layout === 'float' ? (
     <ChatContainer
+      key={mountKey}
       {...config}
       header={headerConfig}
       markdown={markdownConfig}
@@ -498,6 +508,7 @@ function DemoApp({ config, settings, onChatInstanceReady }: AppProps) {
   ) : (
     <div onTransitionEnd={handleTransitionEnd}>
       <ChatCustomElement
+        key={mountKey}
         {...config}
         header={headerConfig}
         markdown={markdownConfig}

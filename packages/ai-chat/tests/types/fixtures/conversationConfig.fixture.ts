@@ -16,7 +16,10 @@
 
 import type { InputConfig } from '../../../src/types/config/InputConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
-import type { ConversationConfig } from '../../../src/types/state/ConversationState';
+import type {
+  ConversationAppConfig,
+  ConversationConfig,
+} from '../../../src/types/state/ConversationState';
 
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
@@ -51,6 +54,7 @@ export const fieldsMatch: Matches = {
   upload: true,
   homescreen: true,
   persistedState: true,
+  lifecycle: true,
 };
 
 type ConversationInput = NonNullable<ConversationConfig['input']>;
@@ -66,4 +70,10 @@ export const inputFlagsMatch: {
 export const sdkOnlyIsAbsent: Equal<
   Extract<keyof PublicConfig, SdkOnly>,
   never
+> = true;
+
+/** The values the prebuilt chat derives from its config live in its view partition, not here. */
+export const conversationAppConfigIsPublicOnly: Equal<
+  keyof ConversationAppConfig,
+  'public'
 > = true;

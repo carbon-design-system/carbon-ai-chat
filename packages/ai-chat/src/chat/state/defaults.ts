@@ -9,9 +9,11 @@
 
 import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
 import {
+  CornersType,
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
 } from '../../sdk/utils/constants';
+import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import {
   DefaultCustomPanelConfigOptions,
   PanelConfigOptionsByType,
@@ -25,12 +27,21 @@ import type { HistoryPanelState } from '../../types/state/panels/HistoryPanelSta
 import type { IFramePanelState } from '../../types/state/panels/IFramePanelState';
 import type { ViewSourcePanelState } from '../../types/state/panels/ViewSourcePanelState';
 import type { MessagePanelState } from '../../types/state/panels/MessagePanelState';
+import type { ThemeState } from '../../types/state/ThemeState';
 
-const VIEW_STATE_ALL_CLOSED: ViewState = {
-  launcher: false,
-  mainWindow: false,
+/** The theme before the host's config applies: rounded corners, AI on, no Carbon theme. */
+const DEFAULT_THEME_STATE: ThemeState = {
+  derivedCarbonTheme: null,
+  originalCarbonTheme: null,
+  aiEnabled: true,
+  corners: {
+    startStart: CornersType.ROUND,
+    startEnd: CornersType.ROUND,
+    endStart: CornersType.ROUND,
+    endEnd: CornersType.ROUND,
+  },
 };
-deepFreeze(VIEW_STATE_ALL_CLOSED);
+deepFreeze(DEFAULT_THEME_STATE);
 
 const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
   hideBackButton: false,
@@ -111,7 +122,9 @@ const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
 deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 export {
+  // Defined with the conversation's saved defaults, which use it too.
   VIEW_STATE_ALL_CLOSED,
+  DEFAULT_THEME_STATE,
   DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
   PANEL_CONFIG_OPTIONS_BY_TYPE,
   DEFAULT_CUSTOM_PANEL_STATE,

@@ -16,9 +16,9 @@ import type NativePanel from '@carbon/ai-chat-components/es/components/chat-shel
 import DisclaimerBody from '../../../src/chat/components/panels/native/DisclaimerBody';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { createIntl } from '../../../src/sdk/utils/i18n';
 import actions from '../../../src/sdk/store/actions';
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
@@ -37,14 +37,14 @@ import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class DisclaimerProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
   }
 }
 customElements.define('test-native-disclaimer-provider', DisclaimerProvider);
-const testStates = new Set<ChatViewState>();
+const testStates = new Set<ChatMountState>();
 
 async function flush(view: DisclaimerBody) {
   for (let index = 0; index < 3; index += 1) {
@@ -74,7 +74,7 @@ async function createBody() {
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   testStates.add(state);
   const host = document.createElement(

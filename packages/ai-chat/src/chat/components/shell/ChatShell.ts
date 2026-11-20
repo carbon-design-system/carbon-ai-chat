@@ -12,7 +12,7 @@ import { property } from 'lit/decorators.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import type CDSAIChatShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
 import { NativeChatView } from '../shared/NativeChatView';
-import type { ChatViewState } from '../../services/chatViewState';
+import type { ChatMountState } from '../../services/chatMountState';
 import type NativePanels from '../panels/NativePanels';
 import type ChatInput from '../input/ChatInput';
 import type { MessagesComponentClass } from '../../components-legacy/MessagesComponent';
@@ -54,7 +54,7 @@ class ChatShell extends NativeChatView {
   @property({ attribute: false })
   onTargetsReady?: (targets: ShellLayoutTargets | undefined) => void;
 
-  private owner?: ChatViewState;
+  private owner?: ChatMountState;
   private ownerFailed = false;
   private lifetime = 0;
   private targetGeneration = 0;
@@ -140,7 +140,7 @@ class ChatShell extends NativeChatView {
     });
   }
 
-  protected onViewConnected(viewState: ChatViewState) {
+  protected onViewConnected(viewState: ChatMountState) {
     if (this.owner && this.owner !== viewState) {
       this.retire();
     }
@@ -169,13 +169,8 @@ class ChatShell extends NativeChatView {
       shallowEqual
     );
     this.selectView(
-      (snapshot) => ({
-        intl: snapshot.intl,
-        endChatConfirmationOpen: snapshot.endChatConfirmationOpen,
-        humanAgentConfirmation: snapshot.humanAgentConfirmation,
-      }),
-      () => {},
-      shallowEqual
+      (snapshot) => snapshot.intl,
+      () => {}
     );
     this.own(
       subscribeToSelectedValue(
@@ -198,7 +193,7 @@ class ChatShell extends NativeChatView {
     });
   }
 
-  private ensureLifecycle(viewState: ChatViewState): void {
+  private ensureLifecycle(viewState: ChatMountState): void {
     if (this.lifecycle) {
       return;
     }

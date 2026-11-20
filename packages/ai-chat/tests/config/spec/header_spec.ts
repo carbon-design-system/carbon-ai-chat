@@ -22,7 +22,6 @@ import { createBaseTestProps, setupAfterEach } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
@@ -208,7 +207,7 @@ describe('Config Header', () => {
       };
 
       const store = withView(
-        doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
+        doCreateStore({ public: initialConfig }, {} as ServiceManager),
         initialConfig
       );
       serviceManager = {

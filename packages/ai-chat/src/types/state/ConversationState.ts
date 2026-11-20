@@ -12,6 +12,7 @@ import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
 import type { OnErrorData } from '../config/ErrorConfig';
 import type { HomeScreenConfig } from '../config/HomeScreenConfig';
 import type { LanguagePack } from '../config/LanguagePack';
+import type { LifecycleConfig } from '../config/LifecycleConfig';
 import type { PersistedStateConfig } from '../config/PersistedStateConfig';
 import type { PublicConfigMessaging } from '../config/PublicConfigMessaging';
 import type { ServiceDeskPublicConfig } from '../config/ServiceDeskConfig';
@@ -23,7 +24,6 @@ import type { AppStateMessages } from './ChatMessagesState';
 import type { HumanAgentState } from './HumanAgentState';
 import type { InputState } from './InputState';
 import type { PersistedState } from './PersistedState';
-import type { ThemeState } from './ThemeState';
 
 /**
  * The config conversation code reads: the SDK config, plus the prebuilt-chat
@@ -44,6 +44,7 @@ interface ConversationConfig extends Omit<
   upload?: UploadConfig;
   homescreen?: HomeScreenConfig;
   persistedState?: PersistedStateConfig;
+  lifecycle?: LifecycleConfig;
 
   /** The input flags the conversation's selectors read. */
   input?: {
@@ -55,14 +56,11 @@ interface ConversationConfig extends Omit<
 
 /**
  * The conversation's view of the `config` slice. The prebuilt chat stores its
- * whole `AppConfig` there; conversation code reads only these fields.
+ * whole `PublicConfig` there; conversation code reads only these fields. The
+ * values the prebuilt chat derives from its config live in its view partition.
  */
 interface ConversationAppConfig {
   public: ConversationConfig;
-  derived: {
-    /** The theme watcher resolves an inherited theme into this (#1681). */
-    themeWithDefaults: ThemeState;
-  };
 }
 
 /** The conversation's half of {@link PersistedState}. */
@@ -106,7 +104,7 @@ interface ConversationState extends AppStateMessages {
 
   /**
    * The active language pack: the `enLanguagePack` defaults merged with any host-provided `strings` overrides. Kept in
-   * its own top-level slice (rather than under `config.derived`) so that changing a string updates only language-pack
+   * its own top-level slice (rather than under `config`) so that changing a string updates only language-pack
    * consumers and never churns the rest of the config tree. Updated via `setAppStateValue("languagePack", ...)`.
    */
   languagePack: LanguagePack;

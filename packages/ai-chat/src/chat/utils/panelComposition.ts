@@ -8,6 +8,8 @@
  */
 
 import type { AppState } from '../../types/state/AppState';
+import type { ChatPrompt } from '../../types/state/ViewPartitionState';
+import type { PromptChoice } from '../state';
 import type { HeaderConfig } from '../../types/config/HeaderConfig';
 import type {
   CustomPanelConfigOptions,
@@ -30,16 +32,9 @@ type PanelName =
   | 'citation'
   | 'history';
 
-interface EndChatConfirmation {
-  title?: string;
-  message?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
 interface PanelViewInputs {
-  endChatConfirmation: EndChatConfirmation | null;
-  showEndChatConfirmation: boolean;
+  /** The confirmation the end-chat panel shows, if any. */
+  prompt: ChatPrompt | null;
   showScreenShareRequest: boolean;
   isHydratingComplete: boolean;
   shouldShowHydrationPanel: boolean;
@@ -71,8 +66,7 @@ interface PanelCompositionCallbacks {
   onRestart(): void;
   onToggleHomeScreen(): void;
   onAcceptDisclaimer(): void;
-  confirmHumanAgentEndChat(): void;
-  hideConfirmEndChat(): void;
+  answerPrompt(id: string, choice: PromptChoice): void;
   fireCustomPanelEvent(type: CustomPanelEventType): void;
   resetCustomPanelOptions(): void;
   closeCustomPanel(): void;
@@ -176,7 +170,7 @@ type EndChatPromptLabels = Pick<
 >;
 
 function deriveEndChatPrompt(
-  confirmation: Pick<EndChatConfirmation, 'title' | 'message'> | null,
+  confirmation: Pick<ChatPrompt, 'title' | 'message'> | null,
   isConnected: boolean,
   isSuspended: boolean,
   labels: EndChatPromptLabels
@@ -287,13 +281,22 @@ function createCustomPanelActions(
   };
 }
 
+/** Answers the shown prompt; with none shown, the buttons do nothing. */
 function createEndChatActions(
-  confirmation: EndChatConfirmation | null,
+  prompt: ChatPrompt | null,
   callbacks: PanelCompositionCallbacks
 ) {
   return {
-    onConfirm: confirmation?.onConfirm ?? callbacks.confirmHumanAgentEndChat,
-    onCancel: confirmation?.onCancel ?? callbacks.hideConfirmEndChat,
+    onConfirm: () => {
+      if (prompt) {
+        callbacks.answerPrompt(prompt.id, 'confirm');
+      }
+    },
+    onCancel: () => {
+      if (prompt) {
+        callbacks.answerPrompt(prompt.id, 'cancel');
+      }
+    },
   };
 }
 

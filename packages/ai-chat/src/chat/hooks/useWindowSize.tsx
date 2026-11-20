@@ -11,14 +11,14 @@
  * This is a React hook that will provided access to the current window size and is updated as the window size changes.
  */
 
-import { useChatViewState } from './useChatViewState';
-import type { ChatViewStateSnapshot } from '../services/chatViewState';
+import { useChatMountState } from './useChatMountState';
+import type { ChatMountStateSnapshot } from '../services/chatMountState';
 
-const selectWindowSize = (snapshot: ChatViewStateSnapshot) =>
+const selectWindowSize = (snapshot: ChatMountStateSnapshot) =>
   snapshot.windowSize;
 
 function useWindowSize() {
-  return useChatViewState(selectWindowSize);
+  return useChatMountState(selectWindowSize);
 }
 
 export { useWindowSize };

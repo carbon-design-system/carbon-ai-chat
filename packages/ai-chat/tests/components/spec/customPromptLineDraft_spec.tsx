@@ -18,12 +18,12 @@ import {
 import PromptLine from '@carbon/ai-chat-components/es/components/prompt-line/src/prompt-line.js';
 import '../../../src/chat/components/input/ChatInput';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { InputFunctions } from '../../../src/chat/utils/inputTypes';
 import type { AppConfig } from '../../../src/types/state/AppConfig';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { createIntl } from '../../../src/sdk/utils/i18n';
 import * as miscUtils from '../../../src/sdk/utils/miscUtils';
 import actions from '../../../src/sdk/store/actions';
@@ -37,7 +37,7 @@ import {
 
 class DraftProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
@@ -45,7 +45,7 @@ class DraftProvider extends LitElement {
 }
 customElements.define('test-custom-prompt-draft-provider', DraftProvider);
 
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 const owners = new Set<AutocompleteContent>();
 const draftStores = new WeakMap<
   ChatInput,
@@ -122,7 +122,7 @@ async function setup(
       writeableElements: { [WriteableElementName.CUSTOM_PROMPT_LINE]: wrapper },
     },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(serviceManager, { width: 800, height: 600 });
+  const state = new ChatMountState(serviceManager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const provider = document.createElement(

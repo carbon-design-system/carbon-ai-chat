@@ -13,7 +13,7 @@ import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/d
 import Edit from '@carbon/icons-react/es/Edit';
 import ChatInput from '../../../src/chat/components/input/ChatInput';
 import type ChatShell from '../../../src/chat/components/shell/ChatShell';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import * as customPromptLine from '../../../src/chat/utils/customPromptLine';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
@@ -117,7 +117,7 @@ function framesAsMicrotasks() {
 
 /** The service manager the shell itself registers handles on. */
 function shellViewState(shell: ChatShell) {
-  return (shell as unknown as { viewState: ChatViewState }).viewState;
+  return (shell as unknown as { viewState: ChatMountState }).viewState;
 }
 
 // The first wrapper boot in a file loads the boot modules on demand. Load

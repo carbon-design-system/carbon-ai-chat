@@ -140,6 +140,7 @@ export const FLATTENED_PUBLIC_CONFIG_FIELDS = [
   { name: 'strings', options: { type: Object } },
   { name: 'keyboardShortcuts', options: { type: Object } },
   { name: 'markdown', options: { attribute: false } },
+  { name: 'lifecycle', options: { type: Object } },
 ] as const satisfies readonly FlattenedConfigFieldEntry[];
 
 /**

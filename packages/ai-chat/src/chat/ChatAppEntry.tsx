@@ -10,7 +10,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { ChatContext } from './contexts/ChatContext';
 import { ServiceManager } from '../sdk/services/ServiceManager';
-import type { ChatViewState } from './services/chatViewState';
+import type { ChatMountState } from './services/chatMountState';
 import type { ExtensionHosts } from './services/extensionHosts';
 import { UserDefinedResponsePortalsContainer } from './components/portals/UserDefinedResponsePortalsContainer';
 import { CustomFooterPortalsContainer } from './components/portals/CustomFooterPortalsContainer';
@@ -39,7 +39,7 @@ import AppShell from './AppShell';
  */
 interface ChatAppEntryProps {
   serviceManager: ServiceManager;
-  viewState: ChatViewState;
+  viewState: ChatMountState;
   instance: ChatInstance;
   hosts: ExtensionHosts;
   /** False until `onBeforeRender` settles. Nothing renders before then. */

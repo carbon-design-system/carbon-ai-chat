@@ -9,7 +9,7 @@
 
 /**
  * End-to-end coverage for issue #2152, driving the whole path the bug took: a
- * React config prop change → `mergePublicConfig` → `createAppConfig` →
+ * React config prop change → `mergePublicConfig` → the config update →
  * reference reconciliation → the input hooks → the prompt-line element. The
  * store-level specs pin each seam; this asserts the user-visible outcome, that
  * typing survives a config update with its undo history intact.

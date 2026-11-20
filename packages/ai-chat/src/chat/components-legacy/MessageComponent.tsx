@@ -1528,7 +1528,7 @@ const MessageComponentConnector = React.forwardRef<
   );
   const intl = useIntl();
   const aiEnabled = useSelector(
-    (state: AppState) => state.config.derived.themeWithDefaults.aiEnabled
+    (state: AppState) => state.view.derivedConfig.themeWithDefaults.aiEnabled
   );
   const { carbonTheme } = useCarbonTheme();
   return (

@@ -25,7 +25,7 @@ import { AppState } from '../src/types/state/AppState';
 import { MessageResponseTypes } from '../src/types/messaging/Messages';
 import { ServiceManager } from '../src/sdk/services/ServiceManager';
 import { slotSource, type SlotSource } from '../src/sdk/services/slotTracking';
-import { ChatViewState } from '../src/chat/services/chatViewState';
+import { ChatMountState } from '../src/chat/services/chatMountState';
 import type { AriaAnnouncerFunctionType } from '../src/chat/services/ariaAnnouncer';
 import { ChatContext } from '../src/chat/contexts/ChatContext';
 import type { IntlShape } from '../src/sdk/utils/i18n';
@@ -37,7 +37,8 @@ import {
   buildLanguagePack,
   createInitialState,
 } from '../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../src/chat/utils/appConfig';
+import { createDerivedConfig } from '../src/chat/utils/appConfig';
+import { viewActions } from '../src/chat/state';
 import { reconcileAppConfigReferences } from '../src/sdk/utils/reconcileConfig';
 import { chatStore } from '../src/chat/services/attachChatView';
 import { attachStorePartition } from '../src/sdk/store/attachStorePartition';
@@ -224,7 +225,7 @@ export function createTestViewState({
   intl,
   serviceManager = {},
   announce,
-}: TestChatContextOptions = {}): ChatViewState {
+}: TestChatContextOptions = {}): ChatMountState {
   const manager = serviceManager as ServiceManager;
   if (
     (store && manager.store && manager.store !== store) ||
@@ -236,7 +237,7 @@ export function createTestViewState({
   }
   manager.store ??= store;
   manager.intl ??= intl;
-  const viewState = new ChatViewState(manager, getWindowSize());
+  const viewState = new ChatMountState(manager, getWindowSize());
   if (announce) {
     viewState.announcer.announce = announce;
   }
@@ -293,7 +294,7 @@ export function appRootReducer(
 export function makeConfigStore(config: PublicConfig): AppStore<AppState> {
   const store = createStoreFromReduction<ConversationState>(
     reduceWithMessageOwnership,
-    createInitialState(createAppConfig(config))
+    createInitialState({ public: config })
   );
   enableMessageOwnership(store);
   return withView(store, config);
@@ -345,17 +346,19 @@ export function withView(
 
 /**
  * Applies a runtime config change the way `applyConfigChangesDynamically` does:
- * rebuild the AppConfig, reconcile references against the stored config, then
- * dispatch the wholesale `changeState({ config })`. Reference reconciliation is
- * what lets narrowed selectors skip re-rendering on unrelated changes.
+ * reconcile references against the stored config, dispatch the wholesale
+ * `changeState({ config })`, then the view's derived values. Reference
+ * reconciliation is what lets narrowed selectors skip re-rendering on
+ * unrelated changes.
  */
 export function applyConfigChange(
   store: AppStore<ConversationState>,
   nextConfig: PublicConfig
 ): void {
   const prevConfig = chatStore({ store }).getState().config;
-  const next = createAppConfig(nextConfig);
-  const reconciled = reconcileAppConfigReferences(prevConfig, next);
+  const reconciled = reconcileAppConfigReferences(prevConfig, {
+    public: nextConfig,
+  });
   act(() => {
     store.dispatch(actions.changeState({ config: reconciled }));
     // Mirror applyConfigChangesDynamically: the language pack lives in its own
@@ -370,6 +373,9 @@ export function applyConfigChange(
         );
       }
     }
+    store.dispatch(
+      viewActions.setDerivedConfig(createDerivedConfig(nextConfig))
+    );
   });
 }
 

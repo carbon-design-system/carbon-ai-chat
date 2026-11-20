@@ -13,7 +13,7 @@ import { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import { PublicConfig } from '../../types/config/PublicConfig';
 
-import { mergePublicConfig } from './chatBoot';
+import { mergePublicConfig, reportNamespaceError } from './chatBoot';
 
 import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
 
@@ -23,6 +23,7 @@ import { viewActions } from '../state';
 
 import { chatStore } from '../services/attachChatView';
 import { copyConfig } from '../../sdk/utils/copyConfig';
+import type { ChatClaim } from '../../sdk/registry';
 
 /**
  * The config a mount last applied, plus the props it has already warned about.
@@ -111,16 +112,23 @@ function applyBootConfig(
  * Applies a config the host changed after startup, without rebooting. A
  * change to the human agent service while a chat is active ends that chat
  * quietly and recreates the service; see `applyConfigChangesDynamically`.
+ *
+ * With reuse on, a new namespace moves the chat's claim first. If another
+ * chat holds that namespace, it reports the error and changes nothing.
  */
 function applyConfigUpdate(
   applied: AppliedConfig,
   config: PublicConfig,
-  serviceManager: ServiceManager
+  serviceManager: ServiceManager,
+  claim?: ChatClaim<ServiceManager>
 ) {
   const next = mergePublicConfig(config);
   const previous = applied.effective;
   const previousMarkdown = applied.source.markdown;
   applied.source = config;
+  if (!moveClaim(claim, previous, next)) {
+    return;
+  }
   if (isEqual(previous, next)) {
     warnUnstableProp(applied, serviceManager, 'config');
   } else {
@@ -136,6 +144,29 @@ function applyConfigUpdate(
     serviceManager,
     previousMarkdown
   );
+}
+
+/**
+ * Files a reused chat under its new namespace. Returns `false` after
+ * reporting the error when another chat holds that namespace.
+ */
+function moveClaim(
+  claim: ChatClaim<ServiceManager> | undefined,
+  previous: PublicConfig,
+  next: PublicConfig
+) {
+  if (!claim || previous.namespace === next.namespace) {
+    return true;
+  }
+  try {
+    claim.move(next.namespace);
+    return true;
+  } catch (error) {
+    if (!reportNamespaceError(error, next)) {
+      throw error;
+    }
+    return false;
+  }
 }
 
 export {

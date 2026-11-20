@@ -12,8 +12,8 @@ import { LitElement, nothing } from 'lit';
 import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 import HomeScreenView from '../../../src/chat/components/homeScreen/home-screen';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { NamespaceService } from '../../../src/sdk/services/NamespaceService';
 import { createIntl } from '../../../src/sdk/utils/i18n';
@@ -38,7 +38,7 @@ import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class HomeProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
 
   render() {
@@ -56,7 +56,7 @@ const homescreen = {
   },
 };
 
-const testStates = new Set<ChatViewState>();
+const testStates = new Set<ChatMountState>();
 
 async function createHome() {
   const store = makeConfigStore({ homescreen });
@@ -85,7 +85,7 @@ async function createHome() {
     },
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   testStates.add(state);
   const host = document.createElement(

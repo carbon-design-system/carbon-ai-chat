@@ -11,8 +11,8 @@ import React, { StrictMode, useEffect } from 'react';
 import { render, waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
-import { useChatViewStateInstance } from '../../../src/chat/hooks/useChatViewState';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { useChatMountStateInstance } from '../../../src/chat/hooks/useChatMountState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
@@ -30,11 +30,11 @@ describe('public APIs in extension content first effects', () => {
     'delegates before consumer passive effects and releases handles on unmount (StrictMode: %s)',
     async (strict) => {
       let instance: ChatInstance;
-      let handles: ChatViewState;
+      let handles: ChatMountState;
       const calls: Record<string, unknown[]> = { response: [], writeable: [] };
       function Consumer({ id }: { id: string }) {
         // The shell publishes its handles to the mount's view state.
-        const viewState = useChatViewStateInstance();
+        const viewState = useChatMountStateInstance();
         useEffect(() => {
           handles = viewState;
           const scroll =

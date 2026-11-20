@@ -19,12 +19,12 @@ import { NativeInputConfigHarness } from '../NativeInputConfigHarness';
 import type ChatInput from '../../../src/chat/components/input/ChatInput';
 import type InputActions from '../../../src/chat/components/input/native/InputActions';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { InputProps } from '../../../src/chat/utils/inputTypes';
 import type { InputConfig } from '../../../src/types/config/InputConfig';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { createIntl } from '../../../src/sdk/utils/i18n';
 import actions from '../../../src/sdk/store/actions';
 import {
@@ -35,7 +35,7 @@ import {
 
 class InputAdapterProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
@@ -45,7 +45,7 @@ customElements.define(
   'test-native-input-adapter-provider',
   InputAdapterProvider
 );
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 const owners = new Set<AutocompleteContent>();
 
 async function flush(view: ChatInput) {
@@ -72,7 +72,7 @@ async function fixture(
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const provider = document.createElement(

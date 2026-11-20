@@ -25,7 +25,7 @@ import * as containerModule from '../../../src/web-components/cds-aichat-contain
 import '../../../src/web-components/cds-aichat-custom-element';
 import type ChatElement from '../../../src/web-components/cds-aichat-container/cds-aichat-container';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import * as extensionsLoader from '../../../src/chat/components/input/buildExtensionsLoader';
@@ -51,7 +51,7 @@ import { chatStore } from '../../../src/chat/services/attachChatView';
 
 class StartupServicesProbe extends LitElement {
   services = new ContextConsumer(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
     subscribe: true,
   });
 }
