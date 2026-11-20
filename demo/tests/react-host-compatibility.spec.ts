@@ -79,6 +79,10 @@ async function expectLiveReactChat(page: Page) {
     await page.evaluate(() => customElements.get('cds-aichat-react'))
   ).toBeUndefined();
 
+  // The restored welcome text renders after onAfterRender. Wait for it so its
+  // layout can't move the new content while the case clicks it.
+  await expect(page.getByText('Welcome', { exact: true })).toBeVisible();
+
   const instanceBefore = await page.evaluateHandle(
     () => window.hostCompatibility.reactInstance
   );
