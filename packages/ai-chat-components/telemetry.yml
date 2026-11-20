@@ -272,6 +272,14 @@ collect:
         - loop
         - quick-load
         # cds-aichat-prompt-line
+        - oncds-aichat-light-dom-portal
+        - oncds-aichat-prompt-blur
+        - oncds-aichat-prompt-change
+        - oncds-aichat-prompt-focus
+        - oncds-aichat-prompt-keydown
+        - oncds-aichat-prompt-send-intent
+        - oncds-aichat-prompt-typing
+        - oncds-aichat-trigger-change
         - rich
         # cds-aichat-prompt-line-shell
         - has-error
