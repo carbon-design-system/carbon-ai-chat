@@ -80,5 +80,6 @@ Generated from the records. Run `npm run sync:adrs` after you add one or change 
 | [0003](0003-chat-survives-remount.md) | A chat survives being unmounted and mounted again | Accepted |
 | [0004](0004-component-styling-contract.md) | Make every v2 component styleable through public hooks, inside the prebuilt chat too | Proposed |
 | [0005](0005-remove-date-pause-and-iframe-response-types.md) | Remove the date, pause, and iframe response types in 2.0.0 | Proposed |
+| [0006](0006-home-screen-content-from-your-app.md) | Your app renders the home screen's content in 2.0.0 | Proposed |
 
 <!-- adr-index:end -->
