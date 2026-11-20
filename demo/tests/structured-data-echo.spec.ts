@@ -51,7 +51,7 @@ test('shows the mention echo and the answer without errors', async ({
   page,
 }) => {
   await page.evaluate(() =>
-    window.chatInstance?.send({
+    window.chatInstance?.messaging.send({
       input: {
         text: 'hello',
         structured_data: {

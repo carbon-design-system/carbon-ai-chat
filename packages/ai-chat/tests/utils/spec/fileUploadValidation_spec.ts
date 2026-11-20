@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { validateFileSelection } from '../../../src/chat/utils/fileUploadValidation';
+import { validateFileSelection } from '../../../src/shared/utils/fileUploadValidation';
 
 function fileOfSize(bytes: number, name = 'file.bin', type = ''): File {
   return new File([new Uint8Array(bytes)], name, { type });

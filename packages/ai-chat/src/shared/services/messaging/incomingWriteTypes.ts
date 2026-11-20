@@ -11,6 +11,10 @@ import type { MessageResponse } from '../../../types/messaging/Messages';
 
 interface UpsertStamp {
   generation: number;
+  /** The `updaterGeneration` when the upsert was called. */
+  updaterGeneration: number;
+  /** Set once the updater resolves, when a restart began before it did. */
+  droppedByRestart?: boolean;
   restartCount: number;
   isCurrent: () => boolean;
   eventMessage?: MessageResponse;

@@ -13,6 +13,7 @@ import type { ChatSDKConfigMessaging } from './ChatSDKConfigMessaging';
 import type { ChatSDKErrorData } from './ChatSDKErrorData';
 import type { ChatSDKPersistedStateConfig } from './ChatSDKPersistedStateConfig';
 import type { ChatSDKServiceDeskConfig } from './ChatSDKServiceDeskConfig';
+import type { ChatSDKUploadConfig } from './ChatSDKUploadConfig';
 import type {
   ServiceDesk,
   ServiceDeskFactoryParameters,
@@ -85,4 +86,10 @@ export interface ChatSDKConfig<I extends ChatSDKInstance = ChatSDKInstance> {
    * {@link ChatSDKConfigMessaging.customLoadHistory}.
    */
   humanAgentState?: ChatSDKPersistedStateConfig<PersistedHumanAgentState>;
+
+  /**
+   * The limits {@link ChatSDKInstanceMessaging.addFile} checks, and the `onFileUpload` that
+   * transfers each file.
+   */
+  upload?: ChatSDKUploadConfig;
 }

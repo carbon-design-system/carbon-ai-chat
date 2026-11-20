@@ -77,7 +77,7 @@ export class Demo extends LitElement {
     this.busy = true;
     this.error = '';
     try {
-      await this.instance.send({
+      await this.instance.messaging.send({
         input: {
           text: this.text,
           structured_data: { fields: [{ id: 'composer', value: 'custom' }] },

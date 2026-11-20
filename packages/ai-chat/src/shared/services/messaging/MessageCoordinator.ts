@@ -59,6 +59,8 @@ import { ChunkWorkflow } from './ChunkWorkflow';
 import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
 import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
+import type { ChatSDKErrorData } from '../../../types/config/ChatSDKErrorData';
+import type { FailTurnOptions } from '../../../types/config/ChatSDKInstanceMessaging';
 
 import { HistoryWorkflow } from './HistoryWorkflow';
 import type { HistoryItem } from '../../../types/messaging/History';
@@ -255,6 +257,7 @@ class MessageCoordinator {
   isIncomingWriteStale(stamp: UpsertStamp, requestID?: string): boolean {
     return (
       !stamp.isCurrent() ||
+      stamp.droppedByRestart ||
       stamp.generation !== this.incomingWriteLifetime.state.generation ||
       stamp.restartCount !== this.serviceManager.restartCount ||
       this.isRequestFromPreviousConversation(requestID)
@@ -318,6 +321,10 @@ class MessageCoordinator {
 
   removeMessages(messageIDs: string[]) {
     return this.getFullResponseWorkflow().removeMessages(messageIDs);
+  }
+
+  dropCanceledReply(messageID: string) {
+    return this.getFullResponseWorkflow().dropCanceledReply(messageID);
   }
 
   incomingAgentItemIdentity(message: MessageResponse, index: number) {
@@ -525,6 +532,10 @@ class MessageCoordinator {
   }
 
   private state = new ConversationState();
+  /** Each failure token's frozen error. State helpers hold no opaque data. */
+  private failureErrors = new WeakMap<object, Readonly<ChatSDKErrorData>>();
+  private frozenErrors = new WeakSet<ChatSDKErrorData>();
+  private failedWhileStreaming = new Set<string>();
   private terminationWorkflow: TerminationWorkflow;
   private sendWorkflow?: SendWorkflow;
   private loadingManager?: MessageLoadingManager;
@@ -581,6 +592,24 @@ class MessageCoordinator {
       options,
       ignoreHydration
     );
+  }
+
+  /** @see TerminationWorkflow.stop */
+  stop(): Promise<void> {
+    return this.terminationWorkflow.stop();
+  }
+
+  /** @see TerminationWorkflow.failTurn */
+  failTurn(options?: FailTurnOptions): Promise<void> {
+    return this.terminationWorkflow.failTurn(options);
+  }
+
+  /**
+   * `messaging.clearError()` (#2354): clears the current failure, whoever set it. Message marks
+   * stay. A later `clearFailure` with the cleared token does nothing.
+   */
+  clearError() {
+    this.clearFailure(this.state.getFailure());
   }
 
   requestStopFromInput(markPending: () => void): Promise<void> {
@@ -695,8 +724,12 @@ class MessageCoordinator {
     this.runQueueIfReady();
   }
 
-  rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
-    this.getSendWorkflow().rejectFinalErrorOnMessage(request, text);
+  rejectFinalErrorOnMessage(
+    request: PendingMessageRequest,
+    text?: string,
+    markFailed?: boolean
+  ) {
+    this.getSendWorkflow().rejectFinalErrorOnMessage(request, text, markFailed);
   }
 
   resolveCancelledMessage(request: PendingMessageRequest) {
@@ -765,6 +798,17 @@ class MessageCoordinator {
     return this.requestQueue.getWaitingCount();
   }
 
+  /** The IDs of the requests waiting behind the current one. */
+  waitingRequestIDs() {
+    const ids = new Set<string>();
+    for (let index = 0; index < this.requestQueue.getWaitingCount(); index++) {
+      ids.add(
+        this.requests.get(this.requestQueue.getWaitingAt(index)).message.id
+      );
+    }
+    return ids;
+  }
+
   getFirstWaitingRequest() {
     const token = this.requestQueue.getWaitingAt(0);
     return token ? this.requests.get(token) : undefined;
@@ -802,6 +846,7 @@ class MessageCoordinator {
   }
 
   restart(skipHydration: boolean) {
+    this.failedWhileStreaming.clear();
     this.state.restart(skipHydration);
     this.publish();
     return this.currentGeneration;
@@ -869,8 +914,32 @@ class MessageCoordinator {
     return this.state.responseRequestID(messageID);
   }
 
+  requestKey(messageID: string) {
+    return this.state.requestKey(messageID);
+  }
+
+  hostRequestID(key: string) {
+    return this.state.hostRequestID(key);
+  }
+
+  activeResponsesOf(key: string) {
+    return this.state.activeResponsesOf(key);
+  }
+
+  activeResponseOwners() {
+    return this.state.activeResponseOwners();
+  }
+
+  ownerlessActiveResponses() {
+    return this.state.ownerlessActiveResponses();
+  }
+
   isResponseOwnedByRequest(messageID: string, requestID: string) {
     return this.state.isResponseOwnedByRequest(messageID, requestID);
+  }
+
+  isResponseStreaming(messageID: string) {
+    return this.state.isResponseStreaming(messageID);
   }
 
   responseRemoved(messageID: string) {
@@ -911,7 +980,21 @@ class MessageCoordinator {
   responseStopped(messageID: string, generation = this.currentGeneration) {
     if (this.state.responseStopped(messageID, generation)) {
       this.publish();
+      return true;
     }
+    return false;
+  }
+
+  /**
+   * Records a response `failTurn` marked `FAILED_WHILE_STREAMING`, so a late upsert from the host
+   * keeps the mark. Restart forgets them with the conversation.
+   */
+  markResponseFailedWhileStreaming(messageID: string) {
+    this.failedWhileStreaming.add(messageID);
+  }
+
+  isResponseFailedWhileStreaming(messageID: string) {
+    return this.failedWhileStreaming.has(messageID);
   }
 
   responseFinished(messageID: string, generation = this.currentGeneration) {
@@ -920,19 +1003,55 @@ class MessageCoordinator {
     }
   }
 
-  fail(error: { messageID?: string }, generation = this.currentGeneration) {
-    const failure = this.state.fail(error, generation);
+  /**
+   * Fails the conversation with `error`, whose fields `state.error` then
+   * holds; it's the object a caller reports through `onError`, if it does.
+   * `failedID` names what failed when that's not a request, such as a
+   * response with no request.
+   */
+  fail(
+    error: ChatSDKErrorData,
+    generation = this.currentGeneration,
+    failedID = error.messageID
+  ) {
+    const failure = this.state.fail({ messageID: failedID }, generation);
     if (failure) {
+      this.failureErrors.set(failure, this.frozenError(error));
       this.publish();
     }
     return failure;
+  }
+
+  /**
+   * Freezes a copy of `error`'s outer object; `otherData` keeps its reference.
+   * An error this coordinator already froze is reused, so failing again with
+   * the same error publishes nothing new.
+   */
+  private frozenError(error: ChatSDKErrorData) {
+    if (this.frozenErrors.has(error)) {
+      return error;
+    }
+    const frozen = Object.freeze({ ...error });
+    this.frozenErrors.add(frozen);
+    return frozen;
+  }
+
+  /** The error behind `status: 'error'`, or `null`. */
+  private currentError() {
+    const failure = this.state.getFailure();
+    return (failure && this.failureErrors.get(failure)) ?? null;
   }
 
   hasFailureForRequest(messageID: string) {
     return this.state.hasFailureForRequest(messageID);
   }
 
-  clearFailure(failure: ReturnType<ConversationState['fail']>) {
+  /** The current error, if it belongs to the request `messageID` names. */
+  errorForRequest(messageID: string) {
+    return this.hasFailureForRequest(messageID) ? this.currentError() : null;
+  }
+
+  clearFailure(failure: ReturnType<ConversationState['getFailure']>) {
     if (this.state.clearFailure(failure)) {
       this.publish();
     }
@@ -940,10 +1059,14 @@ class MessageCoordinator {
 
   private publish() {
     const status = this.state.getStatus();
+    const error = this.currentError();
     const state = this.serviceManager.store.getState();
-    if (state.conversationStatus !== status) {
+    if (
+      state.conversationStatus !== status ||
+      state.conversationError !== error
+    ) {
       this.serviceManager.store.dispatch(
-        actions.setConversationLifecycle(status)
+        actions.setConversationLifecycle(status, error)
       );
     }
   }

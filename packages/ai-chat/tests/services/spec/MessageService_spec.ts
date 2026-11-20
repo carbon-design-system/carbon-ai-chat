@@ -605,6 +605,7 @@ describe('MessageService', () => {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: CancellationReason.TIMEOUT,
         otherData: undefined,
+        messageID: 'm-timeout',
       });
     } finally {
       startSpy.mockRestore();

@@ -16,7 +16,6 @@ import isEqual from 'lodash-es/isEqual.js';
 import { createChatSDK } from '../../sdk/createChatSDK';
 import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
 import actions from '../../shared/store/actions';
-import { selectInputIsReadonly } from '../../shared/store/selectors';
 
 import { ServiceManager } from '../../shared/services/ServiceManager';
 import { createAppConfig } from './appConfig';
@@ -34,7 +33,6 @@ import { createWriteableElements } from './writeableElements';
 
 import {
   MainWindowOpenReason,
-  MessageSendSource,
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
 import { VIEW_STATE_ALL_CLOSED } from '../../shared/store/reducerUtils';
@@ -141,12 +139,9 @@ function warnAboutUploadConfig(serviceManager: ServiceManager) {
       '[upload] UploadConfig.isOn is true but onFileUpload is not provided. ' +
         'File upload will be disabled. Please provide an onFileUpload handler in config.upload.'
     );
-  } else if (uploadConfig?.onFileUpload && !uploadConfig.isOn) {
-    consoleError(
-      '[upload] UploadConfig.onFileUpload is provided but isOn is not true. ' +
-        'File upload will be disabled. Set isOn: true in config.upload to enable it.'
-    );
   }
+  // onFileUpload with isOn off is valid: messaging.addFile attaches files from the host's own
+  // control, and isOn only draws the attach button (#2351 O5).
 }
 
 /**
@@ -165,16 +160,9 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
   const instance: ChatInstance = {
     ...conversation,
 
-    send: async (message: MessageRequest | string, options?: SendOptions) => {
+    send: (message: MessageRequest | string, options?: SendOptions) => {
       debugLog('Called instance.send', message, options);
-      if (selectInputIsReadonly(serviceManager.store.getState())) {
-        throw new Error('You are unable to send messages in read only mode.');
-      }
-      return serviceManager.actions.send(
-        message,
-        MessageSendSource.INSTANCE_SEND,
-        options
-      );
+      return instance.messaging.send(message, options);
     },
 
     doAutoScroll: (options: AutoScrollOptions = {}) => {

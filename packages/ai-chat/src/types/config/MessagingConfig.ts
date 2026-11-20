@@ -94,6 +94,12 @@ export enum CancellationReason {
    * conversation up again. Don't treat this reason as the end of the conversation on your server.
    */
   CHAT_REMOVED = 'Chat removed',
+
+  /**
+   * You marked the turn failed with {@link ChatSDKInstanceMessaging.failTurn} while it was still
+   * running.
+   */
+  TURN_FAILED = 'Turn failed',
 }
 
 /**
@@ -226,7 +232,7 @@ export interface CustomSendMessageOptions {
    *   response.
    * - {@link MessageSendSource.DATE_PICKER} — a date-picker response.
    * - {@link MessageSendSource.INSTANCE_SEND} — a programmatic call to
-   *   {@link ChatInstance.send}.
+   *   {@link ChatInstanceMessaging.send}, or to the deprecated {@link ChatInstance.send}.
    * - {@link MessageSendSource.WELCOME_REQUEST} — the internally generated
    *   welcome request fired during hydration.
    *

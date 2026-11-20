@@ -31,7 +31,7 @@ import type { BusEventHeaderMenuClick } from '../../../types/events/eventBusType
 import { NativeChatView } from '../shared/NativeChatView';
 import { fireUserEvent } from '../../../shared/services/fireUserEvent';
 import { shallowEqual } from '../../../shared/store/appStore';
-import { selectHumanAgentDisplayState } from '../../../shared/store/selectors';
+import { humanAgentDisplayStateOf } from '../../../shared/store/selectors';
 import { isDirectionRTL } from '../../utils/domUtils';
 import { observeWriteableElementPresence } from '../../utils/writeableElementPresence';
 import {
@@ -133,8 +133,9 @@ class HeaderView extends NativeChatView implements HeaderProps {
         this.homeScreenIsOn = homeScreenIsOn;
       }
     );
-    this.selectStore(
-      (state) => selectHumanAgentDisplayState(state).isConnectingOrConnected,
+    this.selectChat(
+      (state) =>
+        humanAgentDisplayStateOf(state.humanAgent).isConnectingOrConnected,
       (isConnectingOrConnected) => {
         this.isConnectingOrConnected = isConnectingOrConnected;
       }
@@ -145,8 +146,8 @@ class HeaderView extends NativeChatView implements HeaderProps {
         this.isOpen = isOpen;
       }
     );
-    this.selectStore(
-      (state) => state.isRestarting,
+    this.selectChat(
+      (state) => Boolean(state.isRestarting),
       (isRestarting) => {
         this.isRestarting = isRestarting;
       }

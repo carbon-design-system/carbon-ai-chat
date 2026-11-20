@@ -26,7 +26,10 @@ import {
   BusEventReceive,
   BusEventType,
 } from '../../../types/events/eventBusTypes';
-import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
+import {
+  LocalMessageItem,
+  MessageErrorState,
+} from '../../../types/messaging/LocalMessageItem';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import isEqual from 'lodash-es/isEqual.js';
 import cloneDeep from 'lodash-es/cloneDeep.js';
@@ -227,6 +230,24 @@ class UpsertWorkflow {
     }
   }
 
+  /**
+   * A response marked by `failTurn` keeps its inline error when a late write sets no error state
+   * of its own.
+   */
+  private keepTurnFailureMark(messageID: string, message: MessageResponse) {
+    if (
+      this.serviceManager.messageCoordinator.isResponseFailedWhileStreaming(
+        messageID
+      ) &&
+      message.history?.error_state === undefined
+    ) {
+      message.history = {
+        ...message.history,
+        error_state: MessageErrorState.FAILED_WHILE_STREAMING,
+      };
+    }
+  }
+
   endStreamingMessage(messageID: string, generation?: number) {
     this.lifetime.state.streamingIDs.delete(messageID);
     this.lifetime.streamingControllers.delete(messageID);
@@ -268,8 +289,12 @@ class UpsertWorkflow {
     }
   }
 
+  /**
+   * Drops every upsert whose updater hasn't resolved yet, including one still queued
+   * behind another write for its message. Writes past their updater go on.
+   */
   invalidatePendingUpserts() {
-    this.lifetime.state.generation++;
+    this.lifetime.state.updaterGeneration++;
   }
 
   /**
@@ -372,7 +397,9 @@ class UpsertWorkflow {
     requestID?: string
   ): Promise<void> {
     // A restart while the updater or `pre:receive` is pending must not write into the
-    // new conversation, the same check `addMessage` makes.
+    // new conversation, the same check `addMessage` makes. One that began while this
+    // upsert waited behind another write drops it before its updater runs.
+    this.markDroppedByRestart(stamp);
     if (this.isStale(stamp)) {
       return;
     }
@@ -382,7 +409,7 @@ class UpsertWorkflow {
     // way `addMessage` does. Without these, message components render-crash because
     // they read `message.history.timestamp` directly.
     const result = addDefaultsToMessage(
-      await this.runUpdater(messageID, updater)
+      await this.runUpdater(messageID, updater, stamp)
     );
     const isStale = () => this.isStale(stamp, result.request_id);
     if (isStale()) {
@@ -400,19 +427,19 @@ class UpsertWorkflow {
       );
 
     if (willFireReceive) {
-      await this.firePreReceive(messageID, result, isStale);
+      const canceled = await this.firePreReceive(messageID, result, isStale);
       if (isStale()) {
+        return;
+      }
+      if (canceled) {
+        await this.serviceManager.messageCoordinator.dropCanceledReply(
+          messageID
+        );
         return;
       }
     }
 
-    if (nextState === MessageState.COMPLETE && !options.isLatestWelcomeNode) {
-      // Picks the returning-user home screen, as `addMessage` does — but not
-      // for a welcome message, which should leave the home screen selector alone.
-      this.serviceManager.store.dispatch(
-        actions.updateHasSentNonWelcomeMessage(true)
-      );
-    }
+    this.markNonWelcomeReply(nextState, options);
 
     if (isStale()) {
       return;
@@ -435,6 +462,8 @@ class UpsertWorkflow {
             (id) =>
               previousState.allMessageItemsByID[id]?.fullMessageID === messageID
           );
+    // Marked before the copy, so the slot events' message keeps the mark too.
+    this.keepTurnFailureMark(messageID, result);
     const ownedResult = this.incomingMessageService.copyNativeMessage(result);
     this.serviceManager.store.dispatch(
       actions.upsertMessage(
@@ -540,9 +569,31 @@ class UpsertWorkflow {
   private takeStamp(isCurrent: () => boolean): UpsertStamp {
     return {
       generation: this.lifetime.state.generation,
+      updaterGeneration: this.lifetime.state.updaterGeneration,
       restartCount: this.serviceManager.restartCount,
       isCurrent,
     };
+  }
+
+  /**
+   * Picks the returning-user home screen, as `addMessage` does — but not for a welcome
+   * message, which should leave the home screen selector alone.
+   */
+  private markNonWelcomeReply(
+    nextState: MessageState,
+    options: MessageWriteOptions
+  ) {
+    if (nextState === MessageState.COMPLETE && !options.isLatestWelcomeNode) {
+      this.serviceManager.store.dispatch(
+        actions.updateHasSentNonWelcomeMessage(true)
+      );
+    }
+  }
+
+  /** A restart that began before this upsert's updater resolved drops it, even if canceled. */
+  private markDroppedByRestart(stamp: UpsertStamp) {
+    stamp.droppedByRestart =
+      stamp.updaterGeneration !== this.lifetime.state.updaterGeneration;
   }
 
   private isStale(stamp: UpsertStamp, requestID?: string): boolean {
@@ -673,6 +724,7 @@ class UpsertWorkflow {
       const previousHoldFromIndex = pauseIndex;
       pauseIndex = this.findPauseToRun(messageID, result);
       const refsBefore = this.snapshotLocalItemRefs(messageID);
+      this.keepTurnFailureMark(messageID, result);
       const ownedResult = this.incomingMessageService.copyNativeMessage(result);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
@@ -900,11 +952,13 @@ class UpsertWorkflow {
    */
   private async runUpdater(
     messageID: string,
-    updater: UpsertMessageUpdater
+    updater: UpsertMessageUpdater,
+    stamp: UpsertStamp
   ): Promise<MessageResponse> {
     const existing = this.getStoredResponse(messageID, TypeError);
     const previousMessage = existing ? cloneDeep(existing) : undefined;
     let result = await updater(previousMessage);
+    this.markDroppedByRestart(stamp);
 
     result = this.incomingMessageService.prepareUpsertMessage(result);
     if (isRequest(result) || hasLiveHumanAgentMessage(result)) {
@@ -933,12 +987,13 @@ class UpsertWorkflow {
 
   /**
    * Phase 2: fire `pre:receive` and re-validate the id in case a listener mutated it.
+   * Returns true when a handler canceled the write.
    */
   private async firePreReceive(
     messageID: string,
     result: MessageResponse,
     isStale: () => boolean
-  ): Promise<void> {
+  ): Promise<boolean> {
     const preReceiveEvent: BusEventPreReceive = {
       type: BusEventType.PRE_RECEIVE,
       data: result,
@@ -953,6 +1008,7 @@ class UpsertWorkflow {
         );
       }
     }
+    return Boolean(preReceiveEvent.cancel);
   }
 
   /**

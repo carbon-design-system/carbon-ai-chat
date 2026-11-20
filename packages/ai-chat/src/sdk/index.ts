@@ -32,12 +32,17 @@ export type {
   ChatSDKInstance,
 } from '../types/instance/ChatSDKInstance';
 export type {
+  ChatSDKPendingUpload,
   ChatSDKState,
   ChatSDKStateAccess,
 } from '../types/instance/ChatSDKState';
 export type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 export type { ChatSDKConfigMessaging } from '../types/config/ChatSDKConfigMessaging';
 export type { ChatSDKErrorData } from '../types/config/ChatSDKErrorData';
-export type { ChatSDKInstanceMessaging } from '../types/config/ChatSDKInstanceMessaging';
+export type {
+  ChatSDKInstanceMessaging,
+  FailTurnOptions,
+} from '../types/config/ChatSDKInstanceMessaging';
 export type { ChatSDKPersistedStateConfig } from '../types/config/ChatSDKPersistedStateConfig';
 export type { ChatSDKServiceDeskConfig } from '../types/config/ChatSDKServiceDeskConfig';
+export type { ChatSDKUploadConfig } from '../types/config/ChatSDKUploadConfig';

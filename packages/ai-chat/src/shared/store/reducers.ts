@@ -430,10 +430,12 @@ const stateReducers: { [key: string]: ReducerType } = {
     state: ConversationState,
     action: {
       status: ConversationState['conversationStatus'];
+      error: ConversationState['conversationError'];
     }
   ): ConversationState => ({
     ...state,
     conversationStatus: action.status,
+    conversationError: action.error,
   }),
 
   [HYDRATE_MESSAGE_HISTORY]: (

@@ -51,9 +51,15 @@ export type FileUpload = _FileUpload;
 /**
  * The section of the public config that contains configuration options for service desk integrations.
  *
+ * It has every {@link ChatSDKServiceDeskConfig} setting except `onScreenShareRequest`: the prebuilt
+ * chat always asks the user with its own consent modal.
+ *
  * @category Service desk
  */
-export interface ServiceDeskPublicConfig extends ChatSDKServiceDeskConfig {
+export interface ServiceDeskPublicConfig extends Omit<
+  ChatSDKServiceDeskConfig,
+  'onScreenShareRequest'
+> {
   /**
    * The timeout value in seconds to use when determining agent availability. When a connect_to_agent response is
    * received, the system will ask the service desk if any agents are available. If no response is received within

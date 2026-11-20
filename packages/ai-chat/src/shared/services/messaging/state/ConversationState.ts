@@ -13,6 +13,8 @@ class ConversationState {
   private generation = 0;
   private hydrating = false;
   private activeRequests = new Map<string, { id?: string }>();
+  /** Every request started in this generation, finished or not, so a renamed ID still resolves. */
+  private startedRequests = new Map<string, { id?: string }>();
   private requestAliases = new Map<string, string>();
   private activeResponses = new Set<string>();
   private responseOwners = new Map<string, string | undefined>();
@@ -34,6 +36,7 @@ class ConversationState {
     this.generation++;
     this.hydrating = !skipHydration;
     this.activeRequests.clear();
+    this.startedRequests.clear();
     this.requestAliases.clear();
     this.activeResponses.clear();
     this.responseOwners.clear();
@@ -66,6 +69,7 @@ class ConversationState {
   ) {
     if (this.isCurrent(generation)) {
       this.activeRequests.set(messageID, request);
+      this.startedRequests.set(messageID, request);
       this.requestAliases.set(messageID, messageID);
       this.failure = null;
       return true;
@@ -110,6 +114,55 @@ class ConversationState {
       }
     }
     return responseIDs;
+  }
+
+  /**
+   * The key this state tracks a request under, for any of its IDs. A `pre:send` handler can rename
+   * a request; the chat keeps the original ID, and the host sees the new one.
+   */
+  requestKey(messageID: string) {
+    for (const [key, request] of this.startedRequests) {
+      if (request.id === messageID) {
+        return key;
+      }
+    }
+    return this.resolveRequestID(messageID);
+  }
+
+  /** The ID the host knows a request by: its current ID, which `pre:send` may have changed. */
+  hostRequestID(key: string) {
+    return this.startedRequests.get(key)?.id ?? key;
+  }
+
+  /** True while the response streams in, from its first chunk or streaming upsert until it settles. */
+  isResponseStreaming(messageID: string) {
+    return this.activeResponses.has(messageID);
+  }
+
+  /** The responses still streaming for the request `key` names. */
+  activeResponsesOf(key: string) {
+    return [...this.activeResponses].filter(
+      (responseID) => this.responseOwners.get(responseID) === key
+    );
+  }
+
+  /** The requests that own a response still streaming. */
+  activeResponseOwners() {
+    const owners = new Set<string>();
+    for (const responseID of this.activeResponses) {
+      const owner = this.responseOwners.get(responseID);
+      if (owner) {
+        owners.add(owner);
+      }
+    }
+    return owners;
+  }
+
+  /** The responses still streaming that no request owns, such as an upsert with no `request_id`. */
+  ownerlessActiveResponses() {
+    return [...this.activeResponses].filter(
+      (responseID) => !this.responseOwners.get(responseID)
+    );
   }
 
   isRequestStopped(requestID?: string) {
@@ -234,6 +287,11 @@ class ConversationState {
     return failure;
   }
 
+  /** The current failure token, or `null`. */
+  getFailure() {
+    return this.failure;
+  }
+
   hasFailureForRequest(messageID: string) {
     return Boolean(
       this.failure &&
@@ -242,7 +300,7 @@ class ConversationState {
     );
   }
 
-  clearFailure(failure: ReturnType<ConversationState['fail']>) {
+  clearFailure(failure: ReturnType<ConversationState['getFailure']>) {
     if (
       failure &&
       this.failure === failure &&

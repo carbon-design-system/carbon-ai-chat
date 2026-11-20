@@ -189,6 +189,28 @@ import type { ServiceManager } from '../../shared/services/ServiceManager';
     expect(reads.get(read)).toBe(counts.get(read) + 1);
   });
 
+  it('passes building the SDK instance, whose verbs read for it', () => {
+    const reads = readsWith({
+      [planted]:
+        header +
+        "import { createConversationInstance } from '../../shared/services/conversationInstance';\nexport const build = (manager: ServiceManager) => createConversationInstance(manager, () => undefined);",
+    });
+    expect([...reads].filter((read) => read.startsWith(planted))).toEqual([]);
+  });
+
+  it("fails another reader in the SDK instance builder's file", () => {
+    const builder = 'src/shared/services/conversationInstance.ts';
+    const reads = readsWith({
+      [builder]:
+        fs.readFileSync(path.join(root, builder), 'utf8') +
+        '\nexport const isSendBlocked = (manager: ServiceManager) => selectInputIsReadonly(manager.store.getState());\n',
+      [planted]:
+        header +
+        "import { isSendBlocked } from '../../shared/services/conversationInstance';\nexport const read = [isSendBlocked];",
+    });
+    expect([...reads]).toContain(`${planted}: isSendBlocked()`);
+  });
+
   it('passes view state and config reads', () => {
     const reads = readsWith({
       [planted]:

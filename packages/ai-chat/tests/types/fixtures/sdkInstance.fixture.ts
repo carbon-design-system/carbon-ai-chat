@@ -149,6 +149,12 @@ chat.off(typedHandler);
 // SDK messaging has exactly these methods.
 export const sdkMessagingMembers: Record<keyof ChatSDKInstanceMessaging, true> =
   {
+    send: true,
+    stop: true,
+    failTurn: true,
+    clearError: true,
+    addFile: true,
+    removeFile: true,
     upsertMessage: true,
     removeMessages: true,
     clearConversation: true,
@@ -164,6 +170,40 @@ sdk.messaging.addMessage(message);
 // @ts-expect-error addMessageChunk stays on the prebuilt chat.
 sdk.messaging.addMessageChunk(chunk);
 
+// SDK messaging sends with the root send's signature (#1826 O1), so either one stands in for the other.
+export const sent: Promise<void> = sdk.messaging.send('Hello', {
+  silent: true,
+});
+sdk.messaging.send({ input: { text: 'Hello' } });
+export const sdkSendAsRoot: ChatInstance['send'] = sdk.messaging.send;
+export const rootSendAsSdk: ChatSDKInstanceMessaging['send'] = chat.send;
+// @ts-expect-error A message is required.
+sdk.messaging.send();
+
+// Stop takes nothing and never needs a result (#1816 O3).
+export const stopped: Promise<void> = sdk.messaging.stop();
+
+// Failing a turn needs no options; clearing returns nothing (#2354).
+export const failed: Promise<void> = sdk.messaging.failTurn();
+export const failedWith: Promise<void> = chat.messaging.failTurn({
+  messageID: 'request-1',
+  error: { message: 'The stream closed.', otherData: new Error('closed') },
+});
+export const cleared: void = sdk.messaging.clearError();
+
+// Files: addFile resolves with the ID removeFile takes (#2351).
+export const attached: Promise<{ id: string }> = sdk.messaging.addFile(
+  new File(['x'], 'x.txt')
+);
+sdk.messaging.removeFile('upload-1');
+// Optional in 1.x (D13), so strict code reads it with `?.`.
+export const uploadStatus: 'uploading' | 'complete' | 'error' | undefined =
+  sdk.state.get().pendingUploads?.[0]?.status;
+// @ts-expect-error A file is required.
+sdk.messaging.addFile();
+// @ts-expect-error The error's type is always MESSAGE_COMMUNICATION.
+sdk.messaging.failTurn({ error: { errorType: 'other' } });
+
 // Prebuilt-chat callers keep both older message methods.
 chat.messaging.addMessage(message);
 chat.messaging.addMessageChunk(chunk);
@@ -177,6 +217,10 @@ chat.messaging.upsertMessage(
 export const sdkStateFields: Record<keyof ChatSDKState, true> = {
   messages: true,
   status: true,
+  error: true,
+  pendingUploads: true,
+  hasInFlightUploads: true,
+  isRestarting: true,
   humanAgent: true,
   activeResponseId: true,
 };

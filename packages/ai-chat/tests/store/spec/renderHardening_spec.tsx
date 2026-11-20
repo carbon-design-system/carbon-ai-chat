@@ -76,12 +76,11 @@ describe('render hardening', () => {
     });
     expect(messageBagRenders).toBe(1);
 
-    // Sanity: a field the bag actually reads (persisted storage) re-renders it.
+    // Sanity: a field the bag actually reads (the messages) re-renders it.
     act(() => {
       store.dispatch(
-        actions.setAppStateValue('persistedToBrowserStorage', {
-          ...store.getState().persistedToBrowserStorage,
-          hasSentNonWelcomeMessage: true,
+        actions.setAppStateValue('allMessagesByID', {
+          ...store.getState().allMessagesByID,
         })
       );
     });

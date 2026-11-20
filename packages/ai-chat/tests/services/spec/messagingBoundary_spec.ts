@@ -33,6 +33,7 @@ const pureRoots = [
   'state/RequestQueue.ts',
   'state/StreamState.ts',
   'state/IncomingWriteState.ts',
+  'state/turnTarget.ts',
 ].map((name) => messaging + name);
 const workflows = [
   'MessageCoordinator.ts',

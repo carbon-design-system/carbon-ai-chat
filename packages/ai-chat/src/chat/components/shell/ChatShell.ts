@@ -18,6 +18,7 @@ import type ChatInput from '../input/ChatInput';
 import type { MessagesComponentClass } from '../../components-legacy/MessagesComponent';
 import {
   ShellLifecycle,
+  selectShellChatState,
   selectShellState,
   type ShellOptions,
   type ShellInputConfig,
@@ -160,6 +161,13 @@ class ChatShell extends NativeChatView {
       },
       shallowEqual
     );
+    this.selectChat(
+      selectShellChatState,
+      () => {
+        lifecycle.update();
+      },
+      shallowEqual
+    );
     this.selectView(
       (snapshot) => ({
         intl: snapshot.intl,
@@ -274,6 +282,7 @@ class ChatShell extends NativeChatView {
         (state) => ({
           panel: state.view.catastrophicErrorPanelState,
           shell: selectShellState(state),
+          chat: selectShellChatState(owner.serviceManager.instance.state.get()),
         }),
         () => {
           if (this.isConnected && this.owner === owner) {
@@ -282,7 +291,9 @@ class ChatShell extends NativeChatView {
         },
         {
           isEqual: (left, right) =>
-            left.panel === right.panel && shallowEqual(left.shell, right.shell),
+            left.panel === right.panel &&
+            shallowEqual(left.shell, right.shell) &&
+            shallowEqual(left.chat, right.chat),
           onError: this.captureErrorReporter(),
         }
       );

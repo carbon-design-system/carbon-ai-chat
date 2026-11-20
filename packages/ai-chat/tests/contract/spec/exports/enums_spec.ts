@@ -240,6 +240,7 @@ pinMembers('CancellationReason', {
   CONVERSATION_RESTARTED: 'Conversation restarted',
   TIMEOUT: 'Request timeout',
   CHAT_REMOVED: 'Chat removed',
+  TURN_FAILED: 'Turn failed',
 });
 
 // @covers export.aiChatEntry.MessageState
