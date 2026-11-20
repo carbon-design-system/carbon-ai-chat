@@ -211,6 +211,27 @@ describe('a remount inside the window keeps the conversation', () => {
     expect(shutdown).not.toHaveBeenCalled();
   });
 
+  it('drops a pending once handler on release and keeps a cancelled once removed', async () => {
+    const config = reuseConfig(freshNamespace());
+    const first = await mountElement(config);
+    const cancelled = jest.fn();
+    const pending = jest.fn();
+    first.instance.once([
+      { type: BusEventType.VIEW_CHANGE, handler: cancelled },
+      { type: BusEventType.VIEW_CHANGE, handler: pending },
+    ]);
+    first.instance.off({ type: BusEventType.VIEW_CHANGE, handler: cancelled });
+    await unmount(first);
+    const second = await mountElement(config);
+    const live = jest.fn();
+    second.instance.once({ type: BusEventType.VIEW_CHANGE, handler: live });
+    await second.instance.changeView(ViewType.MAIN_WINDOW);
+
+    expect(cancelled).not.toHaveBeenCalled();
+    expect(pending).not.toHaveBeenCalled();
+    expect(live).toHaveBeenCalledTimes(1);
+  });
+
   it("drops the released mount's state listeners while the adopted mount keeps its listeners", async () => {
     const namespace = freshNamespace();
     const config = reuseConfig(namespace);

@@ -30,6 +30,7 @@ import type {
   ServiceDeskCallback,
 } from '../../../src/types/config/ServiceDeskConfig';
 import { ViewType } from '../../../src/types/instance/apiTypes';
+import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {
   MessageResponseTypes,
   UserType,
@@ -109,6 +110,241 @@ describe('shutdown through the mount path', () => {
 
       expect(shutdown).toHaveBeenCalledTimes(1);
       expect(shutDownManagers()[0].isShutdown).toBe(true);
+    });
+
+    it('shuts down even when the renderer cleanup throws', async () => {
+      const error = new Error('Renderer cleanup failed');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      const { element } = await mountElement();
+
+      expect(() =>
+        (element as unknown as { releaseMount: () => void }).releaseMount()
+      ).toThrow(error);
+      expect(shutdown).toHaveBeenCalledTimes(1);
+      expect(shutDownManagers()[0].isShutdown).toBe(true);
+    });
+
+    it('aborts a pending send when renderer cleanup throws on removal', async () => {
+      const error = new Error('Renderer cleanup failed during removal');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      let requestSignal: AbortSignal;
+      const { element, instance } = await mountElement({
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: (_request, options) => {
+            requestSignal = options.signal;
+            return new Promise<never>(() => {});
+          },
+        },
+      });
+      await instance.changeView(ViewType.MAIN_WINDOW);
+      void instance.send('pending during removal').catch(() => {});
+      await waitFor(() => expect(requestSignal).toBeDefined());
+      expect(requestSignal.aborted).toBe(false);
+
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent) => {
+        if (event.error === error) {
+          errors.push(event.error);
+          event.preventDefault();
+        }
+      };
+      window.addEventListener('error', onError);
+      try {
+        element.remove();
+        await flushMicrotasks();
+        expect(errors).toEqual([error]);
+        expect(requestSignal.aborted).toBe(true);
+      } finally {
+        window.removeEventListener('error', onError);
+      }
+    });
+
+    it('retires reused mount listeners when renderer cleanup throws', async () => {
+      const error = new Error('Reusable renderer cleanup failed');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      const config: Partial<PublicConfig> = {
+        namespace: 'cleanup-error-release',
+        lifecycle: { reuseInstance: true, releaseGraceMs: 2000 },
+        messaging: { skipWelcome: true },
+      };
+      const first = await mountElement(config);
+      await first.instance.messaging.addMessage({
+        id: 'before-cleanup-error',
+        output: {
+          generic: [
+            { response_type: MessageResponseTypes.TEXT, text: 'Retained' },
+          ],
+        },
+      });
+      const oldOn = jest.fn();
+      const oldOnce = jest.fn();
+      const oldState = jest.fn();
+      first.instance.on({ type: BusEventType.VIEW_CHANGE, handler: oldOn });
+      first.instance.once({ type: BusEventType.VIEW_CHANGE, handler: oldOnce });
+      first.instance.state.subscribe(oldState);
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent) => {
+        if (event.error === error) {
+          errors.push(event.error);
+          event.preventDefault();
+        }
+      };
+      let second: { element: ChatElement; instance: ChatInstance };
+      window.addEventListener('error', onError);
+      try {
+        first.element.remove();
+        await flushMicrotasks();
+        expect(errors).toEqual([error]);
+        oldOn.mockClear();
+        oldOnce.mockClear();
+        oldState.mockClear();
+        const lateOn = jest.fn();
+        const lateOnce = jest.fn();
+        const lateState = jest.fn();
+        first.instance.on({ type: BusEventType.VIEW_CHANGE, handler: lateOn });
+        first.instance.once({
+          type: BusEventType.VIEW_CHANGE,
+          handler: lateOnce,
+        });
+        first.instance.state.subscribe(lateState);
+        lateState.mockClear();
+        second = await mountElement({
+          ...config,
+          lifecycle: {
+            reuseInstance: true,
+            releaseGraceMs: 2000,
+            onUnmount: 'destroy',
+          },
+        });
+        expect(
+          second.instance.state
+            .get()
+            .messages.some(({ id }) => id === 'before-cleanup-error')
+        ).toBe(true);
+        const liveOn = jest.fn();
+        const liveState = jest.fn();
+        second.instance.on({ type: BusEventType.VIEW_CHANGE, handler: liveOn });
+        second.instance.state.subscribe(liveState);
+        liveState.mockClear();
+        await second.instance.changeView(ViewType.MAIN_WINDOW);
+        await second.instance.messaging.addMessage({
+          id: 'after-cleanup-error',
+          output: {
+            generic: [
+              { response_type: MessageResponseTypes.TEXT, text: 'Still live' },
+            ],
+          },
+        });
+        expect(liveOn).toHaveBeenCalledTimes(1);
+        expect(liveState).toHaveBeenCalled();
+        expect({
+          oldOn: oldOn.mock.calls.length,
+          oldOnce: oldOnce.mock.calls.length,
+          oldState: oldState.mock.calls.length,
+          lateOn: lateOn.mock.calls.length,
+          lateOnce: lateOnce.mock.calls.length,
+          lateState: lateState.mock.calls.length,
+        }).toEqual({
+          oldOn: 0,
+          oldOnce: 0,
+          oldState: 0,
+          lateOn: 0,
+          lateOnce: 0,
+          lateState: 0,
+        });
+      } finally {
+        if (second) {
+          second.element.remove();
+          await flushMicrotasks();
+        }
+        window.removeEventListener('error', onError);
+      }
+    });
+
+    it('destroys a reused chat when renderer cleanup throws', async () => {
+      const error = new Error('Destroyed renderer cleanup failed');
+      const mount = renderer.mount(document.createElement('div'));
+      jest.spyOn(renderer, 'mount').mockReturnValueOnce({
+        ...mount,
+        unmount: () => {
+          throw error;
+        },
+      });
+      let requestSignal: AbortSignal;
+      const config: Partial<PublicConfig> = {
+        namespace: 'cleanup-error-destroy',
+        lifecycle: {
+          reuseInstance: true,
+          releaseGraceMs: 2000,
+          onUnmount: 'destroy',
+        },
+        messaging: {
+          skipWelcome: true,
+          customSendMessage: (_request, options) => {
+            requestSignal = options.signal;
+            return new Promise<never>(() => {});
+          },
+        },
+      };
+      const first = await mountElement(config);
+      await first.instance.changeView(ViewType.MAIN_WINDOW);
+      await first.instance.messaging.addMessage({
+        id: 'before-error-destroy',
+        output: {
+          generic: [
+            { response_type: MessageResponseTypes.TEXT, text: 'Will end' },
+          ],
+        },
+      });
+      void first.instance.send('pending during destroy').catch(() => {});
+      await waitFor(() => expect(requestSignal).toBeDefined());
+      expect(requestSignal.aborted).toBe(false);
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent) => {
+        if (event.error === error) {
+          errors.push(event.error);
+          event.preventDefault();
+        }
+      };
+      let second: { element: ChatElement; instance: ChatInstance };
+      window.addEventListener('error', onError);
+      try {
+        first.element.remove();
+        await flushMicrotasks();
+        expect(errors).toEqual([error]);
+        await waitFor(() => expect(requestSignal.aborted).toBe(true));
+        second = await mountElement({
+          ...config,
+          messaging: { skipWelcome: true },
+        });
+        expect(second.instance).not.toBe(first.instance);
+        expect(second.instance.state.get().messages).toEqual([]);
+      } finally {
+        if (second) {
+          second.element.remove();
+          await flushMicrotasks();
+        }
+        window.removeEventListener('error', onError);
+      }
     });
 
     it('a web component moved within one task keeps running', async () => {

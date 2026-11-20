@@ -8,10 +8,8 @@
  */
 
 import Send16 from '@carbon/icons/es/send/16.js';
-import {
-  carbonIconToReact,
-  customIconToReact,
-} from '../../../utils/carbonIcon';
+import { carbonIconToReact } from '../../../utils/carbonIcon';
+import { getButtonIconProps } from '../../../utils/buttonIconProps';
 import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
@@ -60,8 +58,7 @@ function ButtonItemPostBackComponent({
   const Send = carbonIconToReact(Send16);
   const messageItem = localMessageItem.item;
   const { ui_state, fullMessageID } = localMessageItem;
-  const { image_url, alt_text, kind, size, is, icon } = messageItem;
-  const CustomIcon = customIconToReact(icon);
+  const { image_url, alt_text, kind, size, is } = messageItem;
   const isInputReadonly = useSelector(selectInputIsReadonly);
   const { controlText } = resolveChoiceText(messageItem);
   const isSelected = Boolean(optionSelected);
@@ -101,7 +98,7 @@ function ButtonItemPostBackComponent({
       size={size}
       is={is}
       onClick={onClickHandler}
-      renderIcon={CustomIcon || (image_url && Send) || undefined}
+      {...getButtonIconProps(messageItem, image_url ? Send : undefined)}
       disabled={isDisabled}
       selected={isSelected}
     />

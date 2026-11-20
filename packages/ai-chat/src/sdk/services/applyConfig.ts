@@ -23,8 +23,7 @@ import type { ServiceManager } from './ServiceManager';
 /**
  * Applies a replaced config to a running chat, without rebooting it. It is the
  * one update path: `ChatSDKHandle.updateConfig` calls it, and so does the
- * prebuilt chat when its host's config changes, before the view's own steps
- * (#1833 O4).
+ * prebuilt chat when its host's config changes, before the view's own steps.
  *
  * The steps before the service desk's run before this returns its promise, so
  * a caller's next statement sees the new config in the store. The promise
@@ -34,7 +33,7 @@ import type { ServiceManager } from './ServiceManager';
  *
  * - **The config replace** writes `next` into the store. Sub-objects that
  *   didn't change keep their previous references, so a one-field change
- *   doesn't re-render every config reader (O9).
+ *   doesn't re-render every config reader.
  * - **The language pack** is rebuilt only when `strings` changed.
  * - **The namespace and message timeout** live on services, outside the
  *   store, so they're pushed to them. A timeout left out returns to its
@@ -90,7 +89,7 @@ async function applyConversationConfig(
   }
 
   // Resolved the way boot resolves it, so a timeout left out returns to its
-  // default and `0` turns it off, as an update replaces the config (O2).
+  // default and `0` turns it off, as an update replaces the config.
   if (
     previous.messaging?.messageTimeoutSecs !==
       nextPublic.messaging?.messageTimeoutSecs &&
@@ -99,7 +98,7 @@ async function applyConversationConfig(
     serviceManager.messageCoordinator.timeoutMS = messageTimeoutMS(nextPublic);
   }
 
-  // A new desk factory never cuts a live agent chat (#2353).
+  // A new desk factory never cuts a live agent chat.
   if (previous.serviceDeskFactory !== nextPublic.serviceDeskFactory) {
     await syncServiceDeskFactory(serviceManager);
   }
@@ -109,8 +108,7 @@ async function applyConversationConfig(
 const waitingForAgentChatEnd = new WeakSet<ServiceManager>();
 
 /**
- * Moves the agent service to the factory in the config, by the rule in
- * #2353:
+ * Moves the agent service to the factory in the config:
  *
  * - A service that never started needs nothing: it reads the factory from
  *   config when it creates its desk, so the next chat uses the new one.

@@ -24,7 +24,7 @@ For a concrete, safe replacement within the PR diff, **include a real fenced `su
 - **Keep unresolved design questions as questions.** State the missing decision or evidence and its consequence. Do not invent code or a patch to make an uncertain fix look actionable.
 - **Count suggestions in the verdict line.** Count only actual inline suggestion blocks, not prose requests or patch hunks.
 
-**Validate proposed edits locally where practical.** Use an isolated checkout at the reviewed SHA; preserve the user's work. Apply the proposed edits together and run relevant checks under [repo-checks.md](repo-checks.md), including build/watch coordination. Report the target revision, edits tested, commands, and results under **Checked**, and the gaps under **Not verified**. Label untested proposals; passing checks for one fix do not validate another.
+**Validate proposed edits locally where practical.** Use an isolated checkout at the reviewed SHA, in a worktree placed per [worktrees.md](../../../../references/worktrees.md); preserve the user's work. Apply the proposed edits together and run relevant checks under [repo-checks.md](repo-checks.md), including build/watch coordination. Report the target revision, edits tested, commands, and results under **Checked**, and the gaps under **Not verified**. Label untested proposals; passing checks for one fix do not validate another.
 
 ## When suggestions cannot carry the whole fix
 

@@ -411,9 +411,9 @@ class InputActionsService {
   }
 
   /**
-   * `messaging.addFile()` (#2351): checks the limits, then starts the upload the prebuilt input
-   * would. During a human agent conversation the file goes to the service desk instead. Resolves
-   * with the file's ID once the upload starts.
+   * Checks the limits, then starts the upload the prebuilt input would. During a human agent
+   * conversation the file goes to the service desk instead. Resolves with the file's ID once
+   * the upload starts.
    */
   async addFile(file: File): Promise<{ id: string }> {
     const { store } = this.serviceManager;
@@ -483,8 +483,7 @@ class InputActionsService {
   }
 
   /**
-   * `messaging.removeFile()` (#2351): aborts or drops a file attached to the next message. An
-   * unknown ID does nothing.
+   * Aborts or drops a file attached to the next message. An unknown ID does nothing.
    */
   removeFile(id: string) {
     const { store } = this.serviceManager;
