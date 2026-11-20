@@ -11,6 +11,10 @@
 @use '@carbon/styles/scss/type';
 @use '../../../globals/scss/chat-theme';
 
+cds-aichat-header-view {
+  display: contents;
+}
+
 // Writeable element styling (used by AppShellWriteableElements)
 // Only apply max-width constraint when header is configured to constrain width
 .cds-aichat--widget--max-width
