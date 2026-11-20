@@ -12,6 +12,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { OptionComponent } from '../../../src/chat/components/responseTypes/options/OptionComponent';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
+  type MessageRequest,
   MessageResponseTypes,
   OptionItemPreference,
   SelectionDisplay,
@@ -85,6 +86,8 @@ function renderOptions(
     fullMessageID: 'response-id',
     ui_state: { id: 'local-id' },
   } as any;
+  // The item's view flags, which the message renderer passes in.
+  const flags: { optionSelected?: MessageRequest } = {};
 
   const renderComponent = (disableUserInputs = false) => (
     <TestChatContext store={store}>
@@ -94,6 +97,7 @@ function renderOptions(
         disableUserInputs={disableUserInputs}
         requestInputFocus={requestInputFocus}
         serviceManager={serviceManager}
+        optionSelected={flags.optionSelected}
       />
     </TestChatContext>
   );
@@ -101,6 +105,7 @@ function renderOptions(
 
   return {
     ...view,
+    flags,
     localMessage,
     renderComponent,
     requestInputFocus,
@@ -210,20 +215,20 @@ describe('choice selection controls', () => {
   });
 
   it('passes false before selection and after selection is cleared', () => {
-    const { localMessage, renderComponent, rerender } = renderOptions([
+    const { flags, renderComponent, rerender } = renderOptions([
       { label: 'Choice', value: { input: { text: 'choice' } } },
     ]);
     const choice = screen.getByRole('button', { name: 'Choice' });
     expect(choice).toHaveAttribute('data-selected', 'false');
 
-    localMessage.ui_state.optionSelected = {
+    flags.optionSelected = {
       input: { text: 'choice' },
       history: {},
     };
     rerender(renderComponent());
     expect(choice).toHaveAttribute('data-selected', 'true');
 
-    delete localMessage.ui_state.optionSelected;
+    delete flags.optionSelected;
     rerender(renderComponent());
     expect(choice).toHaveAttribute('data-selected', 'false');
   });
@@ -233,7 +238,7 @@ describe('choice selection controls', () => {
       { label: 'First', value: { input: { text: 'same' } } },
       { label: 'Second', value: { input: { text: 'same' } } },
     ]);
-    localMessage.ui_state.optionSelected = {
+    const optionSelected: MessageRequest = {
       input: { text: 'same' },
       history: {},
     };
@@ -247,6 +252,7 @@ describe('choice selection controls', () => {
           disableUserInputs={false}
           requestInputFocus={jest.fn()}
           serviceManager={{ actions: { sendWithCatch: jest.fn() } } as any}
+          optionSelected={optionSelected}
         />
       </TestChatContext>
     );
@@ -265,7 +271,7 @@ describe('choice selection controls', () => {
     'keeps the selected and disabled state when a silent=%s send rejects',
     (silent) => {
       const {
-        localMessage,
+        flags,
         renderComponent,
         requestInputFocus,
         rerender,
@@ -284,7 +290,7 @@ describe('choice selection controls', () => {
         expect.anything(),
         { setValueSelectedForMessageID: 'local-id' }
       );
-      localMessage.ui_state.optionSelected = sendWithCatch.mock.calls[0][0];
+      flags.optionSelected = sendWithCatch.mock.calls[0][0];
       rerender(renderComponent(true));
 
       expect(screen.getByRole('button', { name: 'Choice' })).toBeDisabled();

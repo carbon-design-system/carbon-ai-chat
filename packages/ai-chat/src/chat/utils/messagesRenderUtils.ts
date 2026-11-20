@@ -7,10 +7,11 @@
  *  @license
  */
 
-import ObjectMap from '../../types/utilities/ObjectMap';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { Message } from '../../types/messaging/Messages';
 import { isStandaloneSystemMessage } from '../../sdk/utils/messageUtils';
+import type { ChatSDKMessageItem } from '../../types/instance/ChatSDKState';
+import type { DrawnMessageItem } from '../hooks/useDrawnMessageItems';
 
 interface RenderableMessageMetadata {
   fullMessage: Message;
@@ -19,31 +20,31 @@ interface RenderableMessageMetadata {
   isMessageForInput: boolean;
   isStandaloneSystemMessage: boolean;
   localMessageItem: LocalMessageItem;
+  /** The item's entry in `instance.state.messageItems`. */
+  messageItem: Readonly<ChatSDKMessageItem>;
   messageItemID: string;
   messagesIndex: number;
   showBeforeWelcomeNodeElement: boolean;
 }
 
 function buildRenderableMessageMetadata(
-  localMessageItems: LocalMessageItem[],
-  allMessagesByID: ObjectMap<Message>,
+  drawnItems: readonly DrawnMessageItem[],
   messageIDForInput: string
 ): RenderableMessageMetadata[] {
   const metadata: RenderableMessageMetadata[] = [];
   let previousMessageID: string | null = null;
 
-  for (
-    let currentIndex = 0;
-    currentIndex < localMessageItems.length;
-    currentIndex++
-  ) {
-    const localMessageItem = localMessageItems[currentIndex];
-    const fullMessage = allMessagesByID[localMessageItem.fullMessageID];
+  for (let currentIndex = 0; currentIndex < drawnItems.length; currentIndex++) {
+    const {
+      localMessageItem,
+      message: fullMessage,
+      messageItem,
+    } = drawnItems[currentIndex];
     const isFirstMessageItem =
       previousMessageID !== localMessageItem.fullMessageID;
-    const nextLocalMessageItem = localMessageItems[currentIndex + 1];
+    const nextLocalMessageItem = drawnItems[currentIndex + 1]?.localMessageItem;
     const isLastMessageItem =
-      localMessageItems.length - 1 === currentIndex ||
+      drawnItems.length - 1 === currentIndex ||
       localMessageItem.fullMessageID !== nextLocalMessageItem.fullMessageID;
 
     metadata.push({
@@ -53,6 +54,7 @@ function buildRenderableMessageMetadata(
       isMessageForInput: messageIDForInput === localMessageItem.fullMessageID,
       isStandaloneSystemMessage: isStandaloneSystemMessage(fullMessage),
       localMessageItem,
+      messageItem,
       messageItemID: localMessageItem.ui_state.id,
       messagesIndex: currentIndex,
       showBeforeWelcomeNodeElement:

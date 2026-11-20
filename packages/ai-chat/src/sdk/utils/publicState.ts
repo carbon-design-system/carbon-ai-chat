@@ -17,9 +17,19 @@ import type { PendingUpload } from '../../types/state/InputState';
 import type { FileUpload } from '../../types/config/ServiceDeskConfig';
 import type { ChatSDKPendingUpload } from '../../types/instance/ChatSDKState';
 import {
+  type MessageProjectionObserver,
+  type PreparedPublicMessages,
   PublicMessagesProjection,
-  publicMessagesSources,
 } from './publicMessages';
+import {
+  type MessageItemsPlan,
+  MessageItemsPlanner,
+  PublicMessageItemsProjection,
+  flatItemPlans,
+  itemIDsByLocalID,
+  localIDsByItemID,
+} from './publicMessageItems';
+import type { MessageSlices } from './messageChanges';
 
 type PublicStateField = keyof PublicChatState | 'history';
 
@@ -31,7 +41,6 @@ interface PublicStateFieldDefinition<S = ConversationState> {
   name: PublicStateField;
   sources(state: S): readonly unknown[];
   project(sources: readonly unknown[], state: S): unknown;
-  prepare?(sources: readonly unknown[], state: S): () => unknown;
 }
 
 interface CachedField {
@@ -39,7 +48,7 @@ interface CachedField {
   get(): unknown;
 }
 
-export interface PublicStateProjectionObserver {
+export interface PublicStateProjectionObserver extends MessageProjectionObserver {
   onProject?(field: PublicStateField): void;
 }
 
@@ -109,6 +118,15 @@ function sameSources(
   );
 }
 
+function messageSlices(state: ConversationState): MessageSlices {
+  return {
+    messageIDs: state.assistantMessageState.messageIDs,
+    allMessagesByID: state.allMessagesByID,
+    allMessageItemsByID: state.allMessageItemsByID,
+    localMessageIDs: state.assistantMessageState.localMessageIDs,
+  };
+}
+
 function sameMessageReferences(
   left: ConversationState,
   right: ConversationState
@@ -152,6 +170,7 @@ const PUBLIC_FIELD_ORDER: readonly PublicStateField[] = [
   'workspace',
   'history',
   'messages',
+  'messageItems',
 ];
 
 const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
@@ -260,35 +279,40 @@ const fieldDefinitions: readonly PublicStateFieldDefinition[] = [
 
 export type { PublicStateFieldDefinition };
 
+/** The fields built only from the message slices, which share a quick same-reference check. */
+const MESSAGE_FIELDS = new Set<PublicStateField>(['messages', 'messageItems']);
+
 export class PublicStateSnapshotCache {
   private fieldCache = new Map<PublicStateField, CachedField>();
-  private messages = new PublicMessagesProjection();
-  private messageSources = new WeakMap<ConversationState, readonly unknown[]>();
+  private messages: PublicMessagesProjection;
+  private preparedMessages = new WeakMap<
+    ConversationState,
+    PreparedPublicMessages
+  >();
   private lastMessageState: ConversationState;
+  private planner: MessageItemsPlanner;
+  private messageItems = new PublicMessageItemsProjection();
+  private itemPlans = new WeakMap<ConversationState, MessageItemsPlan>();
+  private lastItemState: ConversationState;
   private definitions: readonly PublicStateFieldDefinition[];
 
   constructor(private observer?: PublicStateProjectionObserver) {
+    this.messages = new PublicMessagesProjection(observer);
+    this.planner = new MessageItemsPlanner(observer);
+    // Each message field's one source is its prepared value, which keeps its object until a
+    // message changes, so comparing sources compares no messages.
     this.definitions = [
       ...fieldDefinitions,
       {
         name: 'messages',
-        sources: (state) => this.getMessageSources(state),
-        project: (_sources, state) =>
-          this.messages.project(
-            state.assistantMessageState.messageIDs,
-            state.allMessagesByID,
-            state.allMessageItemsByID,
-            state.assistantMessageState.localMessageIDs
-          ),
-        prepare: (_sources, state) => {
-          const prepared = this.messages.prepare(
-            state.assistantMessageState.messageIDs,
-            state.allMessagesByID,
-            state.allMessageItemsByID,
-            state.assistantMessageState.localMessageIDs
-          );
-          return prepared.get;
-        },
+        sources: (state) => [this.getPreparedMessages(state)],
+        project: ([prepared]) => (prepared as PreparedPublicMessages).get(),
+      },
+      {
+        name: 'messageItems',
+        sources: (state) => [this.getItemPlan(state)],
+        project: ([plan]) =>
+          this.messageItems.projectPlan(plan as MessageItemsPlan),
       },
     ];
   }
@@ -318,7 +342,7 @@ export class PublicStateSnapshotCache {
   ): boolean {
     return this.definitions.every(
       (definition) =>
-        (definition.name === 'messages' &&
+        (MESSAGE_FIELDS.has(definition.name) &&
           sameMessageReferences(previous, current)) ||
         sameSources(definition.sources(previous), definition.sources(current))
     );
@@ -345,24 +369,62 @@ export class PublicStateSnapshotCache {
     return Object.freeze(snapshot);
   }
 
-  private getMessageSources(state: ConversationState): readonly unknown[] {
-    const cached = this.messageSources.get(state);
-    if (cached) {
-      return cached;
+  /**
+   * The public item ID of a local item in a state, or `undefined` when the list doesn't draw it.
+   * It reads the plan `messageItems` is built from, so it costs nothing more once that's built.
+   */
+  messageItemIDOf(
+    state: ConversationState,
+    localItemID: string
+  ): string | undefined {
+    return itemIDsByLocalID(flatItemPlans(this.getItemPlan(state))).get(
+      localItemID
+    );
+  }
+
+  /**
+   * The ID of the local item a public item draws in a state, or `undefined` when the state has no
+   * such item. It reads the same plan as {@link messageItemIDOf}.
+   */
+  localItemIDOf(state: ConversationState, itemID: string): string | undefined {
+    return localIDsByItemID(flatItemPlans(this.getItemPlan(state))).get(itemID);
+  }
+
+  /** The plan of `messageItems` for a state, shared with the next state whose messages didn't change. */
+  private getItemPlan(state: ConversationState): MessageItemsPlan {
+    let plan = this.itemPlans.get(state);
+    if (!plan) {
+      plan =
+        this.lastItemState && sameMessageReferences(this.lastItemState, state)
+          ? this.itemPlans.get(this.lastItemState)
+          : this.planner.planFor(messageSlices(state));
+      this.itemPlans.set(state, plan);
+      this.lastItemState = state;
     }
-    const sources =
-      this.lastMessageState &&
-      sameMessageReferences(this.lastMessageState, state)
-        ? this.messageSources.get(this.lastMessageState)
-        : publicMessagesSources(
-            state.assistantMessageState.messageIDs,
-            state.allMessagesByID,
-            state.allMessageItemsByID,
-            state.assistantMessageState.localMessageIDs
-          );
-    this.messageSources.set(state, sources);
-    this.lastMessageState = state;
-    return sources;
+    return plan;
+  }
+
+  /** The prepared `messages` for a state, shared with the next state whose messages didn't change. */
+  private getPreparedMessages(
+    state: ConversationState
+  ): PreparedPublicMessages {
+    let prepared = this.preparedMessages.get(state);
+    if (!prepared) {
+      const slices = messageSlices(state);
+      prepared =
+        this.lastMessageState &&
+        sameMessageReferences(this.lastMessageState, state)
+          ? this.preparedMessages.get(this.lastMessageState)
+          : this.messages.prepare(
+              slices.messageIDs,
+              slices.allMessagesByID,
+              slices.allMessageItemsByID,
+              slices.localMessageIDs
+            );
+      this.preparedMessages.set(state, prepared);
+      this.lastMessageState = state;
+    }
+    return prepared;
   }
 
   private createField(
@@ -370,9 +432,7 @@ export class PublicStateSnapshotCache {
     sources: readonly unknown[],
     state: ConversationState
   ): CachedField {
-    const project =
-      definition.prepare?.(sources, state) ??
-      (() => definition.project(sources, state));
+    const project = () => definition.project(sources, state);
     let projected = false;
     let value: unknown;
 

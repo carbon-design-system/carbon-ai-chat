@@ -20,6 +20,7 @@ import {
 } from './messageActionTypes';
 
 import { DeepPartial } from '../../types/utilities/DeepPartial';
+import type ObjectMap from '../../types/utilities/ObjectMap';
 
 import type { MessageWriteOptions } from './messageWriteTypes';
 
@@ -55,7 +56,6 @@ const HYDRATE_CHAT = 'HYDRATE_CHAT';
 const SET_APP_STATE_VALUE = 'SET_APP_STATE_VALUE';
 const MESSAGE_SET_OPTION_SELECTED = 'MESSAGE_SET_OPTION_SELECTED';
 const SET_MESSAGE_UI_PROPERTY = 'SET_MESSAGE_UI_PROPERTY';
-const SET_MESSAGE_WAS_ANNOUNCED = 'SET_MESSAGE_WAS_ANNOUNCED';
 const SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY =
   'SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY';
 const SET_MESSAGE_RESPONSE_HISTORY_PROPERTY =
@@ -109,12 +109,20 @@ const actions = {
   /**
    * Replaces the transcript with loaded history. `insertsHistory` is true when
    * the history was merged in front of the current transcript instead.
+   * `optionsSelected` maps each local item whose option the history shows as
+   * chosen to the request that choice sent.
    */
   hydrateMessageHistory(
     messageHistory: AppStateMessages,
-    insertsHistory = false
+    insertsHistory = false,
+    optionsSelected: ObjectMap<MessageRequest> = {}
   ) {
-    return { type: HYDRATE_MESSAGE_HISTORY, messageHistory, insertsHistory };
+    return {
+      type: HYDRATE_MESSAGE_HISTORY,
+      messageHistory,
+      insertsHistory,
+      optionsSelected,
+    };
   },
 
   removeMessages(messageIDs: string[]) {
@@ -204,6 +212,12 @@ const actions = {
     return { type: END_MESSAGE_STREAMING, messageID };
   },
 
+  /**
+   * Records that the user's choice in a local item sent `sentMessage`. Only
+   * the view partition holds it.
+   *
+   * @param messageID The local item's ID.
+   */
   messageSetOptionSelected(messageID: string, sentMessage: MessageRequest) {
     return {
       type: MESSAGE_SET_OPTION_SELECTED,
@@ -346,13 +360,6 @@ const actions = {
       'error_state',
       errorState
     );
-  },
-
-  /**
-   * Marks the given message to indicate that it has been announced and doesn't need to be announced again.
-   */
-  setMessageWasAnnounced(messageID: string) {
-    return { type: SET_MESSAGE_WAS_ANNOUNCED, localMessageID: messageID };
   },
 
   /**
@@ -510,7 +517,6 @@ export {
   HYDRATE_CHAT,
   MESSAGE_SET_OPTION_SELECTED,
   SET_MESSAGE_UI_PROPERTY,
-  SET_MESSAGE_WAS_ANNOUNCED,
   RESTART_CONVERSATION,
   ADD_MESSAGE,
   UPDATE_HAS_SENT_NON_WELCOME_MESSAGE,

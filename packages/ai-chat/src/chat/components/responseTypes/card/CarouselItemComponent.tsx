@@ -8,9 +8,8 @@
  */
 
 import React from 'react';
-import { useSelector } from '../../../hooks/useSelector';
+import { useNestedMessageItems } from '../../../hooks/useDrawnMessageItems';
 
-import { AppState } from '../../../../types/state/AppState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 
@@ -43,19 +42,20 @@ function CarouselItemComponent(props: CarouselItemComponentProps) {
     requestFocus,
     renderMessageComponent,
   } = props;
-  const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
+  const nestedItems = useNestedMessageItems(
+    localMessageItem.ui_state.id,
+    'body'
   );
-  const { itemsLocalMessageItemIDs } = localMessageItem.ui_state;
 
   return (
     <>
-      {itemsLocalMessageItemIDs.map((nestedLocalMessageItemID) => {
-        const localMessageItem = allMessageItemsByID[nestedLocalMessageItemID];
+      {nestedItems.map(({ localMessageItem: nestedLocalMessageItem }) => {
         return (
           <CardItemComponent
-            key={nestedLocalMessageItemID}
-            localMessageItem={localMessageItem}
+            key={nestedLocalMessageItem.ui_state.id}
+            localMessageItem={
+              nestedLocalMessageItem as LocalMessageItem<CarouselItem>
+            }
             fullMessage={fullMessage}
             isMessageForInput={isMessageForInput}
             ignoreMaxWidth

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { makeConfigStore } from '../../test_helpers';
+import { itemFlagsFor, makeConfigStore } from '../../test_helpers';
 import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { addMessages } from '../../../src/sdk/services/haa/humanAgentUtils';
@@ -99,9 +99,9 @@ it.each(['assistant', 'human agent'] as const)(
     ).toBeUndefined();
     expect(dispatch.mock.calls[0][0].history).toBe(history);
     expect(dispatch.mock.calls[1][0].sentMessage).toBe(request);
-    expect(
-      store.getState().allMessageItemsByID.local.ui_state.optionSelected
-    ).toBe(request);
+    expect(itemFlagsFor(store.getState(), 'local')?.optionSelected).toBe(
+      request
+    );
     expect(merge).toHaveBeenCalledTimes(origin === 'assistant' ? 1 : 0);
     expect(select).toHaveBeenCalledTimes(origin === 'assistant' ? 1 : 0);
     const failure = new Error('dispatch failed');

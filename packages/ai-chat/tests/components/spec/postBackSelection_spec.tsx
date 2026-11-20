@@ -14,6 +14,7 @@ import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageC
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   ButtonItemType,
+  type MessageRequest,
   MessageResponseTypes,
   SelectionDisplay,
 } from '../../../src/types/messaging/Messages';
@@ -64,6 +65,8 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
     fullMessageID: 'response-id',
     ui_state: { id: 'local-id' },
   } as any;
+  // The item's view flags, which the message renderer passes in.
+  const flags: { optionSelected?: MessageRequest } = {};
 
   const renderComponent = () => (
     <TestChatContext serviceManager={serviceManager}>
@@ -71,6 +74,7 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
         localMessageItem={localMessageItem}
         isMessageForInput={true}
         requestFocus={requestFocus}
+        optionSelected={flags.optionSelected}
       />
     </TestChatContext>
   );
@@ -78,6 +82,7 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
   return {
     ...view,
     dispatch,
+    flags,
     localMessageItem,
     renderComponent,
     requestFocus,
@@ -89,14 +94,15 @@ describe('post-back selected state', () => {
   it.each([undefined, 'standard-button'])(
     'exposes pressed state for %s buttons and disables the selected control',
     async (is) => {
-      const { container, localMessageItem, renderComponent, rerender } =
-        renderPostBack({ is });
+      const { container, flags, renderComponent, rerender } = renderPostBack({
+        is,
+      });
       let { host, button } = await getFocusableButton(container, is);
       expect(host).toHaveAttribute('aria-pressed', 'false');
       expect(button).toHaveAttribute('aria-pressed', 'false');
       expect(button).not.toBeDisabled();
 
-      localMessageItem.ui_state.optionSelected = {
+      flags.optionSelected = {
         input: { text: 'sent text' },
         history: { label: 'Visible label' },
       };
@@ -113,8 +119,9 @@ describe('post-back selected state', () => {
   it.each([undefined, 'standard-button'])(
     'reports a failed pressed-state update for %s buttons',
     async (is) => {
-      const { container, localMessageItem, renderComponent, rerender } =
-        renderPostBack({ is });
+      const { container, flags, renderComponent, rerender } = renderPostBack({
+        is,
+      });
       const { host } = await getFocusableButton(container, is);
       const error = new Error('Button update failed');
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
@@ -124,7 +131,7 @@ describe('post-back selected state', () => {
       });
 
       try {
-        localMessageItem.ui_state.optionSelected = {
+        flags.optionSelected = {
           input: { text: 'sent text' },
           history: { label: 'Visible label' },
         };

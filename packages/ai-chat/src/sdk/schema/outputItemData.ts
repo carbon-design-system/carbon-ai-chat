@@ -20,10 +20,7 @@ function outputItemData(
   isLatestWelcomeNode = false
 ): LocalMessageItem {
   const localMessage: LocalMessageItem = {
-    ui_state: {
-      id,
-      needsAnnouncement: !message.ui_state_internal?.from_history,
-    },
+    ui_state: { id },
     item,
     fullMessageID: message.id,
   };

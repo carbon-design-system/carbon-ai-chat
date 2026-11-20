@@ -131,10 +131,7 @@ describe('reasoningContent', () => {
 
       expect(wrapper).toEqual({
         item: textItem,
-        ui_state: {
-          id: 'msg-1-reasoning-step-0-item-0',
-          needsAnnouncement: false,
-        },
+        ui_state: { id: 'msg-1-reasoning-step-0-item-0' },
         fullMessageID: 'msg-1',
       });
     });

@@ -21,7 +21,7 @@ function inputItemData(
 ): LocalMessageItem {
   return {
     item: { response_type: responseType, ...message.input },
-    ui_state: { id, originalUserText, needsAnnouncement: false },
+    ui_state: { id, originalUserText },
     fullMessageID: message.id,
   };
 }

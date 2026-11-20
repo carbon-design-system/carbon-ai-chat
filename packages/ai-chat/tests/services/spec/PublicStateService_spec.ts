@@ -43,21 +43,19 @@ describe('PublicStateService', () => {
     const { service, store } = createService();
     service.get();
     service.subscribe(() => service.get());
-    const sources = jest.spyOn(publicMessages, 'publicMessagesSources');
     const prepare = jest.spyOn(
       publicMessages.PublicMessagesProjection.prototype,
       'prepare'
     );
     service.get();
-    expect(sources).not.toHaveBeenCalled();
+    expect(prepare).not.toHaveBeenCalled();
     store.dispatch(
       viewActions.setViewValue('announceMessage', {
         messageText: 'Private update',
       })
     );
-    expect(sources).not.toHaveBeenCalled();
+    expect(prepare).not.toHaveBeenCalled();
     store.dispatch(viewActions.addIsLoadingCounter(1));
-    expect(sources).not.toHaveBeenCalled();
     expect(prepare).not.toHaveBeenCalled();
   });
 
@@ -73,7 +71,6 @@ describe('PublicStateService', () => {
     );
     expect(service.get().messages).toHaveLength(1);
     service.subscribe(() => service.get().messages);
-    const sources = jest.spyOn(publicMessages, 'publicMessagesSources');
     const prepare = jest.spyOn(
       publicMessages.PublicMessagesProjection.prototype,
       'prepare'
@@ -96,9 +93,7 @@ describe('PublicStateService', () => {
         }
       )
     );
-    expect(
-      sources.mock.calls.length + prepare.mock.calls.length
-    ).toBeLessThanOrEqual(2);
+    expect(prepare.mock.calls.length).toBeLessThanOrEqual(2);
     expect(service.get().messages[0]).toMatchObject({
       output: { generic: [{ text: 'chunk' }] },
     });

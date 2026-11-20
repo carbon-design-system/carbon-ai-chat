@@ -21,6 +21,7 @@ import { useSelector } from '../../../src/chat/hooks/useSelector';
 import { selectMessagesState } from '../../../src/chat/components-legacy/MessagesComponent';
 import { selectLanguagePack } from '../../../src/sdk/store/selectors';
 import actions from '../../../src/sdk/store/actions';
+import { viewActions } from '../../../src/chat/state';
 import { shallowEqual } from '../../../src/sdk/store/appStore';
 import { AppState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -76,13 +77,10 @@ describe('render hardening', () => {
     });
     expect(messageBagRenders).toBe(1);
 
-    // Sanity: a field the bag actually reads (the messages) re-renders it.
+    // Sanity: a field the bag actually reads (the accepted disclaimers)
+    // re-renders it. The list reads messages from public state now.
     act(() => {
-      store.dispatch(
-        actions.setAppStateValue('allMessagesByID', {
-          ...store.getState().allMessagesByID,
-        })
-      );
+      store.dispatch(viewActions.acceptDisclaimer());
     });
     expect(messageBagRenders).toBe(2);
   });

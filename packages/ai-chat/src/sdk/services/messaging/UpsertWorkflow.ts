@@ -61,6 +61,27 @@ import { hasDisplayableContentForItem } from '../../utils/streamingUtils';
 import { ServiceManager } from '../ServiceManager';
 
 /**
+ * Whether `next` is the same version of `previous` with only its native upsert error mark
+ * changed. Marking an item errored writes a new local item, but its content is unchanged.
+ */
+function isOnlyUpsertErrorChange(
+  previous: LocalMessageItem | undefined,
+  next: LocalMessageItem
+): boolean {
+  if (!previous || previous.item !== next.item) {
+    return false;
+  }
+  const differs = <T extends object>(a: T, b: T, ignore: keyof T) =>
+    [...new Set([...Object.keys(a), ...Object.keys(b)] as (keyof T)[])].some(
+      (key) => key !== ignore && a[key] !== b[key]
+    );
+  return (
+    !differs(previous, next, 'ui_state') &&
+    !differs(previous.ui_state, next.ui_state, 'upsertError')
+  );
+}
+
+/**
  * Whether an upserted item counts as content for the stream-start announcement. A text
  * item whose `text` isn't a string doesn't, and checking it would throw trimming it.
  */
@@ -470,7 +491,7 @@ class UpsertWorkflow {
         ownedResult,
         nextState === MessageState.STREAMING && !isStopped,
         holdFromIndex,
-        options
+        { ...options, nativeMessageState: nextState }
       )
     );
     if (isStale()) {
@@ -728,6 +749,7 @@ class UpsertWorkflow {
       const ownedResult = this.incomingMessageService.copyNativeMessage(result);
       store.dispatch(
         actions.upsertMessage(ownedResult, isStreaming, pauseIndex, {
+          nativeMessageState: revealState,
           pauseReveal: { originalLocalIDs, previousHoldFromIndex },
         })
       );
@@ -1035,7 +1057,8 @@ class UpsertWorkflow {
   /**
    * Reports each shown item of `messageID` that the chat can't draw and now shows an
    * error for: one the last write or settle replaced, that is no longer streaming. A
-   * reused local item was reported when it was written, so each version reports once.
+   * reused local item was reported when it was written, so each version reports once. An
+   * item whose only change is its native upsert error mark is the same version.
    *
    * Pass `false` for `reportErrors` when the settle is user-initiated (stop/cancel):
    * a malformed in-flight item that was never completed is not actionable host data.
@@ -1045,19 +1068,24 @@ class UpsertWorkflow {
     refsBefore: Map<string, LocalMessageItem>,
     reportErrors = true
   ) {
+    if (!reportErrors) {
+      return;
+    }
     const state = this.serviceManager.store.getState();
+    const message = state.allMessagesByID[messageID] as MessageResponse;
     for (const localID of state.assistantMessageState.localMessageIDs) {
       const localItem = state.allMessageItemsByID[localID];
-      const { cannotDraw } = localItem?.ui_state ?? {};
       if (
         localItem?.fullMessageID !== messageID ||
-        !cannotDraw ||
         refsBefore.get(localID) === localItem ||
+        isOnlyUpsertErrorChange(refsBefore.get(localID), localItem) ||
         isItemStillStreaming(localItem)
       ) {
         continue;
       }
-      if (!reportErrors) {
+      // A new copy here is the upsert's, so this is the check it was built with.
+      const missing = findDrawIssues(localItem.item, message);
+      if (!missing.length) {
         continue;
       }
       const responseType = localItem.item.response_type;
@@ -1068,13 +1096,13 @@ class UpsertWorkflow {
           {
             responseType,
             messageID,
-            missing: cannotDraw.missing.join(', '),
+            missing: missing.join(', '),
           }
         ),
         otherData: {
           messageID,
           responseType,
-          missing: [...cannotDraw.missing],
+          missing,
           item: cloneDeep(localItem.item),
         },
       });

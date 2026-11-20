@@ -16,6 +16,7 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  needsAnnouncementOf,
 } from '../../../test_helpers';
 
 import { UPSERT_MESSAGE } from '../../../../src/sdk/store/actions';
@@ -2469,9 +2470,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       };
       const unsubscribe = store.subscribe(() => {
         localIDs.forEach((id) => {
-          const value =
-            store.getState().allMessageItemsByID[id]?.ui_state
-              .needsAnnouncement;
+          const value = needsAnnouncementOf(store.getState(), id);
           const seen = history[id];
           if (value !== undefined && seen[seen.length - 1] !== value) {
             seen.push(value);

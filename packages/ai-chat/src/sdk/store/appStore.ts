@@ -84,8 +84,9 @@ export interface AppStore<
 /**
  * A reducer for a partition: a part of the state that another layer adds to a
  * store with {@link attachPartition}. It runs after the store's own reducer,
- * on every action, and gets the store's state after that reducer ran. So a
- * partition can react to the store's own actions in the same dispatch.
+ * on every action, and gets the store's state after that reducer ran, and the
+ * state before the action. So a partition can react to the store's own
+ * actions in the same dispatch, including what an action replaced.
  *
  * Return the same state when nothing changed, or every dispatch notifies
  * subscribers. If it throws, the whole dispatch fails, as a throw in the
@@ -97,7 +98,8 @@ export interface AppStore<
 export type PartitionReducer<PartState, StoreState> = (
   state: Readonly<PartState>,
   action: Readonly<UnknownAction>,
-  storeStateAfter: Readonly<StoreState>
+  storeStateAfter: Readonly<StoreState>,
+  storeStateBefore: Readonly<StoreState>
 ) => PartState;
 
 type PartitionAttacher = (
@@ -185,7 +187,8 @@ export function createStoreFromReduction<
       const part = partitionReducer(
         (state as Record<string, unknown>)[key],
         action,
-        next
+        next,
+        state
       );
       if (!Object.is(part, (next as Record<string, unknown>)[key])) {
         next = { ...next, [key]: part };
