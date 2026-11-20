@@ -18,7 +18,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createTestViewState } from '../../test_helpers';
 import { ConversationalSearch } from '../../../src/chat/components/responseTypes/conversationalSearch/ConversationalSearch';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import {
   ConversationalSearchItem,
