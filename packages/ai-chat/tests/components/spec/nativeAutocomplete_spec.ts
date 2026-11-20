@@ -18,6 +18,7 @@ import type {
   CustomListProps,
   TriggerChangeEventDetail,
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/types.js';
+import { AutocompleteController } from '@carbon/ai-chat-components/es/components/prompt-line/src/autocomplete-controller.js';
 import '../../../src/chat/components/input/NativeAutocomplete';
 import type NativeAutocomplete from '../../../src/chat/components/input/NativeAutocomplete';
 import { AutocompleteContentAdapter } from '../../../src/chat/components/input/AutocompleteContentAdapter';
@@ -633,7 +634,186 @@ describe('native autocomplete', () => {
     props.onSend('direct');
     await flush(f.view);
     expect(sent).toHaveBeenCalledWith('direct');
+    // A custom list's direct send carries no item, so onSelect stays quiet.
+    expect(order).toEqual(['insert', 'config', 'selected']);
     expect(f.owner.getSnapshot().request).toBeNull();
+  });
+
+  it('logs a throw from onSelect for a sent item, then lets a later insert throw leave the select event', async () => {
+    const pageErrors: unknown[] = [];
+    const onPageError = (event: ErrorEvent) => {
+      pageErrors.push(event.error);
+      event.preventDefault();
+    };
+    window.addEventListener('error', onPageError);
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const sendError = new Error('send onSelect failed');
+    const insertError = new Error('insert onSelect failed');
+    let failure = sendError;
+    const onSelect = jest.fn(() => {
+      throw failure;
+    });
+    const sent = jest.fn();
+    const selected = jest.fn();
+    const f = await fixture((view) => {
+      view.autocomplete = { items, onSelect };
+      view.onSendItem = sent;
+      view.onSelectItem = selected;
+    });
+    const list = () =>
+      f.shell.querySelector<Autocomplete>('cds-aichat-autocomplete');
+    await f.trigger();
+    list().dispatchEvent(
+      new CustomEvent('cds-aichat-autocomplete-send', {
+        detail: { text: 'Alpha value', item: items[0] },
+      })
+    );
+    await flush(f.view);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(sent).toHaveBeenCalledWith('Alpha value');
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(consoleError).toHaveBeenCalledWith(expect.any(String), sendError);
+    expect(f.errorOccurred).not.toHaveBeenCalled();
+
+    failure = insertError;
+    const select = jest.spyOn(AutocompleteController.prototype, 'select');
+    await f.trigger();
+    try {
+      list().dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-select', {
+          detail: { item: items[1] },
+        })
+      );
+      await flush(f.view);
+    } finally {
+      window.removeEventListener('error', onPageError);
+    }
+    expect(onSelect).toHaveBeenCalledTimes(2);
+    // The insert's throw leaves the controller and the select event as it did
+    // from the React input, so the chat's error owner never sees it.
+    expect(select).toHaveBeenCalledTimes(1);
+    expect(select.mock.results[0].type).toBe('throw');
+    expect(pageErrors).toEqual([insertError]);
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    expect(f.errorOccurred).not.toHaveBeenCalled();
+    expect(selected).not.toHaveBeenCalled();
+    expect(f.shell.querySelector('cds-aichat-autocomplete')).not.toBeNull();
+  });
+
+  it.each([
+    ['an error', new Error('custom onSelect failed')],
+    ['undefined', undefined],
+  ])(
+    'throws %s from onSelect back to a custom list after the insert, without the chat error owner',
+    async (_kind, failure) => {
+      const order: string[] = [];
+      let props: CustomListProps;
+      const f = await fixture((view) => {
+        view.autocomplete = {
+          items,
+          onSelect: () => {
+            order.push('config');
+            throw failure;
+          },
+          renderCustomList: (next) => {
+            props = next;
+            return document.createElement('div');
+          },
+        };
+        view.onSelectItem = () => order.push('selected');
+      });
+      f.chain.run.mockImplementation(() => order.push('insert'));
+      await f.trigger();
+      let thrown: { error: unknown } | undefined;
+      try {
+        props.onSelect(items[0]);
+      } catch (error) {
+        thrown = { error };
+      }
+      await flush(f.view);
+      expect(thrown).toEqual({ error: failure });
+      expect(order).toEqual(['insert', 'config']);
+      expect(f.errorOccurred).not.toHaveBeenCalled();
+      // The throw skips the dismiss, so the list stays open.
+      expect(
+        f.shell.querySelector('[slot="autocomplete-content"]')
+      ).not.toBeNull();
+    }
+  );
+
+  it('lets an autocomplete onSelect throw leave the select event while the shown list is still a mention list', async () => {
+    const pageErrors: unknown[] = [];
+    const onPageError = (event: ErrorEvent) => {
+      pageErrors.push(event.error);
+      event.preventDefault();
+    };
+    const failure = new Error('autocomplete onSelect failed');
+    const selected = jest.fn();
+    const f = await fixture((view) => {
+      view.mention = { trigger: '@', items };
+      view.autocomplete = {
+        items,
+        onSelect: () => {
+          throw failure;
+        },
+      };
+      view.onSelectItem = selected;
+    });
+    await f.trigger('', 'mention');
+    const list = f.shell.querySelector<Autocomplete>('cds-aichat-autocomplete');
+    expect(list).not.toBeNull();
+    window.addEventListener('error', onPageError);
+    try {
+      // The controller takes the new trigger at once, but the view's copy of
+      // its state updates only after the items resolve.
+      f.prompt.dispatchEvent(
+        new CustomEvent<TriggerChangeEventDetail>('cds-aichat-trigger-change', {
+          bubbles: true,
+          composed: true,
+          detail: { type: 'autocomplete', query: '', triggerOffset: 0 },
+        })
+      );
+      list.dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-select', {
+          detail: { item: items[0] },
+        })
+      );
+      await flush(f.view);
+    } finally {
+      window.removeEventListener('error', onPageError);
+    }
+    expect(pageErrors).toEqual([failure]);
+    expect(f.errorOccurred).not.toHaveBeenCalled();
+    expect(selected).not.toHaveBeenCalled();
+  });
+
+  it('routes a throw from the insert itself through the chat error owner', async () => {
+    const onSelect = jest.fn();
+    const failure = new Error('insert failed');
+    const f = await fixture((view) => {
+      view.autocomplete = { items, onSelect };
+    });
+    f.chain.run.mockImplementation(() => {
+      throw failure;
+    });
+    await f.trigger();
+    f.shell
+      .querySelector<Autocomplete>('cds-aichat-autocomplete')
+      .dispatchEvent(
+        new CustomEvent('cds-aichat-autocomplete-select', {
+          detail: { item: items[0] },
+        })
+      );
+    await flush(f.view);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(f.errorOccurred).toHaveBeenCalledTimes(1);
+    expect(f.errorOccurred).toHaveBeenCalledWith(
+      expect.objectContaining({
+        otherData: expect.objectContaining({ error: failure }),
+      })
+    );
   });
 
   it('inserts starter text before notifying its existing send owner and suppresses notification when disabled', async () => {

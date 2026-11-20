@@ -43,6 +43,8 @@ The existing `ExtensionHosts` owner keeps panel targets separate from its page-l
 
 Native targets can arrive after the first React commit. Their wrappers hold the initial acknowledgment in `ChatViewState` until retained content effects finish, or an empty fallback commits. `ChatAppEntry` then acknowledges the commit to the container. Keep this passive-effect acknowledgment separate from later panel layout commits and the container's listener-ready gate. React does not start services.
 
+The native input caller keeps raw and display values, the editor handle, lazy extensions, drafts, local pending Stop state, upload wiring, and control wiring in private `ChatInput`. It renders light DOM in the existing shadow root as the shell's direct `slot="input"` child. `NativeInputAdapter` remains a thin bridge for React configuration and icon normalization and forwards the native handle ref; `AppShell` still supplies send and HAA callbacks, while the shared private Stop command owns Stop effects. One `ExtensionHosts.autocompleteContent` owner per chat and `AutocompleteContentAdapter` keep custom React lists in the consumer React tree through stable targets. This adds no root, provider, or shadow boundary. The container's startup and listener-ready gate and React's separate commit acknowledgment remain unchanged.
+
 | Layer | Files | Concerns |
 | --- | --- | --- |
 | Lit | [src/web-components/](../src/web-components) | Registration, shadow DOM, slot forwarding, renderer selection, mount cleanup |
