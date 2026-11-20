@@ -102,8 +102,8 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
  * Creates a {@link ServiceManager}, initializes localization, wires the
  * `humanAgentService`, and constructs the {@link ChatInstance}.
  *
- * This function does not render; the caller should call `instance.render()`
- * after setting up any lifecycle hooks.
+ * This function does not render. Its caller, `cds-aichat-container`, renders
+ * the app after the host's `onBeforeRender`.
  */
 export async function initServiceManagerAndInstance(options: {
   publicConfig: PublicConfig;

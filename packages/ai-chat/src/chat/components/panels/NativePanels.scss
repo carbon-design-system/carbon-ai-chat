@@ -7,6 +7,86 @@
  *  @license
  */
 
+@use '@carbon/styles/scss/theme';
+@use '../../../globals/scss/chat-theme';
+
 cds-aichat-native-panels {
   display: contents;
+}
+
+.cds-aichat--confirm-panel__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1px;
+}
+
+// Narrow and standard widths: the buttons split the footer and fill both
+// bottom corners, matching the disclaimer panel.
+.cds-aichat--confirm-panel__button {
+  flex: 1;
+  max-inline-size: unset;
+
+  &:first-child::part(button) {
+    border-end-start-radius: var(--cds-aichat-border-radius-end-start, 0);
+  }
+
+  &:last-child::part(button) {
+    border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);
+  }
+}
+
+// Wide width: fixed-width buttons sit at the inline end, so only the last one
+// reaches a corner.
+.cds-aichat--wide-width cds-button.cds-aichat--confirm-panel__button {
+  flex: 0 0 auto;
+  inline-size: 288px;
+
+  &:first-child:not(:last-child)::part(button) {
+    border-end-start-radius: 0;
+  }
+}
+
+// Footer container styling
+.cds-aichat--disclaimer__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// Button styling for footer slot
+.cds-aichat--disclaimer__accept-button {
+  margin-inline-start: auto;
+}
+
+.cds-aichat--wide-width {
+  cds-button.cds-aichat--disclaimer__accept-button {
+    inline-size: 288px;
+  }
+}
+
+.cds-aichat--narrow-width,
+.cds-aichat--standard-width {
+  .cds-aichat--disclaimer__footer {
+    justify-content: stretch;
+  }
+
+  cds-button.cds-aichat--disclaimer__accept-button {
+    inline-size: 100%;
+    margin-inline-start: 0;
+    max-inline-size: unset;
+  }
+}
+
+.cds-aichat--panel-header-content {
+  margin: auto;
+  max-inline-size: chat-theme.$messages-max-width;
+}
+
+.cds-aichat--panel-header {
+  border-block-end: 1px solid theme.$border-subtle-01;
+}
+
+.cds-aichat--panel-header--full-width {
+  .cds-aichat--panel-header-content {
+    max-inline-size: 100%;
+  }
 }

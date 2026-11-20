@@ -37,7 +37,7 @@ import { SendService } from './SendService';
 import { StreamAnnouncerService } from './StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
-import type { InputFunctions } from '../components/input/Input';
+import type { InputFunctions } from '../utils/inputTypes';
 
 interface UserDefinedElementRegistryItem {
   slotName: string;
@@ -218,7 +218,8 @@ class ServiceManager {
 
   /**
    * The aria announcer function that can be used to make screen reader announcements.
-   * This is set by the AppShell component when it mounts.
+   * `ShellLifecycle.publishHandles` sets it while the native shell is connected and
+   * clears it on release.
    */
   ariaAnnouncer: AriaAnnouncerFunctionType;
 
@@ -241,11 +242,11 @@ class ServiceManager {
   }
 
   /**
-   * Live ref to the React `Input` component's imperative handle. Set by
-   * `Input.tsx` on mount and cleared on unmount. Used by content-write
-   * actions on `ChatInstanceService` that must reach the underlying
-   * ProseMirror view synchronously (the legacy Redux-driven path cannot
-   * dispatch PM transactions).
+   * Live ref to the native input's imperative handle. `ChatInput` registers
+   * it through `registerInputImperativeHandle` while connected and clears it
+   * on release. `InputActionsService` uses it for content writes that must
+   * reach the ProseMirror view synchronously (the legacy Redux-driven path
+   * cannot dispatch PM transactions).
    */
   private _inputFunctionsRef: InputFunctions | null = null;
 
