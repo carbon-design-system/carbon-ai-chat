@@ -22,11 +22,10 @@ import type { ChatSDKInstanceMessaging } from './ChatSDKInstanceMessaging';
  * time the message moves into {@link COMPLETE} from another state, so a message that goes
  * from COMPLETE to ERROR and back to COMPLETE fires them twice.
  * {@link ChatInstanceMessaging.addMessage} on an id that an upsert already completed fires
- * them again.
+ * them again. Mixing the flows this way isn't recommended or fully tested, though.
  *
  * @category Messaging
  * @category SDK
- * @experimental
  */
 export enum MessageState {
   /**
@@ -64,7 +63,6 @@ export enum MessageState {
  * @returns The {@link MessageResponse} to store, optionally as a Promise.
  * @category Messaging
  * @category SDK
- * @experimental
  */
 export type UpsertMessageUpdater = (
   previous: MessageResponse | undefined
@@ -116,6 +114,11 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
    * Instructs the widget to process the given message as an incoming message received from the assistant. This will
    * fire a "pre:receive" event immediately and a "receive" event after the event has been processed by the widget.
    *
+   * This is the legacy way to add a message. It's fully supported and not deprecated, and there are no plans to
+   * remove it. For new work, especially more complex UI that updates a message after it renders, use
+   * {@link ChatInstanceMessaging.upsertMessage}. Nothing stops you from mixing the two flows, but it isn't
+   * recommended or fully tested.
+   *
    * The chat writes its defaults onto the message you pass, including a generated `id` when it has none, and then
    * freezes it, so don't change the object afterward. If the message is already frozen, the chat copies it first and
    * stores the copy.
@@ -126,6 +129,11 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
 
   /**
    * Adds a streaming message chunk to the chat widget.
+   *
+   * This is the legacy way to stream a message. It's fully supported and not deprecated, and there are no plans to
+   * remove it. For new work, especially more complex UI, use {@link ChatInstanceMessaging.upsertMessage}. You build
+   * up the message in your app and apply each update with one call, instead of matching the {@link StreamChunk}
+   * shapes. Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
    *
    * A chunk stream whose `customSendMessage` throws, or that is canceled before a
    * `final_response` chunk arrives, will have its `streamingState.isDone` settled to

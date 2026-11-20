@@ -231,8 +231,8 @@ class UpsertWorkflow {
   }
 
   /**
-   * A response `failTurn` marked keeps its inline error through a late write that sets no error
-   * state of its own (#2354 O3, O6).
+   * A response marked by `failTurn` keeps its inline error when a late write sets no error state
+   * of its own.
    */
   private keepTurnFailureMark(messageID: string, message: MessageResponse) {
     if (
