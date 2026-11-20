@@ -57,3 +57,49 @@ export function sortCitations<T extends CitationWithRanges>(
   );
   return withRanges.concat(withoutRanges);
 }
+
+/** Returns the hostname of a URL, or `undefined` when it doesn't parse. */
+export function citationHostname(url: string): string | undefined {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return undefined;
+  }
+}
+
+interface SelectableCitationCard extends Element {
+  index: number;
+  selected: boolean;
+}
+
+interface IndexedCarousel extends Element {
+  currentIndex?: number;
+}
+
+/**
+ * Marks the citation card whose `index` matches as selected, and points the
+ * first carousel at that index. Searches each root and its descendants, and
+ * matches elements by tag name so the caller needn't load either class.
+ */
+export function applyCitationSelection(
+  roots: readonly Element[],
+  index: number,
+  cardTag: string,
+  carouselTag: string
+) {
+  let carousel: IndexedCarousel | undefined;
+  for (const root of roots) {
+    for (const element of [
+      root,
+      ...root.querySelectorAll(`${cardTag}, ${carouselTag}`),
+    ]) {
+      if (element.localName === cardTag) {
+        const card = element as SelectableCitationCard;
+        card.selected = card.index === index;
+      } else if (element.localName === carouselTag && !carousel) {
+        carousel = element as IndexedCarousel;
+        carousel.currentIndex = index;
+      }
+    }
+  }
+}

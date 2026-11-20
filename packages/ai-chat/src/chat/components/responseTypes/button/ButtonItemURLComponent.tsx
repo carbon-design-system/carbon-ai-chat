@@ -13,6 +13,7 @@ import {
   carbonIconToReact,
   customIconToReact,
 } from '../../../utils/carbonIcon';
+import { getButtonIconProps } from '../../../utils/buttonIconProps';
 import React from 'react';
 
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
@@ -30,8 +31,9 @@ function ButtonItemURLComponent({
 }: {
   localMessageItem: LocalMessageItem<ButtonItem>;
 }) {
+  const messageItem = localMessageItem.item;
   const { image_url, alt_text, url, target, label, kind, size, is, icon } =
-    localMessageItem.item;
+    messageItem;
   const CustomIcon = customIconToReact(icon);
 
   // If no image url is provided and should is a normal link, then render a carbon link.
@@ -65,7 +67,7 @@ function ButtonItemURLComponent({
       is={is}
       url={url}
       target={target}
-      renderIcon={CustomIcon || LaunchIcon}
+      {...getButtonIconProps(messageItem, LaunchIcon)}
     />
   );
 }
