@@ -644,4 +644,10 @@ class ExtensionHosts {
 }
 
 export { ExtensionHosts };
-export type { ExtensionHostsSnapshot, HostKind, SlotKind };
+export type {
+  ExtensionHostsSnapshot,
+  HostKind,
+  SlotKind,
+  PanelTargetName,
+  PanelContentRequest,
+};
