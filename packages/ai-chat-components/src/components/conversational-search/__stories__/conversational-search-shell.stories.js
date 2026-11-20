@@ -8,8 +8,14 @@
  */
 
 import '../src/conversational-search-shell';
+import '../src/citation-card';
+import '../../carousel/src/carousel';
 import '../../markdown/src/markdown';
 import { html, LitElement } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { insertHighlightMarkdown } from '../src/citation-utils';
+import { citations, citedAnswer } from './story-data';
+import carouselStyles from '../../carousel/__stories__/story-styles.scss?lit';
 import { useArgs } from 'storybook/preview-api';
 import { action } from 'storybook/actions';
 
@@ -175,4 +181,95 @@ export const Streaming = {
   render: (args) =>
     html`<story-conversational-search-stream
       .config=${args}></story-conversational-search-stream>`,
+};
+
+export const WithCitationCards = {
+  args: {
+    ...Default.args,
+    citationsOpen: true,
+    selectedCitationIndex: 0,
+    markdown: citedAnswer,
+    sourceLabel: 'View source',
+    nextBtnText: 'Next source',
+    previousBtnText: 'Previous source',
+  },
+  argTypes: {
+    ...Default.argTypes,
+    citationText: { table: { disable: true } },
+    streaming: { table: { disable: true } },
+    markdown: {
+      control: 'text',
+      description:
+        'Answer Markdown. The story highlights the selected source while citations are open.',
+    },
+    selectedCitationIndex: {
+      control: { type: 'number', min: 0, max: citations.length - 1 },
+      description: 'Host-controlled index of the selected citation.',
+    },
+    sourceLabel: {
+      control: 'text',
+      description: 'Footer text on cards without a URL.',
+    },
+    nextBtnText: { control: 'text', description: 'Next button label.' },
+    previousBtnText: {
+      control: 'text',
+      description: 'Previous button label.',
+    },
+    '@cds-aichat-citations-select': {
+      action: 'citations-select',
+      description: 'Requests a new selected citation in event.detail.index.',
+      table: { category: 'events' },
+    },
+  },
+  render: function Render(args) {
+    const [, updateArgs] = useArgs();
+    const markdown = insertHighlightMarkdown(
+      args.markdown,
+      args.citationsOpen ? citations[args.selectedCitationIndex] : null
+    );
+    // The chat loads the carousel's slide CSS globally; the story has to.
+    return html`
+      <style>
+        ${carouselStyles}
+      </style>
+      <div style="max-inline-size: 40rem">
+        <cds-aichat-conversational-search-shell
+          .citationsOpen=${args.citationsOpen}
+          .showCitationsToggle=${args.showCitationsToggle}
+          .citationsLabel=${args.citationsLabel}
+          .toggleLabel=${args.toggleLabel}
+          .selectedCitationIndex=${args.selectedCitationIndex}
+          @cds-aichat-citations-toggle=${(event) => {
+            updateArgs({ citationsOpen: event.detail.open });
+            action('citations-toggle')(event.detail);
+          }}
+          @cds-aichat-citations-select=${(event) => {
+            updateArgs({ selectedCitationIndex: event.detail.index });
+            action('citations-select')(event.detail);
+          }}>
+          <cds-aichat-markdown .markdown=${markdown}></cds-aichat-markdown>
+          <cds-aichat-carousel
+            slot="citations"
+            .nextBtnText=${args.nextBtnText}
+            .previousBtnText=${args.previousBtnText}>
+            <div>
+              ${citations.map(
+                (citation, index) => html`
+                  <cds-aichat-citation-card
+                    index=${index}
+                    url=${ifDefined(citation.url)}
+                    source-label=${ifDefined(
+                      citation.url ? undefined : args.sourceLabel
+                    )}>
+                    <div slot="title">${citation.title}</div>
+                    <div slot="body">${citation.text}</div>
+                  </cds-aichat-citation-card>
+                `
+              )}
+            </div>
+          </cds-aichat-carousel>
+        </cds-aichat-conversational-search-shell>
+      </div>
+    `;
+  },
 };
