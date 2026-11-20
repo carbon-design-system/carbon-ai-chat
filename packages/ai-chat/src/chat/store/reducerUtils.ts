@@ -502,7 +502,7 @@ function resolvePreviousLocalItem(
  * keeps a STREAMING → COMPLETE transition whose payload happened not to change from
  * leaving the item rendering as mid-stream forever.
  *
- * Cross-file invariant: `MessageUpsertCoordinator.snapshotLocalItemRefs` and its fan-out
+ * Cross-file invariant: `UpsertWorkflow.snapshotLocalItemRefs` and its fan-out
  * rely on this `===`-preservation to dedupe `USER_DEFINED_RESPONSE` fan-out after
  * dispatch. Don't rebuild a fresh `LocalMessageItem` when the item is unchanged.
  */
@@ -654,7 +654,7 @@ function keepsLastDrawn(
  * 2. **Reference stability** — if the new item is deep-equal to the previously stored
  *    `LocalMessageItem.item`, the existing `LocalMessageItem` reference is reused
  *    verbatim. Components subscribed to that item via `useSelector` see no diff and
- *    skip re-rendering. This matches {@link applyChunkWrite} and is critical when only
+ *    skip re-rendering. This matches {@link applyChunkWriteWithIdentity} and is critical when only
  *    one item in `output.generic[]` actually changes between calls.
  *
  * Nested CARD/CAROUSEL/GRID/BUTTON local items are rebuilt when their parent changes,
@@ -908,13 +908,14 @@ function computeLocalIDInsertionPoint(
  * Adds the given full message to the redux store. This will add it global to the global map as well as add the
  * id to the specific chat type.
  */
-function applyFullMessage(state: AppState, message: Message): AppState {
+function applyFullMessageWithIdentity(state: AppState, message: Message) {
+  let messageID: string;
   // Add the original message to the global map.
   const newState = {
     ...state,
     allMessagesByID: {
       ...state.allMessagesByID,
-      [message.id]: message,
+      [(messageID = message.id)]: message,
     },
   };
 
@@ -922,10 +923,15 @@ function applyFullMessage(state: AppState, message: Message): AppState {
   if (!state.allMessagesByID[message.id]) {
     const currentMessageIDs = state.assistantMessageState.messageIDs;
     const newMessageIDs = [...currentMessageIDs, message.id];
-    return applyAssistantMessageState(newState, { messageIDs: newMessageIDs });
+    return {
+      state: applyAssistantMessageState(newState, {
+        messageIDs: newMessageIDs,
+      }),
+      messageID,
+    };
   }
 
-  return newState;
+  return { state: newState, messageID };
 }
 
 /**
@@ -1033,18 +1039,20 @@ function nextChunkLocalItem(
  * message's other items keep their references. A new item goes at the end of the whole
  * list rather than with its message, and no nested items are built for it.
  */
-function applyChunkWrite(
+function applyChunkWriteWithIdentity(
   state: AppState,
   message: MessageResponse,
   { item: chunkItem, isComplete, isStopped }: MessageWriteOptions['chunk']
-): AppState {
-  const withMessage =
-    state.allMessagesByID[message.id] === message
-      ? state
-      : applyFullMessage(state, message);
+) {
+  let messageID: string;
+  const full =
+    state.allMessagesByID[(messageID = message.id)] === message
+      ? { state, messageID }
+      : applyFullMessageWithIdentity(state, message);
+  const withMessage = full.state;
   // A chunk with no item only ever merged its message_options.
   if (!chunkItem) {
-    return withMessage;
+    return full;
   }
 
   const localID = chunkItemLocalID(message.id, chunkItem);
@@ -1054,7 +1062,7 @@ function applyChunkWrite(
     : newChunkLocalItem(chunkItem, message, isComplete, isStopped);
 
   const { localMessageIDs } = state.assistantMessageState;
-  return {
+  const nextState = {
     ...withMessage,
     allMessageItemsByID: { ...state.allMessageItemsByID, [localID]: localItem },
     assistantMessageState: {
@@ -1064,6 +1072,7 @@ function applyChunkWrite(
         : [...localMessageIDs, localID],
     },
   };
+  return { state: nextState, messageID: full.messageID };
 }
 
 export {
@@ -1091,8 +1100,8 @@ export {
   setHomeScreenOpenState,
   applyAssistantMessageState,
   handleViewStateChange,
-  applyChunkWrite,
-  applyFullMessage,
+  applyChunkWriteWithIdentity,
+  applyFullMessageWithIdentity,
   applyLocalMessageUIState,
   computeLocalIDInsertionPoint,
   rebuildLocalItemsForUpsert,

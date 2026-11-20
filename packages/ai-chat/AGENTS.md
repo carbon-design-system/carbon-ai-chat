@@ -20,6 +20,7 @@ Load only what you need:
 
 - Working across React and Lit, shadow DOM, or slots → [host guide](references/architecture.md).
 - Adding, editing, or wiring a service → [service guide](references/services.md).
+- Changing assistant message flows, data helpers, or view ports → [messaging guide](src/chat/services/messaging/AGENTS.md).
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hook guide](src/chat/hooks/AGENTS.md).
 - Adding config fields or host properties or attributes, or editing CEM metadata → [manifest guide](references/manifests.md).
 - Writing or fixing a Jest test → [test guide](references/tests.md).
@@ -34,7 +35,8 @@ Load only what you need:
 
 - [src/chat/](src/chat/) — the chat application. Do most feature work here.
   - `store/` — Redux-style store.
-  - `services/` — chat services wired through `ServiceManager.ts` and `loadServices.ts`. It also holds view-owned classes with explicit cleanup. `ChatInstanceService.ts` holds the instance API. Add its new public methods to [`ChatInstance`](src/types/instance/ChatInstance.ts) too.
+  - `services/`: chat services wired through `ServiceManager.ts` and `loadServices.ts`. It also holds view-owned classes with explicit cleanup. `ChatInstanceService.ts` holds the instance API. Add its new public methods to [`ChatInstance`](src/types/instance/ChatInstance.ts) too.
+  - `services/messaging/`: `MessageCoordinator` and its private workflows, pure `inbound/`, `outbound/`, and `state/` helpers, and the `presentation/` view adapter. Human-agent callbacks live in `services/haa/`.
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `languages/` — `intl-messageformat` strings in one locale file. [LanguagePack](src/types/config/LanguagePack.ts) is their public type. Adding a key grows the public API. Renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [UI copy rules](../../.bob/skills/caic-copy-writer/references/ui-strings.md).

@@ -949,47 +949,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * Tracked per-item by stable id so each item fires the event once across the message's lifetime.
    */
   private fireReasoningUserDefinedResponseEvents() {
-    const { message } = this.props;
-    if (!isResponse(message)) {
-      return;
-    }
-    const reasoning = message.message_options?.reasoning;
-    if (!reasoning) {
-      return;
-    }
-
-    const fireForArray = (
-      content: string | GenericItem[] | undefined,
-      slotKey: string
-    ) => {
-      if (!Array.isArray(content)) {
-        return;
-      }
-      content.forEach((item, itemIndex) => {
-        if (item.response_type !== MessageResponseTypes.USER_DEFINED) {
-          return;
-        }
-        const stableId = `${message.id}-reasoning-${slotKey}-item-${itemIndex}`;
-        if (this.firedReasoningUserDefinedIds.has(stableId)) {
-          return;
-        }
-        this.firedReasoningUserDefinedIds.add(stableId);
-        const localItem = synthesizeReasoningLocalMessageItem(
-          item,
-          message.id,
-          stableId
-        );
-        void this.props.serviceManager.actions.handleUserDefinedResponseItems(
-          localItem,
-          message
-        );
-      });
-    };
-
-    fireForArray(reasoning.content, 'intro');
-    reasoning.steps?.forEach((step, index) => {
-      fireForArray(step.content, `step-${index}`);
-    });
+    this.props.serviceManager.messageCoordinator.notifyReasoning(
+      this.firedReasoningUserDefinedIds,
+      this.props.message
+    );
   }
 
   private isAutoReasoning(message: Message) {

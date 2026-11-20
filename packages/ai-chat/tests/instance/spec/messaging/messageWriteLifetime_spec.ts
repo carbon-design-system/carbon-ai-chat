@@ -201,7 +201,7 @@ describe('message write lifetime', () => {
     const entered = resolvablePromise();
     const release = resolvablePromise();
     const pause = jest
-      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .spyOn(serviceManager.messageCoordinator, 'waitForPause')
       .mockImplementationOnce(async () => {
         entered.doResolve();
         await release;
@@ -354,7 +354,7 @@ describe('message write lifetime', () => {
       });
       const before = store.getState();
       const streamingID =
-        serviceManager.messageService.inboundStreaming.streamingMessageID;
+        serviceManager.messageCoordinator.inboundStreaming.streamingMessageID;
       await act(async () => {
         release.doResolve();
         await Promise.all([blocker, queued]);
@@ -367,7 +367,7 @@ describe('message write lifetime', () => {
       expect(visibleTexts(after)).toEqual(['Replacement']);
       expect(chunkEvent).toHaveBeenCalledTimes(1);
       expect(
-        serviceManager.messageService.inboundStreaming.streamingMessageID
+        serviceManager.messageCoordinator.inboundStreaming.streamingMessageID
       ).toBe(streamingID);
       expect(after.assistantInputState.stopStreamingButtonState).toEqual(
         before.assistantInputState.stopStreamingButtonState
@@ -452,7 +452,7 @@ describe('message write lifetime', () => {
     ]);
     let removal: Promise<void>;
     const end = jest
-      .spyOn(serviceManager.messageService.messageLoadingManager, 'end')
+      .spyOn(serviceManager.messageCoordinator.messageLoadingManager, 'end')
       .mockImplementationOnce(() => {
         removal = instance.messaging.removeMessages(['response']);
       });

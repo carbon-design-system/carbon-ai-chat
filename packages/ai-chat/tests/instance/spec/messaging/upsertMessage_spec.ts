@@ -101,7 +101,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         sent = instance.send('Start streaming').then(sendSettled, sendSettled);
         await streamingReady;
       });
-      expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(true);
+      expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+        true
+      );
 
       await act(async () => {
         await jest.advanceTimersByTimeAsync(150001);
@@ -109,7 +111,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
       expect(sendSettled).not.toHaveBeenCalled();
       expect(onError).not.toHaveBeenCalled();
-      expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(true);
+      expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+        true
+      );
     } finally {
       await act(async () => {
         finishResponse.doResolve();
@@ -154,7 +158,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           await renderChatAndGetInstanceWithStore(config);
         await instance.send('start');
         expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          serviceManager.messageCoordinator.hasIncomingStreamingMessages()
         ).toBe(true);
         expect(
           store.getState().assistantInputState.stopStreamingButtonState
@@ -168,7 +172,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           (previous) => previous
         );
         expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          serviceManager.messageCoordinator.hasIncomingStreamingMessages()
         ).toBe(false);
         expect(
           store.getState().assistantInputState.stopStreamingButtonState
@@ -220,7 +224,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           skipHydration: true,
         });
       } else {
-        await serviceManager.messageService.cancelCurrentMessageRequest();
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       }
       expect(signal.aborted).toBe(true);
       expect(signal.reason).toBe(reason);
@@ -235,7 +239,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         ).toMatchObject({ text: 'snapshot' });
       }
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -276,7 +280,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       await terminalWrite;
       expect(store.getState().allMessagesByID.early).toBeUndefined();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
     });
 
@@ -288,9 +292,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         MessageState.STREAMING,
         () => cancellableResponse('unsolicited')
       );
-      await serviceManager.messageService.cancelCurrentMessageRequest();
+      await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -337,8 +341,8 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         const sendB = instance.send('B');
         await waitFor(() =>
           expect(
-            (serviceManager.messageService as any).queue.waiting
-          ).toHaveLength(1)
+            serviceManager.messageCoordinator.getWaitingRequestCount()
+          ).toBe(1)
         );
         const signal = customSend.mock.calls[0][1].signal;
         await instance.messaging.upsertMessage(
@@ -347,7 +351,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           () => cancellableResponse('unsolicited')
         );
         expect(
-          serviceManager.messageService.inboundStreaming.streamingMessageID
+          serviceManager.messageCoordinator.inboundStreaming.streamingMessageID
         ).toBeNull();
         await instance.messaging.upsertMessage(
           'unsolicited',
@@ -467,7 +471,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       ).rejects.toThrow('slot failed');
       expect(receive).not.toHaveBeenCalled();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -635,7 +639,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         )
       ).rejects.toThrow('Slot failed');
       expect(
-        serviceManager.messageUpsertCoordinator.getState('slot-rejection')
+        serviceManager.messageCoordinator.getIncomingState('slot-rejection')
       ).toBe(MessageState.STREAMING);
 
       await instance.messaging.upsertMessage(
@@ -685,7 +689,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         expect(onError).toHaveBeenCalledTimes(1);
         expect(
-          serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+          serviceManager.messageCoordinator.hasIncomingStreamingMessages()
         ).toBe(false);
         expect(
           store.getState().assistantInputState.stopStreamingButtonState
@@ -742,7 +746,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
             store.getState().assistantInputState.stopStreamingButtonState
               .isVisible
           ).toBe(true);
-          await serviceManager.messageService.cancelCurrentMessageRequest();
+          await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
           await sent;
           await instance.messaging.upsertMessage(
             'stopped-upsert',
@@ -759,7 +763,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           );
 
           expect(
-            serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+            serviceManager.messageCoordinator.hasIncomingStreamingMessages()
           ).toBe(false);
           expect(
             store.getState().assistantInputState.stopStreamingButtonState
@@ -795,9 +799,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
       const { instance, store, serviceManager } =
         await renderChatAndGetInstanceWithStore(config);
       await instance.send('start');
-      await serviceManager.messageService.cancelCurrentMessageRequest();
+      await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       expect(
-        serviceManager.messageUpsertCoordinator.hasStreamingMessages()
+        serviceManager.messageCoordinator.hasIncomingStreamingMessages()
       ).toBe(false);
       expect(
         store.getState().assistantInputState.stopStreamingButtonState.isVisible
@@ -1923,7 +1927,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         await (
           instance as any
-        ).serviceManager.messageService.cancelCurrentMessageRequest();
+        ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
 
         const [after] = itemsFor(store, 'cancel-1');
         expect(after.ui_state.streamingState?.isDone).toBe(true);
@@ -1948,7 +1952,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         await (
           instance as any
-        ).serviceManager.messageService.cancelCurrentMessageRequest();
+        ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
 
         for (const id of ['cancel-a', 'cancel-b']) {
           const [item] = itemsFor(store, id);
@@ -1971,7 +1975,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
           );
 
         await update('before');
-        await serviceManager.messageService.cancelCurrentMessageRequest();
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
         expect(instance.state.get().status).toBe('ready');
         expect(isVisible(store)).toBe(false);
 
@@ -2389,7 +2393,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         expect(receive).not.toHaveBeenCalled();
         expect(
-          (instance as any).serviceManager.messageUpsertCoordinator.getState(id)
+          (instance as any).serviceManager.messageCoordinator.getIncomingState(
+            id
+          )
         ).toBeUndefined();
       });
     });
@@ -3518,7 +3524,7 @@ describe('ChatInstance.messaging.upsertMessage', () => {
 
         await (
           instance as any
-        ).serviceManager.messageService.cancelCurrentMessageRequest();
+        ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
         await write;
 
         expect(visibleTexts(store, id)).toEqual(['First', 'Second']);

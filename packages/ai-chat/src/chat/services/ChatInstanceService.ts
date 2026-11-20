@@ -133,14 +133,14 @@ class ChatInstanceService {
     }
   }
 
-  /** @see SendService.send */
+  /** @see MessageCoordinator.send */
   async send(
     message: MessageRequest | string,
     source: MessageSendSource,
     options: SendOptions = {},
     ignoreHydration = false
   ) {
-    return this.serviceManager.sendService.send(
+    return this.serviceManager.messageCoordinator.send(
       message,
       source,
       options,
@@ -148,14 +148,14 @@ class ChatInstanceService {
     );
   }
 
-  /** @see ReceiveService.receive */
+  /** @see MessageCoordinator.receive */
   async receive(
     message: MessageResponse,
     isLatestWelcomeNode = false,
     requestMessage?: MessageRequest,
     origin: 'addMessage' | 'chunk' = 'addMessage'
   ) {
-    return this.serviceManager.receiveService.receive(
+    return this.serviceManager.messageCoordinator.receive(
       message,
       isLatestWelcomeNode,
       requestMessage,
@@ -163,14 +163,14 @@ class ChatInstanceService {
     );
   }
 
-  /** @see ReceiveService.removeMessages */
+  /** @see MessageCoordinator.removeMessages */
   async removeMessages(messageIDs: string[]) {
-    return this.serviceManager.receiveService.removeMessages(messageIDs);
+    return this.serviceManager.messageCoordinator.removeMessages(messageIDs);
   }
 
-  /** @see ReceiveService.insertHistory */
+  /** @see MessageCoordinator.insertHistory */
   async insertHistory(messages: HistoryItem[]) {
-    return this.serviceManager.receiveService.insertHistory(messages);
+    return this.serviceManager.messageCoordinator.insertHistory(messages);
   }
 
   /**
@@ -181,7 +181,7 @@ class ChatInstanceService {
     messageID?: string,
     options: AddMessageOptions = {}
   ) {
-    return this.serviceManager.chunkProcessingService.receiveChunk(
+    return this.serviceManager.messageCoordinator.receiveChunk(
       chunk,
       messageID,
       options
@@ -219,7 +219,7 @@ class ChatInstanceService {
     localItemsByID?: Record<string, LocalMessageItem>,
     isCurrent?: () => boolean
   ) {
-    return this.serviceManager.slotEventService.handleUserDefinedResponseItems(
+    return this.serviceManager.messageCoordinator.handleUserDefinedResponseItems(
       localMessage,
       originalMessage,
       messageState,
@@ -322,10 +322,7 @@ class ChatInstanceService {
   }
 
   conversationErrorOccurred(error: OnErrorData, generation?: number) {
-    const failure = this.serviceManager.conversationLifecycleService.fail(
-      {},
-      generation
-    );
+    const failure = this.serviceManager.messageCoordinator.fail({}, generation);
     if (failure) {
       this.errorOccurred(error);
     }
