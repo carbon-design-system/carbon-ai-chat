@@ -47,6 +47,11 @@ import type { AppStateMessages } from '../../../types/state/AppState';
 import { coordinateReasoningEvents } from './coordinateReasoningEvents';
 import { HeadlessReasoningObserver } from './HeadlessReasoningObserver';
 
+import { FullResponseWorkflow } from './FullResponseWorkflow';
+import type { UpsertStamp } from './incomingWriteTypes';
+import type { MessageWriteOptions } from '../../store/messageWriteTypes';
+import type { UpsertMessageUpdater } from '../../../types/config/MessagingConfig';
+
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
@@ -57,6 +62,86 @@ function messageTimeoutMS(timeoutSecs: number | undefined): number {
 }
 
 class MessageCoordinator {
+  private fullResponseWorkflow?: FullResponseWorkflow;
+
+  private getFullResponseWorkflow() {
+    return (this.fullResponseWorkflow ??= new FullResponseWorkflow(
+      this.serviceManager
+    ));
+  }
+
+  isIncomingWriteStale(stamp: UpsertStamp, requestID?: string): boolean {
+    return (
+      !stamp.isCurrent() ||
+      stamp.generation !== this.incomingWriteLifetime.state.generation ||
+      stamp.restartCount !== this.serviceManager.restartCount ||
+      this.isRequestFromPreviousConversation(requestID)
+    );
+  }
+
+  receive(
+    message: MessageResponse,
+    isLatestWelcomeNode = false,
+    requestMessage?: MessageRequest,
+    origin: 'addMessage' | 'chunk' = 'addMessage',
+    isCallerCurrent: () => boolean = () => true
+  ) {
+    return this.getFullResponseWorkflow().receive(
+      message,
+      isLatestWelcomeNode,
+      requestMessage,
+      origin,
+      isCallerCurrent
+    );
+  }
+
+  runReceivedWrite(
+    messageID: string,
+    updater: UpsertMessageUpdater,
+    options: MessageWriteOptions,
+    stamp: UpsertStamp
+  ) {
+    return this.getFullResponseWorkflow().runReceivedWrite(
+      messageID,
+      updater,
+      options,
+      stamp
+    );
+  }
+
+  handleConnectToHumanAgent(
+    localMessageItem: LocalMessageItem,
+    fullMessage: MessageResponse,
+    isCurrent: () => boolean = () => true,
+    options: { identity?: string; deduplicateByLocalID?: boolean } = {}
+  ) {
+    return this.getFullResponseWorkflow().handleConnectToHumanAgent(
+      localMessageItem,
+      fullMessage,
+      isCurrent,
+      options
+    );
+  }
+
+  retainAgentItemPositions(messageID: string, identities: Set<string>) {
+    return this.getFullResponseWorkflow().retainAgentItemPositions(
+      messageID,
+      identities
+    );
+  }
+
+  clearProcessedAgentItems() {
+    return this.getFullResponseWorkflow().clearProcessedAgentItems();
+  }
+
+  removeMessages(messageIDs: string[]) {
+    return this.getFullResponseWorkflow().removeMessages(messageIDs);
+  }
+
+  incomingAgentItemIdentity(message: MessageResponse, index: number) {
+    return this.getFullResponseWorkflow().agentItemIdentity(message, index);
+  }
+
   readonly incomingWriteLifetime = new IncomingWriteLifetime(
     () => this.serviceManager.restartCount
   );
