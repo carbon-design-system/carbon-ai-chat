@@ -9,7 +9,7 @@
 
 import type { AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
-import { AriaAnnouncerFunctionType } from '../contexts/AriaAnnouncerContext';
+import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
 
 import { EventBus } from '../events/EventBus';
 import { AppState } from '../../types/state/AppState';
@@ -210,8 +210,8 @@ class ServiceManager {
   restartCount = 0;
 
   /**
-   * An instance of the custom I18n formatter that can be used for formatting messages. This instance is available
-   * both here and through the React IntlProvider that makes it available to components via useIntl() hook.
+   * An instance of the custom I18n formatter that can be used for formatting messages. Components read it through
+   * the chat's view state with the useIntl() hook, which follows each new formatter. Set it only with `setIntl`.
    * This replaces the previous react-intl IntlShape.
    */
   intl: IntlShape;

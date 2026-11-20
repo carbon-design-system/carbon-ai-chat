@@ -19,12 +19,17 @@
 
 import React, { StrictMode, useState } from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import { ContextConsumer } from '@lit/context';
+import { LitElement } from 'lit';
 
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { setIntl } from '../../../src/chat/utils/intlUtils';
+import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import type { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { ViewType } from '../../../src/types/instance/apiTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -77,6 +82,28 @@ function renderTargetIn(root: ParentNode = document) {
 /** The render target inside a container's shadow root. */
 function renderTargetOf(container: Element) {
   return container.shadowRoot?.querySelector('.cds-aichat--react-app') ?? null;
+}
+
+class ViewStateProbe extends LitElement {
+  viewState = new ContextConsumer(this, { context: chatViewStateContext });
+}
+customElements.define('test-mount-view-state-probe', ViewStateProbe);
+
+/** The view state a chat element currently provides to its Lit children. */
+function viewStateOf(host: Element): ChatViewState | undefined {
+  const probe = document.createElement(
+    'test-mount-view-state-probe'
+  ) as ViewStateProbe;
+  host.appendChild(probe);
+  const { value } = probe.viewState;
+  probe.remove();
+  return value;
+}
+
+/** Gives a view state's manager a new formatter, as a locale change does. */
+function changeFormatter(viewState: ChatViewState) {
+  const { serviceManager } = viewState;
+  setIntl(serviceManager, 'fr', serviceManager.store.getState().languagePack);
 }
 
 async function settle() {
@@ -332,6 +359,14 @@ describe('how each host mounts the chat', () => {
       expect(
         target.querySelectorAll('.cds-aichat--aria-announcer')
       ).toHaveLength(1);
+      // The effect replay must leave one connected set of live regions.
+      const announcer = '.cds-aichat--aria-announcer';
+      expect(
+        target.querySelectorAll(`${announcer} [aria-live="polite"]`)
+      ).toHaveLength(3);
+      expect(
+        target.querySelectorAll(`${announcer} [aria-live="assertive"]`)
+      ).toHaveLength(2);
     });
 
     it('keeps two chats independent', async () => {
@@ -361,6 +396,25 @@ describe('how each host mounts the chat', () => {
       expect(instances[0]).not.toBe(instances[1]);
       const targets = instances.map((chat) => chat.serviceManager.container);
       expect(targets).toEqual(expect.arrayContaining([first, second]));
+
+      const [firstState, secondState] = ['first', 'second'].map((name) =>
+        viewStateOf(
+          getChatHost(document.querySelector(`[data-chat="${name}"]`))
+        )
+      );
+      expect(firstState).not.toBe(secondState);
+      const secondSnapshot = secondState.getSnapshot();
+      const firstIntl = firstState.getSnapshot().intl;
+      act(() => {
+        firstState.openConfirmation({
+          onConfirm: jest.fn(),
+          onCancel: jest.fn(),
+        });
+        changeFormatter(firstState);
+      });
+      expect(firstState.getSnapshot().humanAgentConfirmation).not.toBeNull();
+      expect(firstState.getSnapshot().intl).not.toBe(firstIntl);
+      expect(secondState.getSnapshot()).toBe(secondSnapshot);
     });
 
     it('gives a remounted React wrapper a fresh instance', async () => {
@@ -529,6 +583,7 @@ describe('how each host mounts the chat', () => {
       );
       const retiredWriteable = Object.values(retired.writeableElements);
       expect(retiredWriteable[0].parentNode).toBe(element);
+      const retiredState = viewStateOf(element);
 
       await removeAndReadd(element);
       await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(2), {
@@ -547,6 +602,16 @@ describe('how each host mounts the chat', () => {
       await fireFrom(retired, userDefinedEvent('retired-slot'));
       await element.updateComplete;
       expect(element.querySelector('[slot="retired-slot"]')).toBeNull();
+
+      const currentState = viewStateOf(element);
+      expect(currentState).toBeDefined();
+      expect(currentState).not.toBe(retiredState);
+      const onRetiredChange = jest.fn();
+      retiredState.subscribe(onRetiredChange);
+      const retiredIntl = retiredState.getSnapshot().intl;
+      changeFormatter(retiredState);
+      expect(onRetiredChange).not.toHaveBeenCalled();
+      expect(retiredState.getSnapshot().intl).toBe(retiredIntl);
     });
 
     it('cds-aichat-custom-element ignores view changes from the retired instance', async () => {

@@ -10,10 +10,10 @@
 import React from 'react';
 import { act, render, waitFor } from '@testing-library/react';
 import type { JSONContent } from '@tiptap/core';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { ServiceManagerContext } from '../../../src/chat/contexts/ServiceManagerContext';
-import { IntlProvider } from '../../../src/chat/providers/IntlProvider';
-import { AriaAnnouncerContext } from '../../../src/chat/contexts/AriaAnnouncerContext';
+import {
+  getRawText,
+  textToDoc,
+} from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 import { createIntl } from '../../../src/chat/utils/i18n';
 import actions from '../../../src/chat/store/actions';
 import { selectInputState } from '../../../src/chat/store/selectors';
@@ -22,6 +22,7 @@ import {
   makeConfigStore,
   setupBeforeEach,
   setupAfterEach,
+  TestChatContext,
 } from '../../test_helpers';
 
 const testIntl = createIntl({ locale: 'en', messages: {} });
@@ -76,9 +77,7 @@ jest.mock('@carbon/ai-chat-components/es/react/prompt-line.js', () => {
         setContent: (content: string | JSONContent) => {
           setContent(content);
           const rawValue =
-            typeof content === 'string'
-              ? content
-              : (content.content?.[0]?.content?.[0]?.text ?? '');
+            typeof content === 'string' ? content : getRawText(content);
           currentValue.current = rawValue;
           setValue(rawValue);
           propsRef.current.onChange(
@@ -140,7 +139,7 @@ async function setup(
   const { Input } = await import('../../../src/chat/components/input/Input');
   const store = makeConfigStore({});
   store.dispatch(
-    actions.updateInputState({ rawValue: 'parked draft', content }, false)
+    actions.updateInputState({ rawValue: getRawText(content), content }, false)
   );
   let inputFunctions: unknown;
   const wrapper = document.createElement('div');
@@ -157,24 +156,23 @@ async function setup(
   } as any;
   const onSendInput = jest.fn();
   const onStopStreaming = jest.fn();
+  const announce = jest.fn();
   const tree = (isInputVisible: boolean) => (
-    <StoreProvider store={store}>
-      <IntlProvider intl={testIntl}>
-        <AriaAnnouncerContext.Provider value={jest.fn()}>
-          <ServiceManagerContext.Provider value={serviceManager}>
-            <Input
-              disableInput={false}
-              disableSend={false}
-              isInputVisible={isInputVisible}
-              trackInputState
-              restoreDraft={restoreDraft}
-              onSendInput={onSendInput}
-              onStopStreaming={onStopStreaming}
-            />
-          </ServiceManagerContext.Provider>
-        </AriaAnnouncerContext.Provider>
-      </IntlProvider>
-    </StoreProvider>
+    <TestChatContext
+      store={store}
+      intl={testIntl}
+      serviceManager={serviceManager}
+      announce={announce}>
+      <Input
+        disableInput={false}
+        disableSend={false}
+        isInputVisible={isInputVisible}
+        trackInputState
+        restoreDraft={restoreDraft}
+        onSendInput={onSendInput}
+        onStopStreaming={onStopStreaming}
+      />
+    </TestChatContext>
   );
   const view = render(tree(visible));
   return {
@@ -206,6 +204,29 @@ describe('custom prompt line draft restoration', () => {
       gate.resolve(true);
     });
     expect(view.getByRole('textbox')).toHaveValue('parked draft');
+    expect(ensureEditor).not.toHaveBeenCalled();
+  });
+
+  it('restores literal HTML-looking text and repeated edge newlines as hard breaks', async () => {
+    const text = '\n<tag>\n\nlast\n';
+    const view = await setup(textToDoc(text));
+    await waitFor(() => expect(view.getByRole('textbox')).toHaveValue(text));
+    expect(setContent).toHaveBeenLastCalledWith({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'hardBreak' },
+            { type: 'text', text: '<tag>' },
+            { type: 'hardBreak' },
+            { type: 'hardBreak' },
+            { type: 'text', text: 'last' },
+            { type: 'hardBreak' },
+          ],
+        },
+      ],
+    });
     expect(ensureEditor).not.toHaveBeenCalled();
   });
 
@@ -254,11 +275,12 @@ describe('custom prompt line draft restoration', () => {
     expect(view.serviceManager.getInputFunctionsRef()).toBeNull();
   });
 
-  it('leaves normal first mounts unchanged', async () => {
+  it('shows a draft staged before a normal first mount, once', async () => {
     const view = await setup(plain, true, false);
     await act(async () => {});
-    expect(view.getByRole('textbox')).toHaveValue('');
-    expect(setContent).not.toHaveBeenCalled();
+    expect(view.getByRole('textbox')).toHaveValue('parked draft');
+    expect(setContent.mock.calls).toEqual([[plain]]);
+    expect(ensureEditor).not.toHaveBeenCalled();
   });
 
   it('reads the current draft after readiness, including a cleared parked draft', async () => {
@@ -277,7 +299,10 @@ describe('custom prompt line draft restoration', () => {
     await act(async () => {
       gate.resolve(true);
     });
-    expect(setContent).toHaveBeenLastCalledWith('');
+    expect(setContent).toHaveBeenLastCalledWith({
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    });
     expect(ensureEditor).not.toHaveBeenCalled();
   });
 

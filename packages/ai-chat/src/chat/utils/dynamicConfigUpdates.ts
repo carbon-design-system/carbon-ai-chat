@@ -11,6 +11,7 @@ import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ServiceManager } from '../services/ServiceManager';
 import { NamespaceService } from '../services/NamespaceService';
+import { messageTimeoutMS } from '../services/MessageService';
 import actions from '../store/actions';
 import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
 import { consoleDebug, consoleError } from './miscUtils';
@@ -161,12 +162,8 @@ export async function applyConfigChangesDynamically(
   // message service, which the store/React render cannot reach, so push it.
   const prevTimeoutSecs = prevConfig?.messaging?.messageTimeoutSecs;
   const nextTimeoutSecs = newConfig.messaging?.messageTimeoutSecs;
-  if (
-    prevTimeoutSecs !== nextTimeoutSecs &&
-    nextTimeoutSecs &&
-    serviceManager.messageService
-  ) {
-    serviceManager.messageService.timeoutMS = nextTimeoutSecs * 1000;
+  if (prevTimeoutSecs !== nextTimeoutSecs && serviceManager.messageService) {
+    serviceManager.messageService.timeoutMS = messageTimeoutMS(nextTimeoutSecs);
   }
 
   // SERVICE-INTERNAL MIRROR: the human-agent service coordinates a service desk

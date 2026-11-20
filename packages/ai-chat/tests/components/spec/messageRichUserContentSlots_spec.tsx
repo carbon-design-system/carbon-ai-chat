@@ -19,10 +19,9 @@ import {
   collectInputNodeSlots,
   InputNodePortalsContainer,
 } from '../../../src/chat/components/portals/InputNodePortalsContainer';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import actions from '../../../src/chat/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 jest.mock('../../../src/chat/hooks/useIntl', () => ({
   useIntl: () => ({ formatMessage: () => '' }),
@@ -47,12 +46,12 @@ function makeStore() {
 /** Slot keys as `MessageRichUserContent` actually renders them, in DOM order. */
 function renderedSlotKeys(content: JSONContent): string[] {
   const { container } = render(
-    <StoreProvider store={makeStore()}>
+    <TestChatContext store={makeStore()}>
       <MessageRichUserContent
         content={content}
         message={messageWith(content)}
       />
-    </StoreProvider>
+    </TestChatContext>
   );
   return Array.from(
     container.querySelectorAll(`[${INPUT_NODE_SLOT_ATTR}]`)
@@ -215,12 +214,12 @@ describe('rich user message fallback projection', () => {
       shadowRoot.appendChild(container);
       document.body.appendChild(host);
       const { unmount } = render(
-        <StoreProvider store={makeStore()}>
+        <TestChatContext store={makeStore()}>
           <MessageRichUserContent
             content={content}
             message={messageWith(content)}
           />
-        </StoreProvider>,
+        </TestChatContext>,
         { container }
       );
 
@@ -273,12 +272,12 @@ describe('rich user message fallback projection', () => {
     shadowRoot.appendChild(container);
     document.body.appendChild(host);
     const { unmount } = render(
-      <StoreProvider store={makeStore()}>
+      <TestChatContext store={makeStore()}>
         <MessageRichUserContent
           content={content}
           message={messageWith(content)}
         />
-      </StoreProvider>,
+      </TestChatContext>,
       { container }
     );
 
@@ -340,9 +339,9 @@ describe('structured paragraph projection', () => {
           />
         );
         return (
-          <StoreProvider store={store}>
+          <TestChatContext store={store}>
             {portalsFirst ? [portal, bubble] : [bubble, portal]}
-          </StoreProvider>
+          </TestChatContext>
         );
       };
       const { rerender, unmount } = render(view(true), { container });

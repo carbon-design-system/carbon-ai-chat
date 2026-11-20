@@ -13,10 +13,10 @@
 
 import { useContext } from 'react';
 
-import { AriaAnnouncerContext } from '../contexts/AriaAnnouncerContext';
+import { ChatContext } from '../contexts/ChatContext';
 
 function useAriaAnnouncer() {
-  return useContext(AriaAnnouncerContext);
+  return useContext(ChatContext)?.announcer.announce;
 }
 
 export { useAriaAnnouncer };

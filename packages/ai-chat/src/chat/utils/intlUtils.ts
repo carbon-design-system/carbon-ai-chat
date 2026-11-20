@@ -13,6 +13,29 @@ import { createIntl } from './i18n';
 import { loadLocale } from './languageUtils';
 import { LanguagePack } from '../../types/config/LanguagePack';
 import { ServiceManager } from '../services/ServiceManager';
+import actions from '../store/actions';
+
+// Keyed by manager rather than stored on it, so tests can stub a manager.
+const intlListeners = new WeakMap<ServiceManager, Set<() => void>>();
+
+/**
+ * Calls `listener` after each new formatter for this service manager. A locale
+ * load finishes after its store update, so the store alone cannot signal it.
+ */
+function subscribeToIntl(
+  serviceManager: ServiceManager,
+  listener: () => void
+): () => void {
+  let listeners = intlListeners.get(serviceManager);
+  if (!listeners) {
+    listeners = new Set();
+    intlListeners.set(serviceManager, listeners);
+  }
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
 
 /**
  * A simple utility function to set the i18n formatter on the given service manager.
@@ -24,6 +47,7 @@ function setIntl(
   messages: LanguagePack
 ) {
   serviceManager.intl = createIntl({ locale, messages });
+  intlListeners.get(serviceManager)?.forEach((listener) => listener());
 }
 
 /**
@@ -53,6 +77,9 @@ async function refreshLocalization(
     const localePack = await loadLocale(locale);
     dayjs.locale(localePack);
     setIntl(serviceManager, localePack.name, languagePack);
+    serviceManager.store.dispatch(
+      actions.setAppStateValue('loadedLocale', locale)
+    );
   } else {
     // Strings-only change: keep the locale the formatter already resolved (the
     // normalized name set at boot / the last locale change), so a strings edit
@@ -63,4 +90,4 @@ async function refreshLocalization(
   }
 }
 
-export { setIntl, refreshLocalization };
+export { setIntl, refreshLocalization, subscribeToIntl };

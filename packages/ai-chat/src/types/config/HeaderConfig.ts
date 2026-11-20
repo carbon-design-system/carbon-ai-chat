@@ -48,6 +48,8 @@ export interface CustomMenuOption {
   /**
    * The URL to navigate to when the option is selected.
    * Provide either this or `handler`, but not both.
+   *
+   * Selecting a link option navigates without firing a {@link BusEventType.HEADER_MENU_CLICK} event.
    */
   href?: string;
 

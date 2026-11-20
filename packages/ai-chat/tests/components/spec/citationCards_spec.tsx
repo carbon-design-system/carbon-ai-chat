@@ -15,8 +15,9 @@
 
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { createTestViewState } from '../../test_helpers';
 import { ConversationalSearch } from '../../../src/chat/components/responseTypes/conversationalSearch/ConversationalSearch';
-import { WindowSizeContext } from '../../../src/chat/contexts/WindowSizeContext';
+import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import actions from '../../../src/chat/store/actions';
 import { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import {
@@ -146,14 +147,16 @@ async function startCarousel(container: HTMLElement) {
 
 // Renders the answer, opens Sources, and starts the carousel.
 async function openSources() {
+  const viewState = createTestViewState();
+  viewState.setWindowSize({ width: 400, height: 600 });
   const view = render(
-    <WindowSizeContext.Provider value={{ width: 400, height: 600 }}>
+    <ChatContext.Provider value={viewState}>
       <ConversationalSearch
         localMessageItem={makeItem()}
         isStreamingError={false}
         scrollElementIntoView={jest.fn()}
       />
-    </WindowSizeContext.Provider>
+    </ChatContext.Provider>
   );
   const shell = view.container.querySelector(
     'cds-aichat-conversational-search-shell'

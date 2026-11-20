@@ -21,11 +21,11 @@ import {
   whenDefaultRenderer,
 } from '../shared/react-renderer';
 import type { ChatRenderer, ChatRenderMount } from '../shared/react-renderer';
-import { serviceManagerContext } from '../shared/service-manager-context';
+import { chatViewStateContext } from '../shared/chat-view-state-context';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
-import { Dimension } from '../../types/utilities/Dimension';
 import type { ServiceManager } from '../../chat/services/ServiceManager';
+import type { ChatViewState } from '../../chat/services/chatViewState';
 import appActions from '../../chat/store/actions';
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
@@ -34,6 +34,8 @@ import type { ResolvablePromise } from '../../chat/utils/resolvablePromise';
 import { resolvePromptLineMode } from '../../chat/components/input/promptLineMode';
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 import { consoleError } from '../../chat/utils/miscUtils';
+import { getWindowSize } from '../../chat/utils/windowSize';
+import { placeHosts } from '../../chat/utils/removeHostsOnUnmount';
 import {
   BusEventType,
   BusEventViewChange,
@@ -63,6 +65,7 @@ interface MountState {
   mount?: ChatRenderMount;
   App?: ComponentType<ChatAppEntryProps>;
   serviceManager?: ServiceManager;
+  viewState?: ChatViewState;
   instance?: ChatInstance;
   bootConfig?: PublicConfig;
   appliedConfig?: AppliedConfig;
@@ -73,10 +76,6 @@ interface MountState {
   initialViewCommitted: ResolvablePromise;
   afterRenderTimer?: ReturnType<typeof setTimeout>;
   removeWindowListeners?: () => void;
-}
-
-function currentWindowSize(): Dimension {
-  return { width: window.innerWidth, height: window.innerHeight };
 }
 
 /**
@@ -90,6 +89,7 @@ export const bootModuleLoader = {
       import('../../chat/utils/appConfigUpdates'),
       import('../../chat/ChatAppEntry'),
       import('../../chat/utils/customPromptLine'),
+      import('../../chat/services/chatViewState'),
     ]),
 };
 
@@ -189,6 +189,9 @@ class ChatContainer extends FlattenedConfigElement {
    * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
    * container has no wrapping element to size, so no default visibility
    * behavior runs when this property is omitted.
+   *
+   * The chat reads this property once, at its first render, so a later change
+   * is ignored. It also runs at mount, for the chat's move to its first view.
    */
   @property()
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
@@ -199,6 +202,9 @@ class ChatContainer extends FlattenedConfigElement {
    * This is an opt-in observation hook. Unlike `cds-aichat-custom-element`, the
    * container has no wrapping element to size, so no default visibility
    * behavior runs when this property is omitted.
+   *
+   * The chat reads this property once, at its first render, so a later change
+   * is ignored. It also runs at mount, for the chat's move to its first view.
    */
   @property()
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
@@ -206,7 +212,8 @@ class ChatContainer extends FlattenedConfigElement {
   /**
    * Optional callback to render user defined responses. When provided, the library manages all event listening,
    * slot tracking, streaming state, and element lifecycle. The callback receives the accumulated state and should
-   * return an HTMLElement or null.
+   * return an HTMLElement or null. The output and writeable elements use this container's light DOM. Page CSS
+   * reaches them when the container is on the page; the standalone custom element nests it in a shadow root.
    *
    * When this property is not set, the existing event + manual slot approach continues to work.
    */
@@ -229,6 +236,9 @@ class ChatContainer extends FlattenedConfigElement {
    * return an HTMLElement or null.
    *
    * Passing this callback is how you opt in. Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   @property({ attribute: false })
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
@@ -242,6 +252,9 @@ class ChatContainer extends FlattenedConfigElement {
    * `{ node, message }` plus the chat instance and should return an
    * `HTMLElement` (or `null`). The library mounts the element inside the
    * bubble via a slot.
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */
@@ -288,6 +301,7 @@ class ChatContainer extends FlattenedConfigElement {
    */
   private pluginHostController = createMarkdownPluginHostController(this, {
     shouldDefer: (event) => this.hasOuterChatHandler(event),
+    placeHost: (host) => placeHosts(this, [host]),
   });
 
   connectedCallback() {
@@ -338,7 +352,8 @@ class ChatContainer extends FlattenedConfigElement {
    * Retires the current mount: no more rendering or callbacks from it, and
    * nothing it collected survives. This is not service teardown — its
    * services keep running, and work the host's callbacks started is not
-   * canceled. Exhaustive disposal is #1681.
+   * canceled, except that each pending upload's abort signal fires.
+   * Exhaustive disposal is #1681.
    */
   private releaseMount() {
     const state = this.current;
@@ -346,11 +361,13 @@ class ChatContainer extends FlattenedConfigElement {
       this.current = undefined;
       clearTimeout(state.afterRenderTimer);
       state.removeWindowListeners?.();
+      state.serviceManager?.inputActionsService.abortPendingUploads();
       // Settle the private waits so a boot paused on one resumes, finds it is
       // retired, and stops.
       state.listenersReady.doResolve();
       state.initialViewCommitted.doResolve();
-      this.servicesProvider.setValue(undefined);
+      state.viewState?.disconnect();
+      this.viewStateProvider.setValue(undefined);
       state.mount?.unmount();
     }
 
@@ -405,11 +422,6 @@ class ChatContainer extends FlattenedConfigElement {
       return;
     }
 
-    // Prepend so these host nodes land before any Lit ChildPart comment
-    // markers a parent template may have stamped into this element's light
-    // DOM. Lit only manages nodes between its start/end markers; a node
-    // prepended before the start marker is outside that range and survives
-    // parent re-renders unchanged. One call keeps them in their map order.
     const unattached: HTMLElement[] = [];
     Object.entries(writeableElements).forEach(([slot, element]) => {
       if (!element) {
@@ -422,7 +434,7 @@ class ChatContainer extends FlattenedConfigElement {
         unattached.push(element);
       }
     });
-    this.prepend(...unattached);
+    placeHosts(this, unattached);
   }
 
   /**
@@ -441,10 +453,8 @@ class ChatContainer extends FlattenedConfigElement {
 
   private current?: MountState;
 
-  private windowSize: Dimension = { width: 0, height: 0 };
-
-  private servicesProvider = new ContextProvider(this, {
-    context: serviceManagerContext,
+  private viewStateProvider = new ContextProvider(this, {
+    context: chatViewStateContext,
   });
 
   private startMount() {
@@ -465,7 +475,6 @@ class ChatContainer extends FlattenedConfigElement {
     // Recorded before mounting: a renderer can detach this element while it
     // mounts, and that mount still has to be released.
     this.current = state;
-    this.windowSize = currentWindowSize();
     state.mount = renderer.mount(this.ensureRenderTarget());
     if (this.current !== state) {
       state.mount.unmount();
@@ -494,6 +503,7 @@ class ChatContainer extends FlattenedConfigElement {
         { applyConfigUpdate, createAppliedConfig },
         { ChatAppEntry },
         { hasCustomPromptLine },
+        { ChatViewState },
       ] = await bootModuleLoader.loadBootModules();
       if (!isCurrent()) {
         return;
@@ -518,13 +528,15 @@ class ChatContainer extends FlattenedConfigElement {
       }
       state.App = ChatAppEntry;
       state.serviceManager = serviceManager;
+      state.viewState = new ChatViewState(serviceManager, getWindowSize());
+      state.viewState.connect();
       state.instance = instance;
       state.bootConfig = config;
       state.appliedConfig = createAppliedConfig(publicConfig, config);
       state.applyConfig = (nextConfig) =>
         applyConfigUpdate(state.appliedConfig, nextConfig, serviceManager);
-      state.removeWindowListeners = this.listenToWindow(serviceManager);
-      this.servicesProvider.setValue(serviceManager);
+      state.removeWindowListeners = this.listenToWindow(state.viewState);
+      this.viewStateProvider.setValue(state.viewState);
 
       this.renderApp();
       await state.listenersReady;
@@ -589,8 +601,8 @@ class ChatContainer extends FlattenedConfigElement {
 
     state.mount?.render(state.App, {
       serviceManager: state.serviceManager,
+      viewState: state.viewState,
       instance: state.instance,
-      windowSize: this.windowSize,
       renderReady: state.renderReady,
       initialViewReady: state.initialViewReady,
       onListenersReady: () => state.listenersReady.doResolve(),
@@ -620,14 +632,14 @@ class ChatContainer extends FlattenedConfigElement {
   }
 
   /**
-   * Feeds window size to the app and page visibility to the store, and stops
+   * Feeds window size to the view state and page visibility to the store, and stops
    * the theme watcher's polling when the mount goes. The watcher is the one
    * service the retired React effect named; broader disposal is #1681.
    */
-  private listenToWindow(serviceManager: ServiceManager) {
+  private listenToWindow(viewState: ChatViewState) {
+    const { serviceManager } = viewState;
     const onResize = () => {
-      this.windowSize = currentWindowSize();
-      this.renderApp();
+      viewState.setWindowSize(getWindowSize());
     };
     const onVisibilityChange = () => {
       serviceManager.store.dispatch(
@@ -765,6 +777,17 @@ declare global {
  * This interface extends {@link PublicConfig} with additional component-specific props,
  * flattening all config properties as top-level properties for better TypeScript IntelliSense.
  *
+ * Object attributes, such as `header`, take JSON. If the JSON doesn't parse,
+ * the chat logs a warning that names the attribute and leaves the field as it
+ * was: a value set earlier through the property or a valid attribute stays,
+ * and otherwise the field comes from `config`, or its default.
+ *
+ * A Boolean field also takes an HTML attribute, which turns it on whatever its
+ * value, `"false"` included. Removing the attribute sets the field to `false`,
+ * which overrides `config`. The exception is `ai-enabled`: `"false"`, `"0"`,
+ * `"off"`, and `"no"` turn it off, and removing it leaves the field to
+ * `config`, or its default.
+ *
  * @category Web component
  */
 interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
@@ -800,12 +823,18 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
   /**
    * Called before a view change (the chat opening or closing). Async — return a Promise to defer the view
    * change until it resolves. This is an opt-in observation hook with no default visibility behavior.
+   *
+   * The chat reads this property once, at its first render, so a later change is ignored. It also runs at mount,
+   * for the chat's move to its first view.
    */
   onViewPreChange?: (event: BusEventViewPreChange) => Promise<void> | void;
 
   /**
    * Called when a view change (the chat opening or closing) is complete. This is an opt-in observation hook
    * with no default visibility behavior.
+   *
+   * The chat reads this property once, at its first render, so a later change is ignored. It also runs at mount,
+   * for the chat's move to its first view.
    */
   onViewChange?: (event: BusEventViewChange, instance: ChatInstance) => void;
 
@@ -823,12 +852,18 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
 
   /**
    * Called when a footer below a user message should be rendered. Leave it off and user messages have no footer.
+   *
+   * Only a message sent while this is set gets a footer. Setting it later doesn't add one to messages already
+   * sent.
    */
   renderCustomRequestFooter?: WCRenderCustomRequestFooter;
 
   /**
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content).
+   *
+   * The chat may call it more than once for the same node, for example while the message is sending. Return
+   * the same output for the same node.
    *
    * @experimental
    */

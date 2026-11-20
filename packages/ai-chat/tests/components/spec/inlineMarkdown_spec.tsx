@@ -23,16 +23,15 @@ import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import type { MarkdownConfig } from '../../../src/types/config/MarkdownConfig';
 import actions from '../../../src/chat/store/actions';
 import * as miscUtils from '../../../src/chat/utils/miscUtils';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 function renderInline(text: string) {
   return render(
-    <StoreProvider store={makeConfigStore({})}>
+    <TestChatContext store={makeConfigStore({})}>
       <div data-testid="root">
         <InlineMarkdown text={text} />
       </div>
-    </StoreProvider>
+    </TestChatContext>
   );
 }
 
@@ -157,9 +156,9 @@ describe('InlineMarkdown bridge', () => {
     store.dispatch(actions.setAppStateValue('markdownConfig', config));
     const tree = (source: string) => {
       const content = (
-        <StoreProvider store={store}>
+        <TestChatContext store={store}>
           <InlineMarkdown text={source} preserveBoundaryWhitespace />
-        </StoreProvider>
+        </TestChatContext>
       );
       return strict ? <React.StrictMode>{content}</React.StrictMode> : content;
     };
@@ -227,12 +226,12 @@ describe('InlineMarkdown bridge', () => {
     root.appendChild(container);
     document.body.appendChild(host);
     const { unmount } = render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <MessageRichUserContent
           content={content}
           message={{ id: 'mixed', input: { text: '' } } as MessageRequest}
         />
-      </StoreProvider>,
+      </TestChatContext>,
       { container }
     );
     try {

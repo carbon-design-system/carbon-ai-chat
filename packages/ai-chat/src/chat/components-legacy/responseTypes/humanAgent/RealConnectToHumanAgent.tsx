@@ -14,7 +14,7 @@ import Logout16 from '@carbon/icons/es/logout/16.js';
 import { carbonIconToReact } from '../../../utils/carbonIcon';
 import Card from '@carbon/ai-chat-components/es/react/card.js';
 import Button from '../../../components/carbon/Button';
-import React, { ReactNode, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
 import { HumanAgentsOnlineStatus } from '../../../services/haa/HumanAgentService';
@@ -33,7 +33,7 @@ import {
   ConnectToHumanAgentItem,
   MessageResponse,
 } from '../../../../types/messaging/Messages';
-import { HumanAgentConfirmationContext } from '../../../contexts/HumanAgentConfirmationContext';
+import { useChatViewStateInstance } from '../../../hooks/useChatViewState';
 
 const Checkmark = carbonIconToReact(Checkmark16);
 const Headset = carbonIconToReact(Headset16);
@@ -101,6 +101,20 @@ const selectRealConnectStrings = (state: AppState) => ({
     state.languagePack.default_agent_unavailableMessage,
 });
 
+/**
+ * Starts the agent chat. startChat logs every failure, and a failed start is already shown to the user and ends the
+ * request, so the rejection is dropped here.
+ */
+function startChat(
+  serviceManager: RealConnectToHumanAgentProps['serviceManager'],
+  localMessage: RealConnectToHumanAgentProps['localMessage'],
+  originalMessage: RealConnectToHumanAgentProps['originalMessage']
+) {
+  serviceManager.humanAgentService
+    .startChat(localMessage, originalMessage)
+    .catch(() => {});
+}
+
 function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const languagePack = useSelector(selectRealConnectStrings, shallowEqual);
   const {
@@ -117,7 +131,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
   const { isSuspended } = persistedHumanAgentState;
 
   const [showConfirmSuspended, setShowConfirmSuspended] = useState(false);
-  const setConfirmation = useContext(HumanAgentConfirmationContext);
+  const viewState = useChatViewStateInstance();
 
   useEffect(() => {
     if (!showConfirmSuspended || !isSuspended) {
@@ -128,17 +142,12 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
       message: languagePack.agent_confirmSuspendedEndChatMessage,
       onConfirm: () => {
         setShowConfirmSuspended(false);
-        serviceManager.humanAgentService.startChat(
-          localMessage,
-          originalMessage
-        );
+        startChat(serviceManager, localMessage, originalMessage);
         setTimeout(requestFocus);
       },
       onCancel: () => setShowConfirmSuspended(false),
     };
-    setConfirmation(confirmation);
-    return () =>
-      setConfirmation((current) => (current === confirmation ? null : current));
+    return viewState.openConfirmation(confirmation);
   }, [
     showConfirmSuspended,
     isSuspended,
@@ -147,7 +156,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
     localMessage,
     originalMessage,
     requestFocus,
-    setConfirmation,
+    viewState,
   ]);
 
   if (!isSuspended && showConfirmSuspended) {
@@ -160,7 +169,7 @@ function RealConnectToHumanAgent(props: RealConnectToHumanAgentProps) {
       setShowConfirmSuspended(true);
     } else {
       setShowConfirmSuspended(false);
-      serviceManager.humanAgentService.startChat(localMessage, originalMessage);
+      startChat(serviceManager, localMessage, originalMessage);
       // The connect button will become disabled. We need to move focus to the cancel button but do so in a timeout to
       // give it a chance to render.
       setTimeout(requestFocus);

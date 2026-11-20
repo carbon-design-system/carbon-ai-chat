@@ -10,8 +10,7 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import SelectComponent from '../../../src/chat/components/responseTypes/options/SelectComponent';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 
 jest.mock('../../../src/chat/components/helpers/TextBlock/TextBlock', () => ({
   TextBlock: ({ title, description }: any) => (
@@ -29,7 +28,7 @@ describe('SelectComponent with Carbon dropdown', () => {
       { label: 'Second', value: { input: { text: 'same' } } },
     ];
     const { container } = render(
-      <StoreProvider store={makeConfigStore({})}>
+      <TestChatContext store={makeConfigStore({})}>
         <SelectComponent
           title="Choose one"
           description="Choice description"
@@ -42,7 +41,7 @@ describe('SelectComponent with Carbon dropdown', () => {
           disableUserInputs={false}
           serviceManager={{ namespace: { suffix: '' } } as any}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     const dropdown = container.querySelector('cds-dropdown') as HTMLElement & {
@@ -69,7 +68,7 @@ describe('SelectComponent with Carbon dropdown', () => {
     ];
     const onChange = jest.fn();
     const { container } = render(
-      <StoreProvider store={makeConfigStore({})}>
+      <TestChatContext store={makeConfigStore({})}>
         <SelectComponent
           title="Choose one"
           description="Choice description"
@@ -78,7 +77,7 @@ describe('SelectComponent with Carbon dropdown', () => {
           disableUserInputs={false}
           serviceManager={{ namespace: { suffix: '' } } as any}
         />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     const dropdown = container.querySelector('cds-dropdown')!;

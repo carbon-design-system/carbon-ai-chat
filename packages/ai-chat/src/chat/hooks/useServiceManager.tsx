@@ -13,10 +13,10 @@
 
 import { useContext } from 'react';
 
-import { ServiceManagerContext } from '../contexts/ServiceManagerContext';
+import { ChatContext } from '../contexts/ChatContext';
 
 function useServiceManager() {
-  return useContext(ServiceManagerContext);
+  return useContext(ChatContext)?.serviceManager;
 }
 
 export { useServiceManager };
