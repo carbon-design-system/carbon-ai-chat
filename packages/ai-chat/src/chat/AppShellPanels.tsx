@@ -145,6 +145,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
       aria_viewSourcePanel: state.languagePack.aria_viewSourcePanel,
       general_returnToAssistant: state.languagePack.general_returnToAssistant,
       errors_singleMessage: state.languagePack.errors_singleMessage,
+      errors_iconLabel: state.languagePack.errors_iconLabel,
     }),
     shallowEqual
   );
@@ -514,6 +515,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                 <PanelContentErrorBoundary
                   key={responsePanelState.localMessageItem.ui_state.id}
                   errorText={languagePack.errors_singleMessage}
+                  iconLabel={languagePack.errors_iconLabel}
                   onError={onPanelContentError}
                   isBody>
                   <BodyMessageComponents
@@ -543,6 +545,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
                 <PanelContentErrorBoundary
                   key={responsePanelState.localMessageItem.ui_state.id}
                   errorText={languagePack.errors_singleMessage}
+                  iconLabel={languagePack.errors_iconLabel}
                   onError={onPanelContentError}>
                   <FooterButtonComponents
                     message={responsePanelState.localMessageItem}

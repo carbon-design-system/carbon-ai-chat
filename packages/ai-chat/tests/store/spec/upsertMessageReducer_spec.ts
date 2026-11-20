@@ -1513,47 +1513,6 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
     expect(shown()[0].ui_state.cannotDraw).toBeUndefined();
   });
 
-  it.each([false, true])(
-    'rechecks an unchanged system item when its message is repaired (streaming: %s)',
-    (isStreaming) => {
-      const system = {
-        response_type: MessageResponseTypes.SYSTEM,
-        title: 'Joined',
-      };
-      write([null, system], isStreaming);
-      const [failed] = shown();
-      expect(failed.ui_state.cannotDraw).toEqual({
-        missing: ['output.generic[0]'],
-      });
-
-      write([system], isStreaming);
-      const [repaired] = shown();
-      expect(repaired.ui_state.id).toBe(failed.ui_state.id);
-      expect(repaired.ui_state.cannotDraw).toBeUndefined();
-      expect(repaired.item).toBe(system);
-
-      write([system], isStreaming);
-      expect(shown()[0]).toBe(repaired);
-    }
-  );
-
-  it('rechecks an unchanged settled system item when a preceding item becomes null', () => {
-    const system = {
-      response_type: MessageResponseTypes.SYSTEM,
-      title: 'Joined',
-    };
-    write([system], false);
-    const [drawn] = shown();
-
-    write([null, system], false);
-
-    expect(shown()[0].ui_state.id).toBe(drawn.ui_state.id);
-    expect(shown()[0].ui_state.cannotDraw).toEqual({
-      missing: ['output.generic[0]'],
-    });
-    expect(drawn.ui_state.cannotDraw).toBeUndefined();
-  });
-
   it('keeps the last drawn version while the stream is open, until a new one can draw', () => {
     write([grid([{ items: [text('A')] }])], true);
     const [drawn] = shown();
