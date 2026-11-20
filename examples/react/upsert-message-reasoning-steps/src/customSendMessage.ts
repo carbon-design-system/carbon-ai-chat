@@ -12,9 +12,8 @@
  *
  * Demonstrates: routing the dropdown selection from the welcome message to
  * either the default reasoning-steps runner or the long-form reasoning-content
- * runner. The static welcome itself is delivered through `upsertMessage` — a
- * brand-new COMPLETE insert under a fresh `messageID` fires `receive` once,
- * exactly like the `addMessage` it replaces.
+ * runner. The static welcome itself is delivered through `upsertMessage` as a
+ * brand-new COMPLETE insert under a fresh `messageID`, which fires `receive` once.
  *
  * APIs exercised:
  *   - `customSendMessage`
