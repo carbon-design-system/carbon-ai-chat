@@ -2,42 +2,42 @@
 
 Read this before you create, name, move, or remove a git worktree for this repo, by hand or through a tool.
 
-- **Path:** `../carbon-ai-chat.worktrees/<slug>`, relative to the main checkout.
+- **Path:** `../<repo>.worktrees/<slug>`, relative to the main checkout. `<repo>` is the main checkout's folder name, such as `carbon-ai-chat`.
 - **Never** in `/tmp`, a session scratchpad, or anywhere inside the main checkout.
 - **Remove** with `git worktree remove` after you check for unsaved work. Never `rm -rf`.
 
 ## Location and naming
 
-Every worktree sits in one sibling folder next to the main checkout:
+Every worktree sits in one sibling folder next to the main checkout. The folder takes the main checkout's name, whatever you cloned it as, plus `.worktrees`:
 
 ```text
 <parent>/
-  carbon-ai-chat/             # main checkout
-  carbon-ai-chat.worktrees/   # every worktree
+  <repo>/             # main checkout, e.g. carbon-ai-chat
+  <repo>.worktrees/   # every worktree
     <slug>/
 ```
 
-The parent folder can hold other clones, such as `carbon-ai-chat-fork`. The single `.worktrees` folder keeps your worktrees apart from them. Don't create loose `carbon-ai-chat-<slug>` folders.
+The parent folder can hold other clones, such as `<repo>-fork`. Each clone gets its own `.worktrees` folder, which keeps its worktrees apart from the others. Don't create loose `<repo>-<slug>` folders.
 
 The slug is an issue or PR number plus a short purpose, in kebab-case: `2349-sdk`, `pr2668-review`, `1857-citation-cards`. It doesn't have to match the branch name.
 
 `/tmp` and scratchpads get wiped by the OS or the harness. That loses uncommitted work and leaves broken worktree records behind.
 
-From inside any worktree, this prints the main checkout's path:
+Don't hard-code the folder name. From the main checkout or any worktree, this sets `$main` to the main checkout's path:
 
 ```bash
-dirname "$(git rev-parse --path-format=absolute --git-common-dir)"
+main=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
 ```
+
+The commands below use `"$main.worktrees/<slug>"`, so they work from any worktree and under any clone name.
 
 ## Create one
 
-Run from the main checkout:
-
 ```bash
-git worktree add ../carbon-ai-chat.worktrees/<slug> -b <branch> [<start-point>]
+git worktree add "$main.worktrees/<slug>" -b <branch> [<start-point>]
 ```
 
-For a branch that already exists, drop `-b`: `git worktree add ../carbon-ai-chat.worktrees/<slug> <branch>`. To review a PR head without a branch, pass `--detach <sha>`, and see the detached HEAD check below before you remove it.
+For a branch that already exists, drop `-b`: `git worktree add "$main.worktrees/<slug>" <branch>`. To review a PR head without a branch, pass `--detach <sha>`, and see the detached HEAD check below before you remove it.
 
 A new worktree has no `node_modules` and no build output. Set it up as the [build preflight](commands.md#what-invalidates-earlier-evidence) requires for a new worktree before you run anything that reads built output.
 
@@ -59,7 +59,7 @@ Check for work before you remove anything. Run each check against the worktree p
 `git worktree remove` deletes ignored files without asking, so copy any draft to the main checkout first. If a check prints anything else, stop. Push, or save the commits with `git branch <name> <sha>`, or ask the user. Then:
 
 ```bash
-git worktree remove ../carbon-ai-chat.worktrees/<slug>
+git worktree remove "$main.worktrees/<slug>"
 git branch -d <branch>    # optional; -d refuses an unmerged branch
 ```
 
@@ -75,7 +75,7 @@ When you or the OS delete a worktree folder, git keeps its record. `git worktree
 
 ### Move one
 
-`git worktree move <old-path> ../carbon-ai-chat.worktrees/<slug>` keeps the branch, commits, and uncommitted files. Run the clean-up checks first, and treat the moved folder as a new worktree for build evidence. `move` refuses a locked worktree.
+`git worktree move <old-path> "$main.worktrees/<slug>"` keeps the branch, commits, and uncommitted files. Run the clean-up checks first, and treat the moved folder as a new worktree for build evidence. `move` refuses a locked worktree.
 
 ## Per-tool defaults
 
@@ -115,9 +115,9 @@ The snippet needs `jq`. It branches from your local `origin/HEAD`, so run `git f
 
 ### Codex
 
-The Codex app creates worktrees in `$CODEX_HOME/worktrees` (default `~/.codex/worktrees/<id>/carbon-ai-chat`). That's outside the checkout, so the Nx problem doesn't apply. The app keeps the 15 newest and deletes older ones ([Codex worktrees](https://learn.chatgpt.com/docs/environments/git-worktrees)).
+The Codex app creates worktrees in `$CODEX_HOME/worktrees` (default `~/.codex/worktrees/<id>/<repo>`). That's outside the checkout, so the Nx problem doesn't apply. The app keeps the 15 newest and deletes older ones ([Codex worktrees](https://learn.chatgpt.com/docs/environments/git-worktrees)).
 
-The root is `git-worktree-root` in the `[desktop]` table of your user `~/.codex/config.toml`, or **Settings > Worktrees** in the app. It takes an absolute path, applies to every repo, and still adds an `<id>/<repo>` layer ([`settings.rs`](https://github.com/openai/codex/blob/main/codex-rs/worktree/src/settings.rs), [`paths.rs`](https://github.com/openai/codex/blob/main/codex-rs/worktree/src/paths.rs)). Leave it at the default; don't point it at `carbon-ai-chat.worktrees`. The committed [.codex/config.toml](../.codex/config.toml) doesn't set it.
+The root is `git-worktree-root` in the `[desktop]` table of your user `~/.codex/config.toml`, or **Settings > Worktrees** in the app. It takes an absolute path, applies to every repo, and still adds an `<id>/<repo>` layer ([`settings.rs`](https://github.com/openai/codex/blob/main/codex-rs/worktree/src/settings.rs), [`paths.rs`](https://github.com/openai/codex/blob/main/codex-rs/worktree/src/paths.rs)). Leave it at the default; don't point it at `<repo>.worktrees`. The committed [.codex/config.toml](../.codex/config.toml) doesn't set it.
 
 ### IBM Bob
 
