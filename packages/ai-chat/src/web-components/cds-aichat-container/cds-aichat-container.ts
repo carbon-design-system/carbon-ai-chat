@@ -35,6 +35,7 @@ import { resolvePromptLineMode } from '../../chat/components/input/promptLineMod
 import { preloadBuildCarbonExtensions } from '../../chat/components/input/buildExtensionsLoader';
 import { consoleError } from '../../chat/utils/miscUtils';
 import { getWindowSize } from '../../chat/utils/windowSize';
+import { inputNodeIdentity } from '../../chat/utils/inputNodeSlots';
 import { placeHosts } from '../../chat/utils/removeHostsOnUnmount';
 import {
   BusEventType,
@@ -44,7 +45,6 @@ import {
 import type {
   RenderCustomMessageFooter,
   RenderCustomRequestFooter,
-  RenderUserDefinedInputNodeState,
   RenderUserDefinedResponse,
   WCMarkdown,
   WCRenderCustomMessageFooter,
@@ -253,8 +253,8 @@ class ChatContainer extends FlattenedConfigElement {
    * `HTMLElement` (or `null`). The library mounts the element inside the
    * bubble via a slot.
    *
-   * The chat may call it more than once for the same node, for example while the message is sending. Return
-   * the same output for the same node.
+   * The chat calls it once per node and keeps the returned element while that node stays the same. A message
+   * update that leaves the node unchanged, such as a status change, doesn't call it again.
    *
    * @experimental
    */
@@ -748,20 +748,20 @@ const toReactCustomRequestFooter = cachedAdapter(
 const toReactUserDefinedInputNode = cachedAdapter(
   (render: WCRenderUserDefinedInputNode): RenderUserDefinedInputNode => {
     // A call per render would rebuild the host's element whenever the portal
-    // re-renders. The host service hands each slot one `state` object until
-    // its message changes (`utils/inputNodeSlots.ts`), so each slot keeps its
-    // first result until then.
-    const rendered = new WeakMap<RenderUserDefinedInputNodeState, ReactNode>();
+    // re-renders, and a message update with the same node would replace it.
+    // Each slot keeps its first result while it shows the same node.
+    const rendered = new WeakMap<object, ReactNode>();
     return (state, instance) => {
-      if (!rendered.has(state)) {
+      const identity = inputNodeIdentity(state);
+      if (!rendered.has(identity)) {
         rendered.set(
-          state,
+          identity,
           renderWCSlotContent('renderUserDefinedInputNode', () =>
             render(state, instance)
           )
         );
       }
-      return rendered.get(state);
+      return rendered.get(identity);
     };
   }
 );
@@ -862,8 +862,8 @@ interface CdsAiChatContainerAttributes extends Omit<PublicConfig, 'markdown'> {
    * Renderer for `mention` chips, `command` chips, and custom TipTap nodes
    * inside sent user message bubbles (rich user message content).
    *
-   * The chat may call it more than once for the same node, for example while the message is sending. Return
-   * the same output for the same node.
+   * The chat calls it once per node and keeps the returned element while that node stays the same. A message
+   * update that leaves the node unchanged, such as a status change, doesn't call it again.
    *
    * @experimental
    */
