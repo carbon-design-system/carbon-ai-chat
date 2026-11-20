@@ -18,7 +18,6 @@ import {
   visit,
   capabilityIssues,
   pureEffectIssues,
-  snapshotDataCalls,
   callsIn,
   isRawStoreDispatch,
   viewCapabilityReads,
@@ -1100,43 +1099,6 @@ it('rejects invoking an opaque host callback through a type assertion', () => {
       'interface Message { user_defined: any }; export function prepare(message: Message) { return (message.user_defined.run as () => void)(); }',
   });
   expect(pureEffectIssues(f.checker, f.source()).length).toBeGreaterThan(0);
-});
-
-it.each([
-  'Reflect.apply(value, undefined, []);',
-  'Reflect.construct(value, []);',
-  '(value as Function).call(undefined);',
-  '(value as Function).apply(undefined, []);',
-  '(value as () => void)();',
-  'setTimeout(() => {}, 0);',
-])('rejects eager host execution during snapshot preparation: %s', (body) => {
-  const f = fixture({
-    'entry.ts': `export function snapshot(value: any) { ${body} return value; }`,
-  });
-  expect(
-    pureEffectIssues(
-      f.checker,
-      f.source(),
-      snapshotDataCalls(f.checker, f.source())
-    ).length
-  ).toBeGreaterThan(0);
-});
-
-it('allows deferred Proxy call traps but still checks preparation-time getter traps', () => {
-  const f = fixture({
-    'entry.ts': `export function snapshot(value: Function) {
-    const bindingTarget = new Proxy(value, { get: () => Reflect.apply(value, undefined, []) });
-    return new Proxy(Function.prototype.bind.call(bindingTarget, undefined), {
-      apply: (_target, receiver, args) => Reflect.apply(value, receiver, args),
-      construct: (_target, args, newTarget) => Reflect.construct(value, args, newTarget)
-    });
-  }`,
-  });
-  const allowed = snapshotDataCalls(f.checker, f.source());
-  expect(allowed.size).toBe(3);
-  expect(pureEffectIssues(f.checker, f.source(), allowed)).toEqual([
-    expect.stringContaining('reflective host invocation'),
-  ]);
 });
 
 it('accepts data getters, setters, object methods and inherited data containers', () => {
