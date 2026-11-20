@@ -18,6 +18,7 @@ import { CustomRequestFooterPortalsContainer } from './components/portals/Custom
 import { WriteableElementsPortalsContainer } from './components/portals/WriteableElementsPortalsContainer';
 import { LightDomPortalsContainer } from './components/portals/LightDomPortalsContainer';
 import { InputNodePortalsContainer } from './components/portals/InputNodePortalsContainer';
+import { AutocompleteContentAdapter } from './components/input/AutocompleteContentAdapter';
 
 import {
   RenderUserDefinedResponse,
@@ -162,6 +163,7 @@ function ChatAppEntry({
       )}
 
       <LightDomPortalsContainer hosts={hosts} />
+      <AutocompleteContentAdapter contentOwner={hosts.autocompleteContent} />
 
       <AppShell
         serviceManager={serviceManager}

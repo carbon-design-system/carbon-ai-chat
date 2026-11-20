@@ -74,6 +74,12 @@ abstract class NativeChatView extends LitElement {
     }
   }
 
+  protected captureErrorReporter(): (error: unknown) => void {
+    const viewState = this.viewState;
+    const generation = this.generation;
+    return (error) => this.reportError(error, viewState, generation);
+  }
+
   protected selectStore<Value>(
     selector: (state: AppState) => Value,
     onChange: (value: Value) => void,
