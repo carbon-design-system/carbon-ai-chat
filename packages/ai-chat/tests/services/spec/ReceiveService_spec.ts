@@ -8,11 +8,10 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { ChunkProcessingService } from '../../../src/chat/services/messaging/inbound/ChunkProcessingService';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { HydrationService } from '../../../src/chat/services/HydrationService';
-import { MessageUpsertCoordinator } from '../../../src/chat/services/messaging/inbound/MessageUpsertCoordinator';
-import { ReceiveService } from '../../../src/chat/services/messaging/inbound/ReceiveService';
+import { FullResponseWorkflow } from '../../../src/chat/services/messaging/FullResponseWorkflow';
+import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -61,7 +60,6 @@ function createHarness(config: PublicConfig = {}) {
       cancelAllMessageRequests: jest.fn().mockResolvedValue(undefined),
     },
   } as unknown as ServiceManager;
-  manager.chunkProcessingService = new ChunkProcessingService(manager);
   const messageMethods = manager.messageCoordinator;
   manager.messageCoordinator = new MessageCoordinator(manager);
   for (const [name, value] of Object.entries(messageMethods)) {
@@ -72,9 +70,7 @@ function createHarness(config: PublicConfig = {}) {
     });
   }
   manager.hydrationService = new HydrationService(manager);
-  manager.messageUpsertCoordinator = new MessageUpsertCoordinator(manager);
-  const service = new ReceiveService(manager);
-  manager.receiveService = service;
+  const service = manager.messageCoordinator;
 
   const localItems = () => {
     const state = store.getState();
@@ -104,7 +100,7 @@ function response(items: GenericItem[] = [textItem('Hello')]): MessageResponse {
   return { id: 'response-1', output: { generic: items } };
 }
 
-describe('ReceiveService', () => {
+describe('Full response core', () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -154,7 +150,7 @@ describe('ReceiveService', () => {
     const { service, manager, fire, localItems, eventTypes } = createHarness();
     const callbackStarted = resolvablePromise<void>();
     const finishCallback = resolvablePromise<void>();
-    const coordinator = manager.messageUpsertCoordinator;
+    const coordinator = manager.messageCoordinator;
     const pendingWrites = manager.messageCoordinator.incomingWriteLifetime.state
       .pendingWrites as Map<string, unknown>;
     fire.mockImplementation(async (event) => {
@@ -177,13 +173,15 @@ describe('ReceiveService', () => {
         textItem('Revealed'),
       ]);
       expect(pendingWrites.size).toBe(1);
-      expect(coordinator.getState('response-1')).toBeUndefined();
+      expect(coordinator.getIncomingState('response-1')).toBeUndefined();
       finishCallback.doResolve();
       await receiving;
       expect(pendingWrites.size).toBe(0);
-      expect(coordinator.getState('response-1')).toBe(MessageState.COMPLETE);
+      expect(coordinator.getIncomingState('response-1')).toBe(
+        MessageState.COMPLETE
+      );
 
-      await coordinator.upsert('response-1', MessageState.COMPLETE, () =>
+      await coordinator.upsertMessage('response-1', MessageState.COMPLETE, () =>
         response([textItem('Updated')])
       );
       expect(
@@ -549,7 +547,7 @@ describe('ReceiveService', () => {
     ).rejects.toBe(failure);
     expect(pending.get('response-1').count).toBe(1);
     expect(
-      manager.messageUpsertCoordinator.getState('response-1')
+      manager.messageCoordinator.getIncomingState('response-1')
     ).toBeUndefined();
     await service.removeMessages(['response-1']);
     expect(pending.has('response-1')).toBe(false);
@@ -562,13 +560,20 @@ describe('ReceiveService', () => {
 
   it('returns the core receive and removal promises without an adoption wrapper', () => {
     const pending = resolvablePromise<void>();
-    const receive = jest.fn(() => pending);
-    const removeMessages = jest.fn(() => pending);
-    const service = new ReceiveService({
-      messageCoordinator: { receive, removeMessages },
-    } as unknown as ServiceManager);
+    const receive = jest
+      .spyOn(FullResponseWorkflow.prototype, 'receive')
+      .mockReturnValue(pending);
+    const removeMessages = jest
+      .spyOn(FullResponseWorkflow.prototype, 'removeMessages')
+      .mockReturnValue(pending);
+    const service = new MessageCoordinator(
+      {} as ServiceManager,
+      {} as MessagePresentationPort
+    );
     expect(service.receive(response())).toBe(pending);
     expect(service.removeMessages(['response-1'])).toBe(pending);
+    receive.mockRestore();
+    removeMessages.mockRestore();
     pending.doResolve();
   });
 });

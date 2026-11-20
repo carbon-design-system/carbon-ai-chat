@@ -1303,7 +1303,7 @@ describe('ChatInstance.messaging.addMessage', () => {
           releasePause = resolve;
         });
         const waitForPause = jest
-          .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+          .spyOn(serviceManager.messageCoordinator, 'waitForPause')
           .mockImplementationOnce(async () => {
             await pause;
             isPauseOver = true;
@@ -1530,8 +1530,8 @@ describe('ChatInstance.messaging.addMessage', () => {
       const { instance, store, serviceManager } =
         await renderChatAndGetInstanceWithStore(createBaseConfig());
       const upsert = jest.spyOn(
-        serviceManager.messageUpsertCoordinator,
-        'upsert'
+        serviceManager.messageCoordinator,
+        'upsertMessage'
       );
       const dispatch = jest.spyOn(store, 'dispatch');
       const id = 'path-add';

@@ -16,7 +16,6 @@ import { AppState } from '../../types/state/AppState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { CustomPanelManager } from './CustomPanelManager';
 import { HistoryService } from './HistoryService';
-import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
 import { NamespaceService } from './NamespaceService';
 import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
@@ -25,12 +24,10 @@ import { WriteableElements } from '../../types/instance/WriteableElements';
 import { BusEvent } from '../../types/events/eventBusTypes';
 import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
-import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
@@ -84,11 +81,6 @@ class ServiceManager {
   streamAnnouncerService: StreamAnnouncerService;
 
   /**
-   * Service that owns the chunk queue and processes incoming streaming chunks.
-   */
-  chunkProcessingService: ChunkProcessingService;
-
-  /**
    * Service that wires user-defined response elements and fires footer-slot events.
    */
   slotEventService: SlotEventService;
@@ -105,11 +97,6 @@ class ServiceManager {
 
   /** Coordinates transient loading, send, stream, and error state. */
   messageCoordinator: MessageCoordinator;
-
-  /**
-   * Service that owns the inbound receive path.
-   */
-  receiveService: ReceiveService;
 
   /**
    * Service that manages view transitions and fires view-change events.
@@ -136,15 +123,6 @@ class ServiceManager {
    * The redux store holding the application state.
    */
   store: AppStore<AppState>;
-
-  /**
-   * Engine for {@link ChatInstanceMessaging#upsertMessage}: serializes calls for the
-   * same message ID and tracks {@link MessageState} per ID so `addMessage`,
-   * `addMessageChunk`, and `upsertMessage` can be mixed without double-firing
-   * `pre:receive` / `receive`. {@link messageCoordinator} still owns the send / stream /
-   * receive arc.
-   */
-  messageUpsertCoordinator: MessageUpsertCoordinator;
 
   /**
    * The service to use to connect to a human agent. Note that this value will not be defined if no service desk is

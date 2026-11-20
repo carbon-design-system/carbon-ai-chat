@@ -16,19 +16,16 @@ import {
 } from '../utils/customPromptLine';
 import { MessagePresentationAdapter } from './messaging/presentation/MessagePresentationAdapter';
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
-import { ReceiveService } from './messaging/inbound/ReceiveService';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
-import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
@@ -93,12 +90,8 @@ function createServiceManager(publicConfig: PublicConfig) {
       );
     },
   });
-  serviceManager.chunkProcessingService = new ChunkProcessingService(
-    serviceManager
-  );
   serviceManager.slotEventService = new SlotEventService(serviceManager);
   serviceManager.hydrationService = new HydrationService(serviceManager);
-  serviceManager.receiveService = new ReceiveService(serviceManager);
   serviceManager.viewService = new ViewService(serviceManager);
   serviceManager.eventBus = new EventBus();
   serviceManager.store = doCreateStore(publicConfig, serviceManager);
@@ -106,6 +99,14 @@ function createServiceManager(publicConfig: PublicConfig) {
   serviceManager.messageCoordinator = new MessageCoordinator(
     serviceManager,
     new MessagePresentationAdapter({
+      openHomeScreen: () =>
+        serviceManager.store.dispatch(actions.setHomeScreenIsOpen(true)),
+      openHistoryResponsePanel: (local) => {
+        serviceManager.store.dispatch(
+          actions.setResponsePanelContent(local, true)
+        );
+        serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
+      },
       getMessagesScrollBottom: () =>
         serviceManager.mainWindow?.getMessagesScrollBottom(),
       restoreMessagesScroll: (scrollBottom) =>
@@ -144,9 +145,6 @@ function createServiceManager(publicConfig: PublicConfig) {
     })
   );
   serviceManager.historyService = new HistoryService(serviceManager);
-  serviceManager.messageUpsertCoordinator = new MessageUpsertCoordinator(
-    serviceManager
-  );
   serviceManager.messageCoordinator.configureMessageTimeout(publicConfig);
   serviceManager.store.subscribe(copyToSessionStorage(serviceManager));
   // Single post-boot owner of `serviceManager.intl`: rebuild it whenever the

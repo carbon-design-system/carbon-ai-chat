@@ -502,7 +502,7 @@ function resolvePreviousLocalItem(
  * keeps a STREAMING → COMPLETE transition whose payload happened not to change from
  * leaving the item rendering as mid-stream forever.
  *
- * Cross-file invariant: `MessageUpsertCoordinator.snapshotLocalItemRefs` and its fan-out
+ * Cross-file invariant: `UpsertWorkflow.snapshotLocalItemRefs` and its fan-out
  * rely on this `===`-preservation to dedupe `USER_DEFINED_RESPONSE` fan-out after
  * dispatch. Don't rebuild a fresh `LocalMessageItem` when the item is unchanged.
  */

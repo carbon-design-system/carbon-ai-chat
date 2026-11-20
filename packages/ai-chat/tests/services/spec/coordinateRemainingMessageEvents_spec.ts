@@ -65,8 +65,8 @@ function fixture() {
     restartCount: 0,
     store: { getState: () => state, dispatch },
     fire,
-    messageUpsertCoordinator: {
-      trackWrite: jest.fn(() => ({ isCurrent: () => valid, release })),
+    messageCoordinator: {
+      trackIncomingWrite: jest.fn(() => ({ isCurrent: () => valid, release })),
     },
   } as unknown as ServiceManager;
   return {
@@ -119,7 +119,7 @@ it.each([false, true])(
     pending.doResolve();
     await work;
     expect(
-      f.manager.messageUpsertCoordinator.trackWrite
+      f.manager.messageCoordinator.trackIncomingWrite
     ).not.toHaveBeenCalled();
   }
 );
@@ -170,7 +170,9 @@ it('fires a frozen footer without capture and keeps supplied metadata aliases', 
   expect(event.data.additionalData).toBe(
     f.item.message_item_options.custom_footer_slot.additional_data
   );
-  expect(f.manager.messageUpsertCoordinator.trackWrite).not.toHaveBeenCalled();
+  expect(
+    f.manager.messageCoordinator.trackIncomingWrite
+  ).not.toHaveBeenCalled();
 });
 
 it('derives request footer names without a view and awaits handlers, except silent requests', async () => {
