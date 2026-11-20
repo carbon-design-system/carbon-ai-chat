@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { MessageResponseTypes, MessageState } from '@carbon/ai-chat/server';
 import { test, expect } from './fixtures';
 import {
@@ -412,6 +412,45 @@ for (const distance of [30, 200]) {
   }
 }
 
+/**
+ * Waits for a ResizeObserver delivery whose message-row size includes `item`.
+ *
+ * The chat corrects scrollTop from its own ResizeObserver on message rows, one
+ * frame after a row grows. It creates that observer when the message list
+ * connects, before this one exists. Observers deliver in creation order within
+ * a frame, so the correction for the item's layout has run when this resolves.
+ */
+async function waitForRowLayoutWith(item: Locator) {
+  await item.evaluate(
+    (item) =>
+      new Promise<void>((resolve, reject) => {
+        let row: Element | null | undefined = item;
+        while (row && !row.classList.contains('cds-aichat--message')) {
+          row =
+            row.assignedSlot ??
+            row.parentElement ??
+            (row.getRootNode() as ShadowRoot).host;
+        }
+        if (!row) {
+          reject(new Error('The item is not in a message row'));
+          return;
+        }
+        const target = row;
+        const observer = new ResizeObserver(([entry]) => {
+          const itemBottom =
+            item.getBoundingClientRect().bottom -
+            target.getBoundingClientRect().top;
+          // An entry measured before the item laid out doesn't reach it.
+          if (entry.borderBoxSize[0].blockSize >= itemBottom - 1) {
+            observer.disconnect();
+            resolve();
+          }
+        });
+        observer.observe(target, { box: 'border-box' });
+      })
+  );
+}
+
 async function sampleReadingFrames(page: Page) {
   return page.locator('.cds-aichat--messages').evaluateHandle((list) => {
     const frames: { scrollTop: number; spacerHeight: number }[] = [];
@@ -478,11 +517,11 @@ for (const input of ['wheel', 'keyboard'] as const) {
       .poll(async () => (await readGeometry(page)).scrollTop)
       .toBeLessThan(pin + 100);
     await stream.evaluate((stream) => stream.finishFinal());
-    await expect(
-      page
-        .locator('.cds-aichat--messages')
-        .getByText('Final extra item', { exact: true })
-    ).toBeAttached();
+    const finalItem = page
+      .locator('.cds-aichat--messages')
+      .getByText('Final extra item', { exact: true });
+    await expect(finalItem).toBeAttached();
+    await waitForRowLayoutWith(finalItem);
     expect((await readGeometry(page)).scrollTop).toBeLessThan(pin + 100);
     const latest = (await readGeometry(page)).scrollTop;
     const frames = await samples.evaluate((samples) => samples.finish());
