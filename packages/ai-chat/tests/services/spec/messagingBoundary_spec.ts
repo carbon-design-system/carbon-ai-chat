@@ -106,7 +106,7 @@ const dataDeclarations: Record<string, string[]> = {
     'LocalMessageItem',
     'LocalMessageUIState',
   ],
-  'src/types/instance/PublicChatState.ts': ['ConversationStatus'],
+  'src/types/instance/ChatSDKState.ts': ['ConversationStatus'],
 };
 const leaves = new Set<ts.Symbol>();
 for (const [file, names] of Object.entries(dataDeclarations)) {

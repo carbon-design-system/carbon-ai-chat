@@ -13,69 +13,33 @@ import type { CatastrophicErrorPanelState } from '../state/AppState';
 import { MessageRequest } from '../messaging/Messages';
 import type { ServiceManager } from '../../chat/services/ServiceManager';
 import { AutoScrollOptions } from '../utilities/HasDoAutoScroll';
-import type { EventHandlers } from './EventHandlers';
+import type { EventHandlers, TypeAndHandler } from './EventHandlers';
 import type { PublicChatState } from './PublicChatState';
 import type { ChatInstanceInput } from './ChatInstanceInput';
 import type { ChatInstanceServiceDeskActions } from './ChatInstanceServiceDeskActions';
 import type { WriteableElements } from './WriteableElements';
+import type { ChatSDKInstance } from './ChatSDKInstance';
 
 /**
  * The interface represents the API contract with the chat widget and contains all the public methods and properties
- * that can be used with Carbon AI Chat.
+ * that can be used with Carbon AI Chat. It extends {@link ChatSDKInstance}, the conversation without the interface, with
+ * the members that control views, panels, input, focus, and scrolling.
  *
  * @category Instance
  */
-export interface ChatInstance extends EventHandlers, ChatActions {
+export interface ChatInstance
+  extends EventHandlers, ChatActions, ChatSDKInstance {
   /**
    * Reads and observes immutable public state snapshots for this chat instance.
    */
   readonly state: {
-    /**
-     * Returns the current snapshot. The same object is returned until public state changes.
-     *
-     * @example Read the current messages
-     * ```ts
-     * const messages = instance.state.get().messages;
-     * console.log(messages); // => the current public message list
-     * ```
-     */
+    /** {@inheritDoc ChatSDKStateAccess.get} */
     get(): PublicChatState;
 
-    /**
-     * Calls a listener after public state changes. The returned function stops this subscription.
-     *
-     * @example Subscribe to state changes
-     * ```ts
-     * const unsubscribe = instance.state.subscribe(() => {
-     *   console.log(instance.state.get().status);
-     * });
-     *
-     * unsubscribe();
-     * ```
-     */
+    /** {@inheritDoc ChatSDKStateAccess.subscribe} */
     subscribe(listener: () => void): () => void;
 
-    /**
-     * Calls a listener when the selected value changes. The comparison uses `Object.is` by default.
-     * The listener is not called with the current value; read it with `state.get()`.
-     *
-     * @typeParam Selected The selected value.
-     * @param selector Selects a value from the current public state.
-     * @param listener Receives each changed selected value.
-     * @param options Options for comparing selected values.
-     * @param options.isEqual Returns `true` when two selected values are equal.
-     * @returns A function that stops this selection.
-     *
-     * @example Observe the conversation status
-     * ```ts
-     * const unsubscribe = instance.state.select(
-     *   (state) => state.status,
-     *   (status) => console.log(status),
-     * );
-     *
-     * unsubscribe();
-     * ```
-     */
+    /** {@inheritDoc ChatSDKStateAccess.select} */
     select<Selected>(
       selector: (state: PublicChatState) => Selected,
       listener: (value: Selected) => void,
@@ -85,6 +49,20 @@ export interface ChatInstance extends EventHandlers, ChatActions {
       }
     ): () => void;
   };
+
+  /**
+   * Messaging actions for a chat instance.
+   */
+  messaging: ChatInstanceMessaging;
+
+  /** {@inheritDoc EventHandlers.on} */
+  on: (handlers: TypeAndHandler | TypeAndHandler[]) => this;
+
+  /** {@inheritDoc EventHandlers.off} */
+  off: (handlers: TypeAndHandler | TypeAndHandler[]) => this;
+
+  /** {@inheritDoc EventHandlers.once} */
+  once: (handlers: TypeAndHandler | TypeAndHandler[]) => this;
 
   /**
    * Returns state information of the Carbon AI Chat that could be useful.

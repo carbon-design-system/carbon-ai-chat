@@ -11,6 +11,7 @@
  * Upload options. Currently only applies to conversations with a human agent.
  *
  * @category Instance
+ * @category SDK
  */
 export interface FileUploadCapabilities {
   /**

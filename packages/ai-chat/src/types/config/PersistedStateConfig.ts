@@ -8,6 +8,7 @@
  */
 
 import { PersistedState } from '../state/AppState';
+import type { ChatSDKPersistedStateConfig } from './ChatSDKPersistedStateConfig';
 
 /**
  * The subset of session state that Carbon AI Chat can persist and restore, consumed by
@@ -39,7 +40,7 @@ export type PersistableState = Omit<
  *
  * @category Config
  */
-export interface PersistedStateConfig {
+export interface PersistedStateConfig extends ChatSDKPersistedStateConfig<PersistableState> {
   /**
    * The session state to boot from: a value you saved from {@link PersistedStateConfig.onStateChange},
    * or one you build. When restoring, pass back the whole value you saved. The chat uses it in place of

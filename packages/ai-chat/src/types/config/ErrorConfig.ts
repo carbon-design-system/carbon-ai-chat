@@ -7,10 +7,13 @@
  *  @license
  */
 
+import type { ChatSDKErrorData } from './ChatSDKErrorData';
+
 /**
  * The different categories of errors that the system can record. These values are published for end user consumption.
  *
  * @category Config
+ * @category SDK
  */
 export enum OnErrorType {
   /**
@@ -42,21 +45,12 @@ export enum OnErrorType {
 }
 
 /**
- * Fired when a serious error in the chat occurs.
+ * Fired when a serious error in the chat occurs. It extends {@link ChatSDKErrorData} with
+ * `catastrophicErrorType`, which only the prebuilt chat's error panel uses.
  *
  * @category Config
  */
-export interface OnErrorData {
-  /**
-   * The type of error that occurred.
-   */
-  errorType: OnErrorType;
-
-  /**
-   * A message associated with the error.
-   */
-  message: string;
-
+export interface OnErrorData extends ChatSDKErrorData {
   /**
    * An extra blob of data associated with the error. This may be a stack trace for thrown errors. For a
    * {@link OnErrorType.RENDER} report about an upserted item the chat can't draw, it names the item and the fields

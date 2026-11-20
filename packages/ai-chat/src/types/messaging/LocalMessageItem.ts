@@ -16,6 +16,7 @@ import { GenericItem, MessageRequest } from './Messages';
  * The different type of error states a given message can be in.
  *
  * @category Messaging
+ * @category SDK
  */
 enum MessageErrorState {
   /**
