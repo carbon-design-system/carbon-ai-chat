@@ -61,7 +61,7 @@ describe('plain hook functions', () => {
     expect(getDerivedState(options, 'other.example').showDisclaimer).toBe(true);
   });
 
-  it('focuses the highest-priority open panel and respects disabled auto focus', () => {
+  it('focuses the highest-priority open panel', () => {
     const iframePanel = { requestFocus: jest.fn() };
     const input = { requestFocus: jest.fn() };
     const options: FocusManagerOptions = {
@@ -83,8 +83,9 @@ describe('plain hook functions', () => {
     expect(input.requestFocus).not.toHaveBeenCalled();
     requestFocus({ ...options, iFramePanelIsOpen: false });
     expect(input.requestFocus).toHaveBeenCalledTimes(1);
-    requestFocus({ ...options, shouldAutoFocus: false });
+    expect(requestFocus({ ...options, shouldAutoFocus: false })).toBe(false);
     expect(iframePanel.requestFocus).toHaveBeenCalledTimes(1);
+    expect(input.requestFocus).toHaveBeenCalledTimes(1);
   });
 
   it('preserves history open state when startClosed is set', () => {

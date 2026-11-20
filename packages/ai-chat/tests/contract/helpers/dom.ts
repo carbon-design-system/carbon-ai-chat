@@ -338,3 +338,57 @@ export async function click(element: HTMLElement): Promise<void> {
     element.click();
   });
 }
+
+/** Whether a control is disabled, natively or through ARIA. */
+export function isDisabled(element: HTMLElement): boolean {
+  return (
+    (element as HTMLButtonElement).disabled === true ||
+    element.hasAttribute('disabled') ||
+    element.getAttribute('aria-disabled') === 'true'
+  );
+}
+
+/** The text the main panel shows, with whitespace collapsed. */
+export function mainPanelText(): string {
+  return shownText(getByTestId(PageObjectId.MAIN_PANEL)).replace(/\s+/g, ' ');
+}
+
+/**
+ * A node's children in the flat tree, the tree a user sees: a shadow host
+ * shows its shadow root, a slot shows the nodes assigned to it (or its
+ * fallback), and anything else shows its children. Content that no rendered
+ * slot picks up is not in it.
+ */
+export function flatChildren(node: Node): Node[] {
+  if (node instanceof Element && node.shadowRoot) {
+    return Array.from(node.shadowRoot.childNodes);
+  }
+  if (node instanceof HTMLSlotElement) {
+    const assigned = node.assignedNodes();
+    return assigned.length ? assigned : Array.from(node.childNodes);
+  }
+  return Array.from(node.childNodes);
+}
+
+/** The focused element, looking through open shadow roots. */
+export function deepActiveElement(): Element | null {
+  let active: Element | null = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  return active;
+}
+
+/**
+ * Adds a focusable button to the host page, outside the chat, and focuses it.
+ * Throws when focus doesn't land on it.
+ */
+export function focusHostButton(): HTMLButtonElement {
+  const button = document.createElement('button');
+  document.body.appendChild(button);
+  button.focus();
+  if (deepActiveElement() !== button) {
+    throw new Error('the host button did not take focus');
+  }
+  return button;
+}

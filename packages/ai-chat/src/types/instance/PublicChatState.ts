@@ -41,6 +41,8 @@ export type ConversationStatus =
 export interface PublicInputState {
   /**
    * Raw text currently queued in the input before being sent to customSendMessage.
+   * In 1.x, the plain field joins paragraphs with one newline; the rich editor joins them with two.
+   * Both use one newline for a hard break. The deprecated raw updater uses the one-newline projection in both editors.
    */
   rawValue: string;
 

@@ -17,6 +17,8 @@ export * from './backend';
 export * from './dom';
 export * from './driver';
 export * from './events';
+export * from './input';
 export * from './messages';
 export * from './mount';
+export * from './serviceDesk';
 export * from './timing';
