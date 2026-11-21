@@ -125,14 +125,14 @@ interface ChatActions {
    */
   messaging: ChatInstanceMessaging;
   /**
-   * This function can be called when another component wishes this component to gain focus. It is up to the
-   * component to decide where focus belongs. This may return true or false to indicate if a suitable focus location
-   * was found.
+   * Moves focus into the chat. The chat decides where focus belongs, such as the input or an open panel. Returns
+   * true when it moved focus there, and false when it found nothing to focus, such as while the main window is
+   * closed.
    *
    * @example Move focus into the chat
    * ```ts
    * const focused = instance.requestFocus();
-   * // => true when a suitable focus target was found
+   * // => true when focus moved into the chat
    * ```
    */
   requestFocus: () => boolean | void;
@@ -184,6 +184,9 @@ interface ChatActions {
    * includes all of the views then all of the views will be changed accordingly. If a partial {@link ViewState} is
    * provided then only the views provided will be changed.
    *
+   * The promise rejects if another view change is still running, for example when a view event handler calls
+   * `changeView`. It also rejects with the error a view event handler throws.
+   *
    * @example Open the main window
    * ```ts
    * import { ViewType } from "@carbon/ai-chat";
@@ -196,7 +199,7 @@ interface ChatActions {
    * await instance.changeView({ launcher: false, mainWindow: true });
    * ```
    */
-  changeView: (newView: ViewType | ViewState) => Promise<void>;
+  changeView: (newView: ViewType | Partial<ViewState>) => Promise<void>;
 
   /**
    * Returns the list of writable elements.
@@ -234,8 +237,13 @@ interface ChatActions {
   scrollToMessage: (messageID: string, animate?: boolean) => void;
 
   /**
-   * Fires an event that will open or close the Catastrophic Error Panel in the chat. This also accepts a
-   * custom title and body text (markdown supported) to be displayed in the Catastrophic Error Panel.
+   * Opens or closes the Catastrophic Error Panel in the chat. This also accepts a custom title and body text
+   * (markdown supported) to be displayed in the Catastrophic Error Panel. The call fires no event, and the panel's
+   * state isn't part of {@link ChatInstance.state}.
+   *
+   * Each call merges its fields into the panel's state. Omitted title, body text, and `hideRetryButton` fields retain
+   * their prior values. Until you set them, the panel uses {@link PublicConfig.strings} and shows the retry button.
+   * Restarting the conversation closes the panel and clears what earlier calls set.
    *
    * @param panelState The new state of the Catastrophic Error Panel, optionally including a custom title and body text.
    *

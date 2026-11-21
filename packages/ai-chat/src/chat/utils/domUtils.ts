@@ -122,15 +122,40 @@ function getScrollbarWidth(): number {
  *
  * @param element The element to move focus to.
  * @param preventScroll Indicates if scrolling should be prevented as a result of the focus change.
+ * @returns True when focus is on the element or inside it afterward, and false otherwise. A shadow host that
+ * delegates focus, such as a Carbon button, counts as focused when its inner control has focus.
  */
-function doFocus(element: HTMLElement | SVGElement, preventScroll = false) {
-  if (
-    element &&
-    getDeepActiveElement() !== element &&
-    tabbable(element, { getShadowRoot: true })
-  ) {
-    element.focus({ preventScroll });
+function doFocus(
+  element: HTMLElement | SVGElement,
+  preventScroll = false
+): boolean {
+  if (!element) {
+    return false;
   }
+  if (getDeepActiveElement() === element) {
+    return true;
+  }
+  if (!tabbable(element, { getShadowRoot: true })) {
+    return false;
+  }
+  element.focus({ preventScroll });
+  return isFocusWithin(element);
+}
+
+/**
+ * Checks whether the focused element is the given element or a descendant of it, crossing shadow roots to their
+ * hosts.
+ */
+function isFocusWithin(element: Element): boolean {
+  let node: Node | null = getDeepActiveElement();
+  while (node) {
+    if (node === element) {
+      return true;
+    }
+    const parent: Node | null = node.parentNode;
+    node = parent instanceof ShadowRoot ? parent.host : parent;
+  }
+  return false;
 }
 
 /**
