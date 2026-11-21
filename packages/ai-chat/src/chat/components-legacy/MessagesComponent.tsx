@@ -594,7 +594,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     isMessageForInput: boolean,
     isFirstMessageItem: boolean,
     isLastMessageItem: boolean,
-    lastMessageID: string
+    lastMessageID: string,
+    previousIsUnnamedRequest?: boolean
   ) {
     const {
       serviceManager,
@@ -659,6 +660,7 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
         scrollElementIntoView={this.scrollElementIntoView}
         isFirstMessageItem={isFirstMessageItem}
         isLastMessageItem={isLastMessageItem}
+        previousIsUnnamedRequest={previousIsUnnamedRequest}
         locale={locale || 'en'}
         allowNewFeedback={allowNewFeedback}
         hideFeedback={false}
@@ -845,7 +847,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
           metadata.isMessageForInput,
           metadata.isFirstMessageItem,
           metadata.isLastMessageItem,
-          lastMessageID
+          lastMessageID,
+          metadata.previousIsUnnamedRequest
         )
       );
     });

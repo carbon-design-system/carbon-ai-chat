@@ -112,7 +112,7 @@ class CDSAIChatUserAvatar extends LitElement {
 
     const hidden = this.label ? nothing : 'true';
 
-    if (INITIAL_PATTERN.test(this.name)) {
+    if (this.name && INITIAL_PATTERN.test(this.name)) {
       return html`<div
         class="${blockClass}__initial"
         role=${role}

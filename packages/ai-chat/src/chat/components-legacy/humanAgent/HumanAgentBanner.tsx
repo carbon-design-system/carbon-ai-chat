@@ -27,7 +27,7 @@ import { AppState } from '../../../types/state/AppState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { doFocusRef } from '../../utils/domUtils';
 import { AnnounceOnMount } from '../../components/helpers/AnnounceOnMount/AnnounceOnMount';
-import { ResponseUserAvatar } from '../ResponseUserAvatar';
+import UserAvatar from '@carbon/ai-chat-components/es/react/user-avatar.js';
 import { AvailabilityMessage } from './AvailabilityMessage';
 
 const ScreenOff = carbonIconToReact(ScreenOff16);
@@ -98,8 +98,10 @@ function HumanAgentBanner(
     line1 = responseUserProfile?.nickname || languagePack.agent_noName;
     buttonLabel = languagePack.agent_connectedButtonEndChat;
     avatar = (
-      <ResponseUserAvatar
-        responseUserProfile={responseUserProfile}
+      <UserAvatar
+        name={responseUserProfile?.nickname}
+        image={responseUserProfile?.profile_picture_url}
+        label={languagePack.agent_noName}
         width="24px"
         height="24px"
       />

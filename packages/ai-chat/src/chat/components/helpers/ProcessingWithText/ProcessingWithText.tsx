@@ -44,23 +44,17 @@ function ProcessingWithText({
         `cds-aichat--message cds-aichat--message-${index} cds-aichat--message--last-message`,
         { 'cds-aichat--typing-indicator--hidden': !isVisible }
       )}>
-      <div className="cds-aichat--message--padding">
-        <div className="cds-aichat--assistant-message">
-          <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
-            <div className="cds-aichat--received--inner">
-              <div className="cds-aichat--processing">
-                <Processing
-                  className="cds-aichat--processing-component"
-                  loop
-                  quickLoad
-                  carbonTheme={carbonTheme}
-                  aria-label={processingLabel}
-                />{' '}
-                <div className="cds-aichat--processing-label">
-                  {statusMessage}
-                </div>
-              </div>
-            </div>
+      <div className="cds-aichat--received cds-aichat--received--loading cds-aichat--message-vertical-padding">
+        <div className="cds-aichat--received--inner">
+          <div className="cds-aichat--processing">
+            <Processing
+              className="cds-aichat--processing-component"
+              loop
+              quickLoad
+              carbonTheme={carbonTheme}
+              aria-label={processingLabel}
+            />{' '}
+            <div className="cds-aichat--processing-label">{statusMessage}</div>
           </div>
         </div>
       </div>
