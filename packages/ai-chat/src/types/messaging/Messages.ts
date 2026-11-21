@@ -1101,7 +1101,19 @@ interface TextItem<
  *
  * @category Messaging
  */
-export type SystemMessageVariant = 'default' | 'date' | 'agent';
+export type SystemMessageVariant =
+  | 'default'
+  | 'divider'
+  /**
+   * @deprecated Renders the same as `'divider'` (a divider above the text). Use `'divider'`
+   * instead. Will be removed in the next major version.
+   */
+  | 'date'
+  /**
+   * @deprecated Renders the same as `'divider'` (a divider above the text). Use `'divider'`
+   * instead. Will be removed in the next major version.
+   */
+  | 'agent';
 
 /**
  * A system message item that can be returned in a message response. System messages are used for
@@ -1127,9 +1139,9 @@ interface SystemMessageItem<
 
   /**
    * How the system line is presented when the message renders as a **standalone** system line
-   * (response contains only system items): default helper text, date separator with rules, or
-   * agent with a rule above and helper text. When system items render **inline** inside a
-   * bubble, `variant` is ignored and the default inline style is used.
+   * (response contains only system items): default helper text, or a divider above the text
+   * (`'divider'`, and the deprecated `'agent'` and `'date'`). When system items render **inline**
+   * inside a bubble, `variant` is ignored and the default inline style is used.
    * @default 'default'
    */
   variant?: SystemMessageVariant;
@@ -1915,6 +1927,43 @@ interface ButtonItem<
    * ```
    */
   icon?: CarbonIcon | ComponentType<any>;
+
+  /**
+   * When true, the button shows only its icon and hides its text. Screen readers still announce the text as the
+   * button's name. That text is the {@link ButtonItem.label}. A `post_back` button without a label uses its
+   * `value.input.text`, and a `url` button without a label uses its URL.
+   *
+   * This applies only when the button shows an icon, either one set with {@link ButtonItem.icon} or the default for
+   * its type. Without an icon the button keeps its text. It does not apply to a `url` button of kind `LINK` or to a
+   * button with an {@link ButtonItem.image_url}.
+   *
+   * @default false
+   *
+   * @example
+   * ```ts
+   * import ArrowRight from '@carbon/icons/es/arrow--right/16.js';
+   * {
+   *   response_type: 'button',
+   *   button_type: 'post_back',
+   *   kind: 'ghost',
+   *   label: 'Learn what actions you can take',
+   *   hide_label: true,
+   *   icon: ArrowRight,
+   *   icon_alignment: 'end',
+   *   value: { input: { text: 'Which tools and actions do I have access to?' } },
+   * }
+   * ```
+   */
+  hide_label?: boolean;
+
+  /**
+   * Where the icon sits in the button when {@link ButtonItem.hide_label} is true. The `start` and `end` values follow
+   * the reading direction, so `end` is the right edge in left-to-right languages. This has no effect while the button
+   * shows its text.
+   *
+   * @default 'end'
+   */
+  icon_alignment?: 'start' | 'center' | 'end';
 }
 
 /**
