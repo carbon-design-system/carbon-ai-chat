@@ -12,12 +12,6 @@ import '@carbon/ai-chat-components/es/components/chat-button/index.js';
 import ChatButton from '@carbon/ai-chat-components/es/components/chat-button/src/chat-button.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 // scope for testing: test only cds-aichat-button specific functionality, no need to test cds-button functionality.
 describe('chat-button', function () {
   it('should render with cds-aichat-button minimum attributes', async () => {

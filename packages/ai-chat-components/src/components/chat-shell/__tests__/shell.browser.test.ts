@@ -12,12 +12,6 @@ import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
 import CDSAIChatShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 const nextFrame = (frames = 1) =>
   new Promise<void>((resolve) => {
     const tick = () => {

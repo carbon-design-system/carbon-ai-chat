@@ -12,12 +12,6 @@ import '@carbon/ai-chat-components/es/components/card/index.js';
 import Card from '@carbon/ai-chat-components/es/components/card/src/card.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 const cardContent = html`
   <div slot="body">
     <h4>AI Chat Card</h4>

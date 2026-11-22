@@ -19,12 +19,6 @@ import {
   focusElementAfterRepaint,
 } from '../focus-utils.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 describe('focus-utils', function () {
   describe('isElementInvisible', function () {
     it('should return false for visible elements', async () => {

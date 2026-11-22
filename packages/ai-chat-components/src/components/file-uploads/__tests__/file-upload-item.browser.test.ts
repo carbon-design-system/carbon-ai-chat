@@ -16,12 +16,6 @@ import {
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
 import type { FileAttachment } from '@carbon/ai-chat-components/es/components/file-uploads/src/types.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 function makeUpload(
   id: string,
   status: FileStatusValue,

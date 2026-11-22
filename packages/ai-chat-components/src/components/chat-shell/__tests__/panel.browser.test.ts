@@ -11,12 +11,6 @@ import { html, fixture, expect } from '@open-wc/testing';
 import CDSAIChatPanel from '../src/panel.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 describe('cds-aichat-panel', function () {
   // ========== Basic Rendering Tests ==========
   describe('Basic Rendering', () => {

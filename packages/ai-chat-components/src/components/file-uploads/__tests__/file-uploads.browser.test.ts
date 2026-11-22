@@ -16,12 +16,6 @@ import {
   type FileUpload,
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 // Longer than the AriaAnnouncerManager's 250 ms NVDA debounce.
 const ANNOUNCE_DELAY = 320;
 

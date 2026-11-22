@@ -11,12 +11,6 @@ import { html, fixture, expect } from '@open-wc/testing';
 import '@carbon/ai-chat-components/es/components/table/index.js';
 import CDSAIChatTable from '@carbon/ai-chat-components/es/components/table/src/table.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 const headers = [{ text: 'A' }, { text: 'B' }];
 const rows = Array.from({ length: 24 }, (_, i) => ({
   cells: [{ text: `row ${i} A` }, { text: `row ${i} B` }],

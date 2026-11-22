@@ -16,12 +16,6 @@ import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const blockClass = `${prefix}-carousel`;
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 const template = html`
   <cds-aichat-carousel>
     <div class="carousel-wrapper">

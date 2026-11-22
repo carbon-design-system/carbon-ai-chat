@@ -40,12 +40,6 @@ const actionLists: Record<string, Action[]> = {
   ],
 };
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 describe('toolbar', function () {
   it('should render with cds-aichat-toolbar minimum attributes', async () => {
     const el = await fixture<Toolbar>(

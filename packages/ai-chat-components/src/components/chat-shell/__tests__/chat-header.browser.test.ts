@@ -19,12 +19,6 @@ import {
 const Close = { name: 'close', size: 16 };
 const Restart = { name: 'restart', size: 16 };
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 describe('cds-aichat-chat-header', function () {
   // ========== Basic Rendering Tests ==========
   describe('Basic Rendering', () => {

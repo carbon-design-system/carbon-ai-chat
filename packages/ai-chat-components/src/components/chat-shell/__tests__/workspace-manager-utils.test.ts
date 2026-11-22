@@ -19,12 +19,6 @@ import {
   shouldSkipWorkspaceUpdate,
 } from '../src/workspace-manager-utils.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 describe('workspace-manager-utils', () => {
   describe('calculateRequiredWidth', () => {
     it('sums the minimum widths', () => {

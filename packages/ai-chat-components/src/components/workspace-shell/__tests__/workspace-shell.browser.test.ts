@@ -18,12 +18,6 @@ import CDSAIChatWorkspaceShellHeader from '@carbon/ai-chat-components/es/compone
 import CDSAIChatWorkspaceShellBody from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-body.js';
 import CDSAIChatWorkspaceShellFooter from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-footer.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 const actions = [
   {
     text: 'Launch',
