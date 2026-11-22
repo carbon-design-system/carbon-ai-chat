@@ -201,12 +201,16 @@ function sourceSyntax(text, file) {
     const typeImport =
       ts.isImportDeclaration(node) && node.importClause?.isTypeOnly;
     const typeExport = ts.isExportDeclaration(node) && node.isTypeOnly;
+    const typeSpecifier =
+      (ts.isExportSpecifier(node) || ts.isImportSpecifier(node)) &&
+      node.isTypeOnly;
     const runtimeExpression =
       ts.isExpressionWithTypeArguments(node) && !ts.isPartOfTypeNode(node);
     if (
       typeDeclaration ||
       typeImport ||
       typeExport ||
+      typeSpecifier ||
       (ts.isTypeNode(node) && !runtimeExpression)
     ) {
       types.push([node.getStart(source), node.end]);

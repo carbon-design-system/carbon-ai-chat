@@ -550,6 +550,25 @@ test('missing runtime file data is unverified while a type-only module is named 
   );
 });
 
+test('inline type specifiers are type-only, and a runtime re-export stays unverified', () => {
+  const text = [
+    "export { a, type B } from './x';",
+    'export {',
+    '  type C,',
+    "} from './y';",
+    'import {',
+    '  type D,',
+    "} from './z';",
+  ].join('\n');
+  const rows = [1, 3, 6].map((line) => ({ file: RUNTIME_FILE, line }));
+  const result = coverageGaps(rows, {}, () => text);
+  assert.deepEqual(result.nonExecutable, [
+    `${RUNTIME_FILE}:3`,
+    `${RUNTIME_FILE}:6`,
+  ]);
+  assert.deepEqual(result.unverified, [`${RUNTIME_FILE}:1`]);
+});
+
 test('contract coverage rejects missing reports and source mismatch', (context) => {
   const root = fixture(context);
   const report = join(root, 'coverage-final.json');
