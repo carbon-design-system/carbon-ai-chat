@@ -81,7 +81,7 @@ export default {
       // Use esbuild's more permissive minifier instead.
       build: { cssMinify: 'esbuild' },
       // Bare `@forward '@carbon/utilities'` chains from `@carbon/styles` need
-      // explicit node_modules load paths; matches web-test-runner.config.js.
+      // explicit node_modules load paths; matches vitest.config.ts.
       css: {
         preprocessorOptions: {
           scss: { loadPaths: sassLoadPaths },

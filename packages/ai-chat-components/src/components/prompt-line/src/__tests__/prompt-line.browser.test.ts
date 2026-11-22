@@ -77,7 +77,7 @@ async function describeUpgrade(el: PromptLineElement): Promise<string> {
     _controller?: { getEditor?: () => unknown } | null;
   };
   // A parked upgrade leaves ensureEditor() pending forever, so cap the wait
-  // rather than trading a readable failure for a Mocha timeout.
+  // rather than trading a readable failure for a test timeout.
   const ensure = await Promise.race([
     el.ensureEditor().then(
       () => 'resolved',

@@ -7,8 +7,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-/// <reference types="mocha" />
-
 import { expect, fixture, html, nextFrame, waitUntil } from '@open-wc/testing';
 import {
   resetMouse,

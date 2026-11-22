@@ -13,11 +13,11 @@ import type PromptLineElement from '../prompt-line.js';
  * Poll until the rich editor has finished loading + mounting. Tiptap is loaded
  * via a lazy `import()` (see #1578), so the first upgrade in a test file pays a
  * cold-load cost that can approach a couple seconds on Chromium — poll long
- * enough to cover it (the runner's Mocha timeout is raised to match in
- * web-test-runner.config.js).
+ * enough to cover it (the browser project's 10-second `testTimeout` in
+ * vitest.config.ts allows for it).
  *
  * Pass an optional `context` callback to augment the timeout error message with
- * file-local diagnostics (see `describeUpgrade` in prompt-line.test.ts).
+ * file-local diagnostics (see `describeUpgrade` in prompt-line.browser.test.ts).
  */
 export async function waitForRich(
   el: PromptLineElement,
