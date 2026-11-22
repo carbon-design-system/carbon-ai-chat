@@ -2,7 +2,7 @@
 
 Load this when writing or running tests in this package. Vitest runs every test here, in two projects. A file's name says which one.
 
-Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs under `tests/`). Every Lit element gets tests under its `__tests__/`. Every new or changed React wrapper should get a spec under `src/react/__tests__/`.
+Tests sit beside the code they cover, under `__tests__/`, as in `@carbon/ai-chat`. Every Lit element gets tests under its `__tests__/`. Every new or changed React wrapper should get a spec under `src/react/__tests__/`.
 
 ## Two projects
 
@@ -18,6 +18,8 @@ Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs
 DOM snapshots use `expectDomSnapshot(el)` from `src/__tests__/browser/dom-snapshot.ts` and live in `__snapshots__/` next to the test. Regenerate with `npm run test:updateSnapshot` and **review the diff** before committing — a snapshot churn usually means a real render change.
 
 ## Running tests
+
+The `browser` project needs Playwright's Chromium, installed once per machine with `npx playwright install chromium` (add `firefox webkit` for `CAIC_ALL_BROWSERS=1`).
 
 From this package directory:
 
