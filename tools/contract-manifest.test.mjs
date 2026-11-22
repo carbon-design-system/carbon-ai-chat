@@ -210,8 +210,13 @@ test('D4 checks local static, type, export, require, dynamic and vi module impor
       return name.startsWith('.') ? name : `./${name}`;
     };
     for (const path of [...allowed, ...helpers]) {
-      write(target, `import '${specifier(path)}';`);
-      assert.doesNotThrow(() => contractInventory(root));
+      for (const statement of [
+        `import '${specifier(path)}';`,
+        `vi.mock(import('${specifier(path)}'));`,
+      ]) {
+        write(target, statement);
+        assert.doesNotThrow(() => contractInventory(root));
+      }
     }
     for (const path of privateFiles) {
       const name = JSON.stringify(specifier(path));
@@ -224,6 +229,8 @@ test('D4 checks local static, type, export, require, dynamic and vi module impor
         `const value = import(${name});`,
         `const value = vi.importActual(${name});`,
         `vi.mock(${name});`,
+        `const value = vitest.importActual(${name});`,
+        `vi.mock(import(${name}));`,
       ]) {
         write(target, statement);
         assert.throws(() => contractInventory(root), /Private/);

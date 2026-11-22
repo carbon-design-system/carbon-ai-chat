@@ -479,6 +479,8 @@ describe('planted imports', () => {
     it.each([
       ["const actual = vi.importActual('react');", 'react'],
       ["vi.mock('@testing-library/react');", '@testing-library/react'],
+      ["const actual = vitest.importActual('react');", 'react'],
+      ["vi.mock(import('react'));", 'react'],
       [
         "import { act } from '@testing-library/react';\nvoid act;",
         '@testing-library/react',
@@ -504,6 +506,24 @@ describe('planted imports', () => {
       });
       check(graph);
       expect(graph.issues).toContain(`${sdkTest}: nonliteral dynamic import`);
+    });
+
+    it('flags a require whose specifier is not a literal', () => {
+      const graph = base.fork({
+        [sdkTest]: `require(String('react'));\n${read(sdkTest)}`,
+      });
+      check(graph);
+      expect(graph.issues).toContain(`${sdkTest}: nonliteral dynamic import`);
+    });
+
+    it('accepts the typed vi.mock(import()) form', () => {
+      const graph = base.fork({
+        [sdkTest]: `vi.mock(import('../registry'));\n${read(sdkTest)}`,
+      });
+      check(graph);
+      expect(graph.issues).not.toContain(
+        `${sdkTest}: nonliteral dynamic import`
+      );
     });
   });
 

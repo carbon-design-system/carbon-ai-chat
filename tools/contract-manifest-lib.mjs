@@ -108,7 +108,16 @@ function importedModule(node) {
   }
   if (
     ts.isCallExpression(node) &&
-    (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+    isViModuleCall(node) &&
+    isImportCall(node.arguments[0])
+  ) {
+    // `vi.mock(import('x'))` is Vitest's typed form; the inner `import()`
+    // already gives the edge.
+    return undefined;
+  }
+  if (
+    ts.isCallExpression(node) &&
+    (isImportCall(node) ||
       (ts.isIdentifier(node.expression) &&
         node.expression.text === 'require') ||
       isViModuleCall(node))
@@ -118,7 +127,16 @@ function importedModule(node) {
   return undefined;
 }
 
-// Vitest's helpers that load, or stand in for, a module by its specifier.
+function isImportCall(node) {
+  return (
+    !!node &&
+    ts.isCallExpression(node) &&
+    node.expression.kind === ts.SyntaxKind.ImportKeyword
+  );
+}
+
+// Vitest's helpers that load, or stand in for, a module by its specifier,
+// called on `vi` or its `vitest` alias.
 const VI_MODULE_HELPERS = new Set([
   'importActual',
   'importMock',
@@ -133,7 +151,7 @@ function isViModuleCall(node) {
   return (
     ts.isPropertyAccessExpression(callee) &&
     ts.isIdentifier(callee.expression) &&
-    callee.expression.text === 'vi' &&
+    (callee.expression.text === 'vi' || callee.expression.text === 'vitest') &&
     VI_MODULE_HELPERS.has(callee.name.text)
   );
 }
