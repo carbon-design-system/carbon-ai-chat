@@ -479,6 +479,10 @@ describe('planted imports', () => {
     it.each([
       ["const actual = vi.importActual('react');", 'react'],
       ["vi.mock('@testing-library/react');", '@testing-library/react'],
+      [
+        "import { act } from '@testing-library/react';\nvoid act;",
+        '@testing-library/react',
+      ],
     ])(
       'fails an sdk test that loads a framework at run time: %s',
       (line, target) => {
@@ -487,6 +491,12 @@ describe('planted imports', () => {
         );
       }
     );
+
+    it('allows an sdk test a type-only framework import', () => {
+      expect(
+        plant(sdkTest, "import type { ReactNode } from 'react';").frameworks
+      ).not.toContain(`src/sdk/: ${sdkTest} -> react`);
+    });
 
     it('flags a vi module helper whose specifier is not a literal', () => {
       const graph = base.fork({
