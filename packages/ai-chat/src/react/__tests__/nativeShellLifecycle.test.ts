@@ -28,6 +28,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../chat/__tests__/helpers/chat';
+import { untilCalled } from '../../chat/__tests__/helpers/waits';
 import { viewActions } from '../../chat/state';
 
 const restoreWindow: (() => void)[] = [];
@@ -307,9 +308,8 @@ async function boot(
       onAfterRender: after,
     })
   );
-  await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
-    timeout: 5000,
-  });
+  await untilCalled(after);
+  expect(after).toHaveBeenCalledTimes(1);
   const root = document.querySelector('cds-aichat-container').shadowRoot;
   const view = root.querySelector<ChatShell>('cds-aichat-chat-shell');
   await view.whenReady();
@@ -451,14 +451,25 @@ it('keeps a replacement shell live when the stale shell detaches after it connec
   replacement.inputConfig = f.view.inputConfig;
   replacement.transformIcon = f.view.transformIcon;
   replacement.contentRevision = f.view.contentRevision;
+  // The input announces its handle with a non-bubbling event, which a capture
+  // listener on its shell still sees. The shell publishes the handle in that
+  // same dispatch.
+  const published = new Promise<void>((resolve) => {
+    replacement.addEventListener(
+      'cds-aichat-input-handle-change',
+      () => resolve(),
+      { capture: true, once: true }
+    );
+  });
   act(() => {
     parent.insertBefore(replacement, f.view.nextSibling);
   });
-  await waitFor(() => {
-    const input = replacement.querySelector<ChatInput>('cds-aichat-chat-input');
-    expect(input?.inputFunctions).toBeTruthy();
-    expect(f.viewState.inputComponent).toBe(input.inputFunctions);
+  await act(async () => {
+    await published;
   });
+  const input = replacement.querySelector<ChatInput>('cds-aichat-chat-input');
+  expect(input?.inputFunctions).toBeTruthy();
+  expect(f.viewState.inputComponent).toBe(input.inputFunctions);
   expect(tracker.lifecycles).toHaveLength(2);
   const [, fresh] = tracker.lifecycles;
   const live = registrations(f.viewState);
