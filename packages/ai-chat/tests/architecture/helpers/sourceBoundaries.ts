@@ -100,8 +100,9 @@ function literalText(node: ts.Expression | undefined) {
 
 /**
  * The module a node imports: an import or export declaration, an `import()`
- * type or call, or a `require` call. Null marks a dynamic import whose
- * argument isn't a literal.
+ * type or call, a `require` call, or a Vitest module helper such as
+ * `vi.importActual` or `vi.mock`. Null marks a dynamic import or module
+ * helper whose argument isn't a literal.
  */
 function importedModule(node: ts.Node): string | null | undefined {
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -116,9 +117,32 @@ function importedModule(node: ts.Node): string | null | undefined {
   if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
     return literalText(node.arguments[0]) ?? null;
   }
+  if (isViModuleCall(node)) {
+    return literalText(node.arguments[0]) ?? null;
+  }
   const isRequire =
     ts.isIdentifier(node.expression) && node.expression.text === 'require';
   return isRequire ? literalText(node.arguments[0]) : undefined;
+}
+
+/** Vitest's helpers that load, or stand in for, a module by its specifier. */
+const VI_MODULE_HELPERS = new Set([
+  'importActual',
+  'importMock',
+  'mock',
+  'doMock',
+  'unmock',
+  'doUnmock',
+]);
+
+function isViModuleCall(node: ts.CallExpression) {
+  const callee = node.expression;
+  return (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    callee.expression.text === 'vi' &&
+    VI_MODULE_HELPERS.has(callee.name.text)
+  );
 }
 
 export function isFramework(specifier: string) {

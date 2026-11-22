@@ -109,11 +109,33 @@ function importedModule(node) {
   if (
     ts.isCallExpression(node) &&
     (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
-      (ts.isIdentifier(node.expression) && node.expression.text === 'require'))
+      (ts.isIdentifier(node.expression) &&
+        node.expression.text === 'require') ||
+      isViModuleCall(node))
   ) {
     return node.arguments[0] ?? node;
   }
   return undefined;
+}
+
+// Vitest's helpers that load, or stand in for, a module by its specifier.
+const VI_MODULE_HELPERS = new Set([
+  'importActual',
+  'importMock',
+  'mock',
+  'doMock',
+  'unmock',
+  'doUnmock',
+]);
+
+function isViModuleCall(node) {
+  const callee = node.expression;
+  return (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    callee.expression.text === 'vi' &&
+    VI_MODULE_HELPERS.has(callee.name.text)
+  );
 }
 
 function assertContractImports(root, file) {

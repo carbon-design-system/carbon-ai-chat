@@ -475,6 +475,34 @@ describe('planted imports', () => {
         `src/sdk/: ${sdkTest} -> ${target}`
       );
     });
+
+    it.each([
+      ["const actual = vi.importActual('react');", 'react'],
+      ["vi.mock('@testing-library/react');", '@testing-library/react'],
+    ])(
+      'fails an sdk test that loads a framework at run time: %s',
+      (line, target) => {
+        expect(plant(sdkTest, line).frameworks).toContain(
+          `src/sdk/: ${sdkTest} -> ${target}`
+        );
+      }
+    );
+
+    it('flags a vi module helper whose specifier is not a literal', () => {
+      const graph = base.fork({
+        [sdkTest]: `vi.mock(String('react'));\n${read(sdkTest)}`,
+      });
+      check(graph);
+      expect(graph.issues).toContain(`${sdkTest}: nonliteral dynamic import`);
+    });
+  });
+
+  it('fails a contract test that mocks an internal service', () => {
+    const contract = 'src/sdk/__tests__/lifecycle.contract.test.ts';
+    const result = plant(contract, "vi.mock('../services/ServiceManager');");
+    expect(result.contracts).toContain(
+      `${contract} -> src/sdk/services/ServiceManager.ts`
+    );
   });
 
   it('fails a contract test that imports an internal service', () => {

@@ -173,7 +173,7 @@ test('manifest kinds accept only registered contract paths', () => {
   );
 });
 
-test('D4 checks local static, type, export, require and dynamic imports in suites and helpers', (context) => {
+test('D4 checks local static, type, export, require, dynamic and vi module imports in suites and helpers', (context) => {
   const { root, file } = fixture(context, simple);
   const sourceRoot = 'packages/ai-chat/src';
   const helpers = ['publicContract', 'lifecycleControl'].map(
@@ -222,6 +222,8 @@ test('D4 checks local static, type, export, require and dynamic imports in suite
         `type Value = import(${name}).value;`,
         `const value = require(${name});`,
         `const value = import(${name});`,
+        `const value = vi.importActual(${name});`,
+        `vi.mock(${name});`,
       ]) {
         write(target, statement);
         assert.throws(() => contractInventory(root), /Private/);
@@ -232,6 +234,7 @@ test('D4 checks local static, type, export, require and dynamic imports in suite
       "import '@carbon/ai-chat/dist/es/sdk/handle.js';",
       'const value = import(target);',
       'const value = require(target);',
+      'vi.doMock(target);',
     ]) {
       write(target, statement);
       assert.throws(() => contractInventory(root), /contract import/);
