@@ -138,23 +138,6 @@ export const renderChatAndGetInstanceWithStore = async (
 };
 
 /**
- * Unmounts the rendered chats but keeps this one's services running, so a
- * spec can drive a chat with no view attached. Removing a host shuts its chat
- * down (#1681); until the SDK starts a chat without a host (#1732), this
- * stands in for one.
- */
-export function unmountKeepingServices(instance: ChatInstance) {
-  // `instance.serviceManager` is a plain copy; the coordinator holds the real one.
-  const manager = (
-    instance.serviceManager.messageCoordinator as unknown as {
-      serviceManager: ServiceManager;
-    }
-  ).serviceManager;
-  vi.spyOn(manager, 'shutdown').mockResolvedValue(undefined);
-  cleanup();
-}
-
-/**
  * Standard afterEach cleanup for tests.
  * Unmounts rendered React trees (running effect/component cleanup) before
  * clearing the DOM, so jsdom/Lit/timer state does not accumulate across the

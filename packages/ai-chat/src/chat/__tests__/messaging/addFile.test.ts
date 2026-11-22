@@ -82,9 +82,6 @@ const uploads = (instance: ChatInstance) => instance.state.get().pendingUploads;
 describe('messaging.addFile and removeFile (#2351)', () => {
   beforeEach(() => {
     setupBeforeEach();
-    // jsdom has no object URLs; the input draws an image preview with one.
-    URL.createObjectURL ??= () => 'blob:preview';
-    URL.revokeObjectURL ??= () => undefined;
     sessionStorage.clear();
     localStorage.clear();
   });

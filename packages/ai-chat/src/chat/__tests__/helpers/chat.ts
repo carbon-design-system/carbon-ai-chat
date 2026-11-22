@@ -14,7 +14,6 @@ export {
   type ChatInstanceWithStore,
   renderChatAndGetInstance,
   renderChatAndGetInstanceWithStore,
-  unmountKeepingServices,
   setupAfterEach,
 } from './render';
 export { type BootedChat, bootChat, shutdownBootedChats } from './boot';

@@ -28,8 +28,14 @@ export interface BootedChat {
 const live = new Set<BootedChat>();
 
 /**
- * Boots the prebuilt chat the way its container does, but renders nothing.
+ * Boots the prebuilt chat through the container's boot, but renders nothing.
  * The chat has the full 1.x `ChatInstance` and its view partition.
+ *
+ * It skips the container's later steps: the host's `onBeforeRender`, the
+ * boot-time app config (`applyBootConfig`, including the markdown config),
+ * `performInitialViewChange` (slot naming and the load's view change), and
+ * marking the initial view change complete. A test of any of those renders
+ * the chat instead.
  *
  * With `attach`, it also attaches a view: the view state, its ports and the
  * extension hosts, as the container does before it renders. Without one, the
@@ -61,12 +67,23 @@ export async function bootChat(
   return chat;
 }
 
-/** Detaches each booted chat's view and shuts the chat down. */
+/**
+ * Detaches each booted chat's view and shuts the chat down. A failure in one
+ * chat doesn't stop the others; the first error is rethrown at the end.
+ */
 export async function shutdownBootedChats() {
   const chats = [...live];
   live.clear();
+  const errors: unknown[] = [];
   for (const chat of chats) {
-    chat.view?.detach();
-    await chat.serviceManager.shutdown();
+    try {
+      chat.view?.detach();
+      await chat.serviceManager.shutdown();
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  if (errors.length) {
+    throw errors[0];
   }
 }
