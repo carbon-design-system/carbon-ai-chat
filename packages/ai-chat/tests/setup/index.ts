@@ -180,9 +180,7 @@ if (typeof window !== 'undefined') {
       message: error instanceof Error ? error.message : String(error),
       cancelable: true,
     });
-    if (window.dispatchEvent(event)) {
-      console.error(error);
-    }
+    window.dispatchEvent(event);
   };
   const guard =
     (callback: (...args: unknown[]) => unknown) =>
@@ -213,6 +211,46 @@ if (typeof window !== 'undefined') {
   globalThis.setTimeout = wrap(globalThis.setTimeout);
   globalThis.setInterval = wrap(globalThis.setInterval);
   globalThis.queueMicrotask = wrap(globalThis.queueMicrotask);
+}
+
+// Jest's jsdom environment failed a test on an uncaught page error: when no
+// test code listened for window `error` events, it re-emitted each one's
+// error as the process's `uncaughtException`. Do the same here, so a thrown
+// listener, timer or microtask callback fails the run instead of reaching
+// only the muted console. happy-dom can give `window` and `globalThis` their
+// own bound copies of `addEventListener`, so count listeners through both.
+if (typeof window !== 'undefined') {
+  let userErrorListeners = 0;
+  const addToWindow = window.addEventListener.bind(window);
+  const targets = [...new Set([window, globalThis])] as EventTarget[];
+  targets.forEach((target) => {
+    const add = target.addEventListener;
+    const remove = target.removeEventListener;
+    target.addEventListener = function (
+      this: EventTarget,
+      ...args: Parameters<EventTarget['addEventListener']>
+    ) {
+      if (args[0] === 'error') {
+        userErrorListeners += 1;
+      }
+      return add.apply(this, args);
+    };
+    target.removeEventListener = function (
+      this: EventTarget,
+      ...args: Parameters<EventTarget['removeEventListener']>
+    ) {
+      if (args[0] === 'error') {
+        userErrorListeners -= 1;
+      }
+      return remove.apply(this, args);
+    };
+  });
+  // Registered through the saved original, so it is not counted as a user's.
+  addToWindow('error', (event: ErrorEvent) => {
+    if (userErrorListeners === 0 && event.error != null) {
+      process.emit('uncaughtException', event.error);
+    }
+  });
 }
 
 // Suppress console output during tests unless debugging
