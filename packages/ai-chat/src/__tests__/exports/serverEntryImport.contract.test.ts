@@ -8,10 +8,10 @@
  */
 
 /**
- * `serverEntry` is the SSR-safe entry: importing it must not register
- * elements or reach into the page. Importing it with no DOM at all is in
- * `serverEntryNode.contract.test.ts`; a node environment has no page to spy on, so
- * this file spies on the page in jsdom and imports the entry fresh.
+ * `serverEntry` is the SSR-safe entry: importing it must not register elements
+ * or reach into the page. Importing it with no DOM at all is in
+ * `serverEntryNode.contract.test.ts`; a node environment has no page to spy on,
+ * so this file spies on the page in jsdom and imports the entry fresh.
  *
  * It imports no contract helper and calls no `contractSetup()`: the helpers
  * import both element entries, which would register elements before the spies

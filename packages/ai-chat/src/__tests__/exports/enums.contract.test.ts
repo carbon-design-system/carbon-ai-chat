@@ -11,8 +11,8 @@
  * Hosts compare against enum values (event types, reasons, test IDs), so each
  * enum and enum-like constant is pinned whole: an added, removed, renamed, or
  * re-valued member fails here as one edited line. They're pinned from
- * `aiChatEntry`; `entryParity.contract.test` checks that `serverEntry` holds the same
- * values.
+ * `aiChatEntry`; `entryParity.contract.test` checks that `serverEntry` holds
+ * the same values.
  *
  * MAIN-NOTES M103: some names and values don't follow one style (snake_case
  * `human_agent:*` event values, sentence-case `CancellationReason` values,

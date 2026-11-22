@@ -102,8 +102,8 @@ describe('entry exports', () => {
   });
 
   // The enums and the language pack are pinned from aiChatEntry in
-  // enums.contract.test and languagePack.contract.test; this is where serverEntry's copies are
-  // checked.
+  // enums.contract.test and languagePack.contract.test; this is where
+  // serverEntry's copies are checked.
   // @covers export.serverEntry.PageObjectId export.serverEntry.ViewType export.serverEntry.PanelType export.serverEntry.WriteableElementName
   // @covers export.serverEntry.LayoutCustomProperties export.serverEntry.CornersType export.serverEntry.BusEventType export.serverEntry.FeedbackInteractionType
   // @covers export.serverEntry.HeaderMenuClickType export.serverEntry.MessageSendSource export.serverEntry.ViewChangeReason export.serverEntry.CancellationReason

@@ -13,7 +13,8 @@
  * changes when React renders the host again with a new value. The React
  * lifecycle cases (StrictMode, unmount, a new `key`) run through both React
  * hosts. Config props that React passes through are in
- * `src/chat/__tests__/config/configUpdates.contract.test.ts`; `ChatCustomElement`'s own props are in
+ * `src/chat/__tests__/config/configUpdates.contract.test.ts`;
+ * `ChatCustomElement`'s own props are in
  * `reactCustomElement.contract.test.tsx`.
  *
  * Most tests render their own tree rather than calling `contractChat`, to
@@ -415,8 +416,8 @@ describe.each(REACT_HOSTS)(
       };
     }
 
-    // The load's own view change is in elementCallbacks.contract.test, so this clears
-    // it and checks a host's change only.
+    // The load's own view change is in elementCallbacks.contract.test, so this
+    // clears it and checks a host's change only.
     it('calls onViewPreChange, then onViewChange, with the event and the instance', async () => {
       const { calls, instance } = await mountRecording();
       calls.length = 0;
@@ -1139,8 +1140,8 @@ describe.each(REACT_HOSTS)(
     });
 
     // What a fresh mount does (callbacks, chat:ready, empty messages) is in
-    // src/chat/__tests__/lifecycle/remount.contract.test.ts; this pins only that a new key gives a new
-    // instance.
+    // src/chat/__tests__/lifecycle/remount.contract.test.ts; this pins only
+    // that a new key gives a new instance.
     it('starts a new chat, with a new instance, for a new key', async () => {
       const { onBeforeRender, onAfterRender } = kit();
       const chat = (key: string) => (

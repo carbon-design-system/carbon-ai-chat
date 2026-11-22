@@ -340,7 +340,8 @@ describe.each(ELEMENT_TAGS)('markdown.customRenderers on %s', (tag) => {
   });
 });
 
-// `cds-aichat-container`'s markdownItPlugins are in src/chat/__tests__/config/markdown.contract.test.ts.
+// `cds-aichat-container`'s markdownItPlugins are in
+// src/chat/__tests__/config/markdown.contract.test.ts.
 // @covers element.cds-aichat-custom-element.markdown
 describe('markdown.markdownItPlugins on cds-aichat-custom-element', () => {
   contractSetup();
