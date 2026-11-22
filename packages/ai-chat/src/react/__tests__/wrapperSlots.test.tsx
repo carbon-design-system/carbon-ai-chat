@@ -44,6 +44,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../chat/__tests__/helpers/chat';
+import { untilCalled, untilDom } from '../../chat/__tests__/helpers/waits';
 
 const config = { ...createBaseConfig(), openChatByDefault: true };
 
@@ -412,7 +413,8 @@ describe('React render props through the shared container', () => {
         />
       );
       const mounted = render(host(false));
-      await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+      await untilCalled(after);
+      expect(after).toHaveBeenCalledTimes(1);
       const chat = getChatHost();
       const native = chat.shadowRoot.querySelector('cds-aichat-home-screen');
       expect(native).not.toBeNull();
@@ -449,7 +451,7 @@ describe('React render props through the shared container', () => {
         )
       ).toBe(true);
       mounted.rerender(host(false, 'With content'));
-      await waitFor(() =>
+      await untilDom(chat.shadowRoot, () =>
         expect(
           body().classList.contains(
             'cds-aichat--home-screen__body--custom-content'
@@ -459,7 +461,7 @@ describe('React render props through the shared container', () => {
       imperative.click();
       imperative.remove();
       mounted.rerender(host(false, 'Without content'));
-      await waitFor(() =>
+      await untilDom(chat.shadowRoot, () =>
         expect(
           body().classList.contains(
             'cds-aichat--home-screen__body--no-custom-content'
@@ -468,7 +470,7 @@ describe('React render props through the shared container', () => {
       );
       writable.appendChild(imperative);
       mounted.rerender(host(false, 'Content again'));
-      await waitFor(() =>
+      await untilDom(chat.shadowRoot, () =>
         expect(
           body().classList.contains(
             'cds-aichat--home-screen__body--custom-content'
@@ -478,12 +480,14 @@ describe('React render props through the shared container', () => {
       expect(imperative.textContent).toBe('1');
 
       mounted.rerender(host(true));
-      await waitFor(() => expect(probe('home-react-counter')).not.toBeNull());
+      await untilDom(document, () =>
+        expect(probe('home-react-counter')).not.toBeNull()
+      );
       const counter = probe('home-react-counter');
       fireEvent.click(counter);
       expect(counter.textContent).toBe('1');
       mounted.rerender(host(true, 'Updated greeting'));
-      await waitFor(() =>
+      await untilDom(chat.shadowRoot, () =>
         expect(native.querySelector('h2')?.textContent).toBe('Updated greeting')
       );
       expect(probe('home-react-counter')).toBe(counter);
@@ -626,7 +630,8 @@ describe('React render props through the shared container', () => {
         }}
       />
     );
-    await waitFor(() => expect(after).toHaveBeenCalledTimes(1));
+    await untilCalled(after);
+    expect(after).toHaveBeenCalledTimes(1);
     const native = getChatHost().shadowRoot.querySelector(
       'cds-aichat-header-view'
     );
@@ -651,7 +656,7 @@ describe('React render props through the shared container', () => {
       })
     );
     expect(carbonAction.icon).toEqual(descriptor);
-    await waitFor(() =>
+    await untilDom(base.shadowRoot, () =>
       expect(
         deepQuerySelector(base.shadowRoot, 'path[d="M2 2h12v12H2z"]')
       ).not.toBeNull()
