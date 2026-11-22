@@ -2,7 +2,7 @@
 
 Load this when writing or running tests in this package. Vitest runs every test here, in two projects. A file's name says which one.
 
-Tests sit beside the code they cover, under `__tests__/`, as in `@carbon/ai-chat`. Every Lit element gets tests under its `__tests__/`. Every new or changed React wrapper should get a spec under `src/react/__tests__/`.
+Tests sit beside the code they cover, under `__tests__/`, as in `@carbon/ai-chat`. Where a test goes, and when it needs a real browser, follows [the rule in `@carbon/ai-chat`](../../ai-chat/references/tests.md#where-a-test-goes). Every Lit element gets tests under its `__tests__/`. Every new or changed React wrapper should get a spec under `src/react/__tests__/`.
 
 ## Two projects
 

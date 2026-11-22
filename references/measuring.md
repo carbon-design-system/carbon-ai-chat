@@ -47,7 +47,7 @@ Use the [reviewability policy](pr-reviewability.md) for the size bands. Rules ap
 | snapshots | `**/__snapshots__/**`, `**/*.snap` | No |
 | fixtures | `**/fixtures/**`, `**/__fixtures__/**` | No |
 | test cases | Basenames matching `*_spec.*`, `*.test.*`, `*.spec.*` | No |
-| shared test infrastructure | `examples/shared/playwright/**`; outside `examples/`: `{jest,web-test-runner,playwright,vitest}.config.*`, `packages/ai-chat/tests/{setup.ts,test_helpers.ts}`, `packages/ai-chat-components/src/testing/**`, non-spec files in `**/__tests__/` or `demo/tests/` | Yes |
+| shared test infrastructure | `examples/shared/playwright/**`; outside `examples/`: `{jest,web-test-runner,playwright,vitest}.config.*`, `packages/ai-chat/tests/setup/**`, `packages/ai-chat-components/src/testing/**`, non-spec files in `**/__tests__/` or `demo/tests/` | Yes |
 | examples and demo | Remaining `examples/**`, `demo/**`, including example-local configs and helpers | No |
 | docs | `.md` and `.mdx` at any depth, plus root `docs/**` | No |
 | code | Everything else: production code, public types, styles, tooling, CI, manifests, and stories | Yes |

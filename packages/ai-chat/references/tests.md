@@ -1,74 +1,48 @@
 # tests.md — `@carbon/ai-chat` testing
 
-Load this when writing or fixing Jest tests in this package.
+Load this when adding, moving, or fixing a test for this package, or when deciding whether a behavior needs a demo Playwright test.
 
-Tests are organized by what they validate. Naming is `_spec.ts(x)` (not `.test.ts`); files live in `tests/<area>/spec/` (not colocated with source — opposite of `@carbon/ai-chat-components`).
+Tests sit beside the code they cover, in `__tests__/<name>.test.ts(x)`. Vitest runs them. The package's `tests/` folder holds only setup and the checks with no module to sit beside.
 
-## Test categories
+## Where a test goes
 
-| Category | Location | Validates | Pattern |
-| --- | --- | --- | --- |
-| Contract | `tests/contract/spec/<area>/` | Public host behavior | Public entries, callbacks, events, state snapshots, and documented DOM hooks |
-| Store & hooks | `tests/store/spec/` | Redux-like store + custom hooks | Local test store, wrap in `TestChatContext` from `test_helpers.ts`, assert state |
-| Services | `tests/services/spec/` | Service orchestration & side effects | Stub `ServiceManager`, instantiate directly, assert calls/state |
-| Components | `tests/components/spec/` | React component rendering & interactions | Testing Library, simulate user, assert DOM |
-| Architecture | `tests/architecture/spec/` | Folder import rules and the SDK's reachable types | Read source with the TypeScript compiler; prove each rule with a planted import |
-| Integration | `demo/tests/` (Playwright) | End-to-end flows across the full stack | See [demo/AGENTS.md](../../../demo/AGENTS.md) |
+Use the cheapest test that can show the behavior. Answer in order, and stop at the first yes.
 
-### Store & hook example
+1. **One module owns the behavior.** Write a unit test in `__tests__/` beside that module. Build only what it needs: a stub, a test store, or one rendered component. Don't mount the chat to reach a service or the store.
+2. **Several modules work together.** Write a cross-module test in the `__tests__/` of the entry it drives (table below). Boot the least you need (see [Helpers](#helpers)).
+3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A real browser alone is no reason to use the demo.
+4. **It needs the built demo:** the production build, a demo toggle, the host-compatibility pages, or the demo's response corpus. Only then add a spec to [demo/tests/](../../../demo/tests/), and only if no example's spec covers it. The [example suite](../../../examples/references/playwright.md) covers host integrations.
 
-`tests/store/spec/reactReduxShim_spec.tsx`:
+Check one behavior at one level. When a cheaper test shows it, delete the costlier copy, unless the costlier copy is a contract test.
 
-```typescript
-const store = createAppStore(initialState);
-render(
-  <TestChatContext store={store}>
-    <TestComponent />
-  </TestChatContext>
-);
-store.dispatch(someAction());
-expect(screen.getByText('expected')).toBeInTheDocument();
-```
+| A cross-module test that drives… | Goes in |
+| --- | --- |
+| `createChatSDK` or the SDK handle | `src/sdk/__tests__/` |
+| the prebuilt chat's `ChatInstance`, through any host | `src/chat/__tests__/` |
+| a React wrapper's own behavior | `src/react/__tests__/` |
+| the `cds-aichat-*` hosts, or parity across hosts | `src/web-components/__tests__/` |
 
-`TestChatContext` also takes `intl`, a stub `serviceManager`, and an `announce` mock. It replaces every per-chat provider: hooks such as `useSelector`, `useIntl`, and `useAriaAnnouncer` all read the one `ChatContext`. For a spec that needs the view state itself, `createTestViewState` builds the same one.
+Tests follow their folder's [import rules](../AGENTS.md#source-boundaries). A test under `src/sdk/` can import a framework's types but never its values: no React, Lit, Testing Library, or `src/chat/`, including through `vi.mock` or `vi.importActual`. If its assertions need them, it's a `chat/` test.
 
-Add when: new actions/reducers, new `useSelector` patterns, state-dependent component behavior.
+**Reusable component behavior** (rendering, tokens, HTML, keyboard handling inside an element) belongs in `@carbon/ai-chat-components`' tests. Keep chat state, config, messaging, and the wiring between them here.
 
-### Service example
+## Prefer public behavior
 
-`tests/services/spec/MessageService_spec.ts`:
+Aim each behavior test at a public boundary: the `ChatInstance`, a host's props, attributes, slots, and events, or the SDK handle. Calling an internal class's exported methods doesn't make a test external.
 
-```typescript
-const mockManager = {
-  store: { getState: jest.fn(), dispatch: jest.fn() },
-  actions: { addMessage: jest.fn() },
-  eventBus: { emit: jest.fn() },
-  instance: mockInstance,
-};
-const service = new MessageService(mockManager);
-await service.sendMessage('test');
-expect(mockManager.actions.addMessage).toHaveBeenCalled();
-```
+Keep an internal-only test when it shows something public tests can't reach cheaply, such as a large input matrix or a structural-sharing check. Say why in a comment: what it protects, why public tests don't cover it, and why it's worth keeping.
 
-Add when: new service methods, lifecycle changes (start/stop), complex orchestration.
-
-### Component tests
-
-Add when: new React components, prop changes, user interaction flows.
-
-### Integration tests
-
-Add when: new user-facing features, cross-component workflows, config-dependent behavior. Patterns live in [demo/AGENTS.md](../../../demo/AGENTS.md).
+To remove a test as a duplicate, show the surviving test covers it. Plant a narrow source break the old test catches, and show the survivor fails on it too.
 
 ## Contract tests pin host behavior
 
-For a change a host can observe, add or change a contract test in the same commit. Put tests in `tests/contract/spec/<area>/` and shared drivers and fixtures in `tests/contract/helpers/`.
+For a change a host can observe, add or change a contract test in the same commit. Name it `<name>.contract.test.ts(x)`, in the folder of the entry it drives (`src/chat/__tests__/<area>/`, `src/sdk/__tests__/`, `src/react/__tests__/hosts/`, `src/web-components/__tests__/`, or `src/__tests__/exports/`). Shared drivers and fixtures go in `src/chat/__tests__/helpers/contract/`. The SDK's go in `src/sdk/__tests__/helpers/publicContract.ts` and `lifecycleControl.ts`.
 
-Drive the `ChatInstance` handed to a host, public host props or attributes, slots, and events. Assert returned values, `getState()` snapshots, events, and public callbacks such as `customSendMessage` and render props. A store-shape assertion belongs in an internal test.
+Drive the `ChatInstance` handed to a host, public host props or attributes, slots, events, or the handle from `createChatSDK`. Assert returned values, `getState()` snapshots, the handle's `state`, events, and public callbacks such as `customSendMessage` and render props. A store-shape assertion belongs in an internal test.
 
-Use these public source entries for imports: `src/aiChatEntry`, `src/serverEntry`, `src/types/**`, `src/testing/**`, and `src/web-components/cds-aichat-{container,custom-element}/index`. Share fixtures through `tests/contract/helpers/`. Do not import other source modules, the store, or `tests/test_helpers.ts`.
+Import only the public entries (`src/aiChatEntry`, `src/serverEntry`, `src/sdk/index`, `src/web-components/cds-aichat-{container,custom-element}/index`), `src/types/**`, `src/testing/**`, and the contract helpers. `sourceBoundaries` fails any other import, including through a `vi` module helper.
 
-Find DOM through exported test IDs, slots, parts, roles and accessible names. The documented `cds-aichat--hidden` class is also public. Carbon tag names, Carbon classes, other classes, and markup shape are internal details. Prefer names you set through `config.strings` or message content. Use a browser test when jsdom cannot show the public effect.
+Find DOM through exported test IDs, slots, parts, roles and accessible names. The documented `cds-aichat--hidden` class is also public. Carbon tag names, Carbon classes, other classes, and markup shape are internal details. Prefer names you set through `config.strings` or message content. Use a browser test when happy-dom cannot show the public effect.
 
 **If an existing contract test fails during a refactor, stop and report the failure. Never edit its expectations to make the refactor pass.** A contract test changes only for a deliberate public behavior change. Record that choice and put the `behavior-change` label on its PR.
 
@@ -82,45 +56,78 @@ npm run contract:manifest:check
 npm run test:contract-manifest
 ```
 
-Commit `tests/contract/MANIFEST.tsv` with the tests. Generation discovers every expanded case through Jest. It hashes test bodies, helper files, and shared context such as fixtures, hooks, and parameter data. A check reads without writing and fails on stale rows. Cached discovery also checks the Node runtime and environment. It hashes env values without saving them.
+Commit `tests/contract/MANIFEST.tsv` with the tests. Generation discovers every expanded case through Vitest. It hashes test bodies, helper files, and shared context such as fixtures, hooks, and parameter data. A check reads without writing and fails on stale rows. Run `npm run format:write` before generating, so formatting can't make a row stale.
 
-CI compares the PR's exact base and head manifests. Added rows pass. Changed or removed rows require `behavior-change`. A rename removes an old row. A new independent test or helper adds rows; changing a shared parameter table can require the label even when it adds cases. Each same-file call that registers tests, such as an enum fixture call, has its own context row.
-
-Policy runs again when labels or the PR base change. A base without a manifest starts with an empty baseline. An unavailable base commit is an error. If a base update makes the merged manifest stale, merge the base and regenerate it.
+CI compares the PR's exact base and head manifests. Added rows pass. Changed or removed rows require `behavior-change`. A rename removes an old row. Changing a shared parameter table can require the label even when it adds cases. A base without a manifest starts with an empty baseline.
 
 ### Check contract execution
 
-After the build preflight, run `npm run measure -- --changed <base>`. Its advisory `contract` row lists changed runtime source lines no contract test executes and affected branch arms that stay untaken. It reads Istanbul's `coverage-final.json`; the producer runs only contract tests and includes runtime `src/**/index.ts` files.
+Run `npm run measure -- --changed <base>`. Its advisory `contract` row lists changed runtime source lines no contract test executes, from Vitest's V8 coverage of the `*.contract.test.*` files. The selected `--source worktree|index|head` must match the source on disk. To reuse a report, set `CONTRACT_COVERAGE_REPORT` to its absolute path; its `.meta.json` fingerprint must match. Keep reports uncommitted.
 
-The selected `--source worktree|index|head` must match the source used for coverage. Head and index modes require matching relevant files on disk. With no runtime source diff, the row skips the producer. It reports type-only and non-executable lines separately. Missing files, producer errors, and mismatched source remain unverified.
+Executed lines do not prove assertions. For each new runtime branch, name the contract test that fails on a narrow source break. Plant it in a scratch copy, then show a clean pass, the failure, and a restored pass. Give a specific reason for a branch with no public effect.
 
-To reuse coverage, set `CONTRACT_COVERAGE_REPORT` to the absolute report path. Its sibling `<report>.meta.json` must have a matching fingerprint for source, tests, config, lockfile, and built components. Node and environment settings must match too. Keep reports temporary and uncommitted. Coverage gaps are advisory and have no CI threshold.
+## Which project runs a file
 
-Executed lines do not prove assertions. For each new runtime branch, name the contract test that fails on a narrow source break. Plant it in an isolated scratch copy, then show a clean pass, the behavioral failure, and a restored pass. If another guard masks the break, record why. For behavior a host can reach, also plant a break that exposes the public defect. Give a specific reason for a branch with no public effect. Keep the proof public.
+| File | Project | Runs in |
+| --- | --- | --- |
+| `*.browser.test.ts(x)`, under `src/` | `browser` | Chromium. Nightly adds Firefox and WebKit; set `CAIC_ALL_BROWSERS=1` to run them locally |
+| `src/sdk/**`, `tests/**` | `node` | Node, with no DOM. This shows the engine runs without a view |
+| any other file under `src/` | `happy-dom` | happy-dom |
+
+`.contract` in a name doesn't change the project. Write DOM tests for happy-dom. If a test fails there, adapt it first, keeping the same behavior covered and assertions no weaker. Only a test that needs a DOM behavior happy-dom lacks falls back to jsdom: add `// @vitest-environment jsdom` with a one-line comment naming the behavior.
+
+Under `src/sdk/`, add `// @vitest-environment happy-dom` only to prove the SDK leaves a browser API alone, such as storage or cookies, and say so in a comment. Any other test there that needs a DOM belongs in `src/chat/__tests__/`.
+
+## Helpers
+
+| Need | Use | From |
+| --- | --- | --- |
+| A conversation store, for an SDK unit test | `sdkTestStore()` | `src/sdk/__tests__/helpers/store.ts` |
+| The prebuilt chat's `ChatInstance`, no render | `bootChat()`, or `bootChat(config, { attach: true })` for a view | `src/chat/__tests__/helpers/boot.ts` |
+| One component with chat context | `TestChatContext`, `makeConfigStore` | `src/chat/__tests__/helpers/` |
+| Assertions on the rendered chat | `renderChatAndGetInstance()` | `src/chat/__tests__/helpers/render.ts` |
+| A wait on a real event or call | `untilCalled()`, `untilDom()` | `src/chat/__tests__/helpers/waits.ts` |
+
+Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()` after each test that boots. Wait on the event or promise a test needs, or use fake timers. Don't raise a timeout to make a slow test pass.
+
+## Checks with no module
+
+| Folder | Holds |
+| --- | --- |
+| `tests/architecture/` | Folder import rules (tests included), the conversation-read gap list, the SDK surface snapshot, and the messaging import scans |
+| `tests/types/` | Type tests of the public surface |
+| `tests/typedoc/` | Checks for the docs plugins in `docs/typedoc/` |
+| `tests/build/` | Checks that run the built package |
+| `tests/setup/` | Vitest setup: `index.ts` for `node` and `happy-dom`, `browser.ts` for `browser` |
+
+Type errors in tests fail `npm run docs`, which type-checks every file in `tsconfig.json`.
 
 ## Running tests
 
 From `packages/ai-chat/`:
 
 ```bash
-npm test                                        # full suite with coverage
-npm test -- path/to/file_spec.ts                 # single file, with coverage
-npm test -- -t "test name pattern"               # by name
-npm test -- --watch                              # watch mode
+npm test                                  # every project
+npm test -- src/sdk/services/messaging    # one folder or file
+npm test -- -t "name pattern"             # by name
+npm test -- --project happy-dom           # one project: node, happy-dom, or browser
+npm run test:watch                        # watch mode
 ```
 
-Test setup: `tests/setup.ts` installs DOM + testing-library setup; `tests/test_helpers.ts` has shared fixtures.
-
-A test's first chat boot waits with `{ timeout: 5000 }`, the repo convention. The first boot loads boot modules on demand.
+The `browser` project needs Chromium once per machine: `npx playwright install chromium`.
 
 ## Debugging failures
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Failure in `@carbon/ai-chat-components` code that is correct in its source | Jest reads that package's built `es/`, and `es/` is stale | Rebuild it first — see the [build preflight](../../../references/commands.md#build-preflight) |
+| Failure in `@carbon/ai-chat-components` code that is correct in its source | Tests read that package's built `es/`, and `es/` is stale | Rebuild it first; see the [build preflight](../../../references/commands.md#build-preflight) |
+| `vi.spyOn` on an imported module throws in a browser test | Browser mode serves sealed ES modules | `vi.mock('<path>', { spy: true })`, then `vi.mocked(fn)` |
+| `sourceBoundaries` fails on a test file | The test imports outside its folder's rules | Move it to the folder of the entry it drives |
+| A spy on `Storage.prototype` sees no calls in happy-dom | happy-dom copies Storage methods onto each object on first use | Spy on the window's `sessionStorage` or `localStorage` getter |
 
 ## Related guidance
 
-- [packages/ai-chat/AGENTS.md](../AGENTS.md) — package overview
-- [services.md](services.md) — service archetypes (test pattern background)
-- [src/sdk/store/AGENTS.md](../src/sdk/store/AGENTS.md) — store rules
+- [packages/ai-chat/AGENTS.md](../AGENTS.md): package overview
+- [services.md](services.md): service archetypes, for test setup background
+- [src/sdk/store/AGENTS.md](../src/sdk/store/AGENTS.md): store rules
+- [Components testing](../../ai-chat-components/references/testing.md): read when the behavior belongs to a component

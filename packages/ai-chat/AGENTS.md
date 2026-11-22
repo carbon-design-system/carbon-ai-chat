@@ -23,7 +23,7 @@ Load only what you need:
 - Changing assistant message flows, data helpers, or view ports → [messaging guide](src/sdk/services/messaging/AGENTS.md).
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hook guide](src/chat/hooks/AGENTS.md).
 - Adding config fields or host properties or attributes, or editing CEM metadata → [manifest guide](references/manifests.md).
-- Writing or fixing a Jest test → [test guide](references/tests.md).
+- Adding, moving, or fixing a test, or deciding whether it belongs in the demo → [test guide](references/tests.md).
 - Changing host-visible behavior → [contract tests](references/tests.md#contract-tests-pin-host-behavior): add proof in the same commit; follow the stop rule and manifest workflow.
 - Shipping UI (WCAG 2.1 AA, live regions, announcer helpers, and when to use `assertive`) → [access guide](../../references/accessibility.md).
 - Adding code to `src/sdk/`, or deciding whether it's public → [SDK guide](src/sdk/AGENTS.md).
@@ -61,7 +61,7 @@ A test fails when a folder imports outside its rules, through type-only imports 
 | `src/types/` | `src/types/`, plus types and JSON data from `src/sdk/` engine folders, not its entry files |
 | everything else | anything |
 
-Nothing `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. Each exception still allowed today is listed with the issue that removes it. So a new service that works without a view goes in `src/sdk/services/`. One that touches the DOM or `ChatMountState` goes in `src/chat/services/`. SDK code reaches the view only through the ports in [viewBindings.ts](src/sdk/services/viewBindings.ts), which the mounted view attaches. The rules and their exceptions are in [the boundary spec](tests/architecture/sourceBoundaries.test.ts). The prebuilt interface reads conversation data through `instance.state`, as a host does. Each read that doesn't yet is listed with its owner issue in [conversationReadGaps.ts](tests/architecture/conversationReadGaps.ts), and [its spec](tests/architecture/conversationReadGaps.test.ts) fails on a new one. [The SDK surface snapshot](tests/architecture/sdkSurface.test.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
+Nothing `src/sdk/` reaches may import React, React DOM, Lit, or a module that registers a custom element. The import rules cover tests too: a test sits in a folder whose rules allow its imports. Each exception still allowed today is listed with the issue that removes it. So a new service that works without a view goes in `src/sdk/services/`. One that touches the DOM or `ChatMountState` goes in `src/chat/services/`. SDK code reaches the view only through the ports in [viewBindings.ts](src/sdk/services/viewBindings.ts), which the mounted view attaches. The rules and their exceptions are in [the boundary spec](tests/architecture/sourceBoundaries.test.ts). The prebuilt interface reads conversation data through `instance.state`, as a host does. Each read that doesn't yet is listed with its owner issue in [conversationReadGaps.ts](tests/architecture/conversationReadGaps.ts), and [its spec](tests/architecture/conversationReadGaps.test.ts) fails on a new one. [The SDK surface snapshot](tests/architecture/sdkSurface.test.ts) lists every type and field the SDK entry reaches, so a change to it shows up in review.
 
 ## Build, test, lint
 
@@ -79,7 +79,7 @@ npm start          # rollup --watch + typedoc --watch + local doc server on :500
 
 - **Custom store hooks**: `useSelector` comes from `src/chat/hooks/` — **not** `react-redux`. There is no `useDispatch`; dispatch through `serviceManager.store.dispatch` with an action creator from `src/sdk/store/actions.ts`, or `viewActions` from `src/chat/state/` for view state.
 - **Two partitions, one store**: `ServiceManager.store` is typed with `ConversationState`, so SDK code can't read view state. In `chat/`, `chatStore(serviceManager)` gives the whole store, and view slices are under `state.view`.
-- **Import extensions**: `moduleResolution` is `bundler`. Relative TS source imports work with or without `.js`. Omit it to follow repo style. Rollup, `tsc --noEmit`, and Jest accept both forms. For a deep package import, `bundler` checks the package's `exports` map. Use the real built path with `.js`, such as `@carbon/ai-chat-components/es/react/card.js`.
+- **Import extensions**: `moduleResolution` is `bundler`. Relative TS source imports work with or without `.js`. Omit it to follow repo style. Rollup, `tsc --noEmit`, and Vitest accept both forms. For a deep package import, `bundler` checks the package's `exports` map. Use the real built path with `.js`, such as `@carbon/ai-chat-components/es/react/card.js`.
 - **TS checks**: `tsconfig` sets `strictNullChecks: false` and `strictFunctionTypes: false`. Check for null or add guards.
 - **React runs inside shadow DOM**: the `cds-aichat-*` custom elements mount React into a shadow root. User-defined responses and writeable elements use slotted content; follow existing patterns. Background in [host guide](references/architecture.md).
 

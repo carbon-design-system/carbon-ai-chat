@@ -33,6 +33,8 @@ The home screen closes both ways today: the presentation port's `closeHomeScreen
 
 `sdk/` imports only `sdk/` and `types/`, and nothing it reaches may import React, Lit, or a module that registers a custom element. [The boundary spec](../../tests/architecture/sourceBoundaries.test.ts) checks it, through type-only imports too. A future `src/sdk/react/` needs its own rule there; the check applies the most specific folder's rule.
 
+Tests here follow the same import rule and run in the `node` project, with no DOM. They may import a framework's types, never its values.
+
 ## Related guidance
 
 - [Read when changing message flows or the presentation port](services/messaging/AGENTS.md).
