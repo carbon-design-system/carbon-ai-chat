@@ -2362,7 +2362,7 @@ helper	packages/ai-chat/src/chat/__tests__/helpers/contract/input.ts	""	08828364
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/messages.ts	""	3210d365e016d498999b845aaed24db5a0c1d1f7079252c4e9e2fe6ae6f398f5
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/mount.tsx	""	111d2c89e75fa797d42399ef6cf2d31ef7c691945ddf935f9d6406671086a68f
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/serviceDesk.ts	""	20170abd6d4a6ce70292fea8d7d2ee57598efbf294dce227506703fb0fd54135
-helper	packages/ai-chat/src/chat/__tests__/helpers/contract/timing.ts	""	484aa2086716c528c65eb41e8b24ed555403a905add3d65601e177ac5fa9dba4
+helper	packages/ai-chat/src/chat/__tests__/helpers/contract/timing.ts	""	f329eda44d035bd4e2577b655203e0486079a4b6c6e53f4b60b50ac1a39c63b2
 helper	packages/ai-chat/src/sdk/__tests__/helpers/lifecycleControl.ts	""	6d67fb9d91473cf50283a521e21e807fcef78d3b22d15e56d1268b3995c9d2f7
 helper	packages/ai-chat/src/sdk/__tests__/helpers/publicContract.ts	""	88ef05e6109218296ecb1a93d70e9baaab49a8034313e832c1e1178b932c1fcd
 test	packages/ai-chat/src/__tests__/exports/entryParity.contract.test.ts	"entry exports BusEventType is the same value in both entries"	9e3487a4e4c343465e2aa2c600232f012ad536550123405e56fdd39e19ec209b

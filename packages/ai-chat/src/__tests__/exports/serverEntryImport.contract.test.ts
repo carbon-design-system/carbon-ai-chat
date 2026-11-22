@@ -10,7 +10,7 @@
 /**
  * `serverEntry` is the SSR-safe entry: importing it must not register
  * elements or reach into the page. Importing it with no DOM at all is in
- * `serverEntryNode_spec.ts`; a node environment has no page to spy on, so
+ * `serverEntryNode.contract.test.ts`; a node environment has no page to spy on, so
  * this file spies on the page in jsdom and imports the entry fresh.
  *
  * It imports no contract helper and calls no `contractSetup()`: the helpers

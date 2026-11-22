@@ -11,7 +11,7 @@
  * What the two `cds-aichat-*` elements do when they leave the page. A move
  * (out and back in within one task) keeps the running chat; a removal that
  * outlasts the task retires it. Mounting again after that is in
- * `lifecycle/remount_spec.ts`.
+ * `src/chat/__tests__/lifecycle/remount.contract.test.ts`.
  */
 
 import { act, waitFor } from '@testing-library/react';

@@ -10,7 +10,7 @@
 /**
  * Which runtime values each entry exports, and that a name both export is the
  * same value. Types are erased at runtime, so only values show here. The
- * shared functions' behavior is pinned per entry in `inputUtils_spec`.
+ * shared functions' behavior is pinned per entry in `inputUtils.contract.test`.
  *
  * This file mounts no chat, so it doesn't call `contractSetup()`.
  */
@@ -102,7 +102,7 @@ describe('entry exports', () => {
   });
 
   // The enums and the language pack are pinned from aiChatEntry in
-  // enums_spec and languagePack_spec; this is where serverEntry's copies are
+  // enums.contract.test and languagePack.contract.test; this is where serverEntry's copies are
   // checked.
   // @covers export.serverEntry.PageObjectId export.serverEntry.ViewType export.serverEntry.PanelType export.serverEntry.WriteableElementName
   // @covers export.serverEntry.LayoutCustomProperties export.serverEntry.CornersType export.serverEntry.BusEventType export.serverEntry.FeedbackInteractionType

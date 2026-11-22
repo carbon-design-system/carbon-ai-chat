@@ -10,7 +10,7 @@
 /**
  * Every read of conversation data by the prebuilt interface that doesn't go
  * through `instance.state` yet, with the issue whose work moves it (#2693 O3).
- * `conversationReadGaps_spec.ts` fails on a read that isn't listed, and on an
+ * `conversationReadGaps.test.ts` fails on a read that isn't listed, and on an
  * entry that no longer matches a read, so the list only shrinks.
  *
  * A read is a conversation-partition field read from the store state, written

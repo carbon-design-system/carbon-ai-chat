@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { isTestPath } from './isTestPath';
 
 /** How an import reaches its target. A `type` edge is erased from emitted code. */
 export type EdgeKind = 'runtime' | 'type';
@@ -40,6 +41,18 @@ export interface FolderRule {
    * a framework or registering a custom element.
    */
   frameworkFree?: boolean;
+  /**
+   * More modules that this folder's tests may not reach, on top of the
+   * frameworks every framework-free file is held to.
+   */
+  testFrameworks?: RegExp[];
+}
+
+/** Which files are contract tests or contract helpers, and what they may import. */
+export interface ContractRule {
+  isContractFile: (file: string) => boolean;
+  /** A package-relative file, or the bare specifier of an external module. */
+  mayImport: (target: string, external: boolean) => boolean;
 }
 
 export interface BoundaryException {
@@ -379,7 +392,7 @@ export function frameworkViolations(
     roots
       .filter((root) => graph.registers(root))
       .forEach((root) => report(root, 'customElements'));
-    walkFrameworkFree(graph, rules, roots, taints, report);
+    walkFrameworkFree(graph, rules, rule, roots, taints, report);
   }
   return violations;
 }
@@ -407,6 +420,7 @@ function componentTaint(graph: SourceGraph) {
 function walkFrameworkFree(
   graph: SourceGraph,
   rules: FolderRule[],
+  rule: FolderRule,
   roots: string[],
   taints: (entry: string) => boolean,
   report: (from: string, to: string) => void
@@ -420,7 +434,12 @@ function walkFrameworkFree(
     }
     seen.add(file);
     for (const edge of graph.edgesOf(file)) {
-      if (frameworkEdge(graph, edge, taints)) {
+      // A test's type imports are erased when it runs, and a test may name a
+      // public type to show the SDK matches or excludes it (D5).
+      if (edge.kind === 'type' && isTestPath(file)) {
+        continue;
+      }
+      if (frameworkEdge(graph, edge, taints) || testFramework(rule, edge)) {
         report(edge.from, edge.to);
       } else if (
         !edge.external &&
@@ -435,6 +454,15 @@ function walkFrameworkFree(
   }
 }
 
+/** Whether a test file in this rule's folder imports one of its test-only frameworks. */
+function testFramework(rule: FolderRule, edge: SourceEdge) {
+  return (
+    edge.external &&
+    isTestPath(edge.from) &&
+    !!rule.testFrameworks?.some((pattern) => pattern.test(edge.to))
+  );
+}
+
 function frameworkEdge(
   graph: SourceGraph,
   edge: SourceEdge,
@@ -444,6 +472,27 @@ function frameworkEdge(
     return isFramework(edge.to);
   }
   return isComponents(edge.to) ? taints(edge.to) : graph.registers(edge.to);
+}
+
+/**
+ * Checks each contract test and contract helper against the contract rule.
+ * Returns one violation per offending edge, as `from -> to`. Edges into the
+ * components package are left to the framework and folder checks.
+ */
+export function contractViolations(
+  graph: SourceGraph,
+  rule: ContractRule,
+  files: string[]
+) {
+  const violations = new Set<string>();
+  for (const file of files.filter(rule.isContractFile)) {
+    for (const edge of graph.edgesOf(file)) {
+      if (!isComponents(edge.to) && !rule.mayImport(edge.to, edge.external)) {
+        violations.add(`${edge.from} -> ${edge.to}`);
+      }
+    }
+  }
+  return violations;
 }
 
 function isComponents(file: string) {

@@ -15,7 +15,7 @@ Coordinate builds under the [watcher rule](commands.md#with-a-watcher-running).
 | Agent guidance only (`AGENTS.md`, agent `references/`, skills) | `npm run validate:agents` + `npm run validate:skills` + `npm run format`; check changed commands against their scripts and review the instructions. Sync skills first if canonical files changed. |
 | Cross-cutting / multiple packages | `npm run build && npm run ci-check` |
 | `packages/ai-chat/` | `npm run build:docs --workspace=@carbon/ai-chat` + `npm run test --workspace=@carbon/ai-chat`; host-visible changes include a contract test in the same commit. |
-| `packages/ai-chat-components/` | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs web-components + react suites) |
+| `packages/ai-chat-components/` | `npm run build --workspace=@carbon/ai-chat-components` + `npm run test --workspace=@carbon/ai-chat-components` (runs the browser and happy-dom projects) |
 | `demo/` | `npm run build --workspace=@carbon/ai-chat-examples-demo` + `npm run test --workspace=@carbon/ai-chat-examples-demo` (Playwright) |
 | `examples/**` | `npm run build --workspace=<example>` + visual smoke via `npm run start --workspace=<example>` (load in browser, open chat, send one message, confirm no console errors) |
 | SCSS only | `npm run lint:styles && npm run format` |

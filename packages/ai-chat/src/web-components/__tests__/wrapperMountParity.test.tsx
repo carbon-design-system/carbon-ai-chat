@@ -43,6 +43,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../chat/__tests__/helpers/chat';
+import { untilCalled, untilDom } from '../../chat/__tests__/helpers/waits';
 
 type ChatElement = HTMLElement & {
   config: PublicConfig;
@@ -153,7 +154,7 @@ async function sendInlinePlugin(instance: ChatInstance, host: HTMLElement) {
       },
     })
   );
-  await waitFor(() =>
+  await untilDom(host, () =>
     expect(host.querySelector('[data-inline-plugin]')?.textContent).toBe(
       'Projected plugin'
     )
@@ -241,9 +242,8 @@ describe('how each host mounts the chat', () => {
         );
         const sibling = document.createElement('p');
         document.body.append(element, sibling);
-        await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1), {
-          timeout: 5000,
-        });
+        await untilCalled(onAfterRender);
+        expect(onAfterRender).toHaveBeenCalledTimes(1);
         const plugin = await sendInlinePlugin(instances[0], element);
 
         sibling.after(element);

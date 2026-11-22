@@ -8,7 +8,7 @@
  */
 
 import { expect } from '@open-wc/testing';
-import { sendMouse } from '@web/test-runner-commands';
+import { sendMouse } from '../../../__tests__/browser/input.js';
 import { html, render } from 'lit';
 import type MarkdownIt from 'markdown-it';
 import {

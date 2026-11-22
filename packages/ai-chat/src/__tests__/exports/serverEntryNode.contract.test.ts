@@ -13,7 +13,7 @@
  * `serverEntry` is the SSR-safe entry, so a server with no DOM at all can
  * import it. This file runs in Jest's node environment: no `window`,
  * `document`, or `customElements`. That importing it in a browser registers
- * no element is in `serverEntryImport_spec.ts`.
+ * no element is in `serverEntryImport.contract.test.ts`.
  *
  * It imports no contract helper and calls no `contractSetup()`: the helpers
  * mount chats, which needs a DOM.

@@ -40,11 +40,9 @@
     "storybook:react": "storybook dev -p 7007 -c .storybook-react",
     "storybook:react:build": "storybook build -c .storybook-react -o storybook-react-static",
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
-    "test": "npm run test:manifest && npm run test:web-components && npm run test:unit",
-    "test:unit": "vitest run",
+    "test": "npm run test:manifest && vitest run",
     "test:watch": "vitest",
-    "test:updateSnapshot": "web-test-runner \"src/components/**/*.test.ts\" \"src/globals/utils/__tests__/aria-announcer-manager.test.ts\" \"src/globals/utils/__tests__/focus-utils.test.ts\" --node-resolve --update-snapshots",
-    "test:web-components": "web-test-runner \"src/components/**/*.test.ts\" \"src/globals/utils/__tests__/aria-announcer-manager.test.ts\" \"src/globals/utils/__tests__/focus-utils.test.ts\" --node-resolve",
+    "test:updateSnapshot": "vitest run --update",
     "test:manifest": "node --test \"tasks/__tests__/*.test.js\""
   },
   "peerDependencies": {
@@ -104,10 +102,6 @@
     "tslib": "^2.6.3"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.0",
-    "@babel/preset-env": "^8.0.0",
-    "@babel/preset-react": "^8.0.0",
-    "@babel/preset-typescript": "^8.0.0",
     "@carbon/grid": "^11.20.0",
     "@carbon/icons-react": "^11.53.0",
     "@carbon/layout": "^11.19.0",
@@ -132,15 +126,13 @@
     "@types/mocha": "^10.0.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitest/browser-playwright": "^4.1.12",
     "@vitest/coverage-v8": "^4.1.12",
     "@vscode/markdown-it-katex": "^1.1.2",
-    "@web/dev-server": "1.0.1",
-    "@web/dev-server-esbuild": "2.0.1",
-    "@web/test-runner": "1.0.1",
-    "@web/test-runner-playwright": "^1.0.0",
     "autoprefixer": "^10.4.20",
     "brace-expansion": "^5.0.8",
     "concurrently": "^10.0.0",
+    "cssnano": "^7.1.9",
     "globby": "^16.0.0",
     "happy-dom": "^21.0.0",
     "playwright": "^1.48.1",
@@ -155,8 +147,7 @@
     "storybook": "^10.2.8",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
-    "vitest": "^4.1.12",
-    "web-dev-server-plugin-lit-css": "^4.0.0"
+    "vitest": "^4.1.12"
   },
   "customElements": "./custom-elements.json"
 }

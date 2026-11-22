@@ -7,11 +7,40 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { litStyleLoader } from '@mordech/vite-lit-loader';
+import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { browserCommands } from './src/__tests__/browser/commands';
 
+const here = path.dirname(fileURLToPath(import.meta.url));
 const unit = ['**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx'];
 
+// Chromium by default. CAIC_ALL_BROWSERS=1 adds Firefox and WebKit, as the
+// nightly jobs do.
+const browsers = process.env.CAIC_ALL_BROWSERS
+  ? (['chromium', 'firefox', 'webkit'] as const)
+  : (['chromium'] as const);
+
 export default defineConfig({
+  // `*.scss?lit` imports compile to Lit `CSSResult`s, as the build does.
+  plugins: [litStyleLoader()],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Bare `@forward '@carbon/utilities'` chains from `@carbon/styles`
+        // need explicit node_modules load paths, as in Storybook.
+        loadPaths: [
+          path.resolve(here, 'node_modules'),
+          path.resolve(here, '../../node_modules'),
+        ],
+        // web-test-runner compiled every stylesheet with this prefix.
+        additionalData:
+          '$feature-flags: (enable-css-custom-properties: true);\n',
+      },
+    },
+  },
   oxc: {
     jsx: { runtime: 'automatic' },
     // Lit's decorators and class fields compile as the build compiles them
@@ -64,17 +93,48 @@ export default defineConfig({
           name: 'happy-dom',
           environment: 'happy-dom',
           include: [
-            ...unit.map((glob) => `src/react/${glob}`),
-            ...unit.map((glob) => `src/globals/${glob}`),
+            ...unit.map((glob) => `src/${glob}`),
             ...unit.map((glob) => `.storybook/__tests__/${glob}`),
           ],
-          // The Lit tests, and these two utility files, still run in
-          // web-test-runner until they move to the browser project.
-          exclude: [
-            '**/node_modules/**',
-            'src/globals/utils/__tests__/aria-announcer-manager.test.ts',
-            'src/globals/utils/__tests__/focus-utils.test.ts',
-          ],
+          exclude: ['**/node_modules/**', '**/*.browser.test.*'],
+        },
+      },
+      {
+        extends: true,
+        // web-test-runner's page set `process.env.NODE_ENV` to
+        // "development".
+        define: {
+          'process.env.NODE_ENV': JSON.stringify('development'),
+        },
+        resolve: {
+          alias: {
+            '@web/test-runner-commands': path.resolve(
+              here,
+              'src/__tests__/browser/wtr-commands-stub.ts'
+            ),
+          },
+        },
+        test: {
+          name: 'browser',
+          include: ['src/**/*.browser.test.ts'],
+          setupFiles: ['src/__tests__/browser/setup.ts'],
+          // One file at a time in CI, as web-test-runner's `concurrency: 1`.
+          fileParallelism: !process.env.CI,
+          browser: {
+            enabled: true,
+            headless: true,
+            ui: false,
+            provider: playwright(),
+            // web-test-runner sized every test page to 800x600
+            // (@web/test-runner-playwright's PlaywrightLauncherPage). Layout
+            // decisions such as the shell's workspace placement depend on it.
+            viewport: { width: 800, height: 600 },
+            instances: browsers.map((browser) => ({ browser })),
+            commands: browserCommands,
+            // Failure screenshots go with the other run attachments, which
+            // git ignores; `__screenshots__/` stays free for reference images.
+            screenshotDirectory: '.vitest-attachments/screenshots',
+          },
         },
       },
     ],

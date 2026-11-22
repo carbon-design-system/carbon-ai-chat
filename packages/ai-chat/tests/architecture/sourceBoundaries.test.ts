@@ -12,8 +12,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   BoundaryException,
+  ContractRule,
   FolderRule,
   SourceGraph,
+  contractViolations,
   folderViolations,
   frameworkViolations,
   typeReferences,
@@ -36,6 +38,8 @@ const rules: FolderRule[] = [
     folder: 'src/sdk/',
     mayImport: ['src/sdk/', 'src/types/'],
     frameworkFree: true,
+    // SDK tests run headless, so they render nothing and drive no browser.
+    testFrameworks: [/^@testing-library\//, /^vitest\/browser(\/|$)/],
   },
   {
     // Public types may name an engine type, read the engine's JSON data, or
@@ -53,6 +57,46 @@ const rules: FolderRule[] = [
     ],
   },
 ];
+
+/**
+ * Contract tests and their helpers drive the package as a host does: through
+ * the published entries, the public types and the test IDs (chunk 10 D4).
+ */
+const contractHelpers = [
+  'src/chat/__tests__/helpers/contract/',
+  'src/sdk/__tests__/helpers/publicContract.ts',
+  'src/sdk/__tests__/helpers/lifecycleControl.ts',
+];
+const publicEntries = [
+  'src/aiChatEntry.tsx',
+  'src/serverEntry.ts',
+  'src/sdk/index.ts',
+  'src/web-components/cds-aichat-container/index.ts',
+  'src/web-components/cds-aichat-custom-element/index.ts',
+];
+const publicSpecifiers = [
+  '@carbon/ai-chat',
+  '@carbon/ai-chat/es-custom',
+  '@carbon/ai-chat/server',
+  '@carbon/ai-chat/dist/es/web-components/cds-aichat-container/index.js',
+  '@carbon/ai-chat/dist/es/web-components/cds-aichat-custom-element/index.js',
+];
+const isContractHelper = (file: string) =>
+  contractHelpers.some((helper) => file.startsWith(helper));
+const contractRule: ContractRule = {
+  isContractFile: (file) =>
+    /\.contract(?:\.browser)?\.test\.tsx?$/.test(file) ||
+    isContractHelper(file),
+  mayImport: (target, external) =>
+    external
+      ? !target.startsWith('@carbon/ai-chat/') ||
+        publicSpecifiers.includes(target)
+      : publicEntries.includes(target) ||
+        isContractHelper(target) ||
+        (!isTestPath(target) &&
+          (target.startsWith('src/types/') ||
+            target.startsWith('src/testing/'))),
+};
 
 /**
  * Each known violation and the issue whose work removes it. The list only
@@ -128,9 +172,6 @@ const chatServices = [
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
-    if (isTestPath(entry.name)) {
-      return [];
-    }
     if (entry.isDirectory()) {
       return sourceFiles(file);
     }
@@ -140,7 +181,11 @@ function sourceFiles(dir: string): string[] {
 
 const relative = (file: string) =>
   path.relative(root, file).replaceAll('\\', '/');
-const files = sourceFiles(path.join(root, 'src')).map(relative);
+const everyFile = sourceFiles(path.join(root, 'src')).map(relative);
+/** Production source. The type-reference checks below read only these. */
+const files = everyFile.filter((file) => !isTestPath(file));
+/** Tests beside the code, held to their folder's import rules (D5). */
+const testFiles = everyFile.filter((file) => isTestPath(file));
 const read = (file: string) => fs.readFileSync(path.join(root, file), 'utf8');
 const keys = (list: BoundaryException[]) =>
   list
@@ -151,9 +196,11 @@ const keys = (list: BoundaryException[]) =>
 const base = new SourceGraph(root);
 
 function check(graph = base) {
+  const checked = [...files, ...testFiles];
   return {
-    folders: [...folderViolations(graph, rules, files)].sort(),
-    frameworks: [...frameworkViolations(graph, rules, files)].sort(),
+    folders: [...folderViolations(graph, rules, checked)].sort(),
+    frameworks: [...frameworkViolations(graph, rules, checked)].sort(),
+    contracts: [...contractViolations(graph, contractRule, checked)].sort(),
   };
 }
 
@@ -174,6 +221,10 @@ it('keeps each folder to the folders it may import', () => {
 
 it('keeps frameworks and element registration out of what sdk code reaches', () => {
   expect(current.frameworks).toEqual(keys(frameworkExceptions));
+});
+
+it('keeps contract tests to the public entries, types and test IDs', () => {
+  expect(current.contracts).toEqual([]);
 });
 
 it('keeps view handles out of conversation services and the SDK', () => {
@@ -217,7 +268,7 @@ it('keeps conversation folders out of chat/', () => {
 });
 
 describe('planted imports', () => {
-  const shared = 'src/sdk/services/NamespaceService.ts';
+  const sdkFile = 'src/sdk/services/NamespaceService.ts';
 
   it.each([
     ["import 'lit';", 'lit'],
@@ -227,23 +278,23 @@ describe('planted imports', () => {
       "import type { LitElement } from '@lit/reactive-element';",
       '@lit/reactive-element',
     ],
-  ])('fails shared code that imports a framework: %s', (line, target) => {
-    expect(plant(shared, line).frameworks).toContain(
-      `src/sdk/: ${shared} -> ${target}`
+  ])('fails sdk code that imports a framework: %s', (line, target) => {
+    expect(plant(sdkFile, line).frameworks).toContain(
+      `src/sdk/: ${sdkFile} -> ${target}`
     );
   });
 
-  it('fails shared code that loads an element-registering module, even as a type', () => {
+  it('fails sdk code that loads an element-registering module, even as a type', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import type { CDSAIChatMarkdown } from '@carbon/ai-chat-components/es/components/markdown/index.js';"
     );
     expect(result.frameworks).toContain(
-      `src/sdk/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
+      `src/sdk/: ${sdkFile} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
   });
 
-  // These types once leaked view code into shared code (#1831, D5).
+  // These types once leaked view code into sdk code (#1831, D5).
   it.each([
     [
       "import type { PublicConfig } from '../../types/config/PublicConfig';",
@@ -271,29 +322,29 @@ describe('planted imports', () => {
       'react',
     ],
   ])(
-    'fails shared code that reaches view code through a config type: %s',
+    'fails sdk code that reaches view code through a config type: %s',
     (line, from, to) => {
-      expect(plant(shared, line).frameworks).toContain(
+      expect(plant(sdkFile, line).frameworks).toContain(
         `src/sdk/: ${from} -> ${to}`
       );
     }
   );
 
-  it('fails shared code that imports view state, even as a type', () => {
+  it('fails sdk code that imports view state, even as a type', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import type { viewActions } from '../../chat/state';"
     );
-    expect(result.folders).toContain(`${shared} -> src/chat/state/index.ts`);
+    expect(result.folders).toContain(`${sdkFile} -> src/chat/state/index.ts`);
   });
 
-  it('fails shared code that imports chat/, even as a type', () => {
+  it('fails sdk code that imports chat/, even as a type', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import type { ChatShell } from '../../chat/components/shell/ChatShell';"
     );
     expect(result.folders).toContain(
-      `${shared} -> src/chat/components/shell/ChatShell.ts`
+      `${sdkFile} -> src/chat/components/shell/ChatShell.ts`
     );
   });
 
@@ -308,7 +359,7 @@ describe('planted imports', () => {
     );
   });
 
-  it('fails a public type that loads shared code at runtime', () => {
+  it('fails a public type that loads sdk code at runtime', () => {
     const types = 'src/types/config/CornersType.ts';
     const result = plant(types, "import '../../sdk/utils/constants';");
     expect(result.folders).toContain(`${types} -> src/sdk/utils/constants.ts`);
@@ -345,29 +396,29 @@ describe('planted imports', () => {
     ["const react = require('react');", 'react'],
     ['/// <reference types="react" />', 'react'],
   ])(
-    'fails shared code that reaches a framework another way: %s',
+    'fails sdk code that reaches a framework another way: %s',
     (line, target) => {
-      expect(plant(shared, line).frameworks).toContain(
-        `src/sdk/: ${shared} -> ${target}`
+      expect(plant(sdkFile, line).frameworks).toContain(
+        `src/sdk/: ${sdkFile} -> ${target}`
       );
     }
   );
 
   // FileUpload moved out of this module so conversation code stops reaching
   // the input's editor types (#1732 O19). The old path must still fail.
-  it("fails shared code that imports the input's full types module", () => {
+  it("fails sdk code that imports the input's full types module", () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';"
     );
     expect(result.frameworks).toContain(
-      `src/sdk/: ${shared} -> ../ai-chat-components/src/components/prompt-line/src/types.ts`
+      `src/sdk/: ${sdkFile} -> ../ai-chat-components/src/components/prompt-line/src/types.ts`
     );
   });
 
-  it('allows shared code to import the file upload types module', () => {
+  it('allows sdk code to import the file upload types module', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import type { FileUpload } from '@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js';"
     );
     // The planted import adds no edge beyond the listed exceptions.
@@ -376,31 +427,31 @@ describe('planted imports', () => {
 
   it('fails the custom-prefix build of an element-registering module', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import '@carbon/ai-chat-components/es-custom/components/markdown/index.js';"
     );
     expect(result.frameworks).toContain(
-      `src/sdk/: ${shared} -> ../ai-chat-components/src/components/markdown/index.ts`
+      `src/sdk/: ${sdkFile} -> ../ai-chat-components/src/components/markdown/index.ts`
     );
   });
 
   it('fails a framework-free file that registers an element itself, even through an alias', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "const registry = customElements;\nregistry.define('x-planted', class extends HTMLElement {});"
     );
     expect(result.frameworks).toContain(
-      `src/sdk/: ${shared} -> customElements`
+      `src/sdk/: ${sdkFile} -> customElements`
     );
   });
 
   it('fails an import that leaves the package outside the components source', () => {
     const result = plant(
-      shared,
+      sdkFile,
       "import '../../../../ai-chat-components/package.json';"
     );
     expect(result.folders).toContain(
-      `${shared} -> ../ai-chat-components/package.json`
+      `${sdkFile} -> ../ai-chat-components/package.json`
     );
   });
 
@@ -413,7 +464,31 @@ describe('planted imports', () => {
     expect(result.folders).toContain(`${types} -> src/sdk/utils/constants.ts`);
   });
 
-  it('fails a framework that shared code reaches through a type', () => {
+  describe('in sdk tests', () => {
+    const sdkTest = 'src/sdk/__tests__/registry.test.ts';
+
+    it.each([
+      ["import 'react';", 'react'],
+      ["import '@testing-library/react';", '@testing-library/react'],
+    ])('fails an sdk test that imports a framework: %s', (line, target) => {
+      expect(plant(sdkTest, line).frameworks).toContain(
+        `src/sdk/: ${sdkTest} -> ${target}`
+      );
+    });
+  });
+
+  it('fails a contract test that imports an internal service', () => {
+    const contract = 'src/sdk/__tests__/lifecycle.contract.test.ts';
+    const result = plant(
+      contract,
+      "import type { ServiceManager } from '../services/ServiceManager';"
+    );
+    expect(result.contracts).toContain(
+      `${contract} -> src/sdk/services/ServiceManager.ts`
+    );
+  });
+
+  it('fails a framework that sdk code reaches through a type', () => {
     const types = 'src/types/config/CornersType.ts';
     expect(
       plant(types, "import type { TemplateResult } from 'lit';").frameworks

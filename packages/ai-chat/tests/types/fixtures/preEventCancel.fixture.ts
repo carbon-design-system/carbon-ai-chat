@@ -8,7 +8,7 @@
  */
 
 /**
- * Compiled under `strict: true` by sdkTypes_spec.ts and never run. A handler cancels the action a
+ * Compiled under `strict: true` by sdkTypes.test.ts and never run. A handler cancels the action a
  * `pre:` event comes before through one optional `cancel` flag. `pre:send` has no flag in 1.x, and
  * payloads written against the older types, with no `cancel`, still compile.
  */

@@ -11,7 +11,7 @@
  * `ChatCustomElement`'s own props: the element it renders the chat into
  * takes the host's `className` and `id`, and, with no `onViewChange`, hides
  * while the chat is closed. The props it shares with `ChatContainer` run
- * through both React hosts in `reactContainer_spec.tsx`.
+ * through both React hosts in `reactContainer.contract.test.tsx`.
  */
 
 import { act, waitFor } from '@testing-library/react';

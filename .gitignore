@@ -75,6 +75,9 @@ tsconfig.tsbuildinfo
 test/cypress/screenshots
 test/cypress/videos
 
+# Vitest browser-mode failure screenshots and attachments
+.vitest-attachments
+
 .parcel-cache
 parcel-bundle-reports
 

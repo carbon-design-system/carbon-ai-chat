@@ -10,7 +10,7 @@
 /**
  * How a config change after mount behaves when a host sets new properties
  * (or attributes) on a connected `cds-aichat-*` element. What each field does
- * once changed is in `configUpdates_spec.ts`; this file covers what is
+ * once changed is in `configUpdates.contract.test.ts`; this file covers what is
  * particular to the element path: properties, attributes, the base `config`
  * object under them, and equal values set again.
  */

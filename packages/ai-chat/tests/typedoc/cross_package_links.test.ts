@@ -22,7 +22,7 @@
  * does `instanceof` checks against, `ReflectionKind` values, and a stand-in
  * `makeRecursiveVisitor`) so the resolution rules are exercised against a
  * fixture rather than a full docs build — the same approach as
- * api_index_spec.ts.
+ * api_index.test.ts.
  */
 
 vi.mock('typedoc', () => {

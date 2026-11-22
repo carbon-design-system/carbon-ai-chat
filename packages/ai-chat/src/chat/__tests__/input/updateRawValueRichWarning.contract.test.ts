@@ -34,7 +34,7 @@ function deprecationWarnings(consoleWarn: MockInstance): unknown[][] {
 
 // The deprecation warning fires once per session, and a session lasts for the
 // whole test file, so each field's warning test has a file of its own. The
-// plain field's is in updateRawValueWarning_spec.ts.
+// plain field's is in updateRawValueWarning.contract.test.ts.
 // @covers instance.input.updateRawValue state.input.rawValue
 describe('input.updateRawValue deprecation warning', () => {
   contractSetup();

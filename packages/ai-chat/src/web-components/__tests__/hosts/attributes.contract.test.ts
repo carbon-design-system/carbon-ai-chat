@@ -15,7 +15,7 @@
  * config field. Booleans follow HTML presence (any value, `"false"` included,
  * turns one on), JSON attributes go through `JSON.parse`, and the rest are
  * taken as written. What each field does in depth is in the config specs;
- * attribute changes after mount are in `config/configUpdatesElement_spec.ts`.
+ * attribute changes after mount are in `src/web-components/__tests__/config/configUpdatesElement.contract.test.ts`.
  */
 
 import { act, waitFor } from '@testing-library/react';

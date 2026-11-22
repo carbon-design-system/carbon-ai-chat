@@ -10,6 +10,28 @@
 import type { ServiceManager } from '../../services/ServiceManager';
 import { PublicStateService } from '../../services/PublicStateService';
 import { EventBus } from '../../events/EventBus';
+import { createStoreFromReduction, type AppStore } from '../../store/appStore';
+import { createInitialState } from '../../store/doCreateStore';
+import { enableMessageOwnership } from '../../store/messageOwnership';
+import { reduceWithMessageOwnership } from '../../store/reducers';
+import type { ConversationState } from '../../../types/state/AppState';
+import { mockCustomSendMessage } from './config';
+
+/**
+ * Builds the conversation store the SDK boots with, without the prebuilt
+ * chat's view partition, from a config that sends through
+ * {@link mockCustomSendMessage}.
+ */
+export function sdkTestStore(): AppStore<ConversationState> {
+  const store = createStoreFromReduction<ConversationState>(
+    reduceWithMessageOwnership,
+    createInitialState({
+      public: { messaging: { customSendMessage: mockCustomSendMessage } },
+    })
+  );
+  enableMessageOwnership(store);
+  return store;
+}
 
 /**
  * Gives a service manager made without boot the public state a booted chat

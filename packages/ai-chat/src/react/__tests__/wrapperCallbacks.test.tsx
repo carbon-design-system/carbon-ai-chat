@@ -11,8 +11,8 @@
  * The before/after render contract, driven through one React wrapper and one
  * web component. The gate itself lives in `cds-aichat-container`, which every
  * surface mounts through; `ChatCustomElement` and `cds-aichat-custom-element`
- * only pass these callbacks down, which `wrapperMountParity_spec` and
- * `chatCustomElement_spec` already cover.
+ * only pass these callbacks down, which `wrapperMountParity.test` and
+ * `chatCustomElement.test` already cover.
  *
  * `onBeforeRender` may return a promise, and every host holds the shell and
  * `onAfterRender` until it settles. A throw or rejection leaves the shell gated

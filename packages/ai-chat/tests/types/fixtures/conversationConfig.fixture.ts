@@ -8,7 +8,7 @@
  */
 
 /**
- * Compiled under `strict: true` by sdkTypes_spec.ts and never run. The prebuilt chat stores its
+ * Compiled under `strict: true` by sdkTypes.test.ts and never run. The prebuilt chat stores its
  * `PublicConfig` where conversation code reads `ConversationConfig`, so each field must have the
  * same type in both. The package's own compile checks function parameters loosely, so this checks
  * each field for exact equality instead.

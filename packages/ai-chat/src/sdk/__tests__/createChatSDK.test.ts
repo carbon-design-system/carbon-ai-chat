@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+// The storage proofs need window storage and cookies present to prove the SDK leaves them alone.
 /*
  *  Copyright IBM Corp. 2026
  *

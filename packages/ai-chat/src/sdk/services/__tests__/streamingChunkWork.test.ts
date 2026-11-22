@@ -24,10 +24,7 @@ import {
   MessageResponseTypes,
   type TextItem,
 } from '../../../types/messaging/Messages';
-import {
-  createBaseConfig,
-  makeConfigStore,
-} from '../../../chat/__tests__/helpers/chat';
+import { sdkTestStore } from '../../__tests__/helpers/store';
 
 const LIVE = 'live';
 
@@ -37,7 +34,7 @@ const LIVE = 'live';
  */
 function chatWith(prior: number, read = true) {
   const work: string[] = [];
-  const store = makeConfigStore(createBaseConfig());
+  const store = sdkTestStore();
   const serviceManager = {
     store,
     eventBus: new EventBus(),
@@ -88,7 +85,7 @@ function chatWith(prior: number, read = true) {
  * default, as `addMessageChunk` does.
  */
 function chunk(
-  store: ReturnType<typeof makeConfigStore>,
+  store: ReturnType<typeof sdkTestStore>,
   streamID: string,
   text: string,
   responseID = LIVE

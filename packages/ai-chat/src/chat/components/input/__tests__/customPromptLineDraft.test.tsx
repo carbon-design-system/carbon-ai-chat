@@ -467,7 +467,7 @@ describe('custom prompt line draft restoration', () => {
   );
 
   // The shell owns the one input handle and keeps a newer one when an older
-  // input retires; nativeShellLifecycle_spec proves that. The input only
+  // input retires; nativeShellLifecycle.test proves that. The input only
   // reports its own retirement.
   it('clears built-in focus on unmount and reports its handle gone', async () => {
     const fixture = await setup();

@@ -39,6 +39,9 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: ['tests/setup/index.ts'],
     testTimeout: 10_000,
+    // Jest's cap: half the cores, so a full run leaves the machine room and
+    // its DOM-heavy workers don't crowd each other out.
+    maxWorkers: '50%',
     hookTimeout: 10_000,
     // Jest printed each-table values in full. Vitest truncates them at 40
     // characters by default, in titles and assertion messages.
@@ -91,11 +94,19 @@ export default defineConfig({
       reporter: ['text', 'lcov', 'html'],
       reportsDirectory: 'coverage',
     },
+    // Each project inherits `maxWorkers` through `extends`, and Vitest reads a
+    // project's own value before the root's, which is the only one a CLI
+    // `--maxWorkers` changes. `0` unsets the inherited value, so both projects
+    // share the root's worker count: the flag when given, half the cores if not.
     projects: [
       {
         extends: true,
         test: {
           name: 'node',
+          maxWorkers: 0,
+          // The SDK runs headless, so its tests get no DOM. A file that proves
+          // the SDK leaves a browser API alone opts into one (D5).
+          environment: 'node',
           include: tests.flatMap((glob) => [
             `src/sdk/${glob}`,
             `tests/${glob}`,
@@ -106,6 +117,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'happy-dom',
+          maxWorkers: 0,
           include: tests.map((glob) => `src/${glob}`),
           exclude: ['src/sdk/**', '**/node_modules/**'],
         },

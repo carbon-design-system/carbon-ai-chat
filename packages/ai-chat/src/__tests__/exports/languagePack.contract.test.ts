@@ -11,7 +11,7 @@
  * `enLanguagePack` is the set of keys a host overrides through
  * `config.strings`. A removed or renamed key breaks that override, so every
  * key is pinned; an added key is harmless and passes. The English copy itself
- * is not pinned. The keys are read from `aiChatEntry`; `entryParity_spec`
+ * is not pinned. The keys are read from `aiChatEntry`; `entryParity.contract.test`
  * checks that `serverEntry` holds the same pack.
  *
  * This file mounts no chat, so it doesn't call `contractSetup()`.

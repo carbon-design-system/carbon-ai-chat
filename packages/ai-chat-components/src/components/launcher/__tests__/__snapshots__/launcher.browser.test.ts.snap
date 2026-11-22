@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`launcher > should render with minimum attributes 1`] = `
+<cds-aichat-launcher
+  closed-label="Open chat"
+  open-label="Close chat"
+>
+</cds-aichat-launcher>
+
+`;

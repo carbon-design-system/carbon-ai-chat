@@ -11,7 +11,7 @@
  * How a config change after mount behaves when a host renders `ChatContainer`
  * again with new props. Each block says whether the change takes effect, and
  * what it leaves alone. The element path (new properties on a connected
- * `cds-aichat-*` element) is in `configUpdatesElement_spec.ts`.
+ * `cds-aichat-*` element) is in `configUpdatesElement.contract.test.ts`.
  *
  * The customSendMessage scenarios change config through a rerender, which no
  * driver verb does, so they use a plain mount rather than `describeShared`.

@@ -11,7 +11,7 @@
  * The lifecycle and view-change callbacks, and the base `config` object, of
  * the two `cds-aichat-*` elements: when each runs, with what, and what a
  * host sees when it sets one before or after the element connects. Remounts
- * are in `lifecycle/remount_spec.ts`.
+ * are in `src/chat/__tests__/lifecycle/remount.contract.test.ts`.
  */
 
 import { act, waitFor } from '@testing-library/react';

@@ -179,21 +179,51 @@ function trackShellResources() {
   }
   const add = listenerOwner.addEventListener;
   const remove = listenerOwner.removeEventListener;
+  const recordAdd = (
+    target: EventTarget,
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions
+  ) => {
+    const record = listener && acquire(`listener:${type}`);
+    if (record) {
+      listeners.push({
+        record,
+        target,
+        type,
+        listener,
+        capture: capture(options),
+      });
+    }
+  };
+  const recordRemove = (
+    target: EventTarget,
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions
+  ) => {
+    for (const entry of listeners) {
+      if (
+        entry.target === target &&
+        entry.type === type &&
+        entry.listener === listener &&
+        entry.capture === capture(options)
+      ) {
+        entry.record.active = false;
+      }
+    }
+  };
+  // Set while a call on window's own copy runs, so a copy that calls through
+  // to the prototype is not recorded twice.
+  let throughWindow = false;
   vi.spyOn(listenerOwner, 'addEventListener').mockImplementation(function (
     this: EventTarget,
     type,
     listener,
     options
   ) {
-    const record = listener && acquire(`listener:${type}`);
-    if (record) {
-      listeners.push({
-        record,
-        target: this,
-        type,
-        listener,
-        capture: capture(options),
-      });
+    if (!throughWindow) {
+      recordAdd(this, type, listener, options);
     }
     add.call(this, type, listener, options);
   });
@@ -203,18 +233,41 @@ function trackShellResources() {
     listener,
     options
   ) {
-    for (const entry of listeners) {
-      if (
-        entry.target === this &&
-        entry.type === type &&
-        entry.listener === listener &&
-        entry.capture === capture(options)
-      ) {
-        entry.record.active = false;
-      }
+    if (!throughWindow) {
+      recordRemove(this, type, listener, options);
     }
     remove.call(this, type, listener, options);
   });
+  // happy-dom gives window its own bound copies of these methods, which the
+  // prototype spies never see. Wrap window's copies too.
+  const addToWindow = window.addEventListener;
+  const removeFromWindow = window.removeEventListener;
+  patchWindow('addEventListener', ((
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions
+  ) => {
+    recordAdd(window, type, listener, options);
+    throughWindow = true;
+    try {
+      addToWindow.call(window, type, listener, options);
+    } finally {
+      throughWindow = false;
+    }
+  }) as Window['addEventListener']);
+  patchWindow('removeEventListener', ((
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions
+  ) => {
+    recordRemove(window, type, listener, options);
+    throughWindow = true;
+    try {
+      removeFromWindow.call(window, type, listener, options);
+    } finally {
+      throughWindow = false;
+    }
+  }) as Window['removeEventListener']);
 
   // Timers are patched with plain functions, not Jest mocks, so Testing
   // Library keeps treating timers as real. afterEach restores them.

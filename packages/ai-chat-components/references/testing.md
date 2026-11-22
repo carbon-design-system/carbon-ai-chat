@@ -1,37 +1,34 @@
 # testing.md — `@carbon/ai-chat-components` testing
 
-Load this when writing or running tests in this package. Two runners live here — pick the right one for the file.
+Load this when writing or running tests in this package. Vitest runs every test here, in two projects. A file's name says which one.
 
-Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs under `tests/`). Every Lit element gets a `__tests__/<name>.test.ts`. Every new or changed React wrapper should get a spec under `src/react/__tests__/`.
+Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs under `tests/`). Every Lit element gets tests under its `__tests__/`. Every new or changed React wrapper should get a spec under `src/react/__tests__/`.
 
-## Two runners
+## Two projects
 
-| Runner                   | Covers                                           | Location                                                                                         | Command                       |
-| ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ----------------------------- |
-| `@web/test-runner` (WTR) | Lit custom elements, and the `focus-utils` suite | `src/components/<c>/__tests__/<name>.test.ts`, `src/globals/utils/__tests__/focus-utils.test.ts` | `npm run test:web-components` |
-| Vitest (happy-dom)       | React wrappers, utilities, Storybook switcher    | `src/react/__tests__/<file>.test.ts`, `src/globals/**/__tests__/`, `.storybook/__tests__/`        | `npm run test:unit`           |
+| Project | Covers | Files |
+| --- | --- | --- |
+| `browser` (Playwright, Chromium) | Lit elements and anything that needs real layout, focus, selection, input or a browser API happy-dom lacks | `**/__tests__/<name>.browser.test.ts` |
+| `happy-dom` | React wrappers, utilities, Storybook switcher, and Lit logic that needs no real browser | every other `*.test.ts(x)`, including `.storybook/__tests__/` |
 
-`npm test` runs both. WTR runs only the files its script names: everything under `src/components/**` plus the focus-utils suite, which needs real focus. Use the right runner for the file — a Lit element test under Vitest (or vice versa) will fail to resolve its environment.
+`CAIC_ALL_BROWSERS=1` adds Firefox and WebKit to the `browser` project, as the nightly jobs do. The browser project sizes its page to 800x600, as web-test-runner did. Real mouse and keyboard input goes through `src/__tests__/browser/input.ts`, which keeps the `@web/test-runner-commands` signatures.
 
 ## Snapshots
 
-WTR snapshots live in `__snapshots__/` next to the test. Regenerate with `npm run test:updateSnapshot` and **review the diff** before committing — a snapshot churn usually means a real render change.
+DOM snapshots use `expectDomSnapshot(el)` from `src/__tests__/browser/dom-snapshot.ts` and live in `__snapshots__/` next to the test. Regenerate with `npm run test:updateSnapshot` and **review the diff** before committing — a snapshot churn usually means a real render change.
 
 ## Running tests
 
 From this package directory:
 
 ```bash
-npm test                        # both suites
-npm run test:web-components      # WTR (Lit) only
-npm run test:unit               # Vitest (happy-dom) only
-npm run test:updateSnapshot     # refresh WTR snapshots
+npm test                                   # both projects
+npm test -- --project browser              # browser project only
+npm test -- --project happy-dom            # happy-dom project only
+npm run test:updateSnapshot                # refresh snapshots
 
-# Single web-component test
-npm run test:web-components -- src/components/card/__tests__/card.test.ts
-
-# Single react-wrapper test
-npm run test:unit -- src/react/__tests__/<file>.test.ts
+# One file
+npm test -- src/components/card/__tests__/card.browser.test.ts
 ```
 
 ## Gotchas
@@ -39,8 +36,8 @@ npm run test:unit -- src/react/__tests__/<file>.test.ts
 | Symptom                                            | Cause                                | Fix                                                                                                                                                                                      |
 | -------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A Lit element in a React test never wires its events | A dependency loaded its Node build | Add the package to `test.server.deps.inline` in `vitest.config.ts`, so it resolves with the `browser` condition. |
-| Wrong runner picked up a file                      | Lit vs React test in the wrong suite | Lit → WTR (`.test.ts` under `__tests__/`); React wrappers → Vitest (under `src/react/__tests__/`).                                                                                         |
-| A WTR test fails against code that is correct in `src/` | The test imports `@carbon/ai-chat-components/es/…`, the built output, and `es/` is stale | Rebuild before testing — see the [build preflight](../../../references/commands.md#build-preflight).                                                                                     |
+| A test passes in happy-dom but can't show the behavior | It needs real layout, focus, selection or input | Name it `*.browser.test.ts` so the `browser` project runs it. |
+| A test fails against code that is correct in `src/` | The test imports `@carbon/ai-chat-components/es/…`, the built output, and `es/` is stale | Rebuild before testing — see the [build preflight](../../../references/commands.md#build-preflight).                                                                                     |
 
 ## Related guidance
 

@@ -1,9 +1,3 @@
-/**
- * @vitest-environment node
- */
-
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["vitest-environment"] }] */
-
 /*
  *  Copyright IBM Corp. 2026
  *

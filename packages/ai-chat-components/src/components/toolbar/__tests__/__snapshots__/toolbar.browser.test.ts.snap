@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`toolbar > should render with cds-aichat-toolbar minimum attributes 1`] = `
+<cds-aichat-toolbar>
+</cds-aichat-toolbar>
+
+`;

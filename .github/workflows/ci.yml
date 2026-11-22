@@ -98,12 +98,13 @@ jobs:
             run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=2/3
           - suite: ai-chat 3/3
             run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=3/3
-          # 👇 TEMPORARILY chromium-only in CI: the firefox/webkit apt dependencies (~185 packages)
-          # stall the Playwright install. Restore `chromium firefox webkit` (and the matching
-          # launchers in web-test-runner.config.js) when the CI strategy is reworked.
-          - suite: components
+          # 👇 Components' browser tests run in Chromium per PR; Firefox and WebKit are nightly.
+          - suite: components browser
             browsers: chromium
-            run: npm run test --workspace=@carbon/ai-chat-components && npm run test:host-entry-consumer && npm run test:manifest-consumer
+            run: npm run test --workspace=@carbon/ai-chat-components -- --project browser
+          # 👇 The happy-dom project needs no browser install.
+          - suite: components
+            run: npm run test --workspace=@carbon/ai-chat-components -- --project happy-dom && npm run test:host-entry-consumer && npm run test:manifest-consumer
           # 👇 Demo and example test suites run in the nightly workflow (nightly.yml), not here.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
