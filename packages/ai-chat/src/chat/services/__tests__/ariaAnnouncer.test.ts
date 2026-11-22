@@ -72,4 +72,13 @@ describe('AriaAnnouncer', () => {
     expect(listeners.size).toBe(0);
     expect(mockDisconnect).toHaveBeenCalledTimes(1);
   });
+
+  // Hosts' live-region tests can't reach the turn before the regions exist.
+  it('delivers assertive text sent in the same turn as connect, just before it', async () => {
+    const { announcer, container } = createHarness();
+    announcer.announce({ messageText: 'Early alert', assertive: true });
+    announcer.connect(container);
+    await Promise.resolve();
+    expect(mockAnnounce).toHaveBeenCalledWith('Early alert', 'assertive');
+  });
 });
