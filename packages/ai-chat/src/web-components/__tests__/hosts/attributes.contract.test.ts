@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+// happy-dom 21 runs DOMPurify only partly, so the javascript: link case would pass there for a different reason than in a browser.
 /*
  *  Copyright IBM Corp. 2026
  *
