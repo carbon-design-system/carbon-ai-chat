@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-// Shell detach and reconnect bindings differ under happy-dom 21; cause not isolated.
 /*
  *  Copyright IBM Corp. 2026
  *
@@ -170,38 +168,52 @@ function trackShellResources() {
 
   const capture = (options?: boolean | EventListenerOptions) =>
     typeof options === 'boolean' ? options : Boolean(options?.capture);
-  const add = EventTarget.prototype.addEventListener;
-  const remove = EventTarget.prototype.removeEventListener;
-  vi.spyOn(EventTarget.prototype, 'addEventListener').mockImplementation(
-    function (this: EventTarget, type, listener, options) {
-      const record = listener && acquire(`listener:${type}`);
-      if (record) {
-        listeners.push({
-          record,
-          target: this,
-          type,
-          listener,
-          capture: capture(options),
-        });
-      }
-      add.call(this, type, listener, options);
+  // Spy where elements actually inherit the methods. In happy-dom the global
+  // EventTarget is a subclass that nodes, document and window don't extend.
+  let listenerOwner: EventTarget = Node.prototype;
+  while (
+    !Object.prototype.hasOwnProperty.call(listenerOwner, 'addEventListener')
+  ) {
+    listenerOwner = Object.getPrototypeOf(listenerOwner);
+  }
+  const add = listenerOwner.addEventListener;
+  const remove = listenerOwner.removeEventListener;
+  vi.spyOn(listenerOwner, 'addEventListener').mockImplementation(function (
+    this: EventTarget,
+    type,
+    listener,
+    options
+  ) {
+    const record = listener && acquire(`listener:${type}`);
+    if (record) {
+      listeners.push({
+        record,
+        target: this,
+        type,
+        listener,
+        capture: capture(options),
+      });
     }
-  );
-  vi.spyOn(EventTarget.prototype, 'removeEventListener').mockImplementation(
-    function (this: EventTarget, type, listener, options) {
-      for (const entry of listeners) {
-        if (
-          entry.target === this &&
-          entry.type === type &&
-          entry.listener === listener &&
-          entry.capture === capture(options)
-        ) {
-          entry.record.active = false;
-        }
+    add.call(this, type, listener, options);
+  });
+  vi.spyOn(listenerOwner, 'removeEventListener').mockImplementation(function (
+    this: EventTarget,
+    type,
+    listener,
+    options
+  ) {
+    for (const entry of listeners) {
+      if (
+        entry.target === this &&
+        entry.type === type &&
+        entry.listener === listener &&
+        entry.capture === capture(options)
+      ) {
+        entry.record.active = false;
       }
-      remove.call(this, type, listener, options);
     }
-  );
+    remove.call(this, type, listener, options);
+  });
 
   // Timers are patched with plain functions, not Jest mocks, so Testing
   // Library keeps treating timers as real. afterEach restores them.
