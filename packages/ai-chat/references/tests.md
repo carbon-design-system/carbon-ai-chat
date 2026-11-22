@@ -10,7 +10,7 @@ Use the cheapest test that can show the behavior. Answer in order, and stop at t
 
 1. **One module owns the behavior.** Write a unit test in `__tests__/` beside that module. Build only what it needs: a stub, a test store, or one rendered component. Don't mount the chat to reach a service or the store.
 2. **Several modules work together.** Write a cross-module test in the `__tests__/` of the entry it drives (table below). Boot the least you need (see [Helpers](#helpers)).
-3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A real browser alone is no reason to use the demo.
+3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A test that stubs layout or focus to pass, such as `getClientRects`, belongs here without the stub. A real browser alone is no reason to use the demo.
 4. **It needs the built demo:** the production build, a demo toggle, the host-compatibility pages, or the demo's response corpus. Only then add a spec to [demo/tests/](../../../demo/tests/), and only if no example's spec covers it. The [example suite](../../../examples/references/playwright.md) covers host integrations.
 
 Check one behavior at one level. When a cheaper test shows it, delete the costlier copy, unless the costlier copy is a contract test.
