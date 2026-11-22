@@ -208,6 +208,8 @@ describe.each(wrappers)('input configuration through %s', (_name, Wrapper) => {
       await waitFor(() =>
         expect(composedWithin(input, deepActiveElement())).toBe(true)
       );
+      const requestFocus = vi.mocked(customPromptLine.requestComposerFocus);
+      requestFocus.mockClear();
 
       f.toggle();
       await waitFor(() => expect(f.composerInput()).not.toBeNull());
@@ -215,6 +217,9 @@ describe.each(wrappers)('input configuration through %s', (_name, Wrapper) => {
         expect(document.activeElement).toBe(f.composerInput())
       );
       expect(f.builtIn()).toBeNull();
+      // The module spy sees this move, so the no-focus case's
+      // not.toHaveBeenCalled() can't pass because the spy is detached.
+      expect(requestFocus).toHaveBeenCalled();
     });
 
     it('moves no focus when the composers swap while neither had focus', async () => {
