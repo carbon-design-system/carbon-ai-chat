@@ -10,7 +10,7 @@ Use the cheapest test that can show the behavior. Answer in order, and stop at t
 
 1. **One module owns the behavior.** Write a unit test in `__tests__/` beside that module. Build only what it needs: a stub, a test store, or one rendered component. Don't mount the chat to reach a service or the store.
 2. **Several modules work together.** Write a cross-module test in the `__tests__/` of the entry it drives (table below). Boot the least you need (see [Helpers](#helpers)).
-3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A test that stubs layout or focus to pass, such as `getClientRects`, belongs here without the stub. A real browser alone is no reason to use the demo.
+3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A test whose stub stands in for the geometry, focus or slotting the behavior depends on, such as a `getClientRects` stub so tabbable sees every element, belongs here without the stub. A unit that takes a measurement as its input, such as a scroll controller fed element sizes, may stub that measurement and stay where it is. Contract tests stay in their project; only scripts edit them. A real browser alone is no reason to use the demo.
 4. **It needs the built demo:** the production build, a demo toggle, the host-compatibility pages, or the demo's response corpus. Only then add a spec to [demo/tests/](../../../demo/tests/), and only if no example's spec covers it. The [example suite](../../../examples/references/playwright.md) covers host integrations.
 
 Check one behavior at one level. When a cheaper test shows it, delete the costlier copy, unless the costlier copy is a contract test.
@@ -36,7 +36,7 @@ To remove a test as a duplicate, show the surviving test covers it. Plant a narr
 
 ## Contract tests pin host behavior
 
-For a change a host can observe, add or change a contract test in the same commit. Name it `<name>.contract.test.ts(x)`, in the folder of the entry it drives (`src/chat/__tests__/<area>/`, `src/sdk/__tests__/`, `src/react/__tests__/hosts/`, `src/web-components/__tests__/`, or `src/__tests__/exports/`). Shared drivers and fixtures go in `src/chat/__tests__/helpers/contract/`. The SDK's go in `src/sdk/__tests__/helpers/publicContract.ts` and `lifecycleControl.ts`.
+For a change a host can observe, add or change a contract test in the same commit. Name it `<name>.contract.test.ts(x)`; it runs in `node` or `happy-dom`. The manifest refuses a `.contract.browser.test` file for now, because CI checks the manifest without a browser. Put it in the folder of the entry it drives (`src/chat/__tests__/<area>/`, `src/sdk/__tests__/`, `src/react/__tests__/hosts/`, `src/web-components/__tests__/`, or `src/__tests__/exports/`). Shared drivers and fixtures go in `src/chat/__tests__/helpers/contract/`. The SDK's go in `src/sdk/__tests__/helpers/publicContract.ts` and `lifecycleControl.ts`.
 
 Drive the `ChatInstance` handed to a host, public host props or attributes, slots, events, or the handle from `createChatSDK`. Assert returned values, `getState()` snapshots, the handle's `state`, events, and public callbacks such as `customSendMessage` and render props. A store-shape assertion belongs in an internal test.
 
@@ -88,7 +88,7 @@ Under `src/sdk/`, add `// @vitest-environment happy-dom` only to prove the SDK l
 | Assertions on the rendered chat | `renderChatAndGetInstance()` | `src/chat/__tests__/helpers/render.ts` |
 | A wait on a real event or call | `untilCalled()`, `untilDom()` | `src/chat/__tests__/helpers/waits.ts` |
 
-Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()` after each test that boots. Wait on the event or promise a test needs, or use fake timers. Don't raise a timeout to make a slow test pass.
+Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()`, from `helpers/boot.ts`, after each test that boots. The `browser` project loads the same helpers; browser tests already use `createBaseConfig()`, `setupBeforeEach()`, `setupAfterEach()` and the waits. Wait on the event or promise a test needs, or use fake timers. Don't raise a timeout to make a slow test pass.
 
 ## Checks with no module
 

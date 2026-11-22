@@ -48,7 +48,7 @@ Workspace deps resolve through built artifacts, not TS sources. A test can run o
 
 | Run | Reads built output from | Builds for itself |
 | --- | --- | --- |
-| `@carbon/ai-chat` Vitest | `packages/ai-chat-components/es/`. Its own code runs from `src/`. | Nothing |
+| `@carbon/ai-chat` Vitest | `packages/ai-chat-components/es/`, in every project, `node` included: `src/sdk/` imports its utilities. `tests/build/` also reads `packages/ai-chat/dist/`. Its own code otherwise runs from `src/`. | Nothing |
 | `@carbon/ai-chat-components` Vitest | Its own `es/`, in each test that imports `@carbon/ai-chat-components/es/…` | Nothing |
 | Demo Playwright | `packages/ai-chat/dist/es/` and `packages/ai-chat-components/es/` | The demo only (`tsc --noEmit && vite build`), never the chat packages. It can skip even that → [demo/AGENTS.md](../demo/AGENTS.md#build-run-test). |
 | Example tests and e2e | The same two package outputs | At most the example |
