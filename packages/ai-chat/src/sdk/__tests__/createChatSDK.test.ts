@@ -105,9 +105,17 @@ describe('storage (#1732 O4, O7)', () => {
 
   it('touches no storage when its modules load', async () => {
     vi.resetModules();
-    const spies = (['getItem', 'setItem', 'removeItem'] as const).map(
-      (method) => vi.spyOn(Storage.prototype, method)
-    );
+    // happy-dom binds a Storage method onto the storage object the first time
+    // it is read, so prototype spies miss later calls. Reaching storage at
+    // all goes through these window getters, which binding doesn't affect.
+    const spies = [
+      ...(['getItem', 'setItem', 'removeItem'] as const).map((method) =>
+        vi.spyOn(Storage.prototype, method)
+      ),
+      ...(['sessionStorage', 'localStorage'] as const).map((name) =>
+        vi.spyOn(window, name, 'get')
+      ),
+    ];
     try {
       const sdk = await import('..');
       const chat = await sdk.createChatSDK({
