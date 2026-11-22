@@ -103,7 +103,7 @@ describe('request sender attribution', () => {
   });
 
   it.each([undefined, '', '   '])(
-    'retains You and suppresses pictures for unusable nickname %p',
+    'retains You and suppresses pictures for unusable nickname %j',
     async (nickname) => {
       const instance = await renderChatAndGetInstance(createBaseConfig());
       const userProfile =
@@ -153,7 +153,7 @@ describe('request sender attribution', () => {
   });
 
   it.each([true, false])(
-    'keeps the name with hideAvatar=%p and no picture URL',
+    'keeps the name with hideAvatar=%j and no picture URL',
     async (hideAvatar) => {
       const instance = await renderChatAndGetInstance({
         ...createBaseConfig(),
