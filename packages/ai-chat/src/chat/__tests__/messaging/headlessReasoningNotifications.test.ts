@@ -15,10 +15,10 @@ import {
 import { BusEventType } from '../../../types/events/eventBusTypes';
 import {
   createBaseConfig,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
   setupAfterEach,
   setupBeforeEach,
-  unmountKeepingServices,
+  shutdownBootedChats,
 } from '../helpers/chat';
 
 const response = (id: string, value: string): MessageResponse => ({
@@ -45,14 +45,18 @@ const response = (id: string, value: string): MessageResponse => ({
 });
 
 beforeEach(setupBeforeEach);
-afterEach(setupAfterEach);
+afterEach(async () => {
+  await shutdownBootedChats();
+  setupAfterEach();
+});
 
 // D7 of the #2349 plan: headless delivery runs whenever no view is attached,
 // so a chat whose view detached keeps delivering reasoning items.
 it('delivers headlessly once the view detaches', async () => {
-  const { instance } =
-    await renderChatAndGetInstanceWithStore(createBaseConfig());
-  unmountKeepingServices(instance);
+  const { instance, view } = await bootChat(createBaseConfig(), {
+    attach: true,
+  });
+  view.detach();
   const values: unknown[] = [];
   instance.on({
     type: BusEventType.USER_DEFINED_RESPONSE,

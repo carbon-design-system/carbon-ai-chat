@@ -16,7 +16,8 @@ import { OnErrorType } from '../../../types/config/ErrorConfig';
 import type { ChatInstance } from '../../../types/instance/ChatInstance';
 import {
   createBaseConfig,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
+  shutdownBootedChats,
   setupAfterEach,
   setupBeforeEach,
 } from '../helpers/chat';
@@ -30,7 +31,10 @@ function requestIDs(instance: ChatInstance) {
 
 describe('state.error', () => {
   beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
+  afterEach(async () => {
+    await shutdownBootedChats();
+    setupAfterEach();
+  });
 
   it('holds a failed send with its request ID, and the next send clears it', async () => {
     const onError = vi.fn();
@@ -38,7 +42,7 @@ describe('state.error', () => {
       .fn()
       .mockRejectedValueOnce(new Error('down'))
       .mockResolvedValue(undefined);
-    const { instance } = await renderChatAndGetInstanceWithStore({
+    const { instance } = await bootChat({
       ...createBaseConfig(),
       onError,
       messaging: { skipWelcome: true, customSendMessage },
@@ -71,7 +75,7 @@ describe('state.error', () => {
   });
 
   it('clears on restart', async () => {
-    const { instance } = await renderChatAndGetInstanceWithStore({
+    const { instance } = await bootChat({
       ...createBaseConfig(),
       messaging: {
         skipWelcome: true,

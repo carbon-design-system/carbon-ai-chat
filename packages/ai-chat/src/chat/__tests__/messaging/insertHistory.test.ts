@@ -14,7 +14,9 @@ import {
   createBaseConfig,
   itemFlagsFor,
   itemsWithOptionSelected,
+  bootChat,
   renderChatAndGetInstanceWithStore,
+  shutdownBootedChats,
   setupBeforeEach,
   setupAfterEach,
 } from '../helpers/chat';
@@ -45,7 +47,10 @@ async function expectRequestSender(text: string, sender: string) {
 
 describe('ChatInstance.messaging.insertHistory', () => {
   beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
+  afterEach(async () => {
+    await shutdownBootedChats();
+    setupAfterEach();
+  });
 
   it('preserves sender metadata through a stored history JSON round-trip', async () => {
     const profile = {
@@ -150,8 +155,7 @@ describe('ChatInstance.messaging.insertHistory', () => {
     it.each([true, undefined])(
       'restores the matching option group with is_choice_request=%s',
       async (is_choice_request) => {
-        const { instance, store } =
-          await renderChatAndGetInstanceWithStore(createBaseConfig());
+        const { instance, store } = await bootChat(createBaseConfig());
         const historyItems: HistoryItem[] = [
           {
             message: {
@@ -224,8 +228,7 @@ describe('ChatInstance.messaging.insertHistory', () => {
     );
 
     it('restores a legacy unmarked post-back from top-level, body, and footer choices', async () => {
-      const { instance, store } =
-        await renderChatAndGetInstanceWithStore(createBaseConfig());
+      const { instance, store } = await bootChat(createBaseConfig());
       const postBack = (label: string, text: string) => ({
         response_type: MessageResponseTypes.BUTTON,
         button_type: ButtonItemType.POST_BACK,

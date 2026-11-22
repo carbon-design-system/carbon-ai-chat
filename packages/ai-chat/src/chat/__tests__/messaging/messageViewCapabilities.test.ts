@@ -15,18 +15,22 @@ import { MessageResponseTypes } from '../../../types/messaging/Messages';
 import type { MainWindowFunctions } from '../../../types/utilities/MainWindowFunctions';
 import {
   createBaseConfig,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
+  shutdownBootedChats,
   setupAfterEach,
   setupBeforeEach,
 } from '../helpers/chat';
 
 beforeEach(setupBeforeEach);
-afterEach(setupAfterEach);
+afterEach(async () => {
+  await shutdownBootedChats();
+  setupAfterEach();
+});
 
 it.each(['replacement', 'missing'])(
   'restores history scroll through the current boot capability after replay: %s handle',
   async (mode) => {
-    const boot = await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const boot = await bootChat(createBaseConfig(), { attach: true });
     // The shell publishes the main window handle on the view state; swap what
     // that getter returns, so the real view bindings read the replacement.
     const shellMainWindow = Object.getOwnPropertyDescriptor(

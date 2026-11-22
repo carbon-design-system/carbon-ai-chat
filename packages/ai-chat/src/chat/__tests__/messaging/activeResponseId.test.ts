@@ -12,7 +12,8 @@ import { MessageResponseTypes } from '../../../types/messaging/Messages';
 import actions from '../../../sdk/store/actions';
 import {
   createBaseConfig,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
+  shutdownBootedChats,
   setupAfterEach,
   setupBeforeEach,
 } from '../helpers/chat';
@@ -22,13 +23,13 @@ describe('activeResponseId public state', () => {
     setupBeforeEach();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await shutdownBootedChats();
     setupAfterEach();
   });
 
   it('sets the active response from hydrated history and clears on restart', async () => {
-    const { instance, store } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const { instance, store } = await bootChat(createBaseConfig());
 
     await instance.messaging.insertHistory([
       {

@@ -17,6 +17,7 @@ export {
   unmountKeepingServices,
   setupAfterEach,
 } from './render';
+export { type BootedChat, bootChat, shutdownBootedChats } from './boot';
 export { mockCustomSendMessage } from '../../../sdk/__tests__/helpers/config';
 export { createBaseTestProps, createBaseConfig } from './config';
 export {

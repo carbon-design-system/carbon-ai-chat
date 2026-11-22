@@ -17,14 +17,18 @@ import { MessageState } from '../../types/config/MessagingConfig';
 import { BusEventType } from '../../types/events/eventBusTypes';
 import {
   createBaseConfig,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
+  shutdownBootedChats,
   setupAfterEach,
   setupBeforeEach,
 } from './helpers/chat';
 
 describe('conversation status', () => {
   beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
+  afterEach(async () => {
+    await shutdownBootedChats();
+    setupAfterEach();
+  });
 
   it('releases an awaited upsert stream when its send throws', async () => {
     const config = createBaseConfig();
@@ -46,7 +50,7 @@ describe('conversation status', () => {
         );
       },
     };
-    const { instance } = await renderChatAndGetInstanceWithStore(config);
+    const { instance } = await bootChat(config);
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
@@ -83,7 +87,7 @@ describe('conversation status', () => {
         );
       },
     };
-    const { instance } = await renderChatAndGetInstanceWithStore(config);
+    const { instance } = await bootChat(config);
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
@@ -134,8 +138,7 @@ describe('conversation status', () => {
           }
         },
       };
-      const { instance, serviceManager } =
-        await renderChatAndGetInstanceWithStore(config);
+      const { instance, serviceManager } = await bootChat(config);
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
       instance.on({
         type: BusEventType.PRE_RECEIVE,
@@ -197,7 +200,7 @@ describe('conversation status', () => {
         throw new Error('send failed');
       },
     };
-    const { instance } = await renderChatAndGetInstanceWithStore(config);
+    const { instance } = await bootChat(config);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
     await expect(instance.send('first')).rejects.toThrow('send failed');
@@ -233,7 +236,7 @@ describe('conversation status', () => {
         }
       },
     };
-    const { instance } = await renderChatAndGetInstanceWithStore(config);
+    const { instance } = await bootChat(config);
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
@@ -268,7 +271,7 @@ describe('conversation status', () => {
         throw failure;
       },
     };
-    const { instance } = await renderChatAndGetInstanceWithStore(config);
+    const { instance } = await bootChat(config);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     await expect(instance.send('question')).rejects.toThrow('failed');
     expect(onError).toHaveBeenCalledTimes(1);
@@ -291,7 +294,7 @@ describe('conversation status', () => {
     const loaded = resolvablePromise<any[]>();
     const loading = resolvablePromise();
     const customSendMessage = vi.fn().mockResolvedValue(undefined);
-    const { instance } = await renderChatAndGetInstanceWithStore({
+    const { instance } = await bootChat({
       ...createBaseConfig(),
       messaging: {
         skipWelcome: true,
@@ -313,42 +316,41 @@ describe('conversation status', () => {
   });
 
   it('publishes status and each streamed text increment in order', async () => {
-    const { instance, serviceManager } =
-      await renderChatAndGetInstanceWithStore({
-        ...createBaseConfig(),
-        messaging: {
-          skipWelcome: true,
-          customSendMessage: async (request, _options, chat) => {
-            for (const text of ['one', 'two']) {
-              await chat.messaging.addMessageChunk({
-                streaming_metadata: {
-                  response_id: 'increments',
-                  request_id: request.id,
-                },
-                partial_item: {
-                  response_type: MessageResponseTypes.TEXT,
-                  text,
-                  streaming_metadata: { id: 'text' },
-                },
-              });
-            }
+    const { instance, serviceManager } = await bootChat({
+      ...createBaseConfig(),
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: async (request, _options, chat) => {
+          for (const text of ['one', 'two']) {
             await chat.messaging.addMessageChunk({
-              final_response: {
-                id: 'increments',
+              streaming_metadata: {
+                response_id: 'increments',
                 request_id: request.id,
-                output: {
-                  generic: [
-                    {
-                      response_type: MessageResponseTypes.TEXT,
-                      text: 'onetwo',
-                    },
-                  ],
-                },
+              },
+              partial_item: {
+                response_type: MessageResponseTypes.TEXT,
+                text,
+                streaming_metadata: { id: 'text' },
               },
             });
-          },
+          }
+          await chat.messaging.addMessageChunk({
+            final_response: {
+              id: 'increments',
+              request_id: request.id,
+              output: {
+                generic: [
+                  {
+                    response_type: MessageResponseTypes.TEXT,
+                    text: 'onetwo',
+                  },
+                ],
+              },
+            },
+          });
         },
-      });
+      },
+    });
     await serviceManager.actions.hydrateChat();
     const seen: string[] = [];
     const unsubscribe = instance.state.subscribe(() => {
@@ -376,7 +378,7 @@ describe('conversation status', () => {
   it('keeps completed response ownership when a later send is pending', async () => {
     const started = resolvablePromise();
     const release = resolvablePromise();
-    const { instance } = await renderChatAndGetInstanceWithStore({
+    const { instance } = await bootChat({
       ...createBaseConfig(),
       messaging: {
         skipWelcome: true,

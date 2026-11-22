@@ -12,7 +12,8 @@ import { act, waitFor } from '@testing-library/react';
 import {
   createBaseConfig,
   mockCustomSendMessage,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
+  shutdownBootedChats,
   setupAfterEach,
   setupBeforeEach,
 } from '../helpers/chat';
@@ -56,11 +57,13 @@ function publicMessage(
 
 describe('host fields on message envelopes', () => {
   beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
+  afterEach(async () => {
+    await shutdownBootedChats();
+    setupAfterEach();
+  });
 
   it('keeps host fields on a sent request through events, the send handler, and state', async () => {
-    const { instance, store } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const { instance, store } = await bootChat(createBaseConfig());
     const preSend = vi.fn();
     const send = vi.fn();
     instance.on({ type: BusEventType.PRE_SEND, handler: preSend });
@@ -83,8 +86,7 @@ describe('host fields on message envelopes', () => {
   });
 
   it('keeps host fields on an added response through receive events and state', async () => {
-    const { instance, store } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const { instance, store } = await bootChat(createBaseConfig());
     const preReceive = vi.fn();
     const receive = vi.fn();
     instance.on({ type: BusEventType.PRE_RECEIVE, handler: preReceive });
@@ -106,8 +108,7 @@ describe('host fields on message envelopes', () => {
   });
 
   it('keeps host fields from a streamed final response', async () => {
-    const { instance, store } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const { instance, store } = await bootChat(createBaseConfig());
     const receive = vi.fn();
     instance.on({ type: BusEventType.RECEIVE, handler: receive });
 
@@ -134,8 +135,7 @@ describe('host fields on message envelopes', () => {
   });
 
   it('keeps host fields written through upsertMessage', async () => {
-    const { instance, store } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const { instance, store } = await bootChat(createBaseConfig());
 
     await act(async () => {
       await instance.messaging.upsertMessage(
@@ -161,8 +161,7 @@ describe('host fields on message envelopes', () => {
   });
 
   it('keeps host fields on messages loaded from history', async () => {
-    const { instance, store } =
-      await renderChatAndGetInstanceWithStore(createBaseConfig());
+    const { instance, store } = await bootChat(createBaseConfig());
     const historyBegin = vi.fn();
     const historyEnd = vi.fn();
     instance.on({ type: BusEventType.HISTORY_BEGIN, handler: historyBegin });

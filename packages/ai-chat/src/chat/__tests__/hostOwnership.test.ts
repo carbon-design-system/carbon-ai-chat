@@ -12,17 +12,21 @@ import { BusEventType } from '../../types/events/eventBusTypes';
 import { MessageRequest } from '../../types/messaging/Messages';
 import {
   createBaseConfig,
-  renderChatAndGetInstanceWithStore,
+  bootChat,
+  shutdownBootedChats,
   setupBeforeEach,
   setupAfterEach,
 } from './helpers/chat';
 
 describe('existing host ownership contracts', () => {
   beforeEach(setupBeforeEach);
-  afterEach(setupAfterEach);
+  afterEach(async () => {
+    await shutdownBootedChats();
+    setupAfterEach();
+  });
 
   it('keeps request footer wrappers writable while their message stays frozen', async () => {
-    const { instance } = await renderChatAndGetInstanceWithStore({
+    const { instance } = await bootChat({
       ...createBaseConfig(),
       messaging: {
         skipWelcome: true,

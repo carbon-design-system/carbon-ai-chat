@@ -25,7 +25,8 @@ import type {
 } from '../../../types/messaging/Messages';
 import {
   createBaseConfig,
-  renderChatAndGetInstance,
+  bootChat,
+  shutdownBootedChats,
   setupAfterEach,
   setupBeforeEach,
 } from '../helpers/chat';
@@ -57,17 +58,20 @@ async function chatWith(
   sent: MessageRequest[] = [],
   extra: Partial<PublicConfig> = {}
 ) {
-  const instance = await renderChatAndGetInstance({
-    ...createBaseConfig(),
-    ...extra,
-    upload,
-    messaging: {
-      skipWelcome: true,
-      customSendMessage: async (request: MessageRequest) => {
-        sent.push(request);
+  const { instance } = await bootChat(
+    {
+      ...createBaseConfig(),
+      ...extra,
+      upload,
+      messaging: {
+        skipWelcome: true,
+        customSendMessage: async (request: MessageRequest) => {
+          sent.push(request);
+        },
       },
     },
-  });
+    { attach: true }
+  );
   await instance.changeView(ViewType.MAIN_WINDOW);
   await waitFor(() => expect(instance.state.get().status).toBe('ready'));
   return instance;
@@ -84,7 +88,10 @@ describe('messaging.addFile and removeFile (#2351)', () => {
     sessionStorage.clear();
     localStorage.clear();
   });
-  afterEach(setupAfterEach);
+  afterEach(async () => {
+    await shutdownBootedChats();
+    setupAfterEach();
+  });
 
   it('resolves with the ID once the upload starts, before it finishes, and needs no isOn (O2, O4)', async () => {
     const host = uploader();
