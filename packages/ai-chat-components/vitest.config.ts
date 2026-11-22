@@ -19,9 +19,10 @@ const unit = ['**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx'];
 
 // Chromium by default. CAIC_ALL_BROWSERS=1 adds Firefox and WebKit, as the
 // nightly jobs do.
-const browsers = process.env.CAIC_ALL_BROWSERS
-  ? (['chromium', 'firefox', 'webkit'] as const)
-  : (['chromium'] as const);
+const browsers =
+  process.env.CAIC_ALL_BROWSERS === '1'
+    ? (['chromium', 'firefox', 'webkit'] as const)
+    : (['chromium'] as const);
 
 export default defineConfig({
   // `*.scss?lit` imports compile to Lit `CSSResult`s, as the build does.
@@ -107,6 +108,9 @@ export default defineConfig({
           'process.env.NODE_ENV': JSON.stringify('development'),
         },
         resolve: {
+          // web-test-runner served Lit's development build, which reports
+          // binding mistakes and other dev-only warnings. Keep it here.
+          conditions: ['browser', 'development'],
           alias: {
             '@web/test-runner-commands': path.resolve(
               here,
@@ -129,7 +133,14 @@ export default defineConfig({
             // (@web/test-runner-playwright's PlaywrightLauncherPage). Layout
             // decisions such as the shell's workspace placement depend on it.
             viewport: { width: 800, height: 600 },
-            instances: browsers.map((browser) => ({ browser })),
+            // Firefox runs one file at a time everywhere, as web-test-runner
+            // did: concurrent Firefox pages can stall native selection
+            // gestures and overlap later tests.
+            instances: browsers.map((browser) =>
+              browser === 'firefox'
+                ? { browser, fileParallelism: false }
+                : { browser }
+            ),
             commands: browserCommands,
             // Failure screenshots go with the other run attachments, which
             // git ignores; `__screenshots__/` stays free for reference images.
