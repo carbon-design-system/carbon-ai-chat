@@ -316,6 +316,35 @@ describe('public host message announcements', () => {
     }
   });
 
+  it('announces the error box an added reply shows when its item fails to render', async () => {
+    const notice = 'Owned render failure notice';
+    const { mount, log } = await openRecorded({
+      strings: { errors_singleMessage: notice },
+    });
+    const { instance } = mount;
+    // An option with no options list passes the checks before drawing, then
+    // throws while it renders. React logs the error it catches.
+    const brokenOption = {
+      response_type: MessageResponseTypes.OPTION,
+      title: 'Owned broken option',
+    } as GenericItem;
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await act(() =>
+        instance.messaging.addMessage(
+          responseOf('broken-reply', [brokenOption])
+        )
+      );
+      await waitFor(() => expect(mainPanelText()).toContain(notice));
+      await deliverBarrier(instance, log, 'Announced barrier after the error');
+      expect(log.count(notice)).toBe(1);
+    } finally {
+      error.mockRestore();
+      log.stop();
+      await act(async () => mount.unmount());
+    }
+  });
+
   it('announces the text a card nests along with its sibling items, each once', async () => {
     const { mount, log } = await openRecorded();
     const { instance } = mount;

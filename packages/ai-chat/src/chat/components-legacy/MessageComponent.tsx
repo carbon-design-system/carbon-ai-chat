@@ -473,7 +473,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   componentDidMount() {
     const uiState = this.props.localMessageItem.ui_state;
-    if (this.props.needsAnnouncement && this.stillNeedsAnnouncement()) {
+    // A first pass whose renderer threw commits nothing, so keep the
+    // announcement for the pass that renders the error box.
+    if (
+      this.props.needsAnnouncement &&
+      this.ref.current &&
+      this.stillNeedsAnnouncement()
+    ) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
         viewActions.setMessageItemAnnounced(uiState.id)
