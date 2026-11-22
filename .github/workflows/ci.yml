@@ -98,7 +98,10 @@ jobs:
             run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=2/3
           - suite: ai-chat 3/3
             run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=3/3
-          # 👇 Components' browser tests run in Chromium per PR; Firefox and WebKit are nightly.
+          # 👇 Both packages' browser tests run in Chromium per PR; Firefox and WebKit are nightly.
+          - suite: ai-chat browser
+            browsers: chromium
+            run: npm run test --workspace=@carbon/ai-chat -- --project browser
           - suite: components browser
             browsers: chromium
             run: npm run test --workspace=@carbon/ai-chat-components -- --project browser

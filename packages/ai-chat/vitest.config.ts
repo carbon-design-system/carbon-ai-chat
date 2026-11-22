@@ -7,12 +7,21 @@
  *  @license
  */
 
+import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 import { inheritedEnumStrings } from './tests/setup/inheritedEnumStrings';
 import { chatStyleStrings } from './tests/setup/styleStrings';
 
 const root = import.meta.dirname;
 const tests = ['**/*.test.ts', '**/*.test.tsx'];
+const browserTests = ['**/*.browser.test.ts', '**/*.browser.test.tsx'];
+
+// Chromium by default. CAIC_ALL_BROWSERS=1 adds Firefox and WebKit, as the
+// nightly jobs do.
+const browsers =
+  process.env.CAIC_ALL_BROWSERS === '1'
+    ? (['chromium', 'firefox', 'webkit'] as const)
+    : (['chromium'] as const);
 
 export default defineConfig({
   root,
@@ -37,7 +46,6 @@ export default defineConfig({
     allowOnly: false,
     passWithNoTests: false,
     environment: 'happy-dom',
-    setupFiles: ['tests/setup/index.ts'],
     testTimeout: 10_000,
     // Jest's cap: half the cores, so a full run leaves the machine room and
     // its DOM-heavy workers don't crowd each other out.
@@ -104,6 +112,7 @@ export default defineConfig({
         test: {
           name: 'node',
           maxWorkers: 0,
+          setupFiles: ['tests/setup/index.ts'],
           // The SDK runs headless, so its tests get no DOM. A file that proves
           // the SDK leaves a browser API alone opts into one (D5).
           environment: 'node',
@@ -118,8 +127,49 @@ export default defineConfig({
         test: {
           name: 'happy-dom',
           maxWorkers: 0,
+          setupFiles: ['tests/setup/index.ts'],
           include: tests.map((glob) => `src/${glob}`),
-          exclude: ['src/sdk/**', '**/node_modules/**'],
+          exclude: ['src/sdk/**', '**/node_modules/**', '**/*.browser.test.*'],
+        },
+      },
+      {
+        extends: true,
+        // A page has no `process`. Give the chat the same values a test saw
+        // under Jest: no VERSION, and NODE_ENV "test".
+        define: {
+          'process.env.VERSION': 'undefined',
+          'process.env.NODE_ENV': JSON.stringify('test'),
+        },
+        // The JSX dev runtime is found only after the first test file loads,
+        // and optimizing it then reloads the page mid-run. Optimize it up front.
+        optimizeDeps: { include: ['react/jsx-dev-runtime'] },
+        test: {
+          name: 'browser',
+          maxWorkers: 0,
+          // Its own setup: the happy-dom shims stand in for what a real
+          // browser already has.
+          setupFiles: ['tests/setup/browser.ts'],
+          include: browserTests.map((glob) => `src/${glob}`),
+          // One file at a time in CI, as components' browser project runs.
+          fileParallelism: !process.env.CI,
+          browser: {
+            enabled: true,
+            headless: true,
+            ui: false,
+            provider: playwright(),
+            // The same page size as components' browser tests.
+            viewport: { width: 800, height: 600 },
+            // Concurrent Firefox pages can stall focus and selection, so
+            // Firefox runs one file at a time everywhere.
+            instances: browsers.map((browser) =>
+              browser === 'firefox'
+                ? { browser, fileParallelism: false }
+                : { browser }
+            ),
+            // Failure screenshots go with the other run attachments, which
+            // git ignores.
+            screenshotDirectory: '.vitest-attachments/screenshots',
+          },
         },
       },
     ],
