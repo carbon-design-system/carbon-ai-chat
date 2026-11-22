@@ -54,12 +54,38 @@ const posix = (path) => path.replaceAll('\\', '/');
 const identity = (row) =>
   `${row.kind}\t${row.file}\t${JSON.stringify(row.title)}`;
 
+// A contract test runs in the `node` or `happy-dom` project. A
+// `.contract.browser.test.*` suffix isn't accepted yet: CI's build job checks
+// the manifest without a browser installed.
 function isContractSpec(file) {
   return (
     (file.startsWith(`${CONTRACT}/spec/`) && /_spec\.tsx?$/.test(file)) ||
     (COLOCATED_ROOTS.some((root) => file.startsWith(`${root}/`)) &&
-      /\.contract(?:\.browser)?\.test\.tsx?$/.test(file))
+      /\.contract\.test\.tsx?$/.test(file))
   );
+}
+
+// Any file named like a contract test must be one the manifest reads, so none
+// runs under the contract import rule without manifest rows.
+function strayContractFiles(root) {
+  const walk = (path) =>
+    readdirSync(join(root, path), { withFileTypes: true }).flatMap((entry) => {
+      const child = `${path}/${entry.name}`;
+      if (entry.name === 'node_modules' || entry.isSymbolicLink()) {
+        return [];
+      }
+      if (entry.isDirectory()) {
+        return walk(child);
+      }
+      return entry.name.includes('.contract.') && !isContractSpec(child)
+        ? [child]
+        : [];
+    });
+  return ['src', 'tests']
+    .map((folder) => `${PACKAGE}/${folder}`)
+    .filter((path) => existsSync(join(root, path)))
+    .flatMap(walk)
+    .sort();
 }
 
 const COLOCATED_HELPER_DIR = `${PACKAGE}/src/chat/__tests__/helpers/contract`;
@@ -79,6 +105,12 @@ export function contractInventory(root) {
     ...read(`${CONTRACT}/spec`),
     ...COLOCATED_ROOTS.flatMap(read),
   ].filter(isContractSpec);
+  const strays = strayContractFiles(root);
+  if (strays.length) {
+    throw new Error(
+      `Unexpected contract file outside the manifest folders, or with an unsupported suffix: ${strays.join(', ')}`
+    );
+  }
   const helpers = [
     ...read(`${CONTRACT}/helpers`),
     ...read(COLOCATED_HELPER_DIR),

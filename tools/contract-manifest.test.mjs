@@ -88,7 +88,7 @@ test('one inventory adds explicit colocated contracts while preserving legacy ro
   const source = "it('case', () => expect(true).toBe(true));";
   const additions = ['sdk', 'chat', 'react', 'web-components'].map(
     (area, index) =>
-      `packages/ai-chat/src/${area}/__tests__/nested/added.contract${index % 2 ? '.browser' : ''}.test.ts${index % 2 ? 'x' : ''}`
+      `packages/ai-chat/src/${area}/__tests__/nested/added.contract.test.ts${index % 2 ? 'x' : ''}`
   );
   for (const path of additions) {
     write(path, source);
@@ -100,11 +100,21 @@ test('one inventory adds explicit colocated contracts while preserving legacy ro
   for (const path of [
     'packages/ai-chat/src/sdk/__tests__/ordinary.test.ts',
     'packages/ai-chat/src/sdk/__tests__/helpers/internal.ts',
-    'packages/ai-chat/src/sdk/private/__tests__/nested.contract.test.ts',
-    'packages/ai-chat/src/types/__tests__/outside.contract.test.ts',
-    'packages/ai-chat/src/chat/__tests__/wrong.contract.test.browser.ts',
   ]) {
     write(path, "import './private';");
+  }
+  // A contract-named file outside the manifest folders, or with a suffix the
+  // manifest doesn't read, fails the inventory instead of being skipped.
+  for (const stray of [
+    'packages/ai-chat/src/sdk/private/__tests__/nested.contract.test.ts',
+    'packages/ai-chat/src/types/__tests__/outside.contract.test.ts',
+    'packages/ai-chat/src/chat/components/__tests__/panel.contract.test.ts',
+    'packages/ai-chat/src/chat/__tests__/wrong.contract.test.browser.ts',
+    'packages/ai-chat/src/chat/__tests__/focus.contract.browser.test.tsx',
+  ]) {
+    write(stray, source);
+    assert.throws(() => contractInventory(root), /Unexpected contract file/);
+    rmSync(join(root, stray));
   }
   const inventory = contractInventory(root);
   assert.deepEqual(inventory.specs, [file, ...additions]);
@@ -147,6 +157,7 @@ test('manifest kinds accept only registered contract paths', () => {
     'packages/ai-chat/src/sdk/private/__tests__/case.contract.test.ts',
     'packages/ai-chat/src/types/__tests__/case.contract.test.ts',
     'packages/ai-chat/src/sdk/__tests__/case.contract.browser.test.ts.bak',
+    'packages/ai-chat/src/sdk/__tests__/case.contract.browser.test.ts',
     'packages/ai-chat/src/sdk/__tests__/../case.contract.test.ts',
   ]) {
     assert.throws(() => serialize([{ ...row, file }]));
@@ -801,8 +812,7 @@ test('Colocated carry rejects ordinary and private suites and includes every col
   assert.throws(() => carryColocatedManifest(root, base, report), /Private/);
   writeFileSync(join(root, specs[0]), source);
   const additions = ['chat', 'react', 'web-components'].map(
-    (area) =>
-      `packages/ai-chat/src/${area}/__tests__/added.contract.browser.test.tsx`
+    (area) => `packages/ai-chat/src/${area}/__tests__/added.contract.test.tsx`
   );
   for (const file of additions) {
     mkdirSync(dirname(join(root, file)), { recursive: true });
