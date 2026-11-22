@@ -398,6 +398,58 @@ describe('workspace events', () => {
     );
   });
 
+  it('hands every workspace event the additionalData object the host opened with', async () => {
+    const { instance } = await mountOpen();
+    const additionalData = { source: 'host' };
+    const events = recordEvents(instance, WORKSPACE_EVENTS);
+    await openWorkspace(instance, {
+      workspaceId: 'contract-workspace',
+      additionalData,
+    });
+    await closeWorkspace(instance);
+    expect(events.types()).toEqual(WORKSPACE_EVENTS);
+    events.events.forEach((event) =>
+      expect(summary(event).additionalData).toBe(additionalData)
+    );
+  });
+
+  // @covers instance.state.subscribe
+  it('hands pre:open the replacement object when a state listener opens another workspace', async () => {
+    const { instance } = await mountOpen();
+    const replacement = { source: 'replacement' };
+    const seen: unknown[] = [];
+    instance.on({
+      type: BusEventType.WORKSPACE_PRE_OPEN,
+      handler: (event: BusEventWorkspacePreOpen) => {
+        seen.push(event.data.additionalData);
+      },
+    });
+    let replacementOpen: Promise<void> | undefined;
+    const unsubscribe = instance.state.subscribe(() => {
+      if (
+        !replacementOpen &&
+        instance.state.get().workspace.workspaceID === 'first-workspace'
+      ) {
+        replacementOpen = workspacePanel(instance).open({
+          workspaceId: 'second-workspace',
+          additionalData: replacement,
+        });
+      }
+    });
+    try {
+      await openWorkspace(instance, {
+        workspaceId: 'first-workspace',
+        additionalData: { source: 'first' },
+      });
+      await act(() => replacementOpen);
+    } finally {
+      unsubscribe();
+    }
+    expect(replacementOpen).toBeDefined();
+    expect(seen.length).toBeGreaterThan(0);
+    seen.forEach((value) => expect(value).toBe(replacement));
+  });
+
   it('fires no events when a closed workspace is closed', async () => {
     const { instance } = await mountOpen();
     const events = recordEvents(instance, WORKSPACE_EVENTS);
