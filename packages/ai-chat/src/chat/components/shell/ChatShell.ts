@@ -128,6 +128,22 @@ class ChatShell extends NativeChatView {
     this.requestUpdate();
   }
 
+  /**
+   * Starts window state again. AppShell calls it when React runs its passive
+   * effects.
+   */
+  connectWindowState(): void {
+    this.lifecycle?.connectWindowState();
+  }
+
+  /**
+   * Stops window state until the next connect. AppShell calls it when React
+   * drops its passive effects.
+   */
+  disconnectWindowState(): void {
+    this.lifecycle?.disconnectWindowState();
+  }
+
   disconnectedCallback() {
     if (this.failed) {
       this.ownerFailed = true;

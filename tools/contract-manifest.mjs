@@ -106,9 +106,8 @@ export function inputFingerprint(root) {
     'package.json',
     'package-lock.json',
     'packages/ai-chat/package.json',
-    'packages/ai-chat/jest.config.cjs',
+    'packages/ai-chat/vitest.config.ts',
     'packages/ai-chat/tsconfig.json',
-    'packages/ai-chat/.babelrc',
     'packages/ai-chat-components/package.json',
     'tools/contract-manifest.mjs',
     'tools/contract-manifest-lib.mjs',
@@ -149,10 +148,31 @@ function cachedReport(reportPath, fingerprint, runtime, scope) {
   return null;
 }
 
+// Vitest's JSON report follows Jest's shape, but counts describe blocks as
+// suites and has no interruption or runtime-error fields. Count files instead,
+// as Jest did, so the manifest's completeness checks keep their meaning.
+export function normalizeVitestReport(report) {
+  const files = report.testResults ?? [];
+  const passed = files.filter((file) => file.status === 'passed').length;
+  const broken = files.filter(
+    (file) => file.status !== 'passed' && !file.assertionResults?.length
+  ).length;
+  return {
+    ...report,
+    numTotalTestSuites: files.length,
+    numPassedTestSuites: passed,
+    numFailedTestSuites: files.length - passed,
+    numPendingTestSuites: 0,
+    numRuntimeErrorTestSuites: broken,
+    wasInterrupted: false,
+  };
+}
+
 function runDiscovery(root, reportPath, specs) {
   if (!specs.length) {
     throw new Error('No contract suites found');
   }
+  const raw = `${reportPath}.vitest.json`;
   const run = spawnSync(
     'npm',
     [
@@ -160,18 +180,20 @@ function runDiscovery(root, reportPath, specs) {
       'test',
       '--workspace=@carbon/ai-chat',
       '--',
-      '--runTestsByPath',
       ...specs.map((file) => join(root, file)),
-      '--json',
-      '--testLocationInResults',
-      '--coverage=false',
-      `--outputFile=${reportPath}`,
+      '--reporter=default',
+      '--reporter=json',
+      '--includeTaskLocation',
+      '--coverage.enabled=false',
+      `--outputFile=${raw}`,
     ],
     { cwd: root, stdio: 'inherit' }
   );
   if (run.error || run.status !== 0) {
     throw new Error('Contract discovery failed');
   }
+  const report = normalizeVitestReport(JSON.parse(readFileSync(raw, 'utf8')));
+  writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
 }
 
 export function discover(root, reportPath, scope = 'all') {

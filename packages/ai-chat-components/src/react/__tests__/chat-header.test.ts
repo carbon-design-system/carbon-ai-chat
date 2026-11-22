@@ -1,5 +1,4 @@
 /**
- * @jest-environment-options {"customExportConditions": ["browser"]}
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -7,8 +6,6 @@
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["jest-environment-options"] }] */
 
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -32,7 +29,7 @@ afterEach(async () => {
 });
 
 test('clears omitted actions on mount and after an action is removed', async () => {
-  const onClick = jest.fn();
+  const onClick = vi.fn();
   const action = {
     text: 'Run action',
     icon: {

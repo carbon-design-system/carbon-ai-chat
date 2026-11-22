@@ -10,4 +10,4 @@
 /**
  * Mock function for customSendMessage that can be used in tests
  */
-export const mockCustomSendMessage = jest.fn();
+export const mockCustomSendMessage = vi.fn();

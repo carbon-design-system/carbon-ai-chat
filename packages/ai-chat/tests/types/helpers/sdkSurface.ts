@@ -10,7 +10,7 @@
 import path from 'node:path';
 import ts from 'typescript';
 
-const packageRoot = path.resolve(__dirname, '../../..');
+const packageRoot = path.resolve(import.meta.dirname, '../../..');
 const typesRoot = path.join(packageRoot, 'src/types') + path.sep;
 const entry = path.join(packageRoot, 'src/serverEntry.ts');
 

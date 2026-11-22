@@ -12,5 +12,5 @@
  * Clears all Jest mocks to ensure clean state between tests.
  */
 export const setupBeforeEach = () => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 };

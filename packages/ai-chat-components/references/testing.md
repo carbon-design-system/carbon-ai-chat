@@ -9,9 +9,9 @@ Tests are colocated with source (opposite of `@carbon/ai-chat`, which puts specs
 | Runner                   | Covers                                           | Location                                                                                         | Command                       |
 | ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ----------------------------- |
 | `@web/test-runner` (WTR) | Lit custom elements, and the `focus-utils` suite | `src/components/<c>/__tests__/<name>.test.ts`, `src/globals/utils/__tests__/focus-utils.test.ts` | `npm run test:web-components` |
-| Jest                     | React wrappers                                   | `src/react/__tests__/<file>.test.ts`                                                             | `npm run test:react`          |
+| Vitest (happy-dom)       | React wrappers, utilities, Storybook switcher    | `src/react/__tests__/<file>.test.ts`, `src/globals/**/__tests__/`, `.storybook/__tests__/`        | `npm run test:unit`           |
 
-`npm test` runs both. WTR runs only the files its script names: everything under `src/components/**` plus the focus-utils suite, which needs real focus. Use the right runner for the file — a Lit element test under Jest (or vice versa) will fail to resolve its environment.
+`npm test` runs both. WTR runs only the files its script names: everything under `src/components/**` plus the focus-utils suite, which needs real focus. Use the right runner for the file — a Lit element test under Vitest (or vice versa) will fail to resolve its environment.
 
 ## Snapshots
 
@@ -24,22 +24,22 @@ From this package directory:
 ```bash
 npm test                        # both suites
 npm run test:web-components      # WTR (Lit) only
-npm run test:react              # Jest (React wrappers) only
+npm run test:unit               # Vitest (happy-dom) only
 npm run test:updateSnapshot     # refresh WTR snapshots
 
 # Single web-component test
 npm run test:web-components -- src/components/card/__tests__/card.test.ts
 
 # Single react-wrapper test
-npm run test:react -- src/react/__tests__/<file>.test.ts
+npm run test:unit -- src/react/__tests__/<file>.test.ts
 ```
 
 ## Gotchas
 
 | Symptom                                            | Cause                                | Fix                                                                                                                                                                                      |
 | -------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Unexpected token 'export'` in a React (Jest) test | A new ESM-only dep isn't transpiled  | Add its package name to `transformIgnorePatterns` in the Jest config. The list already covers lit, `@carbon` packages, lodash-es, `@floating-ui`, uuid, `@formatjs`, `@codemirror`, etc. |
-| Wrong runner picked up a file                      | Lit vs React test in the wrong suite | Lit → WTR (`.test.ts` under `__tests__/`); React wrappers → Jest (under `src/react/__tests__/`).                                                                                         |
+| A Lit element in a React test never wires its events | A dependency loaded its Node build | Add the package to `test.server.deps.inline` in `vitest.config.ts`, so it resolves with the `browser` condition. |
+| Wrong runner picked up a file                      | Lit vs React test in the wrong suite | Lit → WTR (`.test.ts` under `__tests__/`); React wrappers → Vitest (under `src/react/__tests__/`).                                                                                         |
 | A WTR test fails against code that is correct in `src/` | The test imports `@carbon/ai-chat-components/es/…`, the built output, and `es/` is stale | Rebuild before testing — see the [build preflight](../../../references/commands.md#build-preflight).                                                                                     |
 
 ## Related guidance
@@ -47,4 +47,4 @@ npm run test:react -- src/react/__tests__/<file>.test.ts
 - [../AGENTS.md](../AGENTS.md) — package authoring rules (parent router)
 - [component-authoring.md](component-authoring.md) — where elements and wrappers live
 - [storybook.md](storybook.md) — stories are not tests; interaction testing is not wired here
-- [../../ai-chat/references/tests.md](../../ai-chat/references/tests.md) — the sibling package's (different) Jest-in-`tests/` layout
+- [../../ai-chat/references/tests.md](../../ai-chat/references/tests.md) — the sibling package's test layout

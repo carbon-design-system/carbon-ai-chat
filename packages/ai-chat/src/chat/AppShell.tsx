@@ -187,6 +187,9 @@ function AppShell({
   const [targets, setTargets] = useState<ShellLayoutTargets>();
   const [content, setContent] = useState<ShellContentState>();
   const shellRef = useRef<NativeChatShell | null>(null);
+  // The last attached shell. Unlike shellRef it survives the ref detach that
+  // runs before an effect cleanup, and it follows a remounted shell.
+  const windowShellRef = useRef<NativeChatShell | null>(null);
   const messagesRef = useRef<MessagesComponentClass | null>(null);
   const active = useRef(true);
   const releaseInitialCommit = useRef<() => void>(undefined);
@@ -216,7 +219,17 @@ function AppShell({
       shellRef.current?.setContentConnected(false);
     }
     shellRef.current = shell;
+    if (shell) {
+      windowShellRef.current = shell;
+    }
     shell?.setContentConnected(true);
+  }, []);
+  // Window state lives with React's passive effects. A Suspense hide keeps
+  // them, so a reveal takes no focus; an Activity hide, a StrictMode replay or
+  // an unmount stops it, and the next show takes hydration focus again.
+  useEffect(() => {
+    windowShellRef.current?.connectWindowState();
+    return () => windowShellRef.current?.disconnectWindowState();
   }, []);
   useLayoutEffect(() => {
     active.current = true;

@@ -1,0 +1,627 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import type { Mocked as VitestMocked } from 'vitest';
+import { ContextProvider } from '@lit/context';
+
+import { LitElement, nothing } from 'lit';
+
+import '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
+import type NativePanel from '@carbon/ai-chat-components/es/components/chat-shell/src/panel.js';
+import type NativeShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
+import '../NativePanels';
+import type NativePanels from '../NativePanels';
+import { ExtensionHosts } from '../../../services/extensionHosts';
+
+import { ChatMountState } from '../../../services/chatMountState';
+
+import type { ServiceManager } from '../../../../sdk/services/ServiceManager';
+
+import type {
+  PanelViewInputs,
+  PanelCompositionCallbacks,
+  PanelName,
+} from '../../../utils/panelComposition';
+
+import { chatMountStateContext } from '../../../../web-components/shared/chat-mount-state-context';
+
+import { createIntl } from '../../../../sdk/utils/i18n';
+
+import { ChatWidthBreakpoint } from '../../../../types/state/AppState';
+
+import { EventBus } from '../../../../sdk/events/EventBus';
+
+import { BusEventType } from '../../../../types/events/eventBusTypes';
+
+import { ScreenShareState } from '../../../../types/config/ServiceDeskConfig';
+
+import {
+  applyConfigChange,
+  makeConfigStore,
+  setupAfterEach,
+  setupBeforeEach,
+  slotSourceOf,
+} from '../../../__tests__/helpers/chat';
+
+import { viewActions } from '../../../state';
+
+class PanelProvider extends LitElement {
+  readonly provider = new ContextProvider(this, {
+    context: chatMountStateContext,
+  });
+  render() {
+    return nothing;
+  }
+}
+customElements.define('test-native-panels-provider', PanelProvider);
+const states = new Set<ChatMountState>();
+
+async function flush(view: NativePanels) {
+  for (let index = 0; index < 5; index += 1) {
+    await Promise.resolve();
+    await view.updateComplete;
+    await Promise.all(
+      Array.from(view.querySelectorAll<NativePanel>('cds-aichat-panel')).map(
+        (panel) => panel.updateComplete
+      )
+    );
+  }
+}
+
+async function fixture(
+  overrides: Partial<PanelViewInputs> = {},
+  beforeAppend?: (hosts: ExtensionHosts) => void
+) {
+  const store = makeConfigStore({
+    disclaimer: { isOn: true, disclaimerHTML: '<p>Terms</p>' },
+    history: { isOn: true },
+  });
+  store.dispatch(
+    viewActions.setViewState({ mainWindow: true, launcher: false })
+  );
+  const subscriptions = new Set<() => void>();
+  const originalSubscribe = store.subscribe;
+  store.subscribe = (listener) => {
+    subscriptions.add(listener);
+    const release = originalSubscribe(listener);
+    return () => {
+      subscriptions.delete(listener);
+      release();
+    };
+  };
+  const errorOccurred = vi.fn();
+  const eventBus = new EventBus();
+  const manager = {
+    store,
+    eventBus,
+    intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
+    actions: { errorOccurred },
+  } as unknown as ServiceManager;
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
+  state.connect();
+  states.add(state);
+  const provider = document.createElement(
+    'test-native-panels-provider'
+  ) as PanelProvider;
+  provider.provider.setValue(state);
+  document.body.append(provider);
+  await provider.updateComplete;
+  const shell = document.createElement('cds-aichat-shell') as NativeShell;
+  provider.shadowRoot.append(shell);
+  const view = document.createElement(
+    'cds-aichat-native-panels'
+  ) as NativePanels;
+  view.slot = 'panels';
+  const hosts = new ExtensionHosts(
+    slotSourceOf(eventBus),
+    provider,
+    store,
+    () => false
+  );
+  const callbacks: VitestMocked<PanelCompositionCallbacks> = {
+    onPanelOpenStart: vi.fn(),
+    onPanelOpenEnd: vi.fn(),
+    onPanelCloseStart: vi.fn(),
+    onPanelCloseEnd: vi.fn(),
+    onClose: vi.fn(),
+    onRestart: vi.fn(),
+    onToggleHomeScreen: vi.fn(),
+    onAcceptDisclaimer: vi.fn(),
+    answerPrompt: vi.fn(),
+    fireCustomPanelEvent: vi.fn(),
+    resetCustomPanelOptions: vi.fn(),
+    closeCustomPanel: vi.fn(),
+    closeResponsePanel: vi.fn(),
+    clearResponsePanelContent: vi.fn(),
+    closeIFramePanel: vi.fn(),
+    closeViewSourcePanel: vi.fn(),
+    closeHistoryPanel: vi.fn(),
+    updateScreenShareRequest: vi.fn(),
+    announce: vi.fn(),
+  };
+  const current = store.getState();
+  view.inputs = {
+    prompt: null,
+    showScreenShareRequest: false,
+    isHydratingComplete: true,
+    shouldShowHydrationPanel: false,
+    isHomeScreenActive: false,
+    customPanelState: current.view.customPanelState,
+    historyPanelState: { ...current.view.historyPanelState, isMobile: true },
+    showDisclaimer: false,
+    responsePanelState: current.view.responsePanelState,
+    responseHasMessage: false,
+    iFramePanelState: current.view.iFramePanelState,
+    viewSourcePanelState: current.view.viewSourcePanelState,
+    isInputReadonly: false,
+    catastrophicErrorPanelState: current.view.catastrophicErrorPanelState,
+    contentRevision: {},
+    ...overrides,
+  };
+  view.hosts = hosts;
+  view.callbacks = callbacks;
+  beforeAppend?.(hosts);
+  shell.append(view);
+  await shell.updateComplete;
+  await flush(view);
+  const panel = (name: PanelName) =>
+    view.querySelector<NativePanel>(`[data-panel-name="${name}"]`);
+  const commit = async () => {
+    for (const request of hosts.getPanelContentSnapshot()) {
+      expect(hosts.commitPanelContent(request)).toBe(true);
+    }
+    await flush(view);
+  };
+  return {
+    view,
+    provider,
+    shell,
+    hosts,
+    callbacks,
+    store,
+    subscriptions,
+    errorOccurred,
+    panel,
+    commit,
+  };
+}
+
+beforeEach(() => {
+  setupBeforeEach();
+  vi.useFakeTimers({
+    toFake: [
+      'Date',
+      'hrtime',
+      'performance',
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'requestIdleCallback',
+      'cancelIdleCallback',
+      'setImmediate',
+      'clearImmediate',
+      'setInterval',
+      'clearInterval',
+      'setTimeout',
+      'clearTimeout',
+    ],
+  });
+});
+afterEach(() => {
+  setupAfterEach();
+  states.forEach((state) => state.disconnect());
+  states.clear();
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
+
+describe('native panel composition', () => {
+  it('keeps committed targets and tokens through a same-task physical move', async () => {
+    const f = await fixture();
+    await f.commit();
+    const initialSubscriptions = f.subscriptions.size;
+    const request = f.hosts
+      .getPanelContentSnapshot()
+      .find((item) => item.panel === 'custom');
+    const body = f.hosts.panelTargetFor('custom-body');
+    const retained = document.createElement('input');
+    retained.value = 'retained';
+    body.append(retained);
+    f.view.remove();
+    f.shell.append(f.view);
+    await flush(f.view);
+    expect(
+      f.hosts.getPanelContentSnapshot().find((item) => item.panel === 'custom')
+    ).toBe(request);
+    expect(
+      f.hosts.isPanelContentCommitted('custom', f.view.inputs.contentRevision)
+    ).toBe(true);
+    expect(f.hosts.panelTargetFor('custom-body')).toBe(body);
+    expect(body.querySelector('input')).toBe(retained);
+    expect(retained.value).toBe('retained');
+    expect(f.subscriptions.size).toBe(initialSubscriptions);
+  });
+
+  it('waits for the matching retained layout commit on later opens and rejects retired revisions', async () => {
+    const f = await fixture();
+    await f.commit();
+    const first = f.hosts.panelTargetFor('custom-body');
+    const input = document.createElement('input');
+    input.value = 'kept';
+    first.append(input);
+    f.view.inputs = {
+      ...f.view.inputs,
+      customPanelState: { ...f.view.inputs.customPanelState, isOpen: true },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    const stale = f.hosts
+      .getPanelContentSnapshot()
+      .find((request) => request.panel === 'custom');
+    expect(f.panel('custom').open).toBe(false);
+    expect(f.callbacks.fireCustomPanelEvent).not.toHaveBeenCalled();
+    f.view.inputs = { ...f.view.inputs, contentRevision: {} };
+    await flush(f.view);
+    expect(f.hosts.commitPanelContent(stale)).toBe(false);
+    expect(f.panel('custom').open).toBe(false);
+    await f.commit();
+    expect(f.panel('custom').open).toBe(true);
+    expect(f.callbacks.fireCustomPanelEvent).toHaveBeenCalledWith(
+      BusEventType.CUSTOM_PANEL_PRE_OPEN
+    );
+    expect(f.hosts.panelTargetFor('custom-body')).toBe(first);
+    expect(first.querySelector('input')).toBe(input);
+    expect(input.value).toBe('kept');
+  });
+
+  it('keeps a higher frame open and lower frame inert until the whole retained commit is ready', async () => {
+    const f = await fixture();
+    await f.commit();
+    f.view.inputs = {
+      ...f.view.inputs,
+      customPanelState: { ...f.view.inputs.customPanelState, isOpen: true },
+    };
+    await flush(f.view);
+    const custom = f.panel('custom');
+    f.view.inputs = {
+      ...f.view.inputs,
+      catastrophicErrorPanelState: {
+        ...f.view.inputs.catastrophicErrorPanelState,
+        isOpen: true,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    await f.commit();
+    expect(custom.open).toBe(true);
+    expect(custom.inert).toBe(true);
+    f.view.inputs = {
+      ...f.view.inputs,
+      catastrophicErrorPanelState: {
+        ...f.view.inputs.catastrophicErrorPanelState,
+        isOpen: false,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    expect(f.panel('error').open).toBe(true);
+    expect(custom.open).toBe(true);
+    expect(custom.inert).toBe(true);
+    const requests = f.hosts.getPanelContentSnapshot();
+    const remaining = requests.find((request) => request.panel === 'iframe');
+    for (const request of requests) {
+      if (request !== remaining) {
+        expect(f.hosts.commitPanelContent(request)).toBe(true);
+      }
+    }
+    await flush(f.view);
+    expect(f.panel('error').open).toBe(true);
+    expect(custom.open).toBe(true);
+    expect(custom.inert).toBe(true);
+    expect(f.hosts.commitPanelContent(remaining)).toBe(true);
+    await flush(f.view);
+    expect(f.panel('error').open).toBe(false);
+    expect(custom.open).toBe(true);
+    expect(custom.inert).toBe(false);
+  });
+
+  it('delivers actual reactivation transitions only after the replacement content commits', async () => {
+    const seed = makeConfigStore({}).getState();
+    const f = await fixture({
+      customPanelState: {
+        ...seed.view.customPanelState,
+        options: {
+          ...seed.view.customPanelState.options,
+          disableAnimation: true,
+        },
+      },
+    });
+    await f.commit();
+    f.view.inputs = {
+      ...f.view.inputs,
+      customPanelState: { ...f.view.inputs.customPanelState, isOpen: true },
+    };
+    await flush(f.view);
+    f.view.inputs = {
+      ...f.view.inputs,
+      catastrophicErrorPanelState: {
+        ...f.view.inputs.catastrophicErrorPanelState,
+        isOpen: true,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    await f.commit();
+    expect(f.panel('custom').open).toBe(true);
+    expect(f.panel('custom').inert).toBe(true);
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    f.callbacks.fireCustomPanelEvent.mockClear();
+    f.callbacks.onPanelOpenEnd.mockClear();
+    const observed: {
+      target: EventTarget;
+      lowerOpen: boolean;
+      lowerInert: boolean;
+      higherOpen: boolean;
+      committed: boolean;
+    }[] = [];
+    f.callbacks.onPanelOpenEnd.mockImplementation((event) => {
+      observed.push({
+        target: event.currentTarget,
+        lowerOpen: f.panel('custom').open,
+        lowerInert: f.panel('custom').inert,
+        higherOpen: f.panel('error').open,
+        committed: f.hosts.isPanelContentCommitted(
+          'custom',
+          f.view.inputs.contentRevision
+        ),
+      });
+    });
+    f.view.inputs = {
+      ...f.view.inputs,
+      catastrophicErrorPanelState: {
+        ...f.view.inputs.catastrophicErrorPanelState,
+        isOpen: false,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    expect(f.panel('custom').open).toBe(true);
+    expect(f.panel('custom').inert).toBe(true);
+    expect(f.panel('error').open).toBe(true);
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    expect(
+      f.hosts.isPanelContentCommitted('custom', f.view.inputs.contentRevision)
+    ).toBe(false);
+    expect(f.callbacks.fireCustomPanelEvent).not.toHaveBeenCalled();
+    expect(f.callbacks.onPanelOpenEnd).not.toHaveBeenCalled();
+    await f.commit();
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    expect(observed).toEqual([
+      {
+        target: f.panel('custom'),
+        lowerOpen: true,
+        lowerInert: false,
+        higherOpen: false,
+        committed: true,
+      },
+    ]);
+    expect(
+      f.callbacks.fireCustomPanelEvent.mock.calls.map(([type]) => type)
+    ).toEqual([
+      BusEventType.CUSTOM_PANEL_PRE_OPEN,
+      BusEventType.CUSTOM_PANEL_OPEN,
+    ]);
+    expect(f.callbacks.onPanelOpenEnd).toHaveBeenCalledTimes(1);
+    expect(
+      f.callbacks.onPanelOpenEnd.mock.calls[0][0].detail.isReactivation
+    ).toBe(true);
+  });
+
+  it('keeps currentTarget and physical close state available inside each transition callback', async () => {
+    const seed = makeConfigStore({}).getState();
+    const f = await fixture({
+      customPanelState: {
+        ...seed.view.customPanelState,
+        isOpen: true,
+        options: {
+          ...seed.view.customPanelState.options,
+          disableAnimation: true,
+        },
+      },
+    });
+    await f.commit();
+    const custom = f.panel('custom');
+    const observations: {
+      target: EventTarget;
+      open: boolean;
+      committed: boolean;
+    }[] = [];
+    f.callbacks.onPanelCloseStart.mockImplementation((event) => {
+      observations.push({
+        target: event.currentTarget,
+        open: custom.open,
+        committed: f.hosts.isPanelContentCommitted(
+          'custom',
+          f.view.inputs.contentRevision
+        ),
+      });
+    });
+    f.view.inputs = {
+      ...f.view.inputs,
+      customPanelState: { ...f.view.inputs.customPanelState, isOpen: false },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    expect(custom.open).toBe(true);
+    expect(observations).toEqual([]);
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    expect(custom.open).toBe(true);
+    await f.commit();
+    expect(observations).toEqual([
+      { target: custom, open: false, committed: true },
+    ]);
+  });
+
+  it("focuses the frame's own body slot, not a body slot nested in its header", async () => {
+    // jsdom has no layout; tabbable requires a rendered rectangle.
+    const rectangle = document.body.getBoundingClientRect();
+    vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue(
+      Object.assign([rectangle], { item: () => rectangle })
+    );
+    const f = await fixture();
+    await f.commit();
+    f.view.inputs = {
+      ...f.view.inputs,
+      customPanelState: { ...f.view.inputs.customPanelState, isOpen: true },
+    };
+    await flush(f.view);
+    const frame = f.panel('custom');
+    const header = frame.querySelector(':scope > [slot="header"]');
+    const nested = document.createElement('div');
+    nested.slot = 'body';
+    const nestedButton = document.createElement('button');
+    nested.append(nestedButton);
+    header.prepend(nested);
+    const body = f.hosts.panelTargetFor('custom-body');
+    expect(body.parentElement).toBe(frame);
+    const bodyButton = document.createElement('button');
+    body.append(bodyButton);
+
+    expect(f.view.requestPanelFocus('custom')).toBe(true);
+    const focusChain: Element[] = [];
+    for (
+      let active: Element | null = document.activeElement;
+      active;
+      active = active.shadowRoot?.activeElement ?? null
+    ) {
+      focusChain.push(active);
+    }
+    expect(focusChain).toContain(bodyButton);
+    expect(focusChain).not.toContain(nestedButton);
+  });
+
+  it('uses native prompt buttons, focuses and announces once, and cancels Escape without bubbling', async () => {
+    // jsdom has no layout; tabbable requires a rendered rectangle.
+    const rectangle = document.body.getBoundingClientRect();
+    vi.spyOn(HTMLElement.prototype, 'getClientRects').mockReturnValue(
+      Object.assign([rectangle], { item: () => rectangle })
+    );
+    const f = await fixture();
+    await f.commit();
+    f.view.inputs = { ...f.view.inputs, showScreenShareRequest: true };
+    await flush(f.view);
+    const frame = f.panel('screenShare');
+    const footer = frame.querySelector('[slot="footer"]');
+    const buttons = footer.querySelectorAll('cds-button');
+    const focusChain: Element[] = [];
+    for (
+      let active: Element | null = document.activeElement;
+      active;
+      active = active.shadowRoot?.activeElement ?? null
+    ) {
+      focusChain.push(active);
+    }
+    expect(focusChain).toContain(buttons[0]);
+    (buttons[0] as HTMLElement).click();
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenLastCalledWith(
+      ScreenShareState.DECLINED
+    );
+    (buttons[1] as HTMLElement).click();
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenLastCalledWith(
+      ScreenShareState.ACCEPTED
+    );
+    expect(f.callbacks.announce).toHaveBeenCalledTimes(1);
+    frame.dispatchEvent(
+      new CustomEvent('openend', { detail: { isReactivation: true } })
+    );
+    expect(f.callbacks.announce).toHaveBeenCalledTimes(1);
+    const bubbled = vi.fn();
+    f.view.addEventListener('keydown', bubbled);
+    const escape = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    frame.dispatchEvent(escape);
+    expect(escape.defaultPrevented).toBe(true);
+    expect(bubbled).not.toHaveBeenCalled();
+    expect(f.callbacks.updateScreenShareRequest).toHaveBeenLastCalledWith(
+      ScreenShareState.DECLINED
+    );
+  });
+
+  it('keeps the native disclaimer footer disabled until read and preserves it across narrow updates', async () => {
+    const f = await fixture();
+    const button = f.view.disclaimerButton();
+    expect(button.disabled).toBe(true);
+    f.view
+      .querySelector('cds-aichat-disclaimer-body')
+      .observeScroll({ isScrollable: true, isAtBottom: false });
+    await flush(f.view);
+    expect(button.disabled).toBe(true);
+    f.view
+      .querySelector('cds-aichat-disclaimer-body')
+      .observeScroll({ isScrollable: true, isAtBottom: true });
+    await flush(f.view);
+    expect(button.disabled).toBe(false);
+    applyConfigChange(f.store, {
+      ...f.store.getState().config.public,
+      strings: {
+        disclaimer_accept: 'Agree',
+        disclaimer_acceptance_label: 'Accept terms',
+      },
+    });
+    f.store.dispatch(
+      viewActions.setViewValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
+    );
+    await flush(f.view);
+    expect(f.view.disclaimerButton()).toBe(button);
+    expect(button.textContent).toBe('Agree');
+    expect(button.getAttribute('aria-label')).toBe('Accept terms');
+    expect(button.size).toBe('2xl');
+    expect(button.disabled).toBe(false);
+    button.click();
+    expect(f.callbacks.onAcceptDisclaimer).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores unrelated typing, releases targets and subscriptions on detach, then reconnects current state once', async () => {
+    const f = await fixture();
+    const peak = f.subscriptions.size;
+    const render = vi.spyOn(
+      f.view as unknown as { renderView(): unknown },
+      'renderView'
+    );
+    f.store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
+    await flush(f.view);
+    expect(render).not.toHaveBeenCalled();
+    const target = f.hosts.panelTargetFor('custom-body');
+    const request = f.hosts
+      .getPanelContentSnapshot()
+      .find((item) => item.panel === 'custom');
+    f.view.remove();
+    await Promise.resolve();
+    expect(f.subscriptions.size).toBe(0);
+    expect(f.hosts.getPanelContentSnapshot()).toEqual([]);
+    expect(f.hosts.commitPanelContent(request)).toBe(false);
+    expect(f.view.requestPanelFocus('custom')).toBe(false);
+    applyConfigChange(f.store, {
+      ...f.store.getState().config.public,
+      strings: { aria_customPanel: 'Updated custom' },
+    });
+    f.shell.append(f.view);
+    await flush(f.view);
+    expect(f.subscriptions.size).toBe(peak);
+    expect(f.panel('custom').panelAriaLabel).toBe('Updated custom');
+    expect(f.hosts.panelTargetFor('custom-body')).toBe(target);
+    expect(f.errorOccurred).not.toHaveBeenCalled();
+  });
+});

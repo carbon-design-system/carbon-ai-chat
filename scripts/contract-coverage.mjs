@@ -23,7 +23,7 @@ import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import ts from 'typescript';
 import { addedLines, contentOf, parseNumstat } from './measure-lib.mjs';
-import { produceCoverage } from './contract-coverage-jest.mjs';
+import { produceCoverage } from './contract-coverage-vitest.mjs';
 
 const PACKAGE = 'packages/ai-chat';
 const RUNTIME = /^packages\/ai-chat\/src\/.*\.[jt]sx?$/;
@@ -31,10 +31,10 @@ const INPUTS = [
   'package.json',
   'package-lock.json',
   'scripts/contract-coverage.mjs',
-  'scripts/contract-coverage-jest.mjs',
+  'scripts/contract-coverage-vitest.mjs',
   'tools/contract-manifest-lib.mjs',
   `${PACKAGE}/package.json`,
-  `${PACKAGE}/jest.config.cjs`,
+  `${PACKAGE}/vitest.config.ts`,
   `${PACKAGE}/tsconfig.json`,
   `${PACKAGE}/src`,
   `${PACKAGE}/tests`,

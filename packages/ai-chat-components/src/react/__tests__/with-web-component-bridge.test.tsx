@@ -65,7 +65,7 @@ async function mount(
 }
 
 test('skips every onX prop without options', async () => {
-  const onClose = jest.fn();
+  const onClose = vi.fn();
   const element = await mount(withWebComponentBridge(Host), {
     data: 1,
     onClose,
@@ -75,12 +75,12 @@ test('skips every onX prop without options', async () => {
 });
 
 test('assigns declared callback properties when options are given', async () => {
-  const onClose = jest.fn();
-  const onMissing = jest.fn();
+  const onClose = vi.fn();
+  const onMissing = vi.fn();
   const element = await mount(withWebComponentBridge(Host, { events: {} }), {
     onClose,
     onMissing,
-    onClick: jest.fn(),
+    onClick: vi.fn(),
   });
   expect(element.onClose).toBe(onClose);
   expect((element as any).onMissing).toBeUndefined();
@@ -89,8 +89,8 @@ test('assigns declared callback properties when options are given', async () => 
 });
 
 test('leaves an events-map key unassigned even when it is a property', async () => {
-  const onClose = jest.fn();
-  const onToggle = jest.fn();
+  const onClose = vi.fn();
+  const onToggle = vi.fn();
   const element = await mount(
     withWebComponentBridge(Host, { events: { onToggle: 'test-toggle' } }),
     { onClose, onToggle }

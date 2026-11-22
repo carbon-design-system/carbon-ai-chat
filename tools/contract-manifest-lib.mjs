@@ -16,11 +16,15 @@ import ts from 'typescript';
 export const CONTRACT = 'packages/ai-chat/tests/contract';
 export const MANIFEST = `${CONTRACT}/MANIFEST.tsv`;
 const PACKAGE = 'packages/ai-chat';
-const COLOCATED_ROOTS = ['sdk', 'chat', 'react', 'web-components'].map(
-  (area) => `${PACKAGE}/src/${area}/__tests__`
-);
+const COLOCATED_ROOTS = [
+  `${PACKAGE}/src/__tests__`,
+  ...['sdk', 'chat', 'react', 'web-components'].map(
+    (area) => `${PACKAGE}/src/${area}/__tests__`
+  ),
+];
 const COLOCATED_HELPERS = new Set([
   `${PACKAGE}/src/sdk/__tests__/helpers/publicContract.ts`,
+  `${PACKAGE}/src/sdk/__tests__/helpers/lifecycleControl.ts`,
 ]);
 const PUBLIC_ENTRIES = new Set([
   `${PACKAGE}/src/aiChatEntry.tsx`,
@@ -58,8 +62,14 @@ function isContractSpec(file) {
   );
 }
 
+const COLOCATED_HELPER_DIR = `${PACKAGE}/src/chat/__tests__/helpers/contract`;
+
 function isContractHelper(file) {
-  return file.startsWith(`${CONTRACT}/helpers/`) || COLOCATED_HELPERS.has(file);
+  return (
+    file.startsWith(`${CONTRACT}/helpers/`) ||
+    file.startsWith(`${COLOCATED_HELPER_DIR}/`) ||
+    COLOCATED_HELPERS.has(file)
+  );
 }
 
 export function contractInventory(root) {
@@ -71,6 +81,7 @@ export function contractInventory(root) {
   ].filter(isContractSpec);
   const helpers = [
     ...read(`${CONTRACT}/helpers`),
+    ...read(COLOCATED_HELPER_DIR),
     ...[...COLOCATED_HELPERS].filter((file) => existsSync(join(root, file))),
   ];
   for (const file of [...specs, ...helpers]) {

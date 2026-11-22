@@ -17,48 +17,48 @@
  */
 
 // Export types and utilities without importing web components
-export { PageObjectId, TestId } from './testing/PageObjectId';
+export { PageObjectId, type TestId } from './testing/PageObjectId';
 export { loadAllLazyDeps } from './testing/helpers';
 
 // Export all types without the web component implementations
-export { ViewState, ViewType } from './types/instance/apiTypes';
+export { type ViewState, ViewType } from './types/instance/apiTypes';
 
 export {
-  CustomPanelConfigOptions,
-  DefaultCustomPanelConfigOptions,
-  WorkspaceCustomPanelConfigOptions,
-  CustomPanelInstance,
+  type CustomPanelConfigOptions,
+  type DefaultCustomPanelConfigOptions,
+  type WorkspaceCustomPanelConfigOptions,
+  type CustomPanelInstance,
   PanelType,
-  CustomPanels,
-  CustomPanelOpenOptions,
+  type CustomPanels,
+  type CustomPanelOpenOptions,
 } from './types/instance/apiTypes';
 
-export {
+export type {
   ChangeFunction,
   ChatInstance,
   IncreaseOrDecrease,
   SendOptions,
 } from './types/instance/ChatInstance';
-export {
+export type {
   ChatSDKEventType,
   ChatSDKHandlers,
   ChatSDKInstance,
 } from './types/instance/ChatSDKInstance';
-export {
+export type {
   ChatSDKMessageItem,
   ChatSDKPendingUpload,
   ChatSDKState,
   ChatSDKStateAccess,
 } from './types/instance/ChatSDKState';
-export { ChatInstanceInput } from './types/instance/ChatInstanceInput';
-export { ChatInstanceServiceDeskActions } from './types/instance/ChatInstanceServiceDeskActions';
-export {
+export type { ChatInstanceInput } from './types/instance/ChatInstanceInput';
+export type { ChatInstanceServiceDeskActions } from './types/instance/ChatInstanceServiceDeskActions';
+export type {
   EventBusHandler,
   EventHandlers,
   TypeAndHandler,
 } from './types/instance/EventHandlers';
-export { FileUploadCapabilities } from './types/instance/FileUploadCapabilities';
-export {
+export type { FileUploadCapabilities } from './types/instance/FileUploadCapabilities';
+export type {
   PublicInputState,
   PublicCustomPanelsState,
   PublicHistoryPanelState,
@@ -70,9 +70,9 @@ export {
 } from './types/instance/PublicChatState';
 export {
   WriteableElementName,
-  WriteableElements,
+  type WriteableElements,
 } from './types/instance/WriteableElements';
-export { AutoScrollOptions } from './types/utilities/HasDoAutoScroll';
+export type { AutoScrollOptions } from './types/utilities/HasDoAutoScroll';
 export { LayoutCustomProperties } from './types/config/LayoutCustomProperties';
 
 export { CornersType } from './types/config/CornersType';
@@ -82,65 +82,65 @@ export type {
 } from './types/config/CornersType';
 
 export {
-  BusEvent,
-  BusEventHumanAgentAreAnyAgentsOnline,
-  BusEventHumanAgentEndChat,
-  BusEventHumanAgentPreEndChat,
-  BusEventHumanAgentPreReceive,
-  BusEventHumanAgentPreSend,
-  BusEventHumanAgentPreStartChat,
-  BusEventHumanAgentReceive,
-  BusEventHumanAgentSend,
-  BusEventChatReady,
-  BusEventChunkUserDefinedResponse,
-  BusEventClosePanelButtonClicked,
-  BusEventCustomFooterSlot,
-  BusEventCustomRequestFooterSlot,
-  BusEventCustomPanelClose,
-  BusEventCustomPanelOpen,
-  BusEventCustomPanelPreClose,
-  BusEventCustomPanelPreOpen,
-  BusEventWorkspaceClose,
-  BusEventWorkspaceOpen,
-  BusEventWorkspacePreClose,
-  BusEventWorkspacePreOpen,
-  BusEventFeedback,
-  BusEventHeaderMenuClick,
-  BusEventHistoryBegin,
-  BusEventHistoryEnd,
-  BusEventHistoryPanelNewChat,
-  BusEventHistoryPanelPreOpen,
-  BusEventMessageItemCustom,
-  BusEventPreReceive,
-  BusEventPreReset,
-  BusEventPreSend,
-  BusEventReceive,
-  BusEventReset,
-  BusEventSend,
-  BusEventStateChange,
+  type BusEvent,
+  type BusEventHumanAgentAreAnyAgentsOnline,
+  type BusEventHumanAgentEndChat,
+  type BusEventHumanAgentPreEndChat,
+  type BusEventHumanAgentPreReceive,
+  type BusEventHumanAgentPreSend,
+  type BusEventHumanAgentPreStartChat,
+  type BusEventHumanAgentReceive,
+  type BusEventHumanAgentSend,
+  type BusEventChatReady,
+  type BusEventChunkUserDefinedResponse,
+  type BusEventClosePanelButtonClicked,
+  type BusEventCustomFooterSlot,
+  type BusEventCustomRequestFooterSlot,
+  type BusEventCustomPanelClose,
+  type BusEventCustomPanelOpen,
+  type BusEventCustomPanelPreClose,
+  type BusEventCustomPanelPreOpen,
+  type BusEventWorkspaceClose,
+  type BusEventWorkspaceOpen,
+  type BusEventWorkspacePreClose,
+  type BusEventWorkspacePreOpen,
+  type BusEventFeedback,
+  type BusEventHeaderMenuClick,
+  type BusEventHistoryBegin,
+  type BusEventHistoryEnd,
+  type BusEventHistoryPanelNewChat,
+  type BusEventHistoryPanelPreOpen,
+  type BusEventMessageItemCustom,
+  type BusEventPreReceive,
+  type BusEventPreReset,
+  type BusEventPreSend,
+  type BusEventReceive,
+  type BusEventReset,
+  type BusEventSend,
+  type BusEventStateChange,
   BusEventType,
-  BusEventUserDefinedResponse,
-  BusEventViewChange,
-  BusEventViewPreChange,
+  type BusEventUserDefinedResponse,
+  type BusEventViewChange,
+  type BusEventViewPreChange,
   FeedbackInteractionType,
   HeaderMenuClickType,
   MessageSendSource,
   ViewChangeReason,
 } from './types/events/eventBusTypes';
 
-export {
+export type {
   CatastrophicErrorPanelState,
   PersistedState,
 } from './types/state/AppState';
 
-export { PersistedHumanAgentState } from './types/state/PersistedHumanAgentState';
+export type { PersistedHumanAgentState } from './types/state/PersistedHumanAgentState';
 
-export {
+export type {
   PersistableState,
   PersistedStateConfig,
 } from './types/config/PersistedStateConfig';
 
-export {
+export type {
   HomeScreenConfig,
   HomeScreenStarterButton,
   HomeScreenStarterButtons,
@@ -149,33 +149,33 @@ export {
 
 export {
   CancellationReason,
-  ChatInstanceMessaging,
-  CustomSendMessageOptions,
+  type ChatInstanceMessaging,
+  type CustomSendMessageOptions,
   MessageState,
-  UpsertMessageUpdater,
+  type UpsertMessageUpdater,
 } from './types/config/MessagingConfig';
-export {
+export type {
   ChatSDKInstanceMessaging,
   FailTurnOptions,
 } from './types/config/ChatSDKInstanceMessaging';
 
-export { PublicConfig } from './types/config/PublicConfig';
-export { ChatSDKConfig } from './types/config/ChatSDKConfig';
-export { ChatSDKConfigMessaging } from './types/config/ChatSDKConfigMessaging';
-export { ChatSDKErrorData } from './types/config/ChatSDKErrorData';
-export { ChatSDKPersistedStateConfig } from './types/config/ChatSDKPersistedStateConfig';
-export { ChatSDKServiceDeskConfig } from './types/config/ChatSDKServiceDeskConfig';
-export { ChatSDKUploadConfig } from './types/config/ChatSDKUploadConfig';
-export { ChatSDKLifecycleConfig } from './types/config/ChatSDKLifecycleConfig';
+export type { PublicConfig } from './types/config/PublicConfig';
+export type { ChatSDKConfig } from './types/config/ChatSDKConfig';
+export type { ChatSDKConfigMessaging } from './types/config/ChatSDKConfigMessaging';
+export type { ChatSDKErrorData } from './types/config/ChatSDKErrorData';
+export type { ChatSDKPersistedStateConfig } from './types/config/ChatSDKPersistedStateConfig';
+export type { ChatSDKServiceDeskConfig } from './types/config/ChatSDKServiceDeskConfig';
+export type { ChatSDKUploadConfig } from './types/config/ChatSDKUploadConfig';
+export type { ChatSDKLifecycleConfig } from './types/config/ChatSDKLifecycleConfig';
 export { CarbonTheme } from './types/config/CarbonTheme';
-export { DisclaimerPublicConfig } from './types/config/DisclaimerConfig';
+export type { DisclaimerPublicConfig } from './types/config/DisclaimerConfig';
 export {
-  CustomMenuOption,
-  HeaderConfig,
+  type CustomMenuOption,
+  type HeaderConfig,
   MinimizeButtonIconType,
-  ToolbarAction,
+  type ToolbarAction,
 } from './types/config/HeaderConfig';
-export { HistoryConfig } from './types/config/HistoryConfig';
+export type { HistoryConfig } from './types/config/HistoryConfig';
 export type {
   InputConfig,
   BaseSuggestionConfig,
@@ -185,14 +185,14 @@ export type {
   SuggestionItem,
   CustomListProps,
 } from './types/config/InputConfig';
-export { enLanguagePack, LanguagePack } from './types/config/LanguagePack';
-export { LayoutConfig } from './types/config/LayoutConfig';
-export { OnErrorData, OnErrorType } from './types/config/ErrorConfig';
-export { PublicConfigMessaging } from './types/config/PublicConfigMessaging';
-export { UploadConfig } from './types/config/UploadConfig';
-export { LifecycleConfig } from './types/config/LifecycleConfig';
+export { enLanguagePack, type LanguagePack } from './types/config/LanguagePack';
+export type { LayoutConfig } from './types/config/LayoutConfig';
+export { type OnErrorData, OnErrorType } from './types/config/ErrorConfig';
+export type { PublicConfigMessaging } from './types/config/PublicConfigMessaging';
+export type { UploadConfig } from './types/config/UploadConfig';
+export type { LifecycleConfig } from './types/config/LifecycleConfig';
 
-export {
+export type {
   ChatShortcutConfig,
   KeyboardShortcuts,
 } from './types/config/ShortcutConfig';
@@ -226,114 +226,114 @@ export {
   textToDoc,
 } from './types/utilities/inputUtils';
 
-export { DeepPartial } from './types/utilities/DeepPartial';
+export type { DeepPartial } from './types/utilities/DeepPartial';
 export type { default as ObjectMap } from './types/utilities/ObjectMap';
 
 export {
-  AdditionalDataToAgent,
-  AgentAvailability,
+  type AdditionalDataToAgent,
+  type AgentAvailability,
   HumanAgentsOnlineStatus,
-  ConnectingErrorInfo,
-  DisconnectedErrorInfo,
-  EndChatInfo,
+  type ConnectingErrorInfo,
+  type DisconnectedErrorInfo,
+  type EndChatInfo,
   ErrorType,
   FileStatusValue,
-  FileUpload,
+  type FileUpload,
   ScreenShareState,
-  ServiceDesk,
-  ServiceDeskCallback,
-  ServiceDeskCapabilities,
-  ServiceDeskErrorInfo,
-  ServiceDeskFactoryParameters,
-  ServiceDeskPublicConfig,
-  StartChatOptions,
-  UserMessageErrorInfo,
+  type ServiceDesk,
+  type ServiceDeskCallback,
+  type ServiceDeskCapabilities,
+  type ServiceDeskErrorInfo,
+  type ServiceDeskFactoryParameters,
+  type ServiceDeskPublicConfig,
+  type StartChatOptions,
+  type UserMessageErrorInfo,
 } from './types/config/ServiceDeskConfig';
 
 export {
-  BaseGenericItem,
-  MessageResponseOptions,
-  MessageResponseHistory,
-  MessageRequestHistory,
-  ResponseUserProfile,
-  RequestUserProfile,
-  AudioItem,
-  BaseMessageInput,
-  ButtonItem,
+  type BaseGenericItem,
+  type MessageResponseOptions,
+  type MessageResponseHistory,
+  type MessageRequestHistory,
+  type ResponseUserProfile,
+  type RequestUserProfile,
+  type AudioItem,
+  type BaseMessageInput,
+  type ButtonItem,
   ButtonItemKind,
   ButtonItemType,
-  CardItem,
-  CarouselItem,
-  Chunk,
-  CompleteItemChunk,
-  ConnectToHumanAgentItem,
-  ConnectToHumanAgentItemTransferInfo,
-  ConversationalSearchItem,
-  ConversationalSearchItemCitation,
-  DateItem,
-  EventInput,
-  EventInputData,
-  FinalResponseChunk,
-  GenericItem,
-  GenericItemCustomFooterSlotOptions,
-  GenericItemMessageFeedbackCategories,
-  GridItem,
-  HorizontalCellAlignment,
-  IFrameItem,
+  type CardItem,
+  type CarouselItem,
+  type Chunk,
+  type CompleteItemChunk,
+  type ConnectToHumanAgentItem,
+  type ConnectToHumanAgentItemTransferInfo,
+  type ConversationalSearchItem,
+  type ConversationalSearchItemCitation,
+  type DateItem,
+  type EventInput,
+  type EventInputData,
+  type FinalResponseChunk,
+  type GenericItem,
+  type GenericItemCustomFooterSlotOptions,
+  type GenericItemMessageFeedbackCategories,
+  type GridItem,
+  type HorizontalCellAlignment,
+  type IFrameItem,
   IFrameItemDisplayOption,
-  ImageItem,
-  InlineErrorItem,
-  ItemStreamingMetadata,
-  MediaItem,
-  MediaItemDimensions,
-  MediaSubtitleTrack,
-  MediaTranscript,
-  MediaFileAccessibility,
-  MessageInput,
+  type ImageItem,
+  type InlineErrorItem,
+  type ItemStreamingMetadata,
+  type MediaItem,
+  type MediaItemDimensions,
+  type MediaSubtitleTrack,
+  type MediaTranscript,
+  type MediaFileAccessibility,
+  type MessageInput,
   MessageInputType,
-  MessageItemPanelInfo,
-  MessageOutput,
-  MessageRequest,
-  MessageResponse,
+  type MessageItemPanelInfo,
+  type MessageOutput,
+  type MessageRequest,
+  type MessageResponse,
   MessageResponseTypes,
-  OptionItem,
+  type OptionItem,
   OptionItemPreference,
   SelectionDisplay,
-  PartialItemChunk,
-  PartialItemChunkWithId,
-  PauseItem,
-  PreviewCardItem,
-  StreamChunk,
-  TextItem,
-  UserDefinedItem,
-  VerticalCellAlignment,
-  VideoItem,
+  type PartialItemChunk,
+  type PartialItemChunkWithId,
+  type PauseItem,
+  type PreviewCardItem,
+  type StreamChunk,
+  type TextItem,
+  type UserDefinedItem,
+  type VerticalCellAlignment,
+  type VideoItem,
   WidthOptions,
-  WithBodyAndFooter,
-  WithWidthOptions,
-  SingleOption,
+  type WithBodyAndFooter,
+  type WithWidthOptions,
+  type SingleOption,
   HumanAgentMessageType,
-  ChainOfThoughtStep,
+  type ChainOfThoughtStep,
   ChainOfThoughtStepStatus,
   CHAT_BUTTON_KIND,
   CHAT_BUTTON_SIZE,
-  ReasoningSteps,
-  ReasoningStep,
+  type ReasoningSteps,
+  type ReasoningStep,
   ReasoningStepOpenState,
-  GenericItemMessageFeedbackOptions,
-  GenericItemMessageOptions,
-  Message,
-  PartialOrCompleteItemChunk,
-  PartialResponse,
-  MessageHistoryFeedback,
-  SearchResult,
+  type GenericItemMessageFeedbackOptions,
+  type GenericItemMessageOptions,
+  type Message,
+  type PartialOrCompleteItemChunk,
+  type PartialResponse,
+  type MessageHistoryFeedback,
+  type SearchResult,
   UserType,
-  StructuredData,
-  StructuredField,
-  StructuredFieldType,
-  InlineFile,
-  ExternalFileReference,
-  FileFieldValue,
+  type StructuredData,
+  type StructuredField,
+  type StructuredFieldType,
+  type InlineFile,
+  type ExternalFileReference,
+  type FileFieldValue,
 } from './types/messaging/Messages';
 
 export type {
@@ -341,16 +341,16 @@ export type {
   SystemMessageVariant,
 } from './types/messaging/Messages';
 
-export { HistoryItem } from './types/messaging/History';
+export type { HistoryItem } from './types/messaging/History';
 
 export { MessageErrorState } from './types/messaging/LocalMessageItem';
 
-export {
+export type {
   LauncherCallToActionConfig,
   LauncherConfig,
 } from './types/config/LauncherConfig';
 
-export {
+export type {
   ChatContainerPropsMarkdown,
   CustomMarkdownRenderers,
   MarkdownCustomRendererMountDetail,

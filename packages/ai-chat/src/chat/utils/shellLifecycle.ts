@@ -221,8 +221,6 @@ export function selectShellState(state: AppState) {
       state.view.persistedToBrowserStorage.disclaimersAccepted,
     homeScreenOpen:
       state.view.persistedToBrowserStorage.homeScreenState.isHomeScreenOpen,
-    hasSentNonWelcomeMessage:
-      state.persistedToBrowserStorage.hasSentNonWelcomeMessage,
     catastrophicErrorType: state.view.catastrophicErrorType,
     catastrophicErrorPanelState: state.view.catastrophicErrorPanelState,
     workspacePanelState: state.view.workspacePanelState,
@@ -260,7 +258,8 @@ export class ShellLifecycle {
   private mobileEnabled?: boolean;
   private transformIcon?: ShellLayoutInputs['header']['transformIcon'];
   private styleInputs?: unknown[];
-  private announcementInputs?: unknown[];
+  /** Whether the home screen showed at the last loaded render. */
+  private homeScreenShown?: boolean;
   private hadComposerFocus = false;
   private focusFrame?: number;
   private renderedPromptLine?: boolean;
@@ -385,6 +384,24 @@ export class ShellLifecycle {
     this.contentRevision = contentRevision ?? this.initialContentRevision;
   }
 
+  /**
+   * Starts window state stopped by `disconnectWindowState`. Before this owner
+   * connects it does nothing: `connect` starts window state itself.
+   */
+  connectWindowState() {
+    if (this.connected) {
+      this.window.connect();
+    }
+  }
+
+  /**
+   * Stops window state until the next connect: cancels its close and focus
+   * work, and the next connect takes hydration focus again.
+   */
+  disconnectWindowState() {
+    this.window.disconnect();
+  }
+
   /** Forgets delivered content, so the next layout offers it again. */
   forgetContent() {
     this.previousContent = undefined;
@@ -465,6 +482,11 @@ export class ShellLifecycle {
     this.requestReadyFocus();
   };
   readonly requestReadyFocus = () => {
+    // Window state outlives a content hide, so a hydration frame can land
+    // here while hidden. Drop it; a later show takes no focus.
+    if (!this.connected) {
+      return;
+    }
     const generation = this.generation;
     void this.whenReady().then((ready) => {
       if (ready && this.connected && generation === this.generation) {
@@ -1101,24 +1123,20 @@ export class ShellLifecycle {
       this.releaseKeyboard = () =>
         container.removeEventListener('keydown', this.handleKeyDown);
     }
-    const { showHomeScreen } = this.derived(state);
-    const announcementInputs = [
-      showHomeScreen,
-      state.isHydrated,
-      state.languagePack,
-      state.persistedToBrowserStorage.hasSentNonWelcomeMessage,
-    ];
-    if (
-      !this.announcementInputs ||
-      !shallowEqual(this.announcementInputs, announcementInputs)
-    ) {
-      this.announcementInputs = announcementInputs;
-      if (state.isHydrated) {
-        if (showHomeScreen) {
+    // Announces the home screen only when it shows or hides. The first loaded
+    // render has nothing to compare with, so it announces only a shown home
+    // screen. Nothing is recorded while unhydrated, so a load after a restart
+    // compares with the home screen before it.
+    if (state.isHydrated) {
+      const shown = Boolean(this.derived(state).showHomeScreen);
+      if (shown !== this.homeScreenShown) {
+        const seenBefore = this.homeScreenShown !== undefined;
+        this.homeScreenShown = shown;
+        if (shown) {
           this.viewState.announcer.announce(
             state.languagePack.homeScreen_shown
           );
-        } else if (state.persistedToBrowserStorage.hasSentNonWelcomeMessage) {
+        } else if (seenBefore) {
           this.viewState.announcer.announce(
             state.languagePack.homeScreen_hidden
           );
@@ -1214,19 +1232,22 @@ export class ShellLifecycle {
   /**
    * Stops this owner's work and gives up its handles. With `keepInput`, the
    * input's handle stays published: React hid the content, but the input is
-   * still rendered, so the public input API keeps reaching it.
+   * still rendered, so the public input API keeps reaching it. Window state
+   * keeps running too, so showing the content again is not a reopen;
+   * `disconnectWindowState` stops it.
    */
   disconnect(keepInput = false) {
-    // A hidden shell kept its input handle; retiring it later must drop it.
+    // A hidden shell kept its input handle and window state; retiring it
+    // later must drop both.
     if (!keepInput) {
       this.setInputHandle(null);
+      this.window.disconnect();
     }
     if (!this.connected && !this.registered) {
       return;
     }
     this.connected = false;
     this.releaseRegistrations();
-    this.window.disconnect();
     this.inputCallbacks.disconnect();
     this.releases
       .splice(0)

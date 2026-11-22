@@ -3932,6 +3932,118 @@ HTTP: http://example.com
     });
   });
 
+  // A custom-renderer offer hands over a live node the markdown element
+  // created and keeps writing to. The controller only re-parents it, and never
+  // enters it in `hosts`: an update can't rewrite it, an unmount can't remove
+  // it, and a second offer for a node it already holds must not move it, since
+  // a detach and reattach runs the consumer subtree's teardown.
+  describe('plugin-host container: a relocated custom-renderer host', () => {
+    async function createRelocationTarget() {
+      const target = await fixture<HTMLElement>(html`<div></div>`);
+      const announced: string[][] = [];
+      const controller = createMarkdownPluginHostController(target, {
+        onSlotNamesChange: (slotNames) => {
+          announced.push(slotNames);
+        },
+      });
+      controller.connect();
+
+      function dispatch(type: string, detail: unknown) {
+        target.dispatchEvent(
+          new CustomEvent(type, {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail,
+          })
+        );
+      }
+
+      function mountRenderer(slotName: string, element: HTMLElement) {
+        const detail: MarkdownCustomRendererMountDetail = {
+          kind: 'customRenderer',
+          slotName,
+          element,
+          isInline: false,
+        };
+        dispatch('cds-aichat-markdown-plugin-host-mount', detail);
+      }
+
+      return { target, controller, announced, dispatch, mountRenderer };
+    }
+
+    it('does not re-append a custom-renderer host it already holds', async () => {
+      const { target, mountRenderer } = await createRelocationTarget();
+      const live = document.createElement('div');
+      mountRenderer('held-renderer', live);
+      // Compare nodes as booleans: a failing chai equal on two DOM nodes
+      // formats both, which can stall the browser instead of failing.
+      expect(
+        live.parentElement === target,
+        'the first offer re-parents it'
+      ).to.equal(true);
+
+      const marker = document.createElement('span');
+      target.appendChild(marker);
+      mountRenderer('held-renderer', live);
+
+      expect(
+        live.nextElementSibling === marker,
+        'a re-append would move it past the marker'
+      ).to.equal(true);
+    });
+
+    it('leaves a relocated custom-renderer host’s content alone on an update for its slot name', async () => {
+      const { controller, dispatch, mountRenderer } =
+        await createRelocationTarget();
+      // An update for a host the controller created does rewrite it.
+      dispatch('cds-aichat-markdown-plugin-host-mount', {
+        kind: 'pluginFallback',
+        slotName: 'updated-fallback',
+        html: '<i>before</i>',
+        isInline: false,
+      });
+      dispatch('cds-aichat-markdown-plugin-host-update', {
+        slotName: 'updated-fallback',
+        html: '<i>after</i>',
+      });
+      expect(controller.hosts.get('updated-fallback')?.innerHTML).to.equal(
+        '<i>after</i>'
+      );
+
+      const live = document.createElement('div');
+      live.innerHTML = '<b>consumer</b>';
+      mountRenderer('updated-renderer', live);
+      dispatch('cds-aichat-markdown-plugin-host-update', {
+        slotName: 'updated-renderer',
+        html: '<i>clobbered</i>',
+      });
+
+      expect(live.innerHTML).to.equal('<b>consumer</b>');
+      expect(controller.hosts.has('updated-renderer')).to.equal(false);
+    });
+
+    it('drops a custom-renderer slot name on unmount and leaves the node it never created parented', async () => {
+      const { target, announced, dispatch, mountRenderer } =
+        await createRelocationTarget();
+      const live = document.createElement('div');
+      mountRenderer('unmounted-renderer', live);
+      expect(announced).to.deep.equal([['unmounted-renderer']]);
+
+      dispatch('cds-aichat-markdown-plugin-host-unmount', {
+        slotName: 'unmounted-renderer',
+      });
+
+      expect(announced).to.deep.equal([['unmounted-renderer'], []]);
+      // The markdown element detaches its own node before it announces; a
+      // controller that removed it here would destroy what it never created.
+      expect(
+        live.parentElement === target,
+        'the unmount leaves the node parented'
+      ).to.equal(true);
+    });
+  });
+
   // ── Slot-name stability across render commits ─────────────────────────
   // A plugin-fallback slot name ends in a positional index minted by a counter
   // that `renderMarkdownTree` resets once per call. But `renderFallback` runs

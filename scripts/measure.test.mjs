@@ -569,14 +569,19 @@ test('contract coverage rejects missing reports and source mismatch', (context) 
 
 test('coverage fingerprint changes for source, tests, configuration, and built dependencies', (context) => {
   const root = fixture(context);
-  const paths = ['src', 'tests', 'jest.config.cjs', 'es'].map((path) =>
+  const paths = ['src', 'tests', 'vitest.config.ts', 'es'].map((path) =>
     join(root, path)
   );
-  ['src/a.ts', 'tests/a.ts', 'jest.config.cjs', 'es/a.js'].forEach((file) =>
+  ['src/a.ts', 'tests/a.ts', 'vitest.config.ts', 'es/a.js'].forEach((file) =>
     write(root, file, 'original')
   );
   let previous = fingerprint(paths);
-  for (const file of ['src/a.ts', 'tests/a.ts', 'jest.config.cjs', 'es/a.js']) {
+  for (const file of [
+    'src/a.ts',
+    'tests/a.ts',
+    'vitest.config.ts',
+    'es/a.js',
+  ]) {
     write(root, file, 'changed');
     const next = fingerprint(paths);
     assert.notEqual(next, previous, file);
@@ -766,7 +771,7 @@ test('the contract row produces and reuses a matching report, then rejects chang
     `
     const fs = require('node:fs');
     const path = require('node:path');
-    const directory = process.argv.find(arg => arg.startsWith('--coverageDirectory=')).split('=')[1];
+    const directory = process.argv.find(arg => arg.startsWith('--coverage.reportsDirectory=')).split('=')[1];
     fs.mkdirSync(directory, { recursive: true });
     fs.appendFileSync(path.resolve('../../producer-calls'), 'run\\n');
     fs.appendFileSync(path.resolve('../../producer-directories'), directory + '\\n');
@@ -818,13 +823,13 @@ test('the contract row produces and reuses a matching report, then rejects chang
   const args = JSON.parse(
     readFileSync(join(root, 'producer-args.json'), 'utf8')
   );
-  assert.ok(args.includes('--runTestsByPath'));
+  assert.ok(args.includes('--coverage.enabled'));
   for (const file of contractFiles) {
     assert.ok(args.includes(join(root, file)), file);
   }
   assert.ok(!args.some((arg) => arg.endsWith('ordinary.test.ts')));
-  assert.ok(args.includes('--collectCoverageFrom=!src/**/__tests__/**'));
-  assert.ok(!args.includes('--collectCoverageFrom=!src/**/index.ts'));
+  assert.ok(args.includes('--coverage.exclude=src/**/__tests__/**'));
+  assert.ok(!args.includes('--coverage.exclude=src/**/index.ts'));
   const report = first.stdout.match(/report: (.+)/)?.[1];
   assert.ok(report, first.stdout);
   context.after(() =>

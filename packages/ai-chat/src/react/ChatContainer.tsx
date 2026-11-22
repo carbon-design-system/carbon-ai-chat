@@ -248,4 +248,4 @@ function ChatContainer(
   );
 }
 
-export { ChatContainer, ChatContainerProps };
+export { ChatContainer, type ChatContainerProps };

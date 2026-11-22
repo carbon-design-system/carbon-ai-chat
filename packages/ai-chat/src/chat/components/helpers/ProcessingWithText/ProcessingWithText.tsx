@@ -9,7 +9,7 @@
 
 import cx from 'classnames';
 import Processing from '@carbon/ai-chat-components/es/react/processing.js';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAriaAnnouncer } from '../../../hooks/useAriaAnnouncer';
 import { CarbonTheme } from '../../../../types/config/CarbonTheme';
 
@@ -31,10 +31,21 @@ function ProcessingWithText({
   statusMessage,
 }: ProcessingWithTextProps) {
   const ariaAnnouncer = useAriaAnnouncer();
+  // The typing message announced while the indicator shows. In development,
+  // React StrictMode runs a new mount's effects twice, and the replay must not
+  // announce the same message again. Hiding the indicator clears it, so the
+  // next show is announced.
+  const announcedRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (ariaAnnouncer && isVisible && isTypingMessage) {
-      ariaAnnouncer(isTypingMessage);
+    const shown = isVisible ? isTypingMessage : undefined;
+    if (!shown) {
+      announcedRef.current = undefined;
+      return;
+    }
+    if (ariaAnnouncer && announcedRef.current !== shown) {
+      announcedRef.current = shown;
+      ariaAnnouncer(shown);
     }
   }, [ariaAnnouncer, isVisible, isTypingMessage]);
 

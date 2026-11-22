@@ -1,0 +1,288 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+/**
+ * The before/after render contract, driven through one React wrapper and one
+ * web component. The gate itself lives in `cds-aichat-container`, which every
+ * surface mounts through; `ChatCustomElement` and `cds-aichat-custom-element`
+ * only pass these callbacks down, which `wrapperMountParity_spec` and
+ * `chatCustomElement_spec` already cover.
+ *
+ * `onBeforeRender` may return a promise, and every host holds the shell and
+ * `onAfterRender` until it settles. A throw or rejection leaves the shell gated
+ * for the rest of that mount. `onAfterRender` fires once, after the first
+ * usable render, and never waits for history. Nothing the host does inside
+ * `onAfterRender` can take the shell down.
+ *
+ * Each case locates the chat by walking shadow roots for the render target
+ * rather than naming a host tag, so the host topology can change without
+ * touching these assertions.
+ */
+
+import type { MockInstance } from 'vitest';
+import React from 'react';
+import { act, render, waitFor } from '@testing-library/react';
+import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
+
+import '../../web-components/cds-aichat-container';
+import { ChatContainer } from '../ChatContainer';
+import { resolvablePromise } from '../../sdk/utils/resolvablePromise';
+import { PublicConfig } from '../../types/config/PublicConfig';
+import { ChatInstance } from '../../types/instance/ChatInstance';
+import {
+  createBaseConfig,
+  mockCustomSendMessage,
+  setupAfterEach,
+  setupBeforeEach,
+} from '../../chat/__tests__/helpers/chat';
+
+type Callback = (instance: ChatInstance) => Promise<void> | void;
+
+interface MountOptions {
+  config: PublicConfig;
+  onBeforeRender: Callback;
+  onAfterRender: Callback;
+}
+
+interface Surface {
+  name: string;
+  /** Mounts the host and returns a function that forces an unrelated update. */
+  mount: (options: MountOptions) => () => Promise<void>;
+}
+
+function mountElement(tag: string, options: MountOptions) {
+  const element = document.createElement(tag) as HTMLElement &
+    MountOptions & {
+      requestUpdate: () => void;
+      updateComplete: Promise<boolean>;
+    };
+  element.config = options.config;
+  element.onBeforeRender = options.onBeforeRender;
+  element.onAfterRender = options.onAfterRender;
+  document.body.appendChild(element);
+  return async () => {
+    element.requestUpdate();
+    await element.updateComplete;
+  };
+}
+
+const surfaces: Surface[] = [
+  {
+    name: 'React ChatContainer',
+    mount: ({ config, ...callbacks }) => {
+      const view = render(<ChatContainer {...config} {...callbacks} />);
+      return async () => {
+        view.rerender(
+          <ChatContainer {...config} {...callbacks} data-probe="updated" />
+        );
+      };
+    },
+  },
+  {
+    name: 'cds-aichat-container',
+    mount: (options) => mountElement('cds-aichat-container', options),
+  },
+];
+
+/** The element the chat shell renders into, wherever the host placed it. */
+function renderTarget(): Element | null {
+  return deepQuerySelector(document, '.cds-aichat--react-app');
+}
+
+function shellRendered(): boolean {
+  return (renderTarget()?.childElementCount ?? 0) > 0;
+}
+
+/**
+ * A promise that records whether anything chained it. `await` and `.then` on a
+ * subclass both go through its `then`, so an unset flag means no handler.
+ */
+class TrackedPromise<T> extends Promise<T> {
+  handled = false;
+
+  then<A = T, B = never>(
+    onFulfilled?: ((value: T) => A | PromiseLike<A>) | null,
+    onRejected?: ((reason: unknown) => B | PromiseLike<B>) | null
+  ): Promise<A | B> {
+    this.handled = true;
+    return super.then(onFulfilled, onRejected);
+  }
+}
+
+/** Lets pending boot work run, so a gate that leaks has the chance to. */
+async function settle() {
+  await new Promise((resolve) => setTimeout(resolve, 50));
+}
+
+describe('onBeforeRender and onAfterRender across host surfaces', () => {
+  let consoleError: MockInstance;
+
+  beforeEach(() => {
+    setupBeforeEach();
+    consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleError.mockRestore();
+    setupAfterEach();
+  });
+
+  describe.each(surfaces)('$name', (surface) => {
+    it.each([
+      { mode: 'on-demand editor', input: undefined },
+      {
+        mode: 'preconfigured rich editor',
+        input: {
+          mention: { trigger: '@', items: [{ id: 'person', label: 'Person' }] },
+        },
+      },
+    ])(
+      'awaits before-render and resolves editor access in onAfterRender ($mode)',
+      async ({ input }) => {
+        const gate = resolvablePromise();
+        const order: string[] = [];
+        const onBeforeRender = vi.fn(() => {
+          order.push('before');
+          return gate;
+        });
+        const onAfterRender = vi.fn(async (instance: ChatInstance) => {
+          order.push(shellRendered() ? 'after:shell' : 'after:no-shell');
+          expect(instance.getState().viewState.mainWindow).toBe(false);
+          const editor = await instance.input.getEditor();
+          editor.commands.insertContent('editor ready');
+          expect(instance.getState().viewState.mainWindow).toBe(false);
+          order.push('after:editor');
+        });
+
+        surface.mount({
+          config: { ...createBaseConfig(), openChatByDefault: false, input },
+          onBeforeRender,
+          onAfterRender,
+        });
+
+        await waitFor(() => expect(onBeforeRender).toHaveBeenCalledTimes(1), {
+          timeout: 5000,
+        });
+        await settle();
+        expect(shellRendered()).toBe(false);
+        expect(onAfterRender).not.toHaveBeenCalled();
+
+        gate.doResolve();
+
+        await waitFor(() => expect(onAfterRender).toHaveBeenCalledTimes(1), {
+          timeout: 5000,
+        });
+        await onAfterRender.mock.results[0].value;
+        expect(shellRendered()).toBe(true);
+        expect(order).toEqual(['before', 'after:shell', 'after:editor']);
+        const instance = onAfterRender.mock.calls[0][0];
+        expect((await instance.input.getEditor()).getText()).toBe(
+          'editor ready'
+        );
+
+        await settle();
+        expect(onAfterRender).toHaveBeenCalledTimes(1);
+      }
+    );
+
+    // The chat calls onAfterRender from a zero-delay timer and neither catches
+    // nor logs what it does, so a failure surfaces the way any timer's would.
+    describe('when onAfterRender misbehaves', () => {
+      let timerErrors: unknown[];
+      const onTimerError = (event: ErrorEvent) => {
+        timerErrors.push(event.error);
+        event.preventDefault();
+      };
+
+      beforeEach(() => {
+        timerErrors = [];
+        window.addEventListener('error', onTimerError);
+      });
+
+      afterEach(() => {
+        window.removeEventListener('error', onTimerError);
+      });
+
+      const thrown = new Error('after-render threw');
+      const rejected = new Error('after-render rejected');
+      const rows: Array<{
+        label: string;
+        onAfterRender: Callback;
+        timerErrors: Error[];
+      }> = [
+        {
+          label: 'throws',
+          onAfterRender: () => {
+            throw thrown;
+          },
+          timerErrors: [thrown],
+        },
+        {
+          label: 'rejects',
+          onAfterRender: () => TrackedPromise.reject(rejected),
+          timerErrors: [],
+        },
+      ];
+
+      it.each(rows)(
+        'keeps the shell interactive when onAfterRender $label',
+        async (row) => {
+          const onBeforeRender = vi.fn();
+          // A plain recorder: a Vitest mock subscribes to a returned promise,
+          // which would mark the rejection handled.
+          const afterRenderCalls: unknown[] = [];
+          const afterRenderResults: unknown[] = [];
+          const onAfterRender: Callback = (...args) => {
+            afterRenderCalls.push(args);
+            const value = row.onAfterRender(...args);
+            afterRenderResults.push(value);
+            if (value instanceof TrackedPromise) {
+              // Vitest fails a run on an unhandled rejection, which Jest let
+              // pass. Handle it natively, which leaves `handled` to the chat.
+              Promise.prototype.then.call(value, undefined, () => {});
+            }
+            return value;
+          };
+
+          surface.mount({
+            config: { ...createBaseConfig(), openChatByDefault: true },
+            onBeforeRender,
+            onAfterRender,
+          });
+
+          await waitFor(() => expect(afterRenderCalls).toHaveLength(1), {
+            timeout: 5000,
+          });
+          await settle();
+          expect(timerErrors).toEqual(row.timerErrors);
+          // Nothing awaited or chained the returned promise, so a rejection
+          // stays unhandled.
+          const [returned] = afterRenderResults;
+          if (returned instanceof TrackedPromise) {
+            expect(returned.handled).toBe(false);
+            returned.catch(() => {});
+          }
+
+          const instance: ChatInstance = onBeforeRender.mock.calls[0][0];
+          await act(() => instance.send('still interactive'));
+          expect(
+            mockCustomSendMessage.mock.calls.map(
+              ([request]) => request.input.text
+            )
+          ).toContain('still interactive');
+          await waitFor(() =>
+            expect(
+              deepQuerySelector(renderTarget(), '.cds-aichat--message--request')
+            ).not.toBeNull()
+          );
+        }
+      );
+    });
+  });
+});

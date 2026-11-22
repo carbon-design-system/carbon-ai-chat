@@ -412,19 +412,13 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'isHydrated',
-    count: 5,
+    count: 4,
     owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'persistedToBrowserStorage',
     count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/utils/shellLifecycle.ts',
-    read: 'persistedToBrowserStorage.hasSentNonWelcomeMessage',
-    count: 3,
     owner: '#2824',
   },
   {

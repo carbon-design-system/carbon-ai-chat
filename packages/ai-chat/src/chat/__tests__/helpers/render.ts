@@ -88,12 +88,12 @@ export const renderChatAndGetInstance = async (
 ): Promise<ChatInstance> => {
   let capturedInstance: ChatInstance | null = null;
   let rendered = false;
-  const onBeforeRender = jest.fn((instance) => {
+  const onBeforeRender = vi.fn((instance) => {
     capturedInstance = instance;
   });
   // The chat hands the instance over before it renders, so callers that go on
   // to drive the UI have to wait for the render too.
-  const onAfterRender = jest.fn(() => {
+  const onAfterRender = vi.fn(() => {
     rendered = true;
   });
 
@@ -150,7 +150,7 @@ export function unmountKeepingServices(instance: ChatInstance) {
       serviceManager: ServiceManager;
     }
   ).serviceManager;
-  jest.spyOn(manager, 'shutdown').mockResolvedValue(undefined);
+  vi.spyOn(manager, 'shutdown').mockResolvedValue(undefined);
   cleanup();
 }
 

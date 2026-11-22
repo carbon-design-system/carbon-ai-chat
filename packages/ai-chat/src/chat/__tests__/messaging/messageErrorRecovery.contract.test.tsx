@@ -25,7 +25,7 @@ import {
   partialText,
   responseOf,
   textItem,
-} from '../../../../tests/contract/helpers';
+} from '../helpers/contract';
 
 const optionWithoutChoices = (): GenericItem =>
   ({ response_type: MessageResponseTypes.OPTION }) as GenericItem;
@@ -34,7 +34,7 @@ describe('legacy rendered message compatibility', () => {
   contractSetup();
 
   it('contains an addMessage renderer failure and displays later messages', async () => {
-    const onError = jest.fn<void, [OnErrorData]>();
+    const onError = vi.fn<(...args: [OnErrorData]) => void>();
     const { instance } = await contractChat({
       openChatByDefault: true,
       messaging: { skipWelcome: true },
@@ -76,7 +76,7 @@ describe('legacy rendered message compatibility', () => {
   });
 
   it('contains a streamed renderer failure and displays later messages', async () => {
-    const onError = jest.fn<void, [OnErrorData]>();
+    const onError = vi.fn<(...args: [OnErrorData]) => void>();
     const { instance } = await contractChat({
       openChatByDefault: true,
       messaging: { skipWelcome: true },

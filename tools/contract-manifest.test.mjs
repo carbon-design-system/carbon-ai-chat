@@ -95,6 +95,8 @@ test('one inventory adds explicit colocated contracts while preserving legacy ro
   }
   const helper = 'packages/ai-chat/src/sdk/__tests__/helpers/publicContract.ts';
   write(helper, 'export const fixture = 1;');
+  const lifecycle = helper.replace('publicContract', 'lifecycleControl');
+  write(lifecycle, 'export const fixture = 1;');
   for (const path of [
     'packages/ai-chat/src/sdk/__tests__/ordinary.test.ts',
     'packages/ai-chat/src/sdk/__tests__/helpers/internal.ts',
@@ -109,6 +111,7 @@ test('one inventory adds explicit colocated contracts while preserving legacy ro
   assert.deepEqual(inventory.helpers, [
     `${CONTRACT}/helpers/nested/helper.ts`,
     helper,
+    lifecycle,
   ]);
   const report = {
     ...legacy,
@@ -122,7 +125,7 @@ test('one inventory adds explicit colocated contracts while preserving legacy ro
   };
   const rows = rowsFromReport(root, report);
   assert.deepEqual(compareManifests(before, serialize(rows)), {
-    added: 13,
+    added: 14,
     changed: 0,
   });
   assert.throws(() => rowsFromReport(root, legacy), /Incomplete/);
@@ -173,7 +176,9 @@ test('manifest kinds accept only registered contract paths', () => {
 test('D4 checks local static, type, export, require and dynamic imports in suites and helpers', (context) => {
   const { root, file } = fixture(context, simple);
   const sourceRoot = 'packages/ai-chat/src';
-  const helper = `${sourceRoot}/sdk/__tests__/helpers/publicContract.ts`;
+  const helpers = ['publicContract', 'lifecycleControl'].map(
+    (name) => `${sourceRoot}/sdk/__tests__/helpers/${name}.ts`
+  );
   const write = (path, content) => {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     writeFileSync(join(root, path), content);
@@ -195,14 +200,16 @@ test('D4 checks local static, type, export, require and dynamic imports in suite
   for (const path of [...allowed, ...privateFiles]) {
     write(path, 'export const value = 1;');
   }
-  write(helper, 'export const value = 1;');
+  for (const helper of helpers) {
+    write(helper, 'export const value = 1;');
+  }
   const importer = `${sourceRoot}/sdk/__tests__/case.contract.test.ts`;
-  for (const target of [file, importer, helper]) {
+  for (const target of [file, importer, ...helpers]) {
     const specifier = (path) => {
       const name = relative(dirname(target), path).replaceAll('\\', '/');
       return name.startsWith('.') ? name : `./${name}`;
     };
-    for (const path of [...allowed, helper]) {
+    for (const path of [...allowed, ...helpers]) {
       write(target, `import '${specifier(path)}';`);
       assert.doesNotThrow(() => contractInventory(root));
     }
@@ -229,7 +236,10 @@ test('D4 checks local static, type, export, require and dynamic imports in suite
       write(target, statement);
       assert.throws(() => contractInventory(root), /contract import/);
     }
-    write(target, target === helper ? 'export const value = 1;' : simple);
+    write(
+      target,
+      helpers.includes(target) ? 'export const value = 1;' : simple
+    );
   }
 });
 
@@ -250,7 +260,7 @@ test('runtime expanded cases map to callbacks without deriving names', (context)
   );
 });
 
-test('each locations point at the curried invocation, as Jest reports them', () => {
+test('each locations point at the curried invocation, as Vitest reports them', () => {
   const { registrations } = analyze(
     'example_spec.ts',
     "describe.each(['A','B'])('host %s', () => {\n  it.each([1,2])('case %s', (n) => expect(n).toBeGreaterThan(0));\n});"
@@ -857,15 +867,15 @@ test('passing body edits fail staleness and every discovery input invalidates re
     'packages/ai-chat/package.json',
     JSON.stringify({
       name: '@carbon/ai-chat',
-      scripts: { test: 'jest --config jest.config.cjs --runInBand' },
+      type: 'module',
+      scripts: { test: 'vitest run' },
     })
   );
   write(
-    'packages/ai-chat/jest.config.cjs',
-    "module.exports={testEnvironment:'node',testMatch:['**/tests/contract/spec/*_spec.ts','**/__tests__/**/*.test.ts']};"
+    'packages/ai-chat/vitest.config.ts',
+    "export default {test:{globals:true,environment:'node',include:['tests/contract/spec/*_spec.ts','**/__tests__/**/*.test.ts']}};"
   );
   write('packages/ai-chat/tsconfig.json', '{}');
-  write('packages/ai-chat/.babelrc', '{}');
   write('packages/ai-chat/src/runtime.ts', 'export const value = 1;');
   const sdkContract =
     'packages/ai-chat/src/sdk/__tests__/added.contract.test.ts';
@@ -916,7 +926,7 @@ test('passing body edits fail staleness and every discovery input invalidates re
     carried.stdout,
     /1 carried legacy cases; 1 executed colocated cases/
   );
-  assert.match(carried.stderr, /1 passed/);
+  assert.match(carried.stdout + carried.stderr, /1 passed/);
   const narrow = JSON.parse(readFileSync(join(root, 'report.json'), 'utf8'));
   assert.equal(narrow.numTotalTests, 1);
   assert.deepEqual(
@@ -947,17 +957,17 @@ test('passing body edits fail staleness and every discovery input invalidates re
   assert.equal(narrowMetadata.scope, 'colocated');
   const reused = run('check', carryArgs);
   assert.equal(reused.status, 0, reused.stdout + reused.stderr);
-  assert.doesNotMatch(reused.stderr, /passed/);
+  assert.doesNotMatch(reused.stdout + reused.stderr, /passed/);
   rmSync(join(root, 'report.json.inputs.json'));
   const raw = run('check', carryArgs);
   assert.equal(raw.status, 0, raw.stdout + raw.stderr);
-  assert.match(raw.stderr, /1 passed/);
+  assert.match(raw.stdout + raw.stderr, /1 passed/);
   const invalidBase = run('write', ['--carry-colocated-base', 'main']);
   assert.equal(invalidBase.status, 1);
   assert.match(invalidBase.stderr, /exact base SHA/);
   const full = run('write');
   assert.equal(full.status, 0, full.stdout + full.stderr);
-  assert.match(full.stderr, /2 passed/);
+  assert.match(full.stdout + full.stderr, /2 passed/);
   assert.equal(run('check').status, 0);
   const discovery = JSON.parse(readFileSync(join(root, 'report.json'), 'utf8'));
   assert.equal(discovery.numTotalTests, 2);
@@ -985,7 +995,7 @@ test('passing body edits fail staleness and every discovery input invalidates re
       if (key === 'AICHAT_DISABLE_WEB_COMPONENT_BRIDGE') {
         const rerun = run('check');
         assert.equal(rerun.status, 0, rerun.stdout + rerun.stderr);
-        assert.match(rerun.stderr, /2 passed/);
+        assert.match(rerun.stdout + rerun.stderr, /2 passed/);
         const current = JSON.parse(
           readFileSync(join(root, 'report.json.inputs.json'), 'utf8')
         );
@@ -1003,7 +1013,7 @@ test('passing body edits fail staleness and every discovery input invalidates re
   for (const path of [
     file,
     `${CONTRACT}/helpers/nested/helper.ts`,
-    'packages/ai-chat/jest.config.cjs',
+    'packages/ai-chat/vitest.config.ts',
     'packages/ai-chat-components/es/runtime.js',
     'tools/contract-manifest-lib.mjs',
   ]) {
@@ -1029,5 +1039,5 @@ test('passing body edits fail staleness and every discovery input invalidates re
   const result = run('check');
   assert.equal(result.status, 1, result.stdout + result.stderr);
   assert.match(result.stderr, /manifest is stale/);
-  assert.match(result.stderr, /2 passed/);
+  assert.match(result.stdout + result.stderr, /2 passed/);
 });

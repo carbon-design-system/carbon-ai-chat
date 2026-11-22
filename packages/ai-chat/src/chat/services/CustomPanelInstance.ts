@@ -427,6 +427,6 @@ function createCustomPanelInstance(
 export {
   closeWorkspaceForNext,
   createCustomPanelInstance,
-  CustomPanelInstance,
+  type CustomPanelInstance,
   setWorkspaceCardSource,
 };

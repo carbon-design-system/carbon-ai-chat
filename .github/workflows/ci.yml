@@ -93,11 +93,11 @@ jobs:
       matrix:
         include:
           - suite: ai-chat 1/3
-            run: npm run test --workspace=@carbon/ai-chat -- --shard=1/3 && npm run test:versions
+            run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=1/3 && npm run test:versions
           - suite: ai-chat 2/3
-            run: npm run test --workspace=@carbon/ai-chat -- --shard=2/3
+            run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=2/3
           - suite: ai-chat 3/3
-            run: npm run test --workspace=@carbon/ai-chat -- --shard=3/3
+            run: npm run test --workspace=@carbon/ai-chat -- --project node --project happy-dom --shard=3/3
           # 👇 TEMPORARILY chromium-only in CI: the firefox/webkit apt dependencies (~185 packages)
           # stall the Playwright install. Restore `chromium firefox webkit` (and the matching
           # launchers in web-test-runner.config.js) when the CI strategy is reworked.

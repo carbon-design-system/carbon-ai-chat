@@ -34,7 +34,7 @@
  *
  * No filesystem access and no `app` object, so the rules are unit-testable
  * against a fixture project — see
- * [tests/typedoc/spec/cross_package_links_spec.ts](../../tests/typedoc/spec/cross_package_links_spec.ts).
+ * [tests/typedoc/cross_package_links.test.ts](../../tests/typedoc/cross_package_links.test.ts).
  */
 
 import {
@@ -208,7 +208,7 @@ function preferredTarget(type, candidates) {
  * `_MarkdownItPlugin` owned by `MarkdownItPlugin`. Four reach this code:
  * `MarkdownItPlugin`, `FileStatusValue`, `ChainOfThoughtStepStatus`, and
  * `CHAT_BUTTON_SIZE`.
- * [alias_members_spec.ts](../../tests/typedoc/spec/alias_members_spec.ts)
+ * [alias_members.test.ts](../../tests/typedoc/alias_members.test.ts)
  * exempts a fifth alias from `@interface`, `CHAT_BUTTON_KIND`, which resolves
  * into `@carbon/web-components` and so never gets this far.
  *
