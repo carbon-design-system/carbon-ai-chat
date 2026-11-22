@@ -10,15 +10,15 @@
 import { act, waitFor } from '@testing-library/react';
 import type { JSONContent } from '@tiptap/core';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
-import type ChatInput from '../../components/input/ChatInput';
-import { MessageSendSource } from '../../../types/events/eventBusTypes';
+import type ChatInput from '../components/input/ChatInput';
+import { MessageSendSource } from '../../types/events/eventBusTypes';
 import {
   createBaseConfig,
   getChatShadowRoot,
   renderChatAndGetInstanceWithStore,
   setupAfterEach,
   setupBeforeEach,
-} from '../../__tests__/helpers/chat';
+} from './helpers/chat';
 
 async function renderInput() {
   const { instance, serviceManager } = await renderChatAndGetInstanceWithStore({
