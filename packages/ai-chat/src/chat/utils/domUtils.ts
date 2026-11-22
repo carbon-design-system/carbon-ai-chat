@@ -9,7 +9,7 @@
 
 import { compute } from 'compute-scroll-into-view';
 import { memoizeFunction } from '../../sdk/utils/memoizerUtils';
-import type { KeyboardEvent as ReactKeyboardEvent, RefObject } from 'react';
+import type { RefObject } from 'react';
 import { tabbable } from 'tabbable';
 import { setVarsForSelector } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
@@ -222,39 +222,6 @@ function focusOnFirstFocusableElement(
 }
 
 /**
- * Determines if the given keyboard event represent a press of the enter key. This will exclude the key when pressed
- * as part of IME composing and it will also exclude the key if there are any modifier keys that are pressed at the same
- * time. This function supports both the built-in typescript KeyboardEvent type and the React version (which is
- * missing some properties).
- */
-function isEnterKey(event: ReactKeyboardEvent | KeyboardEvent) {
-  if (event.key === 'Enter' && !hasModifiers(event)) {
-    // Users using IMEs could be making a word selection when they hit enter. This check will prevent the user’s
-    // message from being sent prematurely.
-    return !((event as KeyboardEvent).isComposing || event.keyCode === 229);
-  }
-  return false;
-}
-
-/**
- * Determines if the given keyboard event has any modifier keys pressed.
- */
-function hasModifiers(event: ReactKeyboardEvent | KeyboardEvent) {
-  return event.shiftKey || event.altKey || event.metaKey || event.ctrlKey;
-}
-
-/**
- * Returns the "scrollBottom" value for the given element. This is similar to "scrollTop" except that it represents
- * the distance the element has been scrolled from the bottom.
- */
-function getScrollBottom(element: HTMLElement) {
-  if (element) {
-    return element.scrollHeight - element.offsetHeight - element.scrollTop;
-  }
-  return 0;
-}
-
-/**
  * Gets the deepest active element, traversing through all shadow DOM boundaries.
  * This handles nested shadow roots, slotted elements, and will return the actual
  * focused element regardless of how many shadow DOM levels exist.
@@ -448,13 +415,7 @@ export {
   doFocus,
   doFocusRef,
   isElement,
-  isTextNode,
-  isInputNode,
-  isTextAreaNode,
-  isImageNode,
   focusOnFirstFocusableElement,
-  isEnterKey,
-  getScrollBottom,
   getDeepActiveElement,
   nodeToText,
   isDirectionRTL,

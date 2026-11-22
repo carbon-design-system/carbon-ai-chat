@@ -235,16 +235,10 @@ function slotSource(serviceManager: ServiceManager): SlotSource {
   };
 }
 
-export {
-  attachSlotTracking,
-  collectRequestFooters,
-  EMPTY as EMPTY_SLOT_RECORDS,
-  slotSource,
-};
+export { attachSlotTracking, EMPTY as EMPTY_SLOT_RECORDS, slotSource };
 export type {
   CustomFooterSlotState,
   CustomRequestFooterSlotState,
   SlotSource,
-  SlotStores,
   UserDefinedSlotState,
 };

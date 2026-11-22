@@ -102,14 +102,14 @@ function isRequestWithDisplayContent(
 }
 
 /** A non-built-in node found in a `display_content` doc, with its slot key. */
-export interface InputNodeSlot {
+interface InputNodeSlot {
   slotKey: string;
   node: JSONContent;
   isInline: boolean;
 }
 
 // The message walker uses these same keys for inline targets and block slots.
-export function collectInputNodeSlots(
+function collectInputNodeSlots(
   content: JSONContent,
   messageId: string
 ): InputNodeSlot[] {

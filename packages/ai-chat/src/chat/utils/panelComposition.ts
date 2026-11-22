@@ -344,7 +344,6 @@ function handleConfirmationKey(
 
 export type { PanelName, PanelViewInputs, PanelCompositionCallbacks };
 export {
-  isCustomPanelConfigOptions,
   deriveCustomPanelComposition,
   deriveResponsePanelComposition,
   deriveEndChatPrompt,

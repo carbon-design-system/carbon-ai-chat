@@ -196,30 +196,6 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2707',
   },
   {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'requestComposerFocus()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'selectInputIsDisabled()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'selectInputIsReadonly()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'selectInputUploads()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
     file: 'src/chat/services/attachChatView.ts',
     read: 'attachViewState()',
     count: 1,
@@ -276,7 +252,7 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/services/inputCallbacks.ts',
     read: 'selectInputState()',
-    count: 2,
+    count: 1,
     owner: '#2824',
   },
   {

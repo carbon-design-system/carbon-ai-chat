@@ -255,6 +255,5 @@ export {
   messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,
-  shouldShowStopStreaming,
   syncStopStreamingButton,
 };

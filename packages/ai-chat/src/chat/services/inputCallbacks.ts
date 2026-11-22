@@ -22,7 +22,6 @@ import {
 } from '../../types/events/eventBusTypes';
 import { ViewType } from '../../types/instance/apiTypes';
 import type { ServiceManager } from '../../sdk/services/ServiceManager';
-import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
 import { requestStopFromInput } from './assistantInputCommands';
@@ -140,11 +139,6 @@ export function shouldDisableInput(
 
 export function shouldDisableSend(inputDisabled: boolean, isHydrated: boolean) {
   return inputDisabled || !isHydrated;
-}
-
-export function selectInputUploads(state: AppState) {
-  const { files, allowMultipleFileUploads } = selectInputState(state);
-  return { files, allowMultipleFileUploads };
 }
 
 export function isUploadButtonDisabled(

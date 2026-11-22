@@ -204,4 +204,4 @@ function OptionItemComponent(props: Omit<OptionProps, 'optionSelected'>) {
   return <OptionComponent {...props} optionSelected={optionSelected} />;
 }
 
-export { OptionComponent, OptionItemComponent };
+export { OptionItemComponent };

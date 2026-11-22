@@ -382,7 +382,7 @@ function planGroups(
  * Plans every entry the list draws, in its order: each top-level local item of a message that's in
  * `messageIDs`, then the items nested in it, depth first.
  */
-export function planMessageItems(
+function planMessageItems(
   messageIDs: readonly string[],
   allMessagesByID: ObjectMap<Message>,
   allMessageItemsByID: ObjectMap<LocalMessageItem>,
