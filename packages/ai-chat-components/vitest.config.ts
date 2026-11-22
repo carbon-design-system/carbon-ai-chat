@@ -16,6 +16,12 @@ import { browserCommands } from './src/__tests__/browser/commands';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const unit = ['**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.jsx'];
+// The happy-dom project's exclude hands each browser test here, from the same
+// folders, so a test file runs in exactly one project.
+const browserUnit = unit.map((glob) =>
+  glob.replace('.test.', '.browser.test.')
+);
+const testRoots = ['src', '.storybook/__tests__'];
 
 // Chromium by default. CAIC_ALL_BROWSERS=1 adds Firefox and WebKit, as the
 // nightly jobs do.
@@ -93,10 +99,9 @@ export default defineConfig({
         test: {
           name: 'happy-dom',
           environment: 'happy-dom',
-          include: [
-            ...unit.map((glob) => `src/${glob}`),
-            ...unit.map((glob) => `.storybook/__tests__/${glob}`),
-          ],
+          include: testRoots.flatMap((root) =>
+            unit.map((glob) => `${root}/${glob}`)
+          ),
           exclude: ['**/node_modules/**', '**/*.browser.test.*'],
         },
       },
@@ -120,7 +125,9 @@ export default defineConfig({
         },
         test: {
           name: 'browser',
-          include: ['src/**/*.browser.test.ts'],
+          include: testRoots.flatMap((root) =>
+            browserUnit.map((glob) => `${root}/${glob}`)
+          ),
           setupFiles: ['src/__tests__/browser/setup.ts'],
           // One file at a time in CI, as web-test-runner's `concurrency: 1`.
           fileParallelism: !process.env.CI,

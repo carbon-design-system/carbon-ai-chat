@@ -14,6 +14,8 @@ import { chatStyleStrings } from './tests/setup/styleStrings';
 
 const root = import.meta.dirname;
 const tests = ['**/*.test.ts', '**/*.test.tsx'];
+// Every folder the node and happy-dom projects read; their excludes hand each
+// browser test here, so a test file runs in exactly one project.
 const browserTests = ['**/*.browser.test.ts', '**/*.browser.test.tsx'];
 
 // Chromium by default. CAIC_ALL_BROWSERS=1 adds Firefox and WebKit, as the
@@ -150,7 +152,10 @@ export default defineConfig({
           // Its own setup: the happy-dom shims stand in for what a real
           // browser already has.
           setupFiles: ['tests/setup/browser.ts'],
-          include: browserTests.map((glob) => `src/${glob}`),
+          include: browserTests.flatMap((glob) => [
+            `src/${glob}`,
+            `tests/${glob}`,
+          ]),
           // One file at a time in CI, as components' browser project runs.
           fileParallelism: !process.env.CI,
           browser: {

@@ -70,7 +70,9 @@
     "contract:manifest": "node tools/contract-manifest.mjs write",
     "contract:manifest:check": "node tools/contract-manifest.mjs check",
     "contract:manifest:policy": "node tools/contract-manifest.mjs policy",
-    "test:contract-manifest": "node --test tools/contract-manifest.test.mjs"
+    "test:contract-manifest": "node --test tools/contract-manifest.test.mjs",
+    "test:projects": "node tools/check-test-projects.mjs",
+    "test:projects:tool": "node --test tools/check-test-projects.test.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
