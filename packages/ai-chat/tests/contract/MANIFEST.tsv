@@ -2363,7 +2363,7 @@ helper	packages/ai-chat/src/chat/__tests__/helpers/contract/events.ts	""	4d92b8b
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/index.ts	""	73c96809162ed6a786ad8e0cddb14e3e54ddafb41a2ee67af50159a339e84762
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/input.ts	""	08828364e6ea0e29ee1563e3d43e9007de70c7000b72491a9e110ae1fe71d5f1
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/messages.ts	""	3210d365e016d498999b845aaed24db5a0c1d1f7079252c4e9e2fe6ae6f398f5
-helper	packages/ai-chat/src/chat/__tests__/helpers/contract/mount.tsx	""	111d2c89e75fa797d42399ef6cf2d31ef7c691945ddf935f9d6406671086a68f
+helper	packages/ai-chat/src/chat/__tests__/helpers/contract/mount.tsx	""	1510fd55815e0568363e15c9d4e0792b51581601566917f23c39aba220bf0786
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/serviceDesk.ts	""	20170abd6d4a6ce70292fea8d7d2ee57598efbf294dce227506703fb0fd54135
 helper	packages/ai-chat/src/chat/__tests__/helpers/contract/timing.ts	""	f329eda44d035bd4e2577b655203e0486079a4b6c6e53f4b60b50ac1a39c63b2
 helper	packages/ai-chat/src/sdk/__tests__/helpers/lifecycleControl.ts	""	6d67fb9d91473cf50283a521e21e807fcef78d3b22d15e56d1268b3995c9d2f7

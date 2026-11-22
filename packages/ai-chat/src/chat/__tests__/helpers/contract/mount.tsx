@@ -14,7 +14,7 @@
  */
 
 import React from 'react';
-import { act, cleanup, render, waitFor } from '@testing-library/react';
+import { act, cleanup, getConfig, render } from '@testing-library/react';
 
 import {
   ChatContainer,
@@ -43,14 +43,11 @@ export interface ContractMount {
   unmount: () => void;
 }
 
-const MOUNT_TIMEOUT = 10000;
-
 /**
- * Each test's timeout in a file that calls `contractSetup`. It sits above the
- * mount wait, so a slow mount on a loaded machine fails as the mount's own
- * error, or passes, rather than timing out the test around it.
+ * Each test's timeout in a file that calls `contractSetup`. The mount wait
+ * has no deadline of its own, so this bounds a mount that never renders.
  */
-const TEST_TIMEOUT = 2 * MOUNT_TIMEOUT;
+const TEST_TIMEOUT = 20_000;
 
 /** How long a describe block's warm-up may take, under a loaded machine. */
 const WARM_UP_TIMEOUT = 120_000;
@@ -66,38 +63,84 @@ export function warmUp(): Promise<void> {
   return lazyDepsLoaded;
 }
 
-/** Waits until a mount has handed over its instance and rendered. */
-async function waitForMount(
-  isReady: () => boolean,
-  timeout = MOUNT_TIMEOUT
-): Promise<void> {
-  await waitFor(
-    () => {
-      if (!isReady()) {
-        throw new Error('the chat has not rendered yet');
-      }
+/**
+ * The chat's own signal that a mount finished its first render: the host's
+ * `onAfterRender` call. `onBeforeRender` has handed over the instance by then.
+ */
+interface MountSignal {
+  /** Resolves on the first `onAfterRender` call. */
+  rendered: Promise<void>;
+  /** Whether `onAfterRender` has run. */
+  done: boolean;
+  /** Called from the wrapped `onAfterRender`. */
+  markRendered: () => void;
+}
+
+function mountSignal(): MountSignal {
+  let resolve: () => void;
+  const signal: MountSignal = {
+    rendered: new Promise<void>((done) => {
+      resolve = done;
+    }),
+    done: false,
+    markRendered: () => {
+      signal.done = true;
+      resolve();
     },
-    { timeout }
-  );
+  };
+  return signal;
+}
+
+/** The fake-time step Testing Library's `waitFor` takes while it polls. */
+const FAKE_TIME_STEP = 50;
+
+/** How many steps a mount under fake timers gets: 10 s of fake time. */
+const FAKE_TIME_STEPS = 200;
+
+/**
+ * Waits for the mount's `onAfterRender`, then checks it has handed over its
+ * instance. It runs inside Testing Library's async wrapper, as `waitFor`
+ * does, so React updates that land while it waits need no `act`. With real
+ * timers it has no deadline: a mount that never renders fails as the test's
+ * timeout.
+ *
+ * A test that fakes timers before it mounts owns the clock the mount's own
+ * timeouts run on. Step that clock as `waitFor` did until the chat signals.
+ * Its cap counts fake time, not wall time, so a loaded machine can't trip it.
+ */
+async function waitForMount(
+  signal: MountSignal,
+  handed: () => ChatInstance | null
+): Promise<void> {
+  await getConfig().asyncWrapper(async () => {
+    if (vi.isFakeTimers()) {
+      const advance = getConfig().unstable_advanceTimersWrapper;
+      for (let step = 0; !signal.done && step < FAKE_TIME_STEPS; step += 1) {
+        await advance(async () => {
+          vi.advanceTimersByTime(FAKE_TIME_STEP);
+        });
+      }
+      if (!signal.done) {
+        throw new Error('the chat has not rendered after 10 s of fake time');
+      }
+    }
+    await signal.rendered;
+  });
+  if (!handed()) {
+    throw new Error('the chat rendered without handing over its instance');
+  }
 }
 
 /**
  * Renders `ChatContainer` with the given props and waits for its first
  * render. `onBeforeRender` and `onAfterRender` in `props` still run.
  */
-export function contractChat(
+export async function contractChat(
   props: Partial<ChatContainerProps> = {}
-): Promise<ContractMount> {
-  return mountChatContainer(props, MOUNT_TIMEOUT);
-}
-
-async function mountChatContainer(
-  props: Partial<ChatContainerProps>,
-  timeout: number
 ): Promise<ContractMount> {
   await warmUp();
   let instance: ChatInstance | null = null;
-  let rendered = false;
+  const signal = mountSignal();
   const wrap = (next: Partial<ChatContainerProps>): ChatContainerProps =>
     ({
       ...next,
@@ -106,7 +149,7 @@ async function mountChatContainer(
         return next.onBeforeRender?.(handed);
       },
       onAfterRender: (handed: ChatInstance) => {
-        rendered = true;
+        signal.markRendered();
         return next.onAfterRender?.(handed);
       },
     }) as ChatContainerProps;
@@ -115,7 +158,7 @@ async function mountChatContainer(
   await act(async () => {
     result = render(<ChatContainer {...wrap(props)} />);
   });
-  await waitForMount(() => instance !== null && rendered, timeout);
+  await waitForMount(signal, () => instance);
 
   return {
     instance,
@@ -150,7 +193,7 @@ export async function contractCustomElementChat(
 ): Promise<ContractCustomElementMount> {
   await warmUp();
   let instance: ChatInstance | null = null;
-  let rendered = false;
+  const signal = mountSignal();
   const wrap = (
     next: Partial<ChatCustomElementProps>
   ): ChatCustomElementProps =>
@@ -162,7 +205,7 @@ export async function contractCustomElementChat(
         return next.onBeforeRender?.(handed);
       },
       onAfterRender: (handed: ChatInstance) => {
-        rendered = true;
+        signal.markRendered();
         return next.onAfterRender?.(handed);
       },
     }) as ChatCustomElementProps;
@@ -171,7 +214,7 @@ export async function contractCustomElementChat(
   await act(async () => {
     result = render(<ChatCustomElement {...wrap(props)} />);
   });
-  await waitForMount(() => instance !== null && rendered);
+  await waitForMount(signal, () => instance);
 
   const wrapper = result.container.firstElementChild as HTMLElement | null;
   const host = wrapper?.querySelector<HTMLElement>('cds-aichat-container');
@@ -227,7 +270,7 @@ export async function contractElement(
   const element = document.createElement(tag) as HTMLElement &
     Record<string, unknown>;
   let instance: ChatInstance | null = null;
-  let rendered = false;
+  const signal = mountSignal();
   const { onBeforeRender, onAfterRender, ...rest } = properties as Record<
     string,
     unknown
@@ -241,7 +284,7 @@ export async function contractElement(
     return onBeforeRender?.(handed);
   };
   element.onAfterRender = (handed: ChatInstance) => {
-    rendered = true;
+    signal.markRendered();
     return onAfterRender?.(handed);
   };
   for (const [name, value] of Object.entries(attributes)) {
@@ -250,7 +293,7 @@ export async function contractElement(
   await act(async () => {
     document.body.appendChild(element);
   });
-  await waitForMount(() => instance !== null && rendered);
+  await waitForMount(signal, () => instance);
   return {
     instance,
     element,
@@ -311,15 +354,15 @@ export async function contractCleanup(): Promise<void> {
 /**
  * Registers a describe block's setup. Before its first test it loads the lazy
  * chunks and mounts one throwaway chat, under a long timeout, so a cold start
- * doesn't count against the first test's own timeout. It raises the file's
- * test timeout above the mount wait. After each test it runs
+ * doesn't count against the first test's own timeout. It sets the file's
+ * test timeout, which bounds each mount. After each test it runs
  * `contractCleanup`. `describeShared` calls it; call it first in every other
  * describe block that mounts a chat.
  */
 export function contractSetup(): void {
   vi.setConfig({ testTimeout: TEST_TIMEOUT });
   beforeAll(async () => {
-    await mountChatContainer({}, WARM_UP_TIMEOUT);
+    await contractChat();
     await contractCleanup();
   }, WARM_UP_TIMEOUT);
   afterEach(contractCleanup);
