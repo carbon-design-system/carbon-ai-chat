@@ -38,6 +38,8 @@ import {
   setupBeforeEach,
 } from './helpers/chat';
 
+import { untilCalled, untilDom } from './helpers/waits';
+
 import { viewActions } from '../state';
 
 import { chatStore } from '../services/attachChatView';
@@ -66,9 +68,8 @@ async function boot(props: Partial<ChatContainerProps> = {}) {
       onAfterRender: after,
     });
   const mounted = render(tree('first'));
-  await waitFor(() => expect(after).toHaveBeenCalledTimes(1), {
-    timeout: 5000,
-  });
+  await untilCalled(after);
+  expect(after).toHaveBeenCalledTimes(1);
   const root = document.querySelector('cds-aichat-container').shadowRoot;
   const view = root.querySelector<ChatShell>('cds-aichat-chat-shell');
   expect(view).not.toBeNull();
@@ -304,7 +305,8 @@ describe('native shell failure surface', () => {
       act(() => {
         f.view.requestUpdate();
       });
-      await waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+      await untilCalled(onError);
+      expect(onError).toHaveBeenCalledTimes(1);
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
           errorType: OnErrorType.RENDER,
@@ -325,7 +327,7 @@ describe('native shell failure surface', () => {
           bodyText: 'The host configured this error panel after the failure.',
         });
       });
-      await waitFor(() =>
+      await untilDom(f.root, () =>
         expect(
           f.root.querySelector('.cds-aichat--catastrophic-error__error-heading')
             ?.textContent
@@ -352,7 +354,7 @@ describe('native shell failure surface', () => {
         });
         f.view.requestUpdate();
       });
-      await waitFor(() =>
+      await untilDom(f.root, () =>
         expect(
           f.root.querySelector('.cds-aichat--catastrophic-error__error-heading')
             ?.textContent
@@ -363,7 +365,8 @@ describe('native shell failure surface', () => {
       expect(onError).toHaveBeenCalledTimes(1);
 
       f.mounted.rerender(f.tree('replacement'));
-      await waitFor(() => expect(f.after).toHaveBeenCalledTimes(2));
+      await untilCalled(f.after, 2);
+      expect(f.after).toHaveBeenCalledTimes(2);
       const current = document.querySelector('cds-aichat-container').shadowRoot;
       expect(
         current.querySelector('.cds-aichat--shell-messages-target')
