@@ -120,6 +120,7 @@ export default defineConfig({
             `src/sdk/${glob}`,
             `tests/${glob}`,
           ]),
+          exclude: ['**/node_modules/**', '**/*.browser.test.*'],
         },
       },
       {
