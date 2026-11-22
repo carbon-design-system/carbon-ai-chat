@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Projected plugin content is missing after a same-task move under happy-dom 21; cause not isolated.
+// Under happy-dom 21 a sent message's inline plugin output never reaches the host's light DOM, so the move cases fail before they move.
 /*
  *  Copyright IBM Corp. 2026
  *

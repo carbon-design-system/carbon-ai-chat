@@ -94,7 +94,7 @@ describe('requestFocus while the disclaimer shows', () => {
     expect(byRole('button', ACCEPT_LABEL).hasAttribute('disabled')).toBe(true);
     focusHostButton();
     // Where focus goes depends on how the browser treats the disabled button,
-    // which jsdom doesn't match, so only the result is checked.
+    // which happy-dom doesn't match, so only the result is checked.
     expect(await requestFocus(instance)).toBe(true);
   });
 

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// happy-dom 21 does not retarget event.target out of shadow roots, which the chat's React handlers need; one more case also fails there, cause not isolated.
+// happy-dom 21 does not retarget event.target out of shadow roots, which the chat's React handlers need; every case here fails at its first click.
 /*
  *  Copyright IBM Corp. 2026
  *

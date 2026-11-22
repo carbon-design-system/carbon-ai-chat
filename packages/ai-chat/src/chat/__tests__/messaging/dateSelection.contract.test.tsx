@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The date picker does not reformat a typed date on blur under happy-dom 21; cause not isolated.
+// happy-dom 21 fires no slotchange when a slot is inserted over existing children, so cds-date-picker never creates its calendar.
 /*
  *  Copyright IBM Corp. 2026
  *
