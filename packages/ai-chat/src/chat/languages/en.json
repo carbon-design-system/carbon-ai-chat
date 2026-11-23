@@ -28,6 +28,7 @@
   "errors_busy": "I'm sorry, but I can't help you right now. I'm answering questions from lots of people at the moment. Please try again later.",
   "errors_agentAppSessionExpired": "I'm sorry, but access to the chat history has expired.",
   "errors_generalContent": "There was an error displaying this content",
+  "errors_iconLabel": "Error",
   "errors_somethingWrong": "Something went wrong",
   "input_ariaLabel": "Write your prompt",
   "input_placeholder": "Type something...",
