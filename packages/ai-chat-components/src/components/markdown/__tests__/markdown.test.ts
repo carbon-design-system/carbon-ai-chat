@@ -3273,7 +3273,9 @@ HTTP: http://example.com
       } as Partial<MarkdownElementInstance>);
       // Moves stay in each surface's shadow tree: markdown in a surface's light
       // DOM is host-app content, which the surface leaves to the markdown element.
-      first.harness.shadowRoot?.appendChild(el);
+      const wrapper = document.createElement('div');
+      first.harness.shadowRoot?.appendChild(wrapper);
+      wrapper.appendChild(el);
       await el.updateComplete;
       const [[slotName, oldHost]] = [...first.pluginHosts.entries()];
 
@@ -3286,6 +3288,35 @@ HTTP: http://example.com
       const newHost = second.pluginHosts.get(slotName);
       expect(newHost?.parentNode === second.harness).to.equal(true);
       expect(newHost?.textContent).to.contain('tag');
+    });
+
+    it('gives a claimed block plugin back to the markdown element when a same-task move takes it into the light DOM', async () => {
+      const { harness, pluginHosts, addMarkdown } =
+        await createRelocationHarness();
+      // Render the light DOM through a default slot, as a chat surface renders a
+      // user-defined response. Named host slots still find no slot here.
+      harness.shadowRoot?.appendChild(document.createElement('slot'));
+      const el = await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const [[, claimedHost]] = [...pluginHosts.entries()];
+      expect(claimedHost.parentNode === harness).to.equal(true);
+
+      // One task: nothing yields between the move's disconnect and connect.
+      harness.appendChild(el);
+      await el.updateComplete;
+
+      expect(pluginHosts.size, 'the surface hosts nothing').to.equal(0);
+      expect(claimedHost.isConnected).to.equal(false);
+      const shown = [...(el.shadowRoot?.querySelectorAll('slot') ?? [])]
+        .flatMap((slot) => slot.assignedElements({ flatten: true }))
+        .find((node) => node.textContent?.includes('tag')) as
+        HTMLElement | undefined;
+      expect(
+        shown?.parentElement === el,
+        'the markdown element hosts it'
+      ).to.equal(true);
+      expect(shown?.getBoundingClientRect().height ?? 0).to.be.greaterThan(0);
     });
 
     it('keeps only the current block-plugin claim after a same-task return to its first controller', async () => {
