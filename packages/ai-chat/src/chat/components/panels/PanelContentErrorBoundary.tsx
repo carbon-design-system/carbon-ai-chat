@@ -10,7 +10,8 @@
 import React, { type ReactNode } from 'react';
 import type { OnErrorData } from '../../../types/config/ErrorConfig';
 import { createDidCatchErrorData } from '../../../shared/utils/miscUtils';
-import { InlineError } from '../responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 
 interface PanelContentErrorBoundaryProps {
   children: ReactNode;
@@ -19,6 +20,11 @@ interface PanelContentErrorBoundaryProps {
    * The text to show in place of the content that failed.
    */
   errorText: string;
+
+  /**
+   * The accessible label for the error icon.
+   */
+  iconLabel: string;
 
   /**
    * Draws the error inside the body's wrapper elements, so it gets the body's padding.
@@ -60,7 +66,11 @@ export class PanelContentErrorBoundary extends React.Component<
     if (!this.state.didError) {
       return this.props.children;
     }
-    const error = <InlineError text={this.props.errorText} />;
+    const error = (
+      <InlineError iconLabel={this.props.iconLabel}>
+        <MarkdownWithDefaults removeHTML text={this.props.errorText} />
+      </InlineError>
+    );
     if (!this.props.isBody) {
       return error;
     }

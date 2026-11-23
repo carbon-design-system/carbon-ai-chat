@@ -16,7 +16,8 @@ import { shallowEqual } from '../../../../shared/store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../../shared/utils/constants';
 import { MountChildrenOnDelay } from '../../../components/helpers/MountChildrenOnDelay/MountChildrenOnDelay';
-import { InlineError } from '../../../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 
 interface IFrameComponentProps {
   /**
@@ -62,13 +63,15 @@ function IFrameComponent({
   onTimeoutOverride,
   onLoad,
 }: IFrameComponentProps) {
-  const { errors_iframeSource, iframe_ariaSourceLoaded } = useSelector(
-    (state: AppState) => ({
-      errors_iframeSource: state.languagePack.errors_iframeSource,
-      iframe_ariaSourceLoaded: state.languagePack.iframe_ariaSourceLoaded,
-    }),
-    shallowEqual
-  );
+  const { errors_iconLabel, errors_iframeSource, iframe_ariaSourceLoaded } =
+    useSelector(
+      (state: AppState) => ({
+        errors_iconLabel: state.languagePack.errors_iconLabel,
+        errors_iframeSource: state.languagePack.errors_iframeSource,
+        iframe_ariaSourceLoaded: state.languagePack.iframe_ariaSourceLoaded,
+      }),
+      shallowEqual
+    );
   const ariaAnnouncer = useAriaAnnouncer();
   const [showSpinner, setShowSpinner] = useState(true);
   const [showError, setShowError] = useState(false);
@@ -107,7 +110,7 @@ function IFrameComponent({
 
   return (
     <div className="cds-aichat--i-frame-component__wrapper">
-      {showError && renderErrorMessage(errors_iframeSource)}
+      {showError && renderErrorMessage(errors_iframeSource, errors_iconLabel)}
       {!showError && (
         <iframe
           className="cds-aichat--i-frame-component__i-frame"
@@ -137,10 +140,12 @@ function renderLoadingSpinner() {
   );
 }
 
-function renderErrorMessage(errorText: string) {
+function renderErrorMessage(errorText: string, iconLabel: string) {
   return (
     <div className="cds-aichat--i-frame-component__status-container">
-      <InlineError text={errorText} />
+      <InlineError iconLabel={iconLabel}>
+        <MarkdownWithDefaults removeHTML text={errorText} />
+      </InlineError>
     </div>
   );
 }
