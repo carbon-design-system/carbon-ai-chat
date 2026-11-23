@@ -240,13 +240,19 @@ function createPanelTransitionCallbacks(
       }
       callbacks.onPanelCloseStart(event);
     },
-    onCloseEnd: () => {
+    onCloseEnd: (event?: Event) => {
       if (name === 'custom') {
         callbacks.fireCustomPanelEvent(BusEventType.CUSTOM_PANEL_CLOSE);
         callbacks.resetCustomPanelOptions();
       }
       callbacks.onPanelCloseEnd(isPanel);
-      if (name === 'response') {
+      // A panel a cover makes inert also slides out, but it stays open and
+      // shows again when the cover closes. Only a real close clears its
+      // content.
+      const stillOpen = Boolean(
+        (event?.currentTarget as { open?: boolean } | null)?.open
+      );
+      if (name === 'response' && !stillOpen) {
         callbacks.clearResponsePanelContent();
       }
       if (name === 'history') {

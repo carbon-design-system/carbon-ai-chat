@@ -30,7 +30,7 @@ import {
   roleOf,
   shownText,
 } from '../helpers/contract';
-import { deepAll } from '../helpers/browserPanels';
+import { deep, deepAll } from '../helpers/browserPanels';
 import { emulateReducedMotion } from '../helpers/browserMedia';
 import {
   DIRECTIONS,
@@ -404,9 +404,21 @@ for (const framework of HOSTS) {
     const shown = panelControl();
     shown.focus();
     expect(hasFocus(shown)).toBe(true);
+    // The cover makes the response panel inert, which plays its slide-out.
+    // Keep the cover up until that slide-out ends, so the panel is hidden but
+    // still open when the cover closes.
+    const responsePanel = deep('cds-aichat-panel[data-panel-name="response"]');
+    let slidOut = false;
+    responsePanel.addEventListener('closeend', (event) => {
+      slidOut ||= event.target === responsePanel;
+    });
     const prompt = await requestScreenShare(desk);
+    await expect.poll(() => slidOut, FOCUS_WAIT).toBe(true);
     await userEvent.keyboard('{Escape}');
     await expect.poll(() => isVisible(prompt), FOCUS_WAIT).toBe(false);
+    // The panel shows its content again, with focus back on its control.
+    await expect.poll(() => isVisible(shown), FOCUS_WAIT).toBe(true);
+    expect(shownText(responsePanel)).toContain('panel content');
     await expect.poll(() => hasFocus(shown), FOCUS_WAIT).toBe(true);
   });
 }

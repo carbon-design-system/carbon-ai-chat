@@ -223,6 +223,68 @@ describe('native panel composition', () => {
     ).toBe(true);
   });
 
+  it('keeps response panel content while a cover hides it and clears it on a real close', async () => {
+    const f = await fixture();
+    await f.commit();
+    f.view.inputs = {
+      ...f.view.inputs,
+      responsePanelState: { ...f.view.inputs.responsePanelState, isOpen: true },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    await f.commit();
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    const response = f.panel('response');
+    expect(response.open).toBe(true);
+    f.callbacks.onPanelCloseEnd.mockClear();
+    f.view.inputs = {
+      ...f.view.inputs,
+      catastrophicErrorPanelState: {
+        ...f.view.inputs.catastrophicErrorPanelState,
+        isOpen: true,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    await f.commit();
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    // The cover's slide-out has ended, but the panel is still open.
+    expect(response.open).toBe(true);
+    expect(response.inert).toBe(true);
+    expect(f.callbacks.onPanelCloseEnd).toHaveBeenCalled();
+    expect(f.callbacks.clearResponsePanelContent).not.toHaveBeenCalled();
+
+    f.view.inputs = {
+      ...f.view.inputs,
+      catastrophicErrorPanelState: {
+        ...f.view.inputs.catastrophicErrorPanelState,
+        isOpen: false,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    await f.commit();
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    expect(response.inert).toBe(false);
+    f.view.inputs = {
+      ...f.view.inputs,
+      responsePanelState: {
+        ...f.view.inputs.responsePanelState,
+        isOpen: false,
+      },
+      contentRevision: {},
+    };
+    await flush(f.view);
+    await f.commit();
+    vi.advanceTimersByTime(600);
+    await flush(f.view);
+    expect(response.open).toBe(false);
+    expect(f.callbacks.clearResponsePanelContent).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps currentTarget and physical close state available inside each transition callback', async () => {
     const seed = makeConfigStore({}).getState();
     const f = await fixture({
