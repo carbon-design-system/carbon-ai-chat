@@ -25,7 +25,7 @@ import {
 } from './message-byline.stories';
 
 export default {
-  title: 'Preview/Message byline',
+  title: 'Preview/Message item shell/Message byline',
   component: MessageByline,
 };
 
