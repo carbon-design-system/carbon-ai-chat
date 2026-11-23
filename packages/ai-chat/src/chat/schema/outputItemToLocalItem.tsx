@@ -393,12 +393,9 @@ function isSupportedMessageItemInFooter(
  * while missing a field its type calls required stays drawable. Fields that aren't
  * listed, such as an image's `source`, draw without the field.
  */
-function findDrawIssues(item: GenericItem, message: MessageResponse): string[] {
+function findDrawIssues(item: GenericItem): string[] {
   const issues: string[] = [];
   checkItem(item, '', true, issues);
-  if ((item.response_type as string) === MessageResponseTypes.SYSTEM) {
-    checkMessageBeforeSystemItem(message, issues);
-  }
   return issues;
 }
 
@@ -601,27 +598,6 @@ function checkCitations(
       issues.push(`${path}citations[${index}]`);
     }
   });
-}
-
-/**
- * `SystemMessage` finds the system item in the whole message, reading `response_type`
- * on every item up to it, including the null ones the chat otherwise skips.
- */
-function checkMessageBeforeSystemItem(
-  message: MessageResponse,
-  issues: string[]
-) {
-  const generic = message.output?.generic ?? [];
-  for (let index = 0; index < generic.length; index++) {
-    const entry = generic[index];
-    if (isMissing(entry)) {
-      issues.push(`output.generic[${index}]`);
-      return;
-    }
-    if ((entry.response_type as string) === MessageResponseTypes.SYSTEM) {
-      return;
-    }
-  }
 }
 
 export {
