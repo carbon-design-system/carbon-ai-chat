@@ -581,7 +581,7 @@ describe('native iframe panel body', () => {
         '[data-retained-error]'
       );
       expect(content?.textContent).toBe('host context:0');
-      expect(content.closest('.cds-aichat--inline-error')).not.toBeNull();
+      expect(content.closest('cds-aichat-inline-error')).not.toBeNull();
       fireEvent.click(content);
       expect(content.textContent).toBe('host context:1');
       const target = content.closest(
