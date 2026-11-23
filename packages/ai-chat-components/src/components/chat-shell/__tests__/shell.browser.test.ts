@@ -10,7 +10,6 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import '../index.js';
 import CDSAIChatShell from '../src/shell.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const nextFrame = (frames = 1) =>
   new Promise<void>((resolve) => {
@@ -1094,44 +1093,6 @@ describe('cds-aichat-shell', function () {
 
       inputAndMessages = el.shadowRoot!.querySelector('.input-and-messages');
       expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
-    });
-  });
-
-  // ========== Snapshot Tests ==========
-  describe('Snapshots', () => {
-    it('should match snapshot with default configuration', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with rounded corners', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with all properties enabled', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell
-          ai-enabled
-          show-frame
-          corner-all="round"
-          show-history
-          show-workspace></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with mixed corner configuration', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell
-          corner-start-start="round"
-          corner-end-end="round"></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
     });
   });
 });

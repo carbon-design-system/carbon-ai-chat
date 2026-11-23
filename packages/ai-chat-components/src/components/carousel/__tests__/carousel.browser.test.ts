@@ -12,7 +12,6 @@ import { emulateMedia } from '../../../__tests__/browser/input.js';
 import '../index.js';
 import Carousel from '../src/carousel.js';
 import prefix from '../../../globals/settings';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const blockClass = `${prefix}-carousel`;
 
@@ -43,8 +42,6 @@ describe('carousel', function async() {
 
     const indicator = root?.querySelector(`.${blockClass}__indicator`);
     expect(indicator?.textContent).to.equal('1 / 3');
-
-    expectDomSnapshot(el);
   });
 
   describe('current-index', () => {

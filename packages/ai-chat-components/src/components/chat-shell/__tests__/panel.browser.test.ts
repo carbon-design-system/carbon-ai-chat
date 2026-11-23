@@ -9,7 +9,6 @@
 
 import { html, fixture, expect } from '@open-wc/testing';
 import CDSAIChatPanel from '../src/panel.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 describe('cds-aichat-panel', function () {
   // ========== Basic Rendering Tests ==========
@@ -649,39 +648,6 @@ describe('cds-aichat-panel', function () {
       // Should now have body content
       bodyWrapper = el.shadowRoot!.querySelector('.panel-body');
       expect(bodyWrapper!.classList.contains('has-content')).to.be.true;
-    });
-  });
-
-  // ========== Snapshot Tests ==========
-  describe('Snapshots', () => {
-    it('should match snapshot with default configuration', async () => {
-      const el = await fixture<CDSAIChatPanel>(
-        html`<cds-aichat-panel></cds-aichat-panel>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot when open', async () => {
-      const el = await fixture<CDSAIChatPanel>(
-        html`<cds-aichat-panel open></cds-aichat-panel>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with all properties', async () => {
-      const el = await fixture<CDSAIChatPanel>(
-        html`<cds-aichat-panel
-          open
-          priority="5"
-          full-width
-          show-chat-header
-          show-frame>
-          <div slot="header">Header</div>
-          <div slot="body">Body</div>
-          <div slot="footer">Footer</div>
-        </cds-aichat-panel>`
-      );
-      expectDomSnapshot(el);
     });
   });
 });

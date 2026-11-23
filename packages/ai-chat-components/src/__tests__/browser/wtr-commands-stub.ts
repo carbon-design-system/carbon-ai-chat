@@ -10,12 +10,12 @@
 // Stands in for `@web/test-runner-commands` in the browser project. Only
 // `@open-wc/semantic-dom-diff`'s web-test-runner snapshot path imports it, and
 // its real browser module connects to web-test-runner's dev server, which
-// Vitest doesn't run. Use `expectDomSnapshot` from ./dom-snapshot.js, and the
-// input helpers in ./input.js.
+// Vitest doesn't run. For keyboard and pointer input, use the helpers in
+// ./input.js.
 
 function unavailable(name: string): never {
   throw new Error(
-    `${name} from @web/test-runner-commands isn't available under Vitest; use src/__tests__/browser/dom-snapshot.js or input.js`
+    `${name} from @web/test-runner-commands isn't available under Vitest; use src/__tests__/browser/input.js for input`
   );
 }
 

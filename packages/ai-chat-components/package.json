@@ -42,7 +42,6 @@
     "telemetry:config": "npx -y @ibm/telemetry-js-config-generator generate --id 62aa153d-8a70-4d12-9e8d-069511e80e65 --endpoint https://www-api.ibm.com/ibm-telemetry/v1/metrics --files ./src/components --wc",
     "test": "npm run test:manifest && vitest run",
     "test:watch": "vitest",
-    "test:updateSnapshot": "vitest run --update",
     "test:manifest": "node --test \"tasks/__tests__/*.test.js\""
   },
   "peerDependencies": {

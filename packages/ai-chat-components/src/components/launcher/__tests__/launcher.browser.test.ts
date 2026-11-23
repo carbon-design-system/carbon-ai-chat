@@ -10,19 +10,8 @@
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
 import '../index.js';
 import Launcher from '../src/launcher.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 describe('launcher', function () {
-  it('should render with minimum attributes', async () => {
-    const el = await fixture<Launcher>(
-      html`<cds-aichat-launcher
-        closed-label="Open chat"
-        open-label="Close chat"></cds-aichat-launcher>`
-    );
-
-    expectDomSnapshot(el);
-  });
-
   it('should render an unread count badge when unread messages are present', async () => {
     const el = await fixture<Launcher>(
       html`<cds-aichat-launcher

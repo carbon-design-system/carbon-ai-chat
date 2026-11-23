@@ -128,7 +128,6 @@ export default defineConfig({
           include: testRoots.flatMap((root) =>
             browserUnit.map((glob) => `${root}/${glob}`)
           ),
-          setupFiles: ['src/__tests__/browser/setup.ts'],
           // One file at a time in CI, as web-test-runner's `concurrency: 1`.
           fileParallelism: !process.env.CI,
           browser: {

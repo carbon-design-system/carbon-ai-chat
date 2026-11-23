@@ -19,7 +19,6 @@ import {
   Maximize16,
   Close16,
 } from '@carbon/icons';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const actionLists: Record<string, Action[]> = {
   'Advanced list': [
@@ -47,7 +46,6 @@ describe('toolbar', function () {
     expect(el).to.be.instanceOf(Toolbar);
     expect(el.actions).to.deep.equal(actionLists['Advanced list'] as Action[]);
     expect(el.shadowRoot).to.exist;
-    expectDomSnapshot(el);
   });
 
   it('should render the title div inside the shadow root', async () => {

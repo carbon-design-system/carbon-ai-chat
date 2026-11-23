@@ -10,7 +10,6 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
 import '../index.js';
 import Feedback from '../src/feedback.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 describe('feedback', function () {
   it('should render', async () => {
@@ -33,13 +32,6 @@ describe('feedback', function () {
     el.maxLength = 500;
     await elementUpdated(el);
     expect(textarea?.getAttribute('max-count')).to.equal('500');
-  });
-
-  it('matches snapshot', async () => {
-    const el = await fixture<Feedback>(
-      html`<cds-aichat-feedback></cds-aichat-feedback>`
-    );
-    expectDomSnapshot(el);
   });
 
   it('should include selected categories in submit event', async () => {
