@@ -74,13 +74,14 @@ test('rejected upload blocks send and removal restores retained text', async ({
   await attach(page, 'fail.txt');
   const input = page.getByTestId(PageObjectId.INPUT);
   await input.fill('review report');
-  // A failed chip states the failure in its name, after the file name.
-  const chip = page.getByRole('group', { name: /^fail\.txt\. / });
+  // A failed chip folds the failure into its name, after the file name.
+  const chip = page.getByRole('group', { name: /^fail\.txt/ });
   await expect(chip).toHaveAttribute('aria-invalid', 'true');
   await expect(chip).toHaveAccessibleName(
-    /The server rejected this file after a virus scan\./
+    'fail.txt. File upload error. The server rejected this file after a virus scan. Remove the attachment and try again.'
   );
-  // The notice above the input. The off-screen announcer words it differently.
+  // The notice above the input names the file. The off-screen announcer words
+  // it differently.
   const notice = page.getByText(
     /File upload error: fail\.txt\s*The server rejected this file after a virus scan\./
   );
