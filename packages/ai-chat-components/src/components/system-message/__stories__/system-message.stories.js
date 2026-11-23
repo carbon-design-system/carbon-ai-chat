@@ -12,7 +12,7 @@ import { html } from 'lit';
 import Headset16 from '@carbon/icons/es/headset/16.js';
 
 export default {
-  title: 'Preview/System message',
+  title: 'Preview/Message item shell/System message',
   component: 'cds-aichat-system-message',
 };
 
