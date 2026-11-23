@@ -177,19 +177,26 @@ export default defineConfig({
             // The same page size as components' browser tests.
             viewport: { width: 800, height: 600 },
             commands: browserCommands,
-            // Each browser runs twice: once as a desktop page for every
-            // browser test but the phone ones, and once as a phone for those.
+            // Each browser runs every browser test but the phone ones as a
+            // desktop page. Chromium and Firefox also run the phone ones as a
+            // phone.
             // Concurrent Firefox pages can stall focus and selection, so
             // Firefox runs one file at a time everywhere.
             instances: browsers.flatMap((browser) => {
               const firefox = browser === 'firefox';
               const shared = firefox ? { fileParallelism: false } : {};
+              const desktop = {
+                browser,
+                ...shared,
+                exclude: ['**/node_modules/**', ...phoneTests],
+              };
+              // WebKit ignores Playwright's screen size, so the chat can't
+              // detect a phone there.
+              if (browser === 'webkit') {
+                return [desktop];
+              }
               return [
-                {
-                  browser,
-                  ...shared,
-                  exclude: ['**/node_modules/**', ...phoneTests],
-                },
+                desktop,
                 {
                   browser,
                   ...shared,
@@ -201,7 +208,7 @@ export default defineConfig({
                       userAgent: PHONE_USER_AGENT,
                       screen: PHONE_SIZE,
                       hasTouch: true,
-                      // Firefox has no mobile viewport emulation.
+                      // Only Chromium emulates a mobile viewport.
                       ...(firefox ? {} : { isMobile: true }),
                     },
                   }),

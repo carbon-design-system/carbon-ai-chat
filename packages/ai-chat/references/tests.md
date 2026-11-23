@@ -71,7 +71,7 @@ Executed lines do not prove assertions. For each new runtime branch, name the co
 | File | Project | Runs in |
 | --- | --- | --- |
 | `*.browser.test.ts(x)`, under `src/` | `browser` | Chromium. Nightly adds Firefox and WebKit; set `CAIC_ALL_BROWSERS=1` to run them locally |
-| `*.phone.browser.test.ts(x)`, under `src/` | `browser`, in its phone instances | The same browsers, loaded with a phone's user agent and screen, so the chat detects a phone |
+| `*.phone.browser.test.ts(x)`, under `src/` | `browser`, in its phone instances | Chromium, and Firefox nightly, loaded with a phone's user agent and screen, so the chat detects a phone. WebKit ignores the screen size, so it skips them |
 | `src/sdk/**`, `tests/**` | `node` | Node, with no DOM. This shows the engine runs without a view |
 | any other file under `src/` | `happy-dom` | happy-dom |
 
