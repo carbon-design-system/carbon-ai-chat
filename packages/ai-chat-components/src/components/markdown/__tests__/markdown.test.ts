@@ -3228,7 +3228,11 @@ HTTP: http://example.com
     });
 
     for (const placement of ['shadow', 'light']) {
-      it(`customRenderers.table: reoffers content in a different ${placement} DOM host`, async () => {
+      const outcome =
+        placement === 'shadow'
+          ? 'reoffers content to a different shadow DOM host'
+          : 'keeps content in the markdown element in a different light DOM host';
+      it(`customRenderers.table: ${outcome}`, async () => {
         const first = await createRelocationHarness();
         const second = await createRelocationHarness();
         const el = await first.addMarkdown(tableMarkdown, {
@@ -3255,12 +3259,24 @@ HTTP: http://example.com
         );
         expect(host?.firstElementChild?.tagName).to.equal('INPUT');
         if (placement === 'shadow') {
+          expect(host?.parentNode === second.harness).to.equal(true);
           const slot = el.shadowRoot?.querySelector(
             `slot[name="${slotName}"]`
           ) as HTMLSlotElement;
           expect(slot.assignedElements({ flatten: true })[0] === host).to.equal(
             true
           );
+        } else {
+          // Light-DOM content belongs to the host app, so the surface declines
+          // the offer and the markdown element hosts the content itself.
+          expect(
+            host?.parentNode === el,
+            'the markdown element hosts it'
+          ).to.equal(true);
+          expect(
+            second.harness.querySelector(':scope > [slot]:not(slot)'),
+            'the surface hosts nothing'
+          ).to.equal(null);
         }
       });
     }
