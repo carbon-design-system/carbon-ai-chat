@@ -54,29 +54,34 @@ it.each([
     expect(fileInput.disabled).toBe(false);
     const chooseFile = vi.spyOn(fileInput, 'click');
 
-    if (expanded) {
-      act(() => {
-        native
-          .querySelector<HTMLElement>(
-            'cds-icon-button:not([data-input-actions-trigger])'
-          )
-          .click();
-      });
-    } else {
-      act(() => {
-        native
-          .querySelector<HTMLElement>('[data-input-actions-trigger]')
-          .click();
-      });
-      await native.updateComplete;
-      const menuItem = native.querySelector<HTMLElement & { label: string }>(
-        'cds-menu-item'
-      );
-      expect(menuItem.label).toBe('Add files to upload');
-      act(() => menuItem.click());
-      await native.updateComplete;
-      expect(native.querySelector('cds-menu')).toBeNull();
-    }
+    /** Picks the upload action the way a user does, in this layout. */
+    const chooseUploadAction = async () => {
+      if (expanded) {
+        act(() => {
+          native
+            .querySelector<HTMLElement>(
+              'cds-icon-button:not([data-input-actions-trigger])'
+            )
+            .click();
+        });
+      } else {
+        act(() => {
+          native
+            .querySelector<HTMLElement>('[data-input-actions-trigger]')
+            .click();
+        });
+        await native.updateComplete;
+        const menuItem = native.querySelector<HTMLElement & { label: string }>(
+          'cds-menu-item'
+        );
+        expect(menuItem.label).toBe('Add files to upload');
+        act(() => menuItem.click());
+        await native.updateComplete;
+        expect(native.querySelector('cds-menu')).toBeNull();
+      }
+    };
+
+    await chooseUploadAction();
     expect(chooseFile).toHaveBeenCalledTimes(1);
 
     const file = new File(['Upload from a native action'], 'selected.txt', {
@@ -92,6 +97,17 @@ it.each([
     ]);
     expect(instance.getState().input.hasInFlightUploads).toBe(true);
     await waitFor(() => expect(fileInput.disabled).toBe(true));
+
+    // At the limit, the action can't open a second chooser: a browser opens
+    // none for a disabled file input, so count only clicks on an enabled one.
+    const openedChooser: boolean[] = [];
+    chooseFile.mockImplementation(function (this: HTMLInputElement) {
+      openedChooser.push(!this.disabled);
+    });
+    await chooseUploadAction();
+    expect(openedChooser.filter(Boolean)).toEqual([]);
+    expect(fileInput.disabled).toBe(true);
+    expect(onFileUpload).toHaveBeenCalledTimes(1);
 
     const contribution = { user_defined: { uploaded: file.name } };
     await act(async () => {
