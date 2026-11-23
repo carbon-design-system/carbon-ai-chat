@@ -10,6 +10,10 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 import merge from 'lodash-es/merge.js';
 import actions from '../../store/actions';
+import {
+  captureMessageOwnership,
+  retainHistoryOwnership,
+} from '../../store/messageOwnership';
 import type { AppStateMessages } from '../../../types/state/AppState';
 import { isResponse } from '../../utils/messageUtils';
 import type {
@@ -29,6 +33,7 @@ class HistoryWorkflow {
       this.serviceManager.messageCoordinator.getMessagesScrollBottom();
 
     const state = this.serviceManager.store.getState();
+    const ownership = captureMessageOwnership(this.serviceManager.store);
 
     // The chat writes its defaults onto each message, which a frozen one can't take.
     const items = messages?.map((item) =>
@@ -114,7 +119,10 @@ class HistoryWorkflow {
     ];
 
     this.serviceManager.store.dispatch(
-      actions.hydrateMessageHistory(newAppStateMessages)
+      retainHistoryOwnership(
+        actions.hydrateMessageHistory(newAppStateMessages),
+        ownership
+      )
     );
 
     // History messages are semantically COMPLETE — record so a later upsertMessage on

@@ -63,6 +63,11 @@ import type { HistoryItem } from '../../../types/messaging/History';
 import type { LoadedHistory } from '../../schema/historyToMessages';
 import { resetStopStreamingButton } from '../../utils/streamingUtils';
 
+import type {
+  MessageResponseHistory,
+  MessageRequestHistory,
+} from '../../../types/messaging/Messages';
+
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
@@ -73,6 +78,21 @@ function messageTimeoutMS(timeoutSecs: number | undefined): number {
 }
 
 class MessageCoordinator {
+  mergeMessageHistory(
+    messageID: string,
+    history: MessageResponseHistory | MessageRequestHistory
+  ) {
+    this.serviceManager.store.dispatch(
+      actions.mergeMessageHistory(messageID, history)
+    );
+  }
+
+  setMessageOptionSelected(messageID: string, sentMessage: MessageRequest) {
+    this.serviceManager.store.dispatch(
+      actions.messageSetOptionSelected(messageID, sentMessage)
+    );
+  }
+
   private historyWorkflow?: HistoryWorkflow;
 
   private getHistoryWorkflow() {
