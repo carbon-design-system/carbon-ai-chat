@@ -13,7 +13,7 @@ import { useSelector } from '../../../hooks/useSelector';
 import { shallowEqual } from '../../../store/appStore';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItemStreamingState } from '../../../../types/messaging/LocalMessageItem';
-import { InlineError } from '../../responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { MarkdownWithDefaults } from '../MarkdownWithDefaults/MarkdownWithDefaults';
 import { deriveStreamingItemText } from '../../../utils/streamingUtils';
 import { TextItem } from '../../../../types/messaging/Messages';
@@ -51,6 +51,7 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
     (state: AppState) => ({
       conversationalSearch_streamingIncomplete:
         state.languagePack.conversationalSearch_streamingIncomplete,
+      errors_iconLabel: state.languagePack.errors_iconLabel,
     }),
     shallowEqual
   );
@@ -68,9 +69,12 @@ function MarkdownWithErrorHandling(props: MarkdownWithErrorHandlingProps) {
         highlight={true}
       />
       {isStreamingError && (
-        <InlineError
-          text={languagePack.conversationalSearch_streamingIncomplete}
-        />
+        <InlineError iconLabel={languagePack.errors_iconLabel}>
+          <MarkdownWithDefaults
+            removeHTML
+            text={languagePack.conversationalSearch_streamingIncomplete}
+          />
+        </InlineError>
       )}
     </>
   );

@@ -51,7 +51,7 @@ Project maintainers who do not follow or enforce the Code of Conduct in good fai
 2.  There's no need to notify the Carbon team that you have made an issue in Carbon's GitHub repositories. We check these several times a day, so we promise we'll address your issue as soon as we can.
 3.  Reserve direct messages for sensitive discussions, such as privacy, legal, or HR reasons. Otherwise, we encourage posting in public channels so people with the same questions can benefit.
 4.  If you have a pressing bug fix, it is best to make a PR directly to get your issues addressed.
-5.  `#carbon-ai-chat`: This channel is for questions about Carbon AI Chat only. It is not the place to ask general coding questions. Instead, use a dev community like [StackOverflow](https://stackoverflow.com/).
+5.  `#carbon-for-ai`: This channel is for questions about Carbon AI Chat and Carbon for AI. It is not the place to ask general coding questions. Instead, use a dev community like [StackOverflow](https://stackoverflow.com/).
 6.  `#carbon-for-ai`: Please post any design questions with an in-context screen shot (i.e. screen shot of the whole UI you are designing) with background as to what you are trying to accomplish in this flow. We welcome in-progress work to get community design feedback as well.
 
 ## Attribution
