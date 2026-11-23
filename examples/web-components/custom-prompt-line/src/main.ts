@@ -71,6 +71,8 @@ export class Demo extends LitElement {
     ) {
       return;
     }
+    // Move focus into the prompt line, so it returns there when the send
+    // finishes and the prompt line re-enables.
     this.renderRoot
       .querySelector<PromptLineElement>('cds-aichat-prompt-line')
       ?.focus();
