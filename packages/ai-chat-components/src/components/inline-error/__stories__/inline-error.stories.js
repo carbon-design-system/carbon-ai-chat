@@ -13,7 +13,7 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 export default {
-  title: 'Preview/Inline error',
+  title: 'Preview/Message item shell/Inline error',
   component: 'cds-aichat-inline-error',
 };
 
