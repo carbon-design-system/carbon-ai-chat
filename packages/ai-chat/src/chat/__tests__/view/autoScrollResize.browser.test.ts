@@ -38,6 +38,7 @@ import {
   nextFrame,
   sendAndReceive,
   sendResponse,
+  settle,
   streamText,
   streamUserDefined,
   sendUserDefined,
@@ -392,11 +393,15 @@ describe.each(SEND_MODES)('auto-scroll resize through %s', (mode) => {
         JSON.stringify(frames)
       ).toBeLessThanOrEqual(2);
     }
+    // A wheel scroll can still be moving when it passes the threshold, since
+    // Linux WebKit animates it. Read where the reader stopped once it settles.
     await userEvent.wheel(scroller, { delta: { y: -150 } });
     await expect
       .poll(() => readGeometry(scrollChat).scrollTop)
       .toBeLessThan(baseline.scrollTop - 50);
+    await settle(() => scroller.scrollTop);
     const away = readGeometry(scrollChat);
+    expect(away.scrollTop).toBeLessThan(baseline.scrollTop - 50);
     for (const height of [1000, 0, 400]) {
       const frames = await resizeCustomContent(
         scrollChat,
@@ -413,7 +418,9 @@ describe.each(SEND_MODES)('auto-scroll resize through %s', (mode) => {
     await expect
       .poll(() => readGeometry(scrollChat).scrollTop)
       .toBeGreaterThan(baseline.scrollTop + 50);
+    await settle(() => scroller.scrollTop);
     const belowPin = readGeometry(scrollChat);
+    expect(belowPin.scrollTop).toBeGreaterThan(baseline.scrollTop + 50);
     for (const height of [1600, 1200]) {
       const frames = await resizeCustomContent(scrollChat, height);
       expect(

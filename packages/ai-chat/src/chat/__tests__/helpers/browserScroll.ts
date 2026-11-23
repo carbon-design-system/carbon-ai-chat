@@ -676,7 +676,7 @@ export async function sendAndReceive(
  * least 200ms have passed: the chat's throttled scroll work runs at most
  * 150ms apart.
  */
-async function settle(read: () => unknown) {
+export async function settle(read: () => unknown) {
   let previous = JSON.stringify(read());
   let stable = 0;
   const started = performance.now();
