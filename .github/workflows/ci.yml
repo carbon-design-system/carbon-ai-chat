@@ -107,8 +107,10 @@ jobs:
           - suite: components browser
             browsers: chromium
             run: npm run test --workspace=@carbon/ai-chat-components -- --project browser
-          # 👇 The happy-dom project needs no browser install.
+          # 👇 The happy-dom project needs no browser, but the host-entry and
+          # manifest consumer checks load the packed packages in Chromium.
           - suite: components
+            browsers: chromium
             run: npm run test --workspace=@carbon/ai-chat-components -- --project happy-dom && npm run test:host-entry-consumer && npm run test:manifest-consumer
           # 👇 Demo and example test suites run in the nightly workflow (nightly.yml), not here.
     steps:
