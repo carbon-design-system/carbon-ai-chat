@@ -123,6 +123,9 @@ function BaseButtonItemComponent({
   const errors_imageSource = useSelector(
     (state: AppState) => state.languagePack.errors_imageSource
   );
+  const errors_iconLabel = useSelector(
+    (state: AppState) => state.languagePack.errors_iconLabel
+  );
   const text = label || url;
   const linkTarget = url ? target : undefined;
   const setButtonRef = useCallback((element: HTMLElement | null) => {
@@ -164,6 +167,7 @@ function BaseButtonItemComponent({
     return (
       <Image
         imageError={errors_imageSource}
+        imageErrorIconLabel={errors_iconLabel}
         source={imageURL}
         target={target}
         title={label}

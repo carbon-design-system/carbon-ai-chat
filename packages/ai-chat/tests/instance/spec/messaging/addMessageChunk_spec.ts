@@ -3424,7 +3424,6 @@ describe('malformed items through addMessageChunk', () => {
     'option, null entry',
     'conversational_search, citations not a list',
     'conversational_search, null citation',
-    'system, after a null item in the message',
   ]);
 
   it.each(MALFORMED)(
