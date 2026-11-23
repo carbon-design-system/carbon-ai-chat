@@ -19,7 +19,7 @@ import {
 } from './system-message.stories';
 
 export default {
-  title: 'Preview/System message',
+  title: 'Preview/Message item shell/System message',
   component: SystemMessage,
 };
 
