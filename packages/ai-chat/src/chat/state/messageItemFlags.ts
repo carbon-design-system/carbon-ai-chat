@@ -26,11 +26,7 @@ import {
   type ItemPlan,
 } from '../../sdk/utils/publicMessageItems';
 import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
-import type {
-  Message,
-  MessageRequest,
-  MessageResponse,
-} from '../../types/messaging/Messages';
+import type { Message, MessageRequest } from '../../types/messaging/Messages';
 import type { ConversationState } from '../../types/state/AppState';
 import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
 import type ObjectMap from '../../types/utilities/ObjectMap';
@@ -293,7 +289,6 @@ function markUndrawableCopies(
     return flags;
   }
   const messageID = action.message.id;
-  const message = after.allMessagesByID[messageID] as MessageResponse;
   const missingByLocalID = new Map<string, string[]>();
   after.assistantMessageState.localMessageIDs.forEach((localID) => {
     const local = after.allMessageItemsByID[localID];
@@ -303,7 +298,7 @@ function markUndrawableCopies(
     ) {
       return;
     }
-    const missing = findDrawIssues(local.item, message);
+    const missing = findDrawIssues(local.item);
     if (missing.length) {
       missingByLocalID.set(localID, missing);
     }

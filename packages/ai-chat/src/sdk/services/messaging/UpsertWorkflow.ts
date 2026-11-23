@@ -1072,7 +1072,6 @@ class UpsertWorkflow {
       return;
     }
     const state = this.serviceManager.store.getState();
-    const message = state.allMessagesByID[messageID] as MessageResponse;
     for (const localID of state.assistantMessageState.localMessageIDs) {
       const localItem = state.allMessageItemsByID[localID];
       if (
@@ -1084,7 +1083,7 @@ class UpsertWorkflow {
         continue;
       }
       // A new copy here is the upsert's, so this is the check it was built with.
-      const missing = findDrawIssues(localItem.item, message);
+      const missing = findDrawIssues(localItem.item);
       if (!missing.length) {
         continue;
       }
@@ -1329,7 +1328,7 @@ class UpsertWorkflow {
     localItem: LocalMessageItem,
     result: MessageResponse
   ): Record<string, LocalMessageItem> {
-    if (findDrawIssues(localItem.item, result).length) {
+    if (findDrawIssues(localItem.item).length) {
       return {};
     }
     const nestedItems: LocalMessageItem[] = [];

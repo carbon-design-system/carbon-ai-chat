@@ -31,7 +31,6 @@ import {
   GenericItem,
   Message,
   MessageResponse,
-  MessageResponseTypes,
 } from '../../types/messaging/Messages';
 
 import ObjectMap from '../../types/utilities/ObjectMap';
@@ -42,7 +41,6 @@ import type { MessageWriteOptions } from './messageWriteTypes';
 import {
   createLocalMessageItemsForNestedMessageItems,
   findDrawIssues,
-  findItemDrawIssues,
   keepNestedLocalIDs,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
@@ -269,27 +267,14 @@ function resolvePreviousLocalItem(
 function canReuseLocalItem(
   matchedPrev: LocalMessageItem | undefined,
   item: GenericItem,
-  isStreaming: boolean,
-  message: MessageResponse,
-  prevMessage: MessageResponse | undefined
+  isStreaming: boolean
 ): boolean {
   if (!matchedPrev) {
     return false;
   }
   const { streamingState } = matchedPrev.ui_state;
   const prevIsStreaming = Boolean(streamingState && !streamingState.isDone);
-  if (prevIsStreaming !== isStreaming || !isEqual(matchedPrev.item, item)) {
-    return false;
-  }
-  // A system item draws only when the message before it does, so it's built again
-  // when that changes.
-  return (
-    (item.response_type as string) !== MessageResponseTypes.SYSTEM ||
-    isEqual(
-      findDrawIssues(item, prevMessage ?? message),
-      findDrawIssues(item, message)
-    )
-  );
+  return prevIsStreaming === isStreaming && isEqual(matchedPrev.item, item);
 }
 
 /**
@@ -367,7 +352,7 @@ function buildUpsertedLocalItem(
   localItem.ui_state.id = localID;
   localItem.fullMessageID = message.id;
   applyUpsertUIState(localItem, matchedPrev, isStreaming);
-  if (findDrawIssues(item, message).length) {
+  if (findDrawIssues(item).length) {
     return { localItem, canDraw: false };
   }
   addNestedLocalItems(
@@ -387,9 +372,7 @@ function buildUpsertedLocalItem(
  * flicker. A previous version of another type isn't the same item, so it isn't kept.
  *
  * The previous version counts as drawn unless an upsert built it undrawable. Other
- * writes never check, so a version they built counts as drawn. A system item's check of
- * the message around it isn't made again here: the version shown was checked when it
- * was written, and one kept in its place by this rule was the version shown.
+ * writes never check, so a version they built counts as drawn.
  */
 function keepsLastDrawn(
   localItem: LocalMessageItem,
@@ -398,8 +381,7 @@ function keepsLastDrawn(
   return Boolean(
     matchedPrev &&
     matchedPrev.item.response_type === localItem.item.response_type &&
-    (!isUpsertBuilt(matchedPrev) ||
-      !findItemDrawIssues(matchedPrev.item).length)
+    (!isUpsertBuilt(matchedPrev) || !findDrawIssues(matchedPrev.item).length)
   );
 }
 
@@ -492,14 +474,10 @@ function rebuildLocalItemsForUpsert(
     );
   const newLocalIDsForMessage: string[] = [];
 
-  const prevMessage = state.allMessagesByID[messageID] as
-    MessageResponse | undefined;
   shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
     let localItem: LocalMessageItem;
-    if (
-      canReuseLocalItem(matchedPrev, item, isStreaming, message, prevMessage)
-    ) {
+    if (canReuseLocalItem(matchedPrev, item, isStreaming)) {
       localItem = matchedPrev;
     } else {
       const built = buildUpsertedLocalItem(
