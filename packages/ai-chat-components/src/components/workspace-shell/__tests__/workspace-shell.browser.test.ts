@@ -345,7 +345,60 @@ describe('CDSAIChatWorkspaceShellBody - props', () => {
   });
 });
 
+/**
+ * Resolves once `el` has (or lacks) attribute `name`. The footer sets
+ * `data-stacked` in the update its ResizeObserver requests, after a frame.
+ */
+function untilAttribute(el: Element, name: string, present: boolean) {
+  return new Promise<void>((resolve) => {
+    if (el.hasAttribute(name) === present) {
+      resolve();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (el.hasAttribute(name) === present) {
+        observer.disconnect();
+        resolve();
+      }
+    });
+    observer.observe(el, { attributes: true, attributeFilter: [name] });
+  });
+}
+
+const footerButtonLabels = (el: CDSAIChatWorkspaceShellFooter) =>
+  Array.from(el.shadowRoot!.querySelectorAll('cds-button'), (button) =>
+    button.textContent?.trim()
+  );
+
 describe('CDSAIChatWorkspaceShellFooter - props & events', () => {
+  it('stacks its buttons, primary first, below 671px and unstacks when widened', async () => {
+    const container = await fixture<HTMLElement>(html`
+      <div style="inline-size: 400px;">
+        <cds-aichat-workspace-shell-footer
+          .actions=${footerActions}></cds-aichat-workspace-shell-footer>
+      </div>
+    `);
+    const el = container.querySelector(
+      'cds-aichat-workspace-shell-footer'
+    ) as CDSAIChatWorkspaceShellFooter;
+
+    await untilAttribute(el, 'data-stacked', true);
+    expect(el.offsetWidth).to.equal(400);
+    expect(footerButtonLabels(el)).to.deep.equal([
+      'Primary',
+      'Secondary',
+      'Ghost',
+    ]);
+
+    container.style.inlineSize = '700px';
+    await untilAttribute(el, 'data-stacked', false);
+    expect(footerButtonLabels(el)).to.deep.equal([
+      'Ghost',
+      'Secondary',
+      'Primary',
+    ]);
+  });
+
   it('should render footer-action buttons from the actions prop', async () => {
     const el = await fixture<CDSAIChatWorkspaceShellFooter>(html`
       <cds-aichat-workspace-shell-footer .actions=${footerActions}>
