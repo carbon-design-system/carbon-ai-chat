@@ -13,7 +13,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { profileImage } from './story-data';
 
 export default {
-  title: 'Preview/User avatar',
+  title: 'Preview/Message item shell/User avatar',
   component: 'cds-aichat-user-avatar',
 };
 
