@@ -39,7 +39,7 @@ import {
   deriveHeaderActions,
   deriveHeaderNavigation,
   type HeaderProps,
-} from '../../utils/headerView';
+} from './headerView';
 import { writeableElementsOf } from '../../utils/writeableElements';
 
 type HeaderLanguage = Pick<

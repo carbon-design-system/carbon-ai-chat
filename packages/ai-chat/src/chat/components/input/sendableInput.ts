@@ -10,7 +10,7 @@
 import {
   FileStatusValue,
   type FileUpload,
-} from '../../types/config/ServiceDeskConfig';
+} from '../../../types/config/ServiceDeskConfig';
 
 /**
  * Whether there is anything to send. A staged file is content on its own, so a

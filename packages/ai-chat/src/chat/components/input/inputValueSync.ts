@@ -11,9 +11,9 @@ import type { JSONContent } from '@tiptap/core';
 import type { PromptLineElement } from '@carbon/ai-chat-components/es/components/prompt-line/index.js';
 // The pure helpers module: the prompt-line entry registers its elements.
 import { textToDoc } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/json-utils.js';
-import type { FileUpload } from '../../types/config/ServiceDeskConfig';
+import type { FileUpload } from '../../../types/config/ServiceDeskConfig';
 import { hasSendableInput } from './sendableInput';
-import { literalTextToDoc } from '../../sdk/utils/inputContent';
+import { literalTextToDoc } from '../../../sdk/utils/inputContent';
 
 interface InputValueChange {
   rawValue: string;
