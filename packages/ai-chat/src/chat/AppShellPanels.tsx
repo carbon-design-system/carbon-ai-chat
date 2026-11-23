@@ -159,6 +159,9 @@ export const AppShellPanels = React.memo(function AppShellPanels({
   const errorText = useSelector(
     (state: AppState) => state.languagePack.errors_singleMessage
   );
+  const iconLabel = useSelector(
+    (state: AppState) => state.languagePack.errors_iconLabel
+  );
   const onPanelContentError = useCallback(
     (errorData: OnErrorData) => {
       serviceManager.actions.errorOccurred(errorData);
@@ -219,6 +222,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         <PanelContentErrorBoundary
           key={item.ui_state.id}
           errorText={errorText}
+          iconLabel={iconLabel}
           onError={onPanelContentError}
           isBody>
           <BodyMessageComponents {...responseProps} />
@@ -228,6 +232,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
         <PanelContentErrorBoundary
           key={item.ui_state.id}
           errorText={errorText}
+          iconLabel={iconLabel}
           onError={onPanelContentError}>
           <FooterButtonComponents {...responseProps} />
         </PanelContentErrorBoundary>
@@ -267,6 +272,7 @@ export const AppShellPanels = React.memo(function AppShellPanels({
     responsePanelState.isMessageForInput,
     serviceManager,
     errorText,
+    iconLabel,
     onPanelContentError,
     iframeTitle,
     iFramePanelState.messageItem,
