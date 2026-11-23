@@ -40,6 +40,7 @@ Read that package's `AGENTS.md` before your first edit. Each one routes onward t
 | Understanding why a public-API decision went the way it did | [docs/adr/README.md](docs/adr/README.md) |
 | Commits, branches, PR titles, license headers | [conventions.md](references/conventions.md) |
 | Building, testing, linting, or using prettier | [commands.md](references/commands.md) |
+| Writing or changing a test case in either chat package: its scenario, title, helpers, doubles, cleanup, and waits | [writing-tests.md](references/writing-tests.md) |
 | Adding a root-level Node script (`scripts/` vs `tools/`) | [commands.md](references/commands.md#scripts-vs-tools) |
 | Creating, naming, or cleaning up a worktree | [worktrees.md](references/worktrees.md) |
 | Choosing a gate before shipping, and reporting its result | [definition-of-done.md](references/definition-of-done.md) |
