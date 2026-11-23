@@ -238,9 +238,7 @@ describe('messaging.failTurn (#2354)', () => {
       await settle();
       expect(failureAnnouncements()).toHaveLength(1);
       const shadow = getChatShadowRoot();
-      expect(
-        deepQuerySelector(shadow, '.cds-aichat--inline-error')
-      ).toBeTruthy();
+      expect(deepQuerySelector(shadow, 'cds-aichat-inline-error')).toBeTruthy();
       expect(
         deepQuerySelector(shadow, '.cds-aichat--message-error-failed')
       ).toBeFalsy();
