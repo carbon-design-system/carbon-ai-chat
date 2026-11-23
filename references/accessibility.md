@@ -1,6 +1,6 @@
 # accessibility.md — Carbon AI Chat accessibility
 
-Load this when shipping any UI change in any package. All UI must meet WCAG 2.1 AA.
+Load this when shipping or testing any UI change in any package. All UI must meet WCAG 2.1 AA.
 
 ## Screen readers — semantic HTML & ARIA
 
@@ -40,6 +40,27 @@ When a piece of UI changes state, decide who owns the announcement by which surf
 ### When to author a new live region directly
 
 Only when the centralized announcer doesn't fit the use case (e.g. a dedicated status pane that must remain visible and updated, like `audio-player` / `video-player` status text). In that case, follow the politeness + atomicity rules above.
+
+## Testing accessibility
+
+Assert what assistive technology reads: roles and accessible names, focus targets, and announcement text and politeness. How a components test reads them through shadow roots is in [components tests.md](../packages/ai-chat-components/references/tests.md).
+
+- **Focus.** Where a focus test goes, and which package owns it, is in [ai-chat's tests.md](../packages/ai-chat/references/tests.md#where-a-test-goes).
+- **Announcements follow the owner split above.** A component's tests cover its regions and its own transitions: the regions render even when empty, each message lands in the right channel, and nothing lands in the other one. `@carbon/ai-chat`'s tests cover what the chat announces, and when.
+- **Wait past the announcer's 250 ms debounce.** Use fake timers and advance past it. A check that nothing was announced advances first, or it passes before the announcer runs.
+
+  ```ts
+  afterEach(() => vi.useRealTimers());
+
+  it('announces nothing when the list is unchanged', () => {
+    vi.useFakeTimers();
+    setItems(sameItems);
+    vi.advanceTimersByTime(250); // past the announcer's debounce
+    // Only now assert that both channels are empty.
+  });
+  ```
+
+- **Axe scans aren't covered yet.** A clean scan isn't conformance either. Keep the role, name, keyboard and focus checks, and the screen reader pass in [Verifying changes](#verifying-changes) for any change to announcements or dynamic state.
 
 ## Verifying changes
 
