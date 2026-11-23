@@ -13,11 +13,10 @@ import {
   DrawFixture,
   LOOSE,
   MALFORMED,
-  fixtureMessage,
 } from '../../utils/itemDrawabilityFixtures';
 
 const issuesOf = (fixture: DrawFixture) =>
-  findDrawIssues(fixture.item as GenericItem, fixtureMessage(fixture));
+  findDrawIssues(fixture.item as GenericItem);
 
 describe('findDrawIssues', () => {
   it.each(MALFORMED)('lists what "$name" is missing', (fixture) => {
@@ -55,17 +54,6 @@ describe('findDrawIssues', () => {
           columns: [{ width: '1' }, { width: 2 }],
         },
         missing: [],
-      })
-    ).toEqual([]);
-  });
-
-  it('checks a system item only against the items before it', () => {
-    expect(
-      findDrawIssues({ response_type: 'system' } as GenericItem, {
-        id: 'm',
-        output: {
-          generic: [{ response_type: 'system' }, null] as GenericItem[],
-        },
       })
     ).toEqual([]);
   });

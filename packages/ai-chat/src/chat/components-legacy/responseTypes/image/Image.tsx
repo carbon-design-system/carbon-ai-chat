@@ -14,7 +14,8 @@ import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyH
 import { HasClassName } from '../../../../types/utilities/HasClassName';
 import { getURLHostName } from '../../../../shared/utils/browserUtils';
 import { RESPONSE_TYPE_TIMEOUT_MS } from '../../../../shared/utils/constants';
-import { InlineError } from '../../../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 
 interface ClickableImageProps {
@@ -63,6 +64,11 @@ interface ImageProps extends ClickableImageProps, HasClassName {
   imageError?: string;
 
   /**
+   * The accessible label for the error icon shown when the image fails to load.
+   */
+  imageErrorIconLabel?: string;
+
+  /**
    * The url to display on the image tile.
    */
   displayURL?: string;
@@ -97,6 +103,7 @@ interface ImageProps extends ClickableImageProps, HasClassName {
 function Image(props: ImageProps) {
   const {
     imageError,
+    imageErrorIconLabel,
     title,
     description,
     displayURL,
@@ -119,7 +126,11 @@ function Image(props: ImageProps) {
   const Icon = renderIcon;
 
   if (isError) {
-    return <InlineError text={imageError} />;
+    return (
+      <InlineError iconLabel={imageErrorIconLabel}>
+        <MarkdownWithDefaults removeHTML text={imageError} />
+      </InlineError>
+    );
   }
 
   if (inline) {
