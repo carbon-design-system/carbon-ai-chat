@@ -70,7 +70,8 @@ function Composer({ instance }: { instance: ChatInstance | null }) {
     ) {
       return;
     }
-    // Keep focus on a control that remains focusable while the send is pending.
+    // Move focus into the prompt line, so it returns there when the send
+    // finishes and the prompt line re-enables.
     input.current?.focus();
     sending.current = true;
     setBusy(true);
