@@ -126,16 +126,11 @@ const BASE_RESPONSE_MAP: Record<string, ResponseHandler> = sortResponseMap({
     _requestOptions,
     requestID
   ) => doSystemMessage(instance, false, 'default', requestID),
-  'system message (stand alone, date variant)': (
+  'system message (stand alone, divider variant)': (
     instance,
     _requestOptions,
     requestID
-  ) => doSystemMessage(instance, false, 'date', requestID),
-  'system message (stand alone, agent variant)': (
-    instance,
-    _requestOptions,
-    requestID
-  ) => doSystemMessage(instance, false, 'agent', requestID),
+  ) => doSystemMessage(instance, false, 'divider', requestID),
   table: (instance, _requestOptions, requestID) => doTable(instance, requestID),
   'table (stream)': (instance, requestOptions, requestID) =>
     doTableStreaming(instance, requestOptions, requestID),
