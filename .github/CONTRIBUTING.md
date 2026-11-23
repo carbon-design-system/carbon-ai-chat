@@ -168,7 +168,7 @@ Anyone! The only requirement is a public GitHub account as all our assets live o
 Great question! You can contribute without directly creating or maintaining assets:
 
 - **Join our community:**
-  - _For IBMers_: Join our internal Slack channels like `#carbon-ai-chat`, `#carbon-for-ai`, `#carbon-react`, `#carbon-web-components`, `#carbon-design-system`, `#carbon-ng`, `#carbon-vue`, and `#carbon-announcements`.
+  - _For IBMers_: Join our internal Slack channels like `#carbon-for-ai`, `#carbon-react`, `#carbon-web-components`, `#carbon-design-system`, `#carbon-ng`, `#carbon-vue`, and `#carbon-announcements`.
 - **Report bugs:** Even if you can’t submit a fix, opening a well-documented issue makes a big difference.
 
 ### How can I test components or share a bug reproduction?
