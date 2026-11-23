@@ -164,6 +164,23 @@ export interface MarkdownPluginHostControllerOptions {
    * parent is some other element.
    */
   placeHost?: (host: HTMLElement) => void;
+
+  /**
+   * Return `false` for an offer from content the chat doesn't own, such as
+   * markdown a host app renders in a user-defined response. That content is
+   * already in page DOM, so this surface neither hosts nor forwards it, and the
+   * markdown element hosts it locally. If the surface claimed it, the host
+   * would leave the markdown element, and the element's slot forwarder would
+   * sit in a tree that can't project it.
+   *
+   * Checked before `shouldDefer`, and before the slot name is tracked. Defaults
+   * to `event.target === target`: retargeting leaves `target` as the
+   * `event.target` of an offer dispatched on `target` or from inside its shadow
+   * tree, and leaves the light-DOM content as the `event.target` otherwise. A
+   * surface whose host-app content also sits inside its shadow tree, such as
+   * `cds-aichat-custom-element`, supplies its own check.
+   */
+  ownsOffer?: (event: Event) => boolean;
 }
 
 export interface MarkdownPluginHostController {
@@ -186,6 +203,7 @@ export interface MarkdownPluginHostController {
 const MOUNT = 'cds-aichat-markdown-plugin-host-mount';
 const UPDATE = 'cds-aichat-markdown-plugin-host-update';
 const UNMOUNT = 'cds-aichat-markdown-plugin-host-unmount';
+const OWNERSHIP = 'cds-aichat-markdown-plugin-host-ownership';
 
 const connectedControllers = new WeakMap<HTMLElement, (name: string) => void>();
 
@@ -199,6 +217,24 @@ export function getMarkdownPluginHostTargets(sender: Node): HTMLElement[] {
     node = node instanceof ShadowRoot ? node.host : node.parentNode;
   }
   return targets;
+}
+
+/**
+ * Lists the connected surfaces that would host an offer from `sender` where it
+ * sits now, in the order the offer reaches them. Each surface answers with its
+ * own `ownsOffer`, so moving `sender` between a surface's shadow tree and its
+ * light DOM changes the list even though the surface is still an ancestor.
+ */
+export function getMarkdownPluginHostOwners(sender: Element): HTMLElement[] {
+  const owners: HTMLElement[] = [];
+  sender.dispatchEvent(
+    new CustomEvent<HTMLElement[]>(OWNERSHIP, {
+      bubbles: true,
+      composed: true,
+      detail: owners,
+    })
+  );
+  return owners;
 }
 
 // A detached or reparented sender can no longer bubble through its old owners.
@@ -218,6 +254,8 @@ export function releaseMarkdownPluginHostClaims(
  * `target` is both the listener and the host parent because in every chat
  * surface they are the same element — the offer is claimed by whichever chat
  * element is outermost, and that is the element whose light DOM is page DOM.
+ * Offers from content the chat doesn't own are left to the markdown element;
+ * see `ownsOffer`.
  *
  * Not part of this package's advertised surface: it is deliberately absent from
  * `components/markdown/index.ts`, where only the detail types above are
@@ -235,6 +273,7 @@ export function createMarkdownPluginHostController(
     onSlotNamesChange,
     shouldDefer,
     placeHost = (host: HTMLElement) => target.appendChild(host),
+    ownsOffer = (event: Event) => event.target === target,
   } = options;
   // Keyed by slot name alone: the markdown element namespaces every name it
   // mints per element (see `./slot-names.js`), so two messages rendering the
@@ -314,6 +353,10 @@ export function createMarkdownPluginHostController(
     if (!raw?.slotName) {
       return;
     }
+    // Before tracking, so a slot this surface will never host isn't forwarded.
+    if (!ownsOffer(event)) {
+      return;
+    }
     const detail = resolveMarkdownPluginHostMountDetail(raw);
 
     // Track before deferring: a container nested inside an outer chat element
@@ -385,6 +428,12 @@ export function createMarkdownPluginHostController(
     hosts.delete(slotName);
   };
 
+  const handleOwnership = (event: Event) => {
+    if (ownsOffer(event)) {
+      (event as CustomEvent<HTMLElement[]>).detail?.push(target);
+    }
+  };
+
   const handleUnmount = (event: Event) => {
     const detail = (event as CustomEvent<{ slotName: string } | undefined>)
       .detail;
@@ -400,6 +449,7 @@ export function createMarkdownPluginHostController(
       target.addEventListener(MOUNT, handleMount);
       target.addEventListener(UPDATE, handleUpdate);
       target.addEventListener(UNMOUNT, handleUnmount);
+      target.addEventListener(OWNERSHIP, handleOwnership);
     },
     disconnect() {
       if (connectedControllers.get(target) === releaseClaim) {
@@ -409,6 +459,7 @@ export function createMarkdownPluginHostController(
       target.removeEventListener(MOUNT, handleMount);
       target.removeEventListener(UPDATE, handleUpdate);
       target.removeEventListener(UNMOUNT, handleUnmount);
+      target.removeEventListener(OWNERSHIP, handleOwnership);
       for (const host of hosts.values()) {
         if (host.parentNode === target) {
           host.remove();

@@ -3228,7 +3228,11 @@ HTTP: http://example.com
     });
 
     for (const placement of ['shadow', 'light']) {
-      it(`customRenderers.table: reoffers content in a different ${placement} DOM host`, async () => {
+      const outcome =
+        placement === 'shadow'
+          ? 'reoffers content to a different shadow DOM host'
+          : 'keeps content in the markdown element in a different light DOM host';
+      it(`customRenderers.table: ${outcome}`, async () => {
         const first = await createRelocationHarness();
         const second = await createRelocationHarness();
         const el = await first.addMarkdown(tableMarkdown, {
@@ -3255,27 +3259,43 @@ HTTP: http://example.com
         );
         expect(host?.firstElementChild?.tagName).to.equal('INPUT');
         if (placement === 'shadow') {
+          expect(host?.parentNode === second.harness).to.equal(true);
           const slot = el.shadowRoot?.querySelector(
             `slot[name="${slotName}"]`
           ) as HTMLSlotElement;
           expect(slot.assignedElements({ flatten: true })[0] === host).to.equal(
             true
           );
+        } else {
+          // Light-DOM content belongs to the host app, so the surface declines
+          // the offer and the markdown element hosts the content itself.
+          expect(
+            host?.parentNode === el,
+            'the markdown element hosts it'
+          ).to.equal(true);
+          expect(
+            second.harness.querySelector(':scope > [slot]:not(slot)'),
+            'the surface hosts nothing'
+          ).to.equal(null);
         }
       });
     }
 
-    it('reoffers a delegated block plugin after its light-DOM controller changes', async () => {
+    it('reoffers a delegated block plugin after its controller changes', async () => {
       const first = await createRelocationHarness();
       const second = await createRelocationHarness();
       const el = await first.addMarkdown('::tag::', {
         markdownItPlugins: [blockTagPlugin],
       } as Partial<MarkdownElementInstance>);
-      first.harness.appendChild(el);
+      // Moves stay in each surface's shadow tree: markdown in a surface's light
+      // DOM is host-app content, which the surface leaves to the markdown element.
+      const wrapper = document.createElement('div');
+      first.harness.shadowRoot?.appendChild(wrapper);
+      wrapper.appendChild(el);
       await el.updateComplete;
       const [[slotName, oldHost]] = [...first.pluginHosts.entries()];
 
-      second.harness.appendChild(el);
+      second.harness.shadowRoot?.appendChild(el);
       await el.updateComplete;
 
       expect(first.pluginHosts.has(slotName)).to.equal(false);
@@ -3284,6 +3304,35 @@ HTTP: http://example.com
       const newHost = second.pluginHosts.get(slotName);
       expect(newHost?.parentNode === second.harness).to.equal(true);
       expect(newHost?.textContent).to.contain('tag');
+    });
+
+    it('gives a claimed block plugin back to the markdown element when a same-task move takes it into the light DOM', async () => {
+      const { harness, pluginHosts, addMarkdown } =
+        await createRelocationHarness();
+      // Render the light DOM through a default slot, as a chat surface renders a
+      // user-defined response. Named host slots still find no slot here.
+      harness.shadowRoot?.appendChild(document.createElement('slot'));
+      const el = await addMarkdown('::tag::', {
+        markdownItPlugins: [blockTagPlugin],
+      } as Partial<MarkdownElementInstance>);
+      const [[, claimedHost]] = [...pluginHosts.entries()];
+      expect(claimedHost.parentNode === harness).to.equal(true);
+
+      // One task: nothing yields between the move's disconnect and connect.
+      harness.appendChild(el);
+      await el.updateComplete;
+
+      expect(pluginHosts.size, 'the surface hosts nothing').to.equal(0);
+      expect(claimedHost.isConnected).to.equal(false);
+      const shown = [...(el.shadowRoot?.querySelectorAll('slot') ?? [])]
+        .flatMap((slot) => slot.assignedElements({ flatten: true }))
+        .find((node) => node.textContent?.includes('tag')) as
+        HTMLElement | undefined;
+      expect(
+        shown?.parentElement === el,
+        'the markdown element hosts it'
+      ).to.equal(true);
+      expect(shown?.getBoundingClientRect().height ?? 0).to.be.greaterThan(0);
     });
 
     it('keeps only the current block-plugin claim after a same-task return to its first controller', async () => {
@@ -3847,9 +3896,11 @@ HTTP: http://example.com
             detail,
           })
         );
-      // A third-party emitter that never sends an unmount.
+      // A third-party emitter that never sends an unmount. It sits in the
+      // target's shadow tree, since the target leaves offers from its light DOM
+      // to the markdown element.
       const sender = document.createElement('span');
-      target.appendChild(sender);
+      target.attachShadow({ mode: 'open' }).appendChild(sender);
       offer(sender, {
         kind: 'pluginFallback',
         slotName: 'orphan',
@@ -4041,6 +4092,192 @@ HTTP: http://example.com
         live.parentElement === target,
         'the unmount leaves the node parented'
       ).to.equal(true);
+    });
+  });
+
+  // A host app renders markdown in a user-defined response, which the chat
+  // places in its own light DOM, outside its shadow root. The offer still
+  // bubbles to the chat element, but that markdown is already in page DOM. A
+  // claim would move the host onto the chat element and leave the markdown
+  // element's forwarder in a tree that cannot reach it, so nothing would show.
+  //
+  // Assertions compare booleans, not elements: a failed element comparison
+  // makes chai walk the whole DOM graph to print it, which hangs the page.
+  describe('plugin-host container: markdown in its light DOM', () => {
+    const LIGHT_HARNESS_TAG = 'cds-test-markdown-light-dom-host';
+    const APP_COMPONENT_TAG = 'cds-test-markdown-app-component';
+    const tableMarkdown = `| h1 | h2 |\n| --- | --- |\n| a | b |\n\nTrailer`;
+    const codeMarkdown = '```json\n{ "name": "Alice" }\n```\n\nTrailer';
+
+    // Both render their light DOM through a default slot, as a chat surface
+    // renders a user-defined response.
+    for (const tag of [LIGHT_HARNESS_TAG, APP_COMPONENT_TAG]) {
+      if (!customElements.get(tag)) {
+        customElements.define(
+          tag,
+          class extends HTMLElement {
+            connectedCallback() {
+              if (!this.shadowRoot) {
+                this.attachShadow({ mode: 'open' }).innerHTML = '<slot></slot>';
+              }
+            }
+          }
+        );
+      }
+    }
+
+    const PLACEMENTS = [
+      { name: 'a direct light-DOM child', inAppComponent: false },
+      {
+        name: "inside a host app component's shadow root",
+        inAppComponent: true,
+      },
+    ];
+
+    async function createLightDomHarness(
+      inAppComponent: boolean,
+      ownsOffer?: (event: Event) => boolean
+    ) {
+      const harness = await fixture<HTMLElement>(
+        html`<cds-test-markdown-light-dom-host></cds-test-markdown-light-dom-host>`
+      );
+      const announced: string[][] = [];
+      createMarkdownPluginHostController(harness, {
+        onSlotNamesChange: (slotNames) => {
+          announced.push(slotNames);
+        },
+        ownsOffer,
+      }).connect();
+
+      let parent: ParentNode = harness;
+      if (inAppComponent) {
+        const appComponent = document.createElement(APP_COMPONENT_TAG);
+        harness.appendChild(appComponent);
+        parent = appComponent.shadowRoot as ShadowRoot;
+      }
+
+      async function addMarkdown(
+        markdown: string,
+        props: Partial<MarkdownElementInstance>
+      ) {
+        const el = document.createElement(
+          MARKDOWN_ELEMENT_TAG
+        ) as MarkdownElementInstance;
+        Object.assign(el, props, { markdown });
+        parent.appendChild(el);
+        await el.updateComplete;
+        return el;
+      }
+
+      return { harness, announced, addMarkdown };
+    }
+
+    /**
+     * Where the element's own shadow slot leads. Flattened, so a forwarder
+     * stranded in a tree that projects nothing reads as nothing projected.
+     */
+    function projection(
+      el: MarkdownElementInstance,
+      prefix: string,
+      rendered: HTMLElement
+    ) {
+      const slot = el.shadowRoot?.querySelector<HTMLSlotElement>(
+        `slot[name^="${prefix}"]`
+      );
+      const [host] = slot?.assignedElements({ flatten: true }) ?? [];
+      return {
+        // Not the forwarder `<slot>` a claim leaves behind, which is also a
+        // child of the element.
+        hostedByElement:
+          host?.parentElement === el && !(host instanceof HTMLSlotElement),
+        showsRendered: host?.firstElementChild === rendered,
+        onScreen: rendered.getBoundingClientRect().height > 0,
+      };
+    }
+
+    const SHOWN_LOCALLY = {
+      hostedByElement: true,
+      showsRendered: true,
+      onScreen: true,
+    };
+
+    for (const { name, inAppComponent } of PLACEMENTS) {
+      it(`customRenderers.table: shows the custom table from ${name}`, async () => {
+        const { harness, announced, addMarkdown } =
+          await createLightDomHarness(inAppComponent);
+        const rendered = document.createElement('div');
+        rendered.textContent = 'custom table';
+
+        const el = await addMarkdown(tableMarkdown, {
+          customRenderers: { table: () => rendered },
+        } as Partial<MarkdownElementInstance>);
+
+        expect(
+          projection(el, 'cds-aichat-markdown-renderer-table-', rendered)
+        ).to.deep.equal(SHOWN_LOCALLY);
+        expect(
+          harness.querySelector(':scope > [slot]') === null,
+          'the container hosts nothing'
+        ).to.equal(true);
+        expect(announced, 'the container forwards no slot').to.deep.equal([]);
+      });
+
+      it(`customRenderers.codeBlock: shows the custom code block from ${name}`, async () => {
+        const { harness, announced, addMarkdown } =
+          await createLightDomHarness(inAppComponent);
+        const rendered = document.createElement('div');
+        rendered.textContent = 'custom code block';
+
+        const el = await addMarkdown(codeMarkdown, {
+          customRenderers: { codeBlock: () => rendered },
+        } as Partial<MarkdownElementInstance>);
+
+        expect(
+          projection(el, 'cds-aichat-markdown-renderer-codeBlock-', rendered)
+        ).to.deep.equal(SHOWN_LOCALLY);
+        expect(harness.querySelector(':scope > [slot]') === null).to.equal(
+          true
+        );
+        expect(announced).to.deep.equal([]);
+      });
+
+      // No host is created for a `null` result, so no offer is made. This
+      // guards the fallback rather than the fix.
+      it(`customRenderers.table: shows the default table from ${name} when the renderer returns null`, async () => {
+        const { addMarkdown } = await createLightDomHarness(inAppComponent);
+
+        const el = await addMarkdown(tableMarkdown, {
+          customRenderers: { table: () => null },
+        } as Partial<MarkdownElementInstance>);
+
+        const table = el.shadowRoot?.querySelector('cds-aichat-table');
+        expect(table != null).to.equal(true);
+        expect(
+          (table as HTMLElement).getBoundingClientRect().height > 0
+        ).to.equal(true);
+      });
+    }
+
+    // `cds-aichat-custom-element` keeps host-app content inside its own shadow
+    // tree, so `event.target` is the element itself and the default check
+    // would claim. The surface supplies `ownsOffer` instead.
+    it('leaves an offer to the markdown element when ownsOffer declines it', async () => {
+      const { harness, announced, addMarkdown } = await createLightDomHarness(
+        true,
+        () => false
+      );
+      const rendered = document.createElement('div');
+      rendered.textContent = 'custom table';
+
+      const el = await addMarkdown(tableMarkdown, {
+        customRenderers: { table: () => rendered },
+      } as Partial<MarkdownElementInstance>);
+
+      expect(
+        projection(el, 'cds-aichat-markdown-renderer-table-', rendered)
+      ).to.deep.equal(SHOWN_LOCALLY);
+      expect(harness.querySelector(':scope > [slot]') === null).to.equal(true);
+      expect(announced).to.deep.equal([]);
     });
   });
 

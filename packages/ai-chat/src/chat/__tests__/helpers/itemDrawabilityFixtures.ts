@@ -16,14 +16,13 @@ import { AppState } from '../../../types/state/AppState';
 import { MessageResponse } from '../../../types/messaging/Messages';
 
 /**
- * One host item, with the paths the chat can't draw it without. `before` holds items
- * that come before it in the message. `failsIn` says where an item that can't draw
- * threw before the chat checked it: while its local items were built, or in a renderer.
+ * One host item, with the paths the chat can't draw it without. `failsIn` says where an
+ * item that can't draw threw before the chat checked it: while its local items were
+ * built, or in a renderer.
  */
 interface DrawFixture {
   name: string;
   item: unknown;
-  before?: unknown[];
   missing: string[];
   failsIn?: 'builder' | 'renderer';
 }
@@ -266,13 +265,6 @@ const MALFORMED: DrawFixture[] = [
     missing: ['citations[0]'],
     failsIn: 'renderer',
   },
-  {
-    name: 'system, after a null item in the message',
-    item: { response_type: 'system', title: 'Joined' },
-    before: [null],
-    missing: ['output.generic[0]'],
-    failsIn: 'renderer',
-  },
 ];
 
 /** Items the chat draws today, though some lack fields their types call required. */
@@ -402,14 +394,14 @@ const LOOSE: DrawFixture[] = [
 /** The id of every fixture message. */
 const MESSAGE_ID = 'fixture-message';
 
-/** A message holding the fixture's item, after anything in `before`. */
+/** A message holding the fixture's item. */
 const fixtureMessage = (
   fixture: DrawFixture,
   id = MESSAGE_ID
 ): MessageResponse =>
   ({
     id,
-    output: { generic: [...(fixture.before ?? []), fixture.item] },
+    output: { generic: [fixture.item] },
   }) as unknown as MessageResponse;
 
 /** Lets React commit and the announcer's microtask flush. */

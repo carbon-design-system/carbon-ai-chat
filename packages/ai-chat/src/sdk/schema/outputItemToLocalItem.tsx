@@ -380,19 +380,7 @@ function isSupportedMessageItemInFooter(
  * while missing a field its type calls required stays drawable. Fields that aren't
  * listed, such as an image's `source`, draw without the field.
  */
-function findDrawIssues(item: GenericItem, message: MessageResponse): string[] {
-  const issues = findItemDrawIssues(item);
-  if ((item.response_type as string) === MessageResponseTypes.SYSTEM) {
-    checkMessageBeforeSystemItem(message, issues);
-  }
-  return issues;
-}
-
-/**
- * Lists what keeps an item from drawing by its own fields, leaving out the check a
- * `system` item makes of the message around it. See {@link findDrawIssues}.
- */
-function findItemDrawIssues(item: GenericItem): string[] {
+function findDrawIssues(item: GenericItem): string[] {
   const issues: string[] = [];
   checkItem(item, '', true, issues);
   return issues;
@@ -599,32 +587,10 @@ function checkCitations(
   });
 }
 
-/**
- * `SystemMessage` finds the system item in the whole message, reading `response_type`
- * on every item up to it, including the null ones the chat otherwise skips.
- */
-function checkMessageBeforeSystemItem(
-  message: MessageResponse,
-  issues: string[]
-) {
-  const generic = message.output?.generic ?? [];
-  for (let index = 0; index < generic.length; index++) {
-    const entry = generic[index];
-    if (isMissing(entry)) {
-      issues.push(`output.generic[${index}]`);
-      return;
-    }
-    if ((entry.response_type as string) === MessageResponseTypes.SYSTEM) {
-      return;
-    }
-  }
-}
-
 export {
   outputItemToLocalItem,
   createLocalMessageForInlineError,
   createLocalMessageItemsForNestedMessageItems,
   keepNestedLocalIDs,
   findDrawIssues,
-  findItemDrawIssues,
 };

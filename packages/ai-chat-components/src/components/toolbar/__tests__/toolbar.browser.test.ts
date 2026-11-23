@@ -307,5 +307,26 @@ describe('toolbar', function () {
       expect(iconBtn).to.exist;
       expect(copyBtn).to.not.exist;
     });
+
+    it('should align the copy button tooltip for LTR and RTL', async () => {
+      const actions: Action[] = [
+        { text: 'Copy', feedback: 'Copied!', onClick: () => {} },
+      ];
+      const el = await fixture<Toolbar>(
+        html`<cds-aichat-toolbar .actions=${actions}></cds-aichat-toolbar>`
+      );
+      const getAlign = () =>
+        el.shadowRoot!.querySelector('cds-copy-button')!.getAttribute('align');
+      expect(getAlign()).to.equal('bottom-end');
+
+      document.documentElement.dir = 'rtl';
+      try {
+        el.requestUpdate();
+        await el.updateComplete;
+        expect(getAlign()).to.equal('bottom-start');
+      } finally {
+        document.documentElement.removeAttribute('dir');
+      }
+    });
   });
 });

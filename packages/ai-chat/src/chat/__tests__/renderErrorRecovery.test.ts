@@ -304,7 +304,7 @@ const responsePanelBody = () =>
 
 const panelError = (slot: 'body' | 'footer') =>
   getChatShadowRoot()?.querySelector(
-    `[slot="${slot}"] .cds-aichat--inline-error`
+    `[slot="${slot}"] cds-aichat-inline-error`
   );
 
 const panelErrors = (onError: VitestMock) =>
