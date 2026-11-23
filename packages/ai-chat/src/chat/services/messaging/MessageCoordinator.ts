@@ -27,6 +27,7 @@ import actions from '../../store/actions';
 import type { ServiceManager } from '../ServiceManager';
 import { RequestQueue, type RequestToken } from './state/RequestQueue';
 import type { PendingMessageRequest } from './pendingRequestTypes';
+import { IncomingWriteLifetime } from './IncomingWriteLifetime';
 import { ConversationState } from './state/ConversationState';
 
 import { coordinateUserDefinedResponseItems } from './coordinateMessageEvents';
@@ -56,6 +57,9 @@ function messageTimeoutMS(timeoutSecs: number | undefined): number {
 }
 
 class MessageCoordinator {
+  readonly incomingWriteLifetime = new IncomingWriteLifetime(
+    () => this.serviceManager.restartCount
+  );
   getMessagesScrollBottom() {
     return this.presentation?.getMessagesScrollBottom?.();
   }
