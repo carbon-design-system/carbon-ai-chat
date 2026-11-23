@@ -41,12 +41,11 @@ describe('hydration and timeout isolation', () => {
       .mockResolvedValue(undefined);
     const opening = instance.changeView({ mainWindow: true, launcher: false });
     await waitFor(() => expect(customLoadHistory).toHaveBeenCalledTimes(1));
-    const generation =
-      serviceManager.conversationLifecycleService.currentGeneration;
+    const generation = serviceManager.messageCoordinator.currentGeneration;
     const restart = instance.messaging.restartConversation();
     await waitFor(() =>
       expect(
-        serviceManager.conversationLifecycleService.currentGeneration
+        serviceManager.messageCoordinator.currentGeneration
       ).toBeGreaterThan(generation)
     );
     await act(async () => {
@@ -140,9 +139,7 @@ describe('hydration and timeout isolation', () => {
       })
     );
     expect(
-      serviceManager.conversationLifecycleService.hasFailureForRequest(
-        originalRequestID
-      )
+      serviceManager.messageCoordinator.hasFailureForRequest(originalRequestID)
     ).toBe(true);
     expect(instance.state.get().status).toBe('error');
   });
