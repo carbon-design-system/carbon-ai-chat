@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html
 
 ## Signature
 
@@ -34,7 +34,7 @@ response's setting unchanged in either flow. If several responses stream at once
 any response marked `false` keeps the shared button disabled until it permits
 cancellation or ends. Ending the last stream clears the button state.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html#cancellable)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html#cancellable)
 
 ### id
 
@@ -44,13 +44,16 @@ An identifier for this item within the full message response. This ID is used to
 complete item chunk with other chunks that represent the same item. This ID is only unique for a given message
 response.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html#id)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html#id)
 
 ### stream_stopped
 
 `stream_stopped?: boolean`
 
-Indicates if the stream has stopped which will trigger the UI to respond with appropriate a11y states
-and messaging.
+Marks the item as stopped before it finished, for example after the user clicks the stop
+streaming button. Set it on the last version of the item you send, including its copy in a
+final response. The chat shows a "Response stopped" line below every item that carries the
+flag, so set it on one item per response. Version 2.0.0 removes the line; render your own
+indicator from this flag instead.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html#stream_stopped)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.ItemStreamingMetadata.html#stream_stopped)

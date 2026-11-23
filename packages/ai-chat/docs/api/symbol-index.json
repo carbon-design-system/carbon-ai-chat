@@ -1,6 +1,6 @@
 {
-  "version": "v1.25.0",
-  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.25.0/docs/",
+  "version": "v1.26.0-rc.0",
+  "baseUrl": "https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/",
   "generator": "@carbon/ai-chat typedoc apiIndexPlugin",
   "symbols": {
     "AdditionalDataToAgent": {
@@ -4027,6 +4027,9 @@
         "ButtonItem.alt_text",
         "ButtonItem.button_type",
         "ButtonItem.custom_event_name",
+        "ButtonItem.hide_label",
+        "ButtonItem.icon",
+        "ButtonItem.icon_alignment",
         "ButtonItem.image_url",
         "ButtonItem.kind",
         "ButtonItem.label",
@@ -4121,6 +4124,70 @@
       "experimental": false,
       "url": "interfaces/Type_reference.ButtonItem.html#custom_event_name",
       "anchor": "custom_event_name"
+    },
+    "ButtonItem.hide_label": {
+      "name": "hide_label",
+      "kind": "Property",
+      "parent": "ButtonItem",
+      "category": "Messaging",
+      "summary": "When true, the button shows only its icon and hides its text. Screen readers still announce the text as the\nbutton's name. That text is the ButtonItem.label. A `post_back` button without a label uses its\n`value.input.text`, and a `url` button without a label uses its URL.\n\nThis applies only when the button shows an icon, either one set with ButtonItem.icon or the default for\nits type. Without an icon the button keeps its text. It does not apply to a `url` button of kind `LINK` or to a\nbutton with an ButtonItem.image_url.",
+      "description": "",
+      "signature": "hide_label?: boolean",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "ButtonItem.icon",
+        "ButtonItem.image_url",
+        "ButtonItem.label"
+      ],
+      "examples": [
+        "```ts\nimport ArrowRight from '@carbon/icons/es/arrow--right/16.js';\n{\n  response_type: 'button',\n  button_type: 'post_back',\n  kind: 'ghost',\n  label: 'Learn what actions you can take',\n  hide_label: true,\n  icon: ArrowRight,\n  icon_alignment: 'end',\n  value: { input: { text: 'Which tools and actions do I have access to?' } },\n}\n```"
+      ],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ButtonItem.html#hide_label",
+      "anchor": "hide_label"
+    },
+    "ButtonItem.icon": {
+      "name": "icon",
+      "kind": "Property",
+      "parent": "ButtonItem",
+      "category": "Messaging",
+      "summary": "The icon to render inside the button. Accepts an icon from `@carbon/icons`, e.g.\n`import ArrowRight from '@carbon/icons/es/arrow--right/16.js'`, or a component from `@carbon/icons-react`.\n\nSupported on all button types. Overrides the default icon for `url` (`Launch`) and\nthe `image_url`-gated defaults for `post_back`, `custom_event`, and `show_panel`.\nThe icon is placed on the trailing side of the button label.",
+      "description": "",
+      "signature": "icon?: CarbonIcon | ComponentType<any>",
+      "signatures": [],
+      "members": [],
+      "related": [],
+      "examples": [
+        "```ts\nimport ArrowRight from '@carbon/icons/es/arrow--right/16.js';\n{ response_type: 'button', button_type: 'post_back', label: 'Next', icon: ArrowRight }\n```"
+      ],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ButtonItem.html#icon",
+      "anchor": "icon"
+    },
+    "ButtonItem.icon_alignment": {
+      "name": "icon_alignment",
+      "kind": "Property",
+      "parent": "ButtonItem",
+      "category": "Messaging",
+      "summary": "Where the icon sits in the button when ButtonItem.hide_label is true. The `start` and `end` values follow\nthe reading direction, so `end` is the right edge in left-to-right languages. This has no effect while the button\nshows its text.",
+      "description": "",
+      "signature": "icon_alignment?: \"end\" | \"start\" | \"center\"",
+      "signatures": [],
+      "members": [],
+      "related": [
+        "ButtonItem.hide_label"
+      ],
+      "examples": [],
+      "deprecated": false,
+      "deprecatedMessage": "",
+      "experimental": false,
+      "url": "interfaces/Type_reference.ButtonItem.html#icon_alignment",
+      "anchor": "icon_alignment"
     },
     "ButtonItem.image_url": {
       "name": "image_url",
@@ -8650,7 +8717,7 @@
         "ChatInstance.once"
       ],
       "examples": [
-        "```ts\nimport { BusEventType } from \"@carbon/ai-chat\";\n\n// off requires the same handler reference passed to on.\nconst onReceive = (event) => console.log(event.data);\ninstance.on({ type: BusEventType.RECEIVE, handler: onReceive });\ninstance.off({ type: BusEventType.RECEIVE, handler: onReceive });\n```"
+        "```ts\nimport { BusEventType, type BusEvent, type BusEventReceive } from \"@carbon/ai-chat\";\n\n// off requires the same handler reference passed to on.\nconst onReceive = (event: BusEvent) =>\n  console.log((event as BusEventReceive).data);\ninstance.on({ type: BusEventType.RECEIVE, handler: onReceive });\ninstance.off({ type: BusEventType.RECEIVE, handler: onReceive });\n```"
       ],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -8670,7 +8737,7 @@
       "members": [],
       "related": [],
       "examples": [
-        "```ts\nimport { BusEventType } from \"@carbon/ai-chat\";\n\ninstance\n  .on({ type: BusEventType.RECEIVE, handler: (event) => console.log(event.data) })\n  .on({ type: BusEventType.VIEW_CHANGE, handler: (event) => console.log(event.newViewState) });\n```"
+        "```ts\nimport {\n  BusEventType,\n  type BusEventReceive,\n  type BusEventViewChange,\n} from \"@carbon/ai-chat\";\n\ninstance\n  .on({\n    type: BusEventType.RECEIVE,\n    handler: (event) => console.log((event as BusEventReceive).data),\n  })\n  .on({\n    type: BusEventType.VIEW_CHANGE,\n    handler: (event) => console.log((event as BusEventViewChange).newViewState),\n  });\n```"
       ],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -9100,12 +9167,14 @@
       "kind": "Property",
       "parent": "ChatInstanceMessaging",
       "category": "Messaging",
-      "summary": "Instructs the widget to process the given message as an incoming message received from the assistant. This will\nfire a \"pre:receive\" event immediately and a \"receive\" event after the event has been processed by the widget.",
+      "summary": "Instructs the widget to process the given message as an incoming message received from the assistant. This will\nfire a \"pre:receive\" event immediately and a \"receive\" event after the event has been processed by the widget.\n\nThis is the legacy way to add a message. It's fully supported and not deprecated, and there are no plans to\nremove it. For new work, especially more complex UI that updates a message after it renders, use\nChatInstanceMessaging.upsertMessage. Nothing stops you from mixing the two flows, but it isn't\nrecommended or fully tested.",
       "description": "",
       "signature": "addMessage: (message: MessageResponse) => Promise<void>",
       "signatures": [],
       "members": [],
-      "related": [],
+      "related": [
+        "ChatInstanceMessaging.upsertMessage"
+      ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -9118,12 +9187,15 @@
       "kind": "Property",
       "parent": "ChatInstanceMessaging",
       "category": "Messaging",
-      "summary": "Adds a streaming message chunk to the chat widget.\n\nA chunk stream whose `customSendMessage` throws, or that is canceled before a\n`final_response` chunk arrives, will have its `streamingState.isDone` settled to\n`true` on the items streamed so far. The host is responsible for calling\n`cancelCurrentMessageRequest` (or letting the chat cancel on restart) to settle\nthe stream; simply stopping calls to `addMessageChunk` without canceling leaves\n`streamingState.isDone` as `false` indefinitely.",
+      "summary": "Adds a streaming message chunk to the chat widget.\n\nThis is the legacy way to stream a message. It's fully supported and not deprecated, and there are no plans to\nremove it. For new work, especially more complex UI, use ChatInstanceMessaging.upsertMessage. You build\nup the message in your app and apply each update with one call, instead of matching the StreamChunk\nshapes. Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.\n\nA chunk stream whose `customSendMessage` throws, or that is canceled before a\n`final_response` chunk arrives, will have its `streamingState.isDone` settled to\n`true` on the items streamed so far. The host is responsible for calling\n`cancelCurrentMessageRequest` (or letting the chat cancel on restart) to settle\nthe stream; simply stopping calls to `addMessageChunk` without canceling leaves\n`streamingState.isDone` as `false` indefinitely.",
       "description": "",
       "signature": "addMessageChunk: (chunk: StreamChunk) => Promise<void>",
       "signatures": [],
       "members": [],
-      "related": [],
+      "related": [
+        "ChatInstanceMessaging.upsertMessage",
+        "StreamChunk"
+      ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -9212,23 +9284,28 @@
       "kind": "Property",
       "parent": "ChatInstanceMessaging",
       "category": "Messaging",
-      "summary": "Inserts or updates a single message identified by `messageID`. The `updater` receives\nthe MessageResponse currently stored under `messageID` (or `undefined` when no\nmessage with that ID exists) and returns the message that should replace it.\n\nCalls targeting the same `messageID` are serialized — each call awaits the previous\ncall for that ID before running. Calls targeting different `messageID`s run\nindependently.\n\nThe `state` argument describes the MessageState the chat records for this\nmessage after the upsert completes; it is applied uniformly to every item in the\nreturned message. Carbon AI Chat fires BusEventType.PRE_RECEIVE and\nBusEventType.RECEIVE exactly when this call transitions the message into\nMessageState.COMPLETE from any other state, including the case where the\nmessage did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE\nupserts do not fire these events.\n\nIf the returned message has no `id`, Carbon AI Chat assigns `messageID`. The\ncancellation contract for outbound messages is unchanged — see\nCustomSendMessageOptions.",
-      "description": "A STREAMING sequence whose host simply stops calling `upsertMessage` without\n  sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as\n  `false` indefinitely. The host is responsible for sending a terminal write, or for\n  calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.\n Upsert semantics and the updater signature may evolve based on consumer feedback.",
+      "summary": "Inserts or updates a single message identified by `messageID`. The `updater` receives\nthe MessageResponse currently stored under `messageID` (or `undefined` when no\nmessage with that ID exists) and returns the message that should replace it.\n\nThis is the recommended way to add messages for new work, especially more complex UI. One\nmethod covers inserting, streaming, correcting, and regenerating a message.\nChatInstanceMessaging.addMessage and ChatInstanceMessaging.addMessageChunk\nremain fully supported as the legacy flow, and there are no plans to remove them. Nothing\nstops you from mixing the two flows, but it isn't recommended or fully tested.\n\nCalls targeting the same `messageID` are serialized — each call awaits the previous\ncall for that ID before running. Calls targeting different `messageID`s run\nindependently.\n\nThe `state` argument describes the MessageState the chat records for this\nmessage after the upsert completes; it is applied uniformly to every item in the\nreturned message. Carbon AI Chat fires BusEventType.PRE_RECEIVE and\nBusEventType.RECEIVE exactly when this call transitions the message into\nMessageState.COMPLETE from any other state, including the case where the\nmessage did not previously exist. STREAMING-to-STREAMING and COMPLETE-to-COMPLETE\nupserts do not fire these events.\n\nIf the returned message has no `id`, Carbon AI Chat assigns `messageID`. The\ncancellation contract for outbound messages is unchanged — see\nCustomSendMessageOptions.",
+      "description": "A STREAMING sequence whose host simply stops calling `upsertMessage` without\n  sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as\n  `false` indefinitely. The host is responsible for sending a terminal write, or for\n  calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.",
       "signature": "upsertMessage: (messageID: string, state: MessageState, updater: UpsertMessageUpdater) => Promise<void>",
       "signatures": [],
       "members": [],
       "related": [
         "BusEventType.PRE_RECEIVE",
         "BusEventType.RECEIVE",
+        "ChatInstanceMessaging.addMessage",
+        "ChatInstanceMessaging.addMessageChunk",
         "CustomSendMessageOptions",
         "MessageResponse",
         "MessageState",
         "MessageState.COMPLETE"
       ],
-      "examples": [],
+      "examples": [
+        "```ts\nawait instance.messaging.upsertMessage('welcome', MessageState.COMPLETE, () => ({\n  id: 'welcome',\n  output: {\n    generic: [{ response_type: MessageResponseTypes.TEXT, text: 'Hi! How can I help?' }],\n  },\n}));\n// The message shows, and the chat fires pre:receive and receive once.\n```",
+        "```ts\n// Inside customSendMessage(request, options, instance).\n// streamAnswer stands in for your own async iterable of text pieces.\nconst messageID = `${request.id}-reply`;\nconst toMessage = (text: string): MessageResponse => ({\n  id: messageID,\n  request_id: request.id,\n  output: {\n    generic: [\n      { response_type: MessageResponseTypes.TEXT, text, streaming_metadata: { id: 'answer' } },\n    ],\n  },\n});\n\nlet text = '';\nfor await (const piece of streamAnswer(request)) {\n  text += piece;\n  await instance.messaging.upsertMessage(messageID, MessageState.STREAMING, () => toMessage(text));\n}\nawait instance.messaging.upsertMessage(messageID, MessageState.COMPLETE, () => toMessage(text));\n// receive fires once, on the final call.\n```"
+      ],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.ChatInstanceMessaging.html#upsertmessage",
       "anchor": "upsertmessage"
     },
@@ -10519,16 +10596,16 @@
       "kind": "Property",
       "parent": "CustomMenuOption",
       "category": "Config",
-      "summary": "Optional data-testid attribute for testing purposes.\nThis allows tests to reliably find and interact with specific menu options.",
+      "summary": "A `data-testid` attribute for the menu option, so tests can find it.",
       "description": "",
       "signature": "testId?: string",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": false,
+      "deprecated": true,
+      "deprecatedMessage": "In tests, select the menu option by its visible text instead.\nRemoved in a 2.x minor release.",
+      "experimental": true,
       "url": "interfaces/Type_reference.CustomMenuOption.html#testid",
       "anchor": "testid"
     },
@@ -11553,7 +11630,7 @@
         "ChatInstance.once"
       ],
       "examples": [
-        "```ts\nimport { BusEventType } from \"@carbon/ai-chat\";\n\n// off requires the same handler reference passed to on.\nconst onReceive = (event) => console.log(event.data);\ninstance.on({ type: BusEventType.RECEIVE, handler: onReceive });\ninstance.off({ type: BusEventType.RECEIVE, handler: onReceive });\n```"
+        "```ts\nimport { BusEventType, type BusEvent, type BusEventReceive } from \"@carbon/ai-chat\";\n\n// off requires the same handler reference passed to on.\nconst onReceive = (event: BusEvent) =>\n  console.log((event as BusEventReceive).data);\ninstance.on({ type: BusEventType.RECEIVE, handler: onReceive });\ninstance.off({ type: BusEventType.RECEIVE, handler: onReceive });\n```"
       ],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -11573,7 +11650,7 @@
       "members": [],
       "related": [],
       "examples": [
-        "```ts\nimport { BusEventType } from \"@carbon/ai-chat\";\n\ninstance\n  .on({ type: BusEventType.RECEIVE, handler: (event) => console.log(event.data) })\n  .on({ type: BusEventType.VIEW_CHANGE, handler: (event) => console.log(event.newViewState) });\n```"
+        "```ts\nimport {\n  BusEventType,\n  type BusEventReceive,\n  type BusEventViewChange,\n} from \"@carbon/ai-chat\";\n\ninstance\n  .on({\n    type: BusEventType.RECEIVE,\n    handler: (event) => console.log((event as BusEventReceive).data),\n  })\n  .on({\n    type: BusEventType.VIEW_CHANGE,\n    handler: (event) => console.log((event as BusEventViewChange).newViewState),\n  });\n```"
       ],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -15034,7 +15111,7 @@
       "kind": "Property",
       "parent": "ItemStreamingMetadata",
       "category": "Messaging",
-      "summary": "Indicates if the stream has stopped which will trigger the UI to respond with appropriate a11y states\nand messaging.",
+      "summary": "Marks the item as stopped before it finished, for example after the user clicks the stop\nstreaming button. Set it on the last version of the item you send, including its copy in a\nfinal response. The chat shows a \"Response stopped\" line below every item that carries the\nflag, so set it on one item per response. Version 2.0.0 removes the line; render your own\nindicator from this flag instead.",
       "description": "",
       "signature": "stream_stopped?: boolean",
       "signatures": [],
@@ -18568,7 +18645,7 @@
       "kind": "Interface",
       "parent": null,
       "category": "Messaging",
-      "summary": "This is the main interface that represents a request from a user sent to an assistant.",
+      "summary": "This is the main interface that represents a request from a user sent to an assistant.\n\nA request can carry fields of your own, such as an ID from your back-end. The chat never reads them. It keeps\nthem unchanged in event data, in PublicConfigMessaging.customSendMessage, in chat state, and on\nmessages you load from history. To set them with type checking, declare them on your own type that extends\nthis one. Messages the chat hands back are typed without your fields, so check that a field is there before\nyou use it.",
       "description": "",
       "signature": "interface MessageRequest",
       "signatures": [],
@@ -18580,7 +18657,9 @@
         "MessageRequest.parent_thread_id",
         "MessageRequest.thread_id"
       ],
-      "related": [],
+      "related": [
+        "PublicConfigMessaging.customSendMessage"
+      ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
@@ -18665,15 +18744,15 @@
       "kind": "Property",
       "parent": "MessageRequest",
       "category": "Messaging",
-      "summary": "The parent ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating\nresponses.",
+      "summary": "An ID for the parent of the thread this request belongs to. The chat doesn't set or use it.",
       "description": "",
       "signature": "parent_thread_id?: string",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Removed in 2.0.0. Nothing replaces it, because the chat never used it. If you keep your own value\nhere, you can go on setting it. From 2.0.0, the chat carries it like any field of your own, typed `unknown`.",
       "experimental": false,
       "url": "interfaces/Type_reference.MessageRequest.html#parent_thread_id",
       "anchor": "parent_thread_id"
@@ -18683,15 +18762,15 @@
       "kind": "Property",
       "parent": "MessageRequest",
       "category": "Messaging",
-      "summary": "The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating\nresponses.",
+      "summary": "An ID for the thread this request belongs to. If you leave it out, the chat sets it to `\"main\"`. The chat\ndoesn't use the value.",
       "description": "",
       "signature": "thread_id?: string",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Removed in 2.0.0, and the chat stops setting it. Nothing replaces it, because the chat never used\nit. If you keep your own value here, you can go on setting it. From 2.0.0, the chat carries it like any field\nof your own, typed `unknown`.",
       "experimental": false,
       "url": "interfaces/Type_reference.MessageRequest.html#thread_id",
       "anchor": "thread_id"
@@ -18882,7 +18961,7 @@
       "kind": "Interface",
       "parent": null,
       "category": "Messaging",
-      "summary": "This interface represents the main response content that is received by a client from an assistant. It is generally\nin response to a previous message request.",
+      "summary": "This interface represents the main response content that is received by a client from an assistant. It is generally\nin response to a previous message request.\n\nA response can carry fields of your own, such as an ID from your back-end. The chat never reads them. It keeps\nthem unchanged in event data, in chat state, and on messages you load from history. To set them with type\nchecking, declare them on your own type that extends this one. Messages the chat hands back are typed without\nyour fields, so check that a field is there before you use it.",
       "description": "",
       "signature": "interface MessageResponse",
       "signatures": [],
@@ -19021,15 +19100,15 @@
       "kind": "Property",
       "parent": "MessageResponse",
       "category": "Messaging",
-      "summary": "The ID of the thread this request belongs to. This is here to prepare for input message editing and regenerating\nresponses.",
+      "summary": "An ID for the thread this response belongs to. If you leave it out, the chat sets it to `\"main\"`. The chat\ndoesn't use the value.",
       "description": "",
       "signature": "thread_id?: string",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
+      "deprecated": true,
+      "deprecatedMessage": "Removed in 2.0.0, and the chat stops setting it. Nothing replaces it, because the chat never used\nit. If you keep your own value here, you can go on setting it. From 2.0.0, the chat carries it like any field\nof your own, typed `unknown`.",
       "experimental": false,
       "url": "interfaces/Type_reference.MessageResponse.html#thread_id",
       "anchor": "thread_id"
@@ -19824,7 +19903,7 @@
       "kind": "Enum",
       "parent": null,
       "category": "Messaging",
-      "summary": "Lifecycle state passed to ChatInstanceMessaging.upsertMessage to describe the\nmessage's state after the upsert completes. Carbon AI Chat tracks this state internally;\nit is never written onto a MessageResponse.\n\n`addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message\nid without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks\nthe recorded state per id and fires those events only on the first transition to\nCOMPLETE.",
+      "summary": "Lifecycle state passed to ChatInstanceMessaging.upsertMessage to describe the\nmessage's state after the upsert completes. Carbon AI Chat tracks this state internally;\nit is never written onto a MessageResponse.\n\n`addMessage`, `addMessageChunk`, and `upsertMessage` may all target the same message\nid without producing duplicate `pre:receive` / `receive` events — Carbon AI Chat tracks\nthe recorded state per id and fires those events only on the first transition to\nCOMPLETE. Mixing the flows this way isn't recommended or fully tested, though.",
       "description": "",
       "signature": "enum MessageState",
       "signatures": [],
@@ -19841,7 +19920,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "enums/Type_reference.MessageState.html",
       "anchor": null
     },
@@ -19862,7 +19941,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "enums/Type_reference.MessageState.html#complete",
       "anchor": "complete"
     },
@@ -19883,7 +19962,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "enums/Type_reference.MessageState.html#error",
       "anchor": "error"
     },
@@ -19901,7 +19980,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "enums/Type_reference.MessageState.html#streaming",
       "anchor": "streaming"
     },
@@ -21337,7 +21416,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.PersistableState.html",
       "anchor": null
     },
@@ -21690,7 +21769,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PersistedStateConfig.html",
       "anchor": null
     },
@@ -21699,18 +21778,19 @@
       "kind": "Property",
       "parent": "PersistedStateConfig",
       "category": "Config",
-      "summary": "The session state to boot from, used in place of reading `sessionStorage`. Resolve any\nasynchronous load (for example from your own backend) before constructing the chat and pass the\nresolved value here. When omitted, the chat starts a fresh session but still reports changes to\nPersistedStateConfig.onStateChange.",
+      "summary": "The session state to boot from: a value you saved from PersistedStateConfig.onStateChange,\nor one you build. When restoring, pass back the whole value you saved. The chat uses it in place of\nreading `sessionStorage`. Resolve any asynchronous load (for example from your own backend) before\nconstructing the chat and pass the resolved value here. When omitted, the chat starts a fresh session\nbut still reports changes to PersistedStateConfig.onStateChange.\n\nIn 1.x, passing any `initialState` counts as a restored session, so\nPublicConfig.openChatByDefault doesn't open the window.",
       "description": "",
       "signature": "initialState?: PersistableState",
       "signatures": [],
       "members": [],
       "related": [
-        "PersistedStateConfig.onStateChange"
+        "PersistedStateConfig.onStateChange",
+        "PublicConfig.openChatByDefault"
       ],
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PersistedStateConfig.html#initialstate",
       "anchor": "initialstate"
     },
@@ -21731,7 +21811,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "interfaces/Type_reference.PersistedStateConfig.html#onstatechange",
       "anchor": "onstatechange"
     },
@@ -26142,7 +26222,7 @@
       "category": "Config",
       "summary": "Optional leading visual for the item.\n\nCan be:\n- a string URL for an avatar image\n- an icon from `@carbon/icons` (CarbonIcon descriptor)\n- a React icon component from `@carbon/icons-react`\n\nReact components are automatically transformed to CarbonIcon format when\nrendered through the React wrapper.",
       "description": "",
-      "signature": "avatar?: string | ComponentType<any> | CarbonIcon",
+      "signature": "avatar?: string | CarbonIcon | ComponentType<any>",
       "signatures": [],
       "members": [],
       "related": [],
@@ -26438,7 +26518,7 @@
       "kind": "Property",
       "parent": "SystemMessageItem",
       "category": "Messaging",
-      "summary": "How the system line is presented when the message renders as a **standalone** system line\n(response contains only system items): default helper text, date separator with rules, or\nagent with a rule above and helper text. When system items render **inline** inside a\nbubble, `variant` is ignored and the default inline style is used.",
+      "summary": "How the system line is presented when the message renders as a **standalone** system line\n(response contains only system items): default helper text, or a divider above the text\n(`'divider'`, and the deprecated `'agent'` and `'date'`). When system items render **inline**\ninside a bubble, `variant` is ignored and the default inline style is used.",
       "description": "",
       "signature": "variant?: SystemMessageVariant",
       "signatures": [],
@@ -26458,7 +26538,7 @@
       "category": "Messaging",
       "summary": "Visual layout for a SystemMessageItem.",
       "description": "",
-      "signature": "type SystemMessageVariant = \"default\" | \"date\" | \"agent\"",
+      "signature": "type SystemMessageVariant = \"default\" | \"divider\" | \"date\" | \"agent\"",
       "signatures": [],
       "members": [],
       "related": [
@@ -27072,7 +27152,7 @@
       "category": "Config",
       "summary": "Either an icon from `@carbon/icons` or from `@carbon/icons-react`.",
       "description": "",
-      "signature": "icon?: ComponentType<any> | CarbonIcon",
+      "signature": "icon?: CarbonIcon | ComponentType<any>",
       "signatures": [],
       "members": [],
       "related": [],
@@ -27178,16 +27258,16 @@
       "kind": "Property",
       "parent": "ToolbarAction",
       "category": "Config",
-      "summary": "Optional data-testid string for e2e testing.",
+      "summary": "A `data-testid` attribute for the menu item, so tests can find it.",
       "description": "",
       "signature": "testId?: string",
       "signatures": [],
       "members": [],
       "related": [],
       "examples": [],
-      "deprecated": false,
-      "deprecatedMessage": "",
-      "experimental": false,
+      "deprecated": true,
+      "deprecatedMessage": "In tests, select the menu item by its visible text instead.\nRemoved in a 2.x minor release.",
+      "experimental": true,
       "url": "interfaces/Type_reference.ToolbarAction.html#testid",
       "anchor": "testid"
     },
@@ -27598,7 +27678,7 @@
       "examples": [],
       "deprecated": false,
       "deprecatedMessage": "",
-      "experimental": true,
+      "experimental": false,
       "url": "types/Type_reference.UpsertMessageUpdater.html",
       "anchor": null
     },
@@ -29175,7 +29255,7 @@
       "category": "Config",
       "summary": "The raw strings used for PublicConfig.strings. Presented in ICU format.",
       "description": "",
-      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_upsertItemCannotDraw: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_removeButtonTitleWithName: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadErrorTitleWithName: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelUser: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_userSaid: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
+      "signature": "enLanguagePack: { agent_agentEndedChat: string; agent_agentEndedChatNoName: string; agent_agentJoinedName: string; agent_agentJoinedNoName: string; agent_agentLeftChat: string; agent_agentLeftChatNoName: string; agent_agentNoNameTitle: string; agent_ariaGenericAssistantAvatar: string; agent_ariaGenericAvatar: string; agent_ariaHumanAgentAvatar: string; agent_assistantReturned: string; agent_cardButtonChatEnded: string; agent_cardButtonChatRequested: string; agent_cardButtonConnected: string; agent_cardMessageChatEnded: string; agent_cardMessageConnected: string; agent_chatTitle: string; agent_confirmCancelRequestMessage: string; agent_confirmCancelRequestNo: string; agent_confirmCancelRequestTitle: string; agent_confirmCancelRequestYes: string; agent_confirmEndChat: string; agent_confirmEndChatNo: string; agent_confirmEndChatYes: string; agent_confirmEndSuspendedYes: string; agent_confirmSuspendedEndChatMessage: string; agent_confirmSuspendedEndChatTitle: string; agent_connectButtonCancel: string; agent_connectedButtonEndChat: string; agent_connecting: string; agent_connectingMinutes: string; agent_connectingQueue: string; agent_connectWaiting: string; agent_conversationWasEnded: string; agent_defaultMessageToHumanAgent: string; agent_disconnected: string; agent_endChat: string; agent_inputPlaceholderConnecting: string; agent_inputPlaceholderReconnecting: string; agent_newMessage: string; agent_noName: string; agent_reason_error: string; agent_reconnected: string; agent_sdMissingWarning: string; agent_sharingAcceptButton: string; agent_sharingAccepted: string; agent_sharingCancelled: string; agent_sharingDeclineButton: string; agent_sharingDeclined: string; agent_sharingEnded: string; agent_sharingRequested: string; agent_sharingRequestMessage: string; agent_sharingRequestTitle: string; agent_sharingStopSharingButton: string; agent_startChat: string; agent_suspendedWarning: string; agent_transferring: string; agent_transferringNoName: string; agent_youConnectedWarning: string; agent_youEndedChat: string; ai_slug_description: string; ai_slug_label: string; ai_slug_title: string; aria_catastrophicErrorPanel: string; aria_customPanel: string; aria_disclaimerPanel: string; aria_historyRegion: string; aria_hydrationPanel: string; aria_iframePanel: string; aria_messagesRegion: string; aria_responsePanel: string; aria_viewSourcePanel: string; aria_workspaceRegion: string; buttons_cancel: string; buttons_restart: string; buttons_retry: string; carousel_nextNavButton: string; carousel_prevNavButton: string; chainOfThought_explainabilityLabel: string; chainOfThought_inputLabel: string; chainOfThought_outputLabel: string; chainOfThought_statusFailedLabel: string; chainOfThought_statusProcessingLabel: string; chainOfThought_statusSucceededLabel: string; chainOfThought_stepTitle: string; chainOfThought_toolLabel: string; codeSnippet_ariaLabelEditable: string; codeSnippet_ariaLabelEditableWithLanguage: string; codeSnippet_ariaLabelReadOnly: string; codeSnippet_ariaLabelReadOnlyWithLanguage: string; codeSnippet_feedback: string; codeSnippet_foldCollapse: string; codeSnippet_foldExpand: string; codeSnippet_lineCount: string; codeSnippet_showLessText: string; codeSnippet_showMoreText: string; codeSnippet_tooltipContent: string; components_overflow_ariaLabel: string; components_swiper_currentLabel: string; conversationalSearch_citationsLabel: string; conversationalSearch_responseStopped: string; conversationalSearch_streamingIncomplete: string; conversationalSearch_toggleCitations: string; conversationalSearch_viewSourceDocument: string; datePicker_chooseDate: string; datePicker_confirmDate: string; default_agent_availableMessage: string; default_agent_unavailableMessage: string; disclaimer_accept: string; disclaimer_acceptance_label: string; disclaimer_icon_label: string; disclaimer_title: string; errors_agentAppSessionExpired: string; errors_ariaMessageFailed: string; errors_ariaMessageRetrying: string; errors_audioSource: string; errors_busy: string; errors_communicating: string; errors_connectingToHumanAgent: string; errors_generalContent: string; errors_iconLabel: string; errors_iframeSource: string; errors_imageSource: string; errors_noHumanAgentsAvailable: string; errors_noHumanAgentsJoined: string; errors_singleMessage: string; errors_somethingWrong: string; errors_upsertItemCannotDraw: string; errors_videoSource: string; feedback_cancelLabel: string; feedback_categoriesLabel: string; feedback_defaultPlaceholder: string; feedback_defaultPrompt: string; feedback_defaultTitle: string; feedback_negativeLabel: string; feedback_positiveLabel: string; feedback_submitLabel: string; fileSharing_agentMessageText: string; fileSharing_ariaAnnounceFileRemoved: string; fileSharing_ariaAnnounceFilesAdded: string; fileSharing_ariaAnnounceFilesUploading: string; fileSharing_ariaAnnounceSuccess: string; fileSharing_fileIcon: string; fileSharing_fileTooLarge: string; fileSharing_removeButtonTitle: string; fileSharing_removeButtonTitleWithName: string; fileSharing_request: string; fileSharing_statusUploading: string; fileSharing_tooManyFiles: string; fileSharing_unsupportedType: string; fileSharing_uploadErrorRecovery: string; fileSharing_uploadErrorTitle: string; fileSharing_uploadErrorTitleWithName: string; fileSharing_uploadFailed: string; general_ariaAnnounceClosedInformationOverlay: string; general_ariaAnnounceEscapeOverlay: string; general_ariaAnnounceOpenedInformationOverlay: string; general_ariaCloseInformationOverlay: string; general_returnToAssistant: string; header_ariaAssistantAvatar: string; header_overflowMenu_options: string; header_previewLinkTitle: string; history_hidden: string; history_new_chat: string; history_shown: string; history_view_chats: string; homeScreen_ariaHomeScreenContent: string; homeScreen_ariaQuickStartListButton: string; homeScreen_ariaQuickStartListClosed: string; homeScreen_ariaQuickStartListOpened: string; homeScreen_hidden: string; homeScreen_overflowMenuHomeScreen: string; homeScreen_returnToAssistant: string; homeScreen_returnToHome: string; homeScreen_shown: string; icon_ariaUnreadMessages: string; iframe_ariaClickPreviewCard: string; iframe_ariaClosedPanel: string; iframe_ariaClosePanel: string; iframe_ariaImageAltText: string; iframe_ariaOpenedPanel: string; iframe_ariaSourceLoaded: string; input_actionsMenuLabel: string; input_actionsOverflowLabel: string; input_ariaLabel: string; input_buttonLabel: string; input_completionsTagApp: string; input_completionsTagAssistant: string; input_keyboardShortcutAnnouncement: string; input_maxCharCountExceeded: string; input_maxCharCountExceededTitle: string; input_placeholder: string; input_sendingMessage: string; input_stopResponse: string; input_uploadButtonLabel: string; launcher_ariaIsExpanded: string; launcher_closeButton: string; launcher_desktopGreeting: string; launcher_isClosed: string; launcher_isOpen: string; launcher_mobileGreeting: string; media_audioPlayer_errorLabel: string; media_audioPlayer_loading: string; media_audioPlayer_loadingLabel: string; media_audioPlayer_ready: string; media_audioPlayer_readyLabel: string; media_transcript_hide: string; media_transcript_label: string; media_transcript_show: string; media_videoPlayer_errorLabel: string; media_videoPlayer_loading: string; media_videoPlayer_loadingLabel: string; media_videoPlayer_ready: string; media_videoPlayer_readyLabel: string; message_labelAssistant: string; message_labelUser: string; message_labelYou: string; messages_agentIsTyping: string; messages_agentSaid: string; messages_assistantIsLoading: string; messages_assistantSaid: string; messages_attachmentsLabel: string; messages_focusHandle: string; messages_processingLabel: string; messages_reasoningStart: string; messages_requestCancelled: string; messages_responseStopped: string; messages_scrollHandle: string; messages_scrollHandleDetailed: string; messages_scrollHandleDetailedNoShortcut: string; messages_scrollHandleEnd: string; messages_scrollHandleEndDetailed: string; messages_scrollHandleEndDetailedNoShortcut: string; messages_scrollMoreButton: string; messages_searchResults: string; messages_searchResultsCollapse: string; messages_searchResultsExpand: string; messages_searchResultsLink: string; messages_searchResultsOpenDocument: string; messages_searchResultsOpenDocumentWithLabel: string; messages_streamingStart: string; messages_unnamedAttachment: string; messages_userSaid: string; messages_youSaid: string; options_ariaOptionsDisabled: string; options_select: string; panel_closed: string; panel_opened: string; reasoningSteps_mainLabelClosed: string; reasoningSteps_mainLabelOpen: string; showMore: string; showMoreResults: string; table_downloadButton: string; table_filterPlaceholder: string; table_itemsPerPage: string; table_nextPage: string; table_paginationStatus: string; table_paginationSupplementalText: string; table_previousPage: string; window_ariaChatRegion: string; window_ariaChatRegionNamespace: string; window_ariaWindowClosed: string; window_ariaWindowLoading: string; window_ariaWindowOpened: string; window_title: string; workspace_closed: string; workspace_opened: string; workspace_opened_no_title: string }",
       "signatures": [],
       "members": [],
       "related": [

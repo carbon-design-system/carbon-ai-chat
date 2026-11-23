@@ -8,7 +8,7 @@
 
 - Kind: Interface
 - Category: Instance
-- Reference: https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.EventHandlers.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.EventHandlers.html
 
 This is a subset of the public interface that is managed by the event bus that is used for registering and
 unregistering event listeners on the bus.
@@ -30,15 +30,16 @@ Removes an event listener that was previously added via on or once.
 ## Examples
 
 ```ts
-import { BusEventType } from "@carbon/ai-chat";
+import { BusEventType, type BusEvent, type BusEventReceive } from "@carbon/ai-chat";
 
 // off requires the same handler reference passed to on.
-const onReceive = (event) => console.log(event.data);
+const onReceive = (event: BusEvent) =>
+  console.log((event as BusEventReceive).data);
 instance.on({ type: BusEventType.RECEIVE, handler: onReceive });
 instance.off({ type: BusEventType.RECEIVE, handler: onReceive });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.EventHandlers.html#off)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.EventHandlers.html#off)
 
 ### on
 
@@ -49,14 +50,24 @@ Adds the given event handler as a listener for events of the given type.
 ## Examples
 
 ```ts
-import { BusEventType } from "@carbon/ai-chat";
+import {
+  BusEventType,
+  type BusEventReceive,
+  type BusEventViewChange,
+} from "@carbon/ai-chat";
 
 instance
-  .on({ type: BusEventType.RECEIVE, handler: (event) => console.log(event.data) })
-  .on({ type: BusEventType.VIEW_CHANGE, handler: (event) => console.log(event.newViewState) });
+  .on({
+    type: BusEventType.RECEIVE,
+    handler: (event) => console.log((event as BusEventReceive).data),
+  })
+  .on({
+    type: BusEventType.VIEW_CHANGE,
+    handler: (event) => console.log((event as BusEventViewChange).newViewState),
+  });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.EventHandlers.html#on)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.EventHandlers.html#on)
 
 ### once
 
@@ -76,4 +87,4 @@ instance.once({
 });
 ```
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.EventHandlers.html#once)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.EventHandlers.html#once)
