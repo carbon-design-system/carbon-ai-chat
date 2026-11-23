@@ -11,7 +11,7 @@ import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ServiceManager } from '../services/ServiceManager';
 import { NamespaceService } from '../services/NamespaceService';
-import { messageTimeoutMS } from '../services/messaging/MessageService';
+import { messageTimeoutMS } from '../services/messaging/MessageCoordinator';
 import actions from '../store/actions';
 import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
 import { consoleDebug, consoleError } from './miscUtils';
