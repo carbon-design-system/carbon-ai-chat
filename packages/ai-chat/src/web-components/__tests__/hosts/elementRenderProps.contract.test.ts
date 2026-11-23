@@ -338,6 +338,52 @@ describe.each(ELEMENT_TAGS)('markdown.customRenderers on %s', (tag) => {
       isStreaming: false,
     });
   });
+
+  // A host can render markdown itself inside a user-defined response. That
+  // response sits in page DOM, outside the chat's shadow root, so the markdown
+  // element keeps its renderer output instead of handing it to the chat.
+  it.each(['renderUserDefinedResponse', 'a slotted response'])(
+    'shows the element codeBlock returns from markdown the host renders in %s',
+    async (delivery) => {
+      const out = document.createElement('pre');
+      out.textContent = 'Host code';
+      const hostMarkdown = () => {
+        const markdown = document.createElement('cds-aichat-markdown');
+        Object.assign(markdown, {
+          customRenderers: { codeBlock: () => out },
+          markdown: 'Host before\n\n```js\nlet y = 2;\n```\n\nhost after',
+        });
+        return markdown;
+      };
+      let markdown: HTMLElement | undefined;
+      const { instance, element } = await openElement(
+        tag,
+        delivery === 'renderUserDefinedResponse'
+          ? {
+              renderUserDefinedResponse: () => {
+                markdown ??= hostMarkdown();
+                return markdown;
+              },
+            }
+          : {}
+      );
+      if (delivery === 'a slotted response') {
+        instance.on({
+          type: BusEventType.USER_DEFINED_RESPONSE,
+          handler: (event: BusEventUserDefinedResponse) => {
+            markdown = hostMarkdown();
+            markdown.slot = event.data.slot;
+            element.appendChild(markdown);
+          },
+        });
+      }
+      await addResponse(instance, 'r-host-markdown', [WIDGET]);
+      await waitFor(() => expect(shownInMainPanel(out)).toBe(true));
+      expect(mainPanelText()).toContain('Host code');
+      expect(mainPanelText()).not.toContain('let y = 2;');
+      expect(markdown.contains(out)).toBe(true);
+    }
+  );
 });
 
 // `cds-aichat-container`'s markdownItPlugins are in
