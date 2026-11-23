@@ -83,19 +83,29 @@ describe('requestFocus while the disclaimer shows', () => {
   contractSetup();
   afterEach(() => jest.restoreAllMocks());
 
-  it('returns true before the accept button can be pressed', async () => {
+  it('returns false and leaves focus where it is before the accept button can be pressed', async () => {
     // jsdom has no layout. Make the disclaimer text overflow, unread, so the
     // accept button stays disabled.
     jest.spyOn(Element.prototype, 'scrollHeight', 'get').mockReturnValue(1000);
     jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(100);
+    // Browsers never focus a disabled button. jsdom does when the button has a
+    // tabindex, as the accept button's inner control does, so match browsers.
+    const focus = HTMLElement.prototype.focus;
+    jest.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+      this: HTMLElement,
+      options
+    ) {
+      if (!(this instanceof HTMLButtonElement && this.disabled)) {
+        focus.call(this, options);
+      }
+    });
     const instance = await mountDisclaimer();
     // Outlast the chat's checks of whether the text was read.
     await pause(600);
     expect(byRole('button', ACCEPT_LABEL).hasAttribute('disabled')).toBe(true);
-    focusHostButton();
-    // Where focus goes depends on how the browser treats the disabled button,
-    // which jsdom doesn't match, so only the result is checked.
-    expect(await requestFocus(instance)).toBe(true);
+    const button = focusHostButton();
+    expect(await requestFocus(instance)).toBe(false);
+    expect(deepActiveElement()).toBe(button);
   });
 
   it('returns true and keeps focus when the accept button already has it', async () => {
@@ -148,7 +158,7 @@ describe('requestFocus while the disclaimer shows', () => {
     expect(focusIsOnAccept()).toBe(true);
   });
 
-  it('returns true once it moves focus to the accept button, even when the page then moves focus away', async () => {
+  it('returns false when the page moves focus away from the accept button', async () => {
     const instance = await mountDisclaimer();
     await waitForAcceptEnabled();
     const button = focusHostButton();
@@ -162,7 +172,7 @@ describe('requestFocus while the disclaimer shows', () => {
     };
     document.addEventListener('focusin', trap);
     try {
-      expect(await requestFocus(instance)).toBe(true);
+      expect(await requestFocus(instance)).toBe(false);
       expect(trapped).toBe(1);
       expect(deepActiveElement()).toBe(button);
     } finally {
