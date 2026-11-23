@@ -1245,7 +1245,7 @@ class MessageUpsertCoordinator {
     localItem: LocalMessageItem,
     result: MessageResponse
   ): Record<string, LocalMessageItem> {
-    if (findDrawIssues(localItem.item, result).length) {
+    if (findDrawIssues(localItem.item).length) {
       return {};
     }
     const nestedItems: LocalMessageItem[] = [];
