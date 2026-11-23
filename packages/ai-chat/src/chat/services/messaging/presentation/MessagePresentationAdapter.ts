@@ -12,7 +12,11 @@ import type {
   StreamAnnouncementContent,
 } from '../presentationPort';
 
+import type { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+
 interface MessagePresentationCapabilities {
+  openHomeScreen?(): void;
+  openHistoryResponsePanel?(local: LocalMessageItem): void;
   getMessagesScrollBottom?(): number | undefined;
   restoreMessagesScroll?(scrollBottom: number | undefined): void;
   announceSendFailure?(): void;
@@ -51,6 +55,13 @@ class MessagePresentationAdapter implements MessagePresentationPort {
 
   announceStreamStarts(messageID: string, content: StreamAnnouncementContent) {
     this.capabilities.announceStreamStarts?.(messageID, content);
+  }
+
+  openHomeScreen() {
+    this.capabilities.openHomeScreen?.();
+  }
+  openHistoryResponsePanel(local: LocalMessageItem) {
+    this.capabilities.openHistoryResponsePanel?.(local);
   }
 
   hasCustomPromptLine() {

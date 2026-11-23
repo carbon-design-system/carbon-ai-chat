@@ -581,7 +581,7 @@ describe('silent response snapshots through public writes', () => {
       const entered = resolvablePromise<void>();
       const release = resolvablePromise<void>();
       const pause = jest
-        .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+        .spyOn(serviceManager.messageCoordinator, 'waitForPause')
         .mockImplementation(async () => {
           entered.doResolve();
           await release;
@@ -647,7 +647,7 @@ describe('silent response snapshots through public writes', () => {
     const entered = resolvablePromise<void>();
     const release = resolvablePromise<void>();
     const pause = jest
-      .spyOn(serviceManager.chunkProcessingService, 'waitForPause')
+      .spyOn(serviceManager.messageCoordinator, 'waitForPause')
       .mockImplementation(async () => {
         entered.doResolve();
         await release;

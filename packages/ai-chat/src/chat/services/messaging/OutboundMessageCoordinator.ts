@@ -166,7 +166,7 @@ class OutboundMessageCoordinator {
       );
     }
 
-    this.serviceManager.messageUpsertCoordinator.endStreamingForRequest(
+    this.serviceManager.messageCoordinator.endIncomingStreamingForRequest(
       pendingRequest.message.id,
       pendingRequest.generation
     );
@@ -322,12 +322,12 @@ class OutboundMessageCoordinator {
       return;
     }
 
-    const { chunkProcessingService } = this.serviceManager;
+    const { messageCoordinator } = this.serviceManager;
     const {
       formattingErrors: chunkErrors,
       reportedErrors,
       finish,
-    } = chunkProcessingService.trackRequestErrors(
+    } = messageCoordinator.trackChunkRequestErrors(
       current.message.id,
       current.sendMessageController.signal
     );

@@ -8,7 +8,7 @@
  */
 
 import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
-import { MessageUpsertCoordinator } from '../../../src/chat/services/messaging/inbound/MessageUpsertCoordinator';
+import { UpsertWorkflow } from '../../../src/chat/services/messaging/UpsertWorkflow';
 import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
 import { ServiceManager } from '../../../src/chat/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
@@ -69,12 +69,9 @@ function makeStubManager(initialMessages: Record<string, unknown> = {}) {
     },
     fire,
     actions: chatActions,
-    chunkProcessingService: { handleUpsertStreaming: jest.fn() },
-    receiveService: {
+    messageCoordinator: {
       retainAgentItemPositions: jest.fn(),
       handleConnectToHumanAgent: jest.fn().mockResolvedValue(undefined),
-    },
-    messageCoordinator: {
       finalizeStreamingMessage,
       getCurrentMessageController: jest.fn(),
       isRequestFromPreviousConversation: jest.fn().mockReturnValue(false),
@@ -114,11 +111,11 @@ function textResponse(id: string, text: string): MessageResponse {
   };
 }
 
-describe('MessageUpsertCoordinator', () => {
+describe('UpsertWorkflow', () => {
   describe('input validation', () => {
     it('rejects with TypeError when messageID is empty', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await expect(
         coord.upsert('', MessageState.COMPLETE, () => textResponse('x', ''))
       ).rejects.toThrow(TypeError);
@@ -126,7 +123,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('rejects with TypeError when state is not a MessageState value', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await expect(
         coord.upsert('m1', 'not-a-state' as any, () => textResponse('m1', ''))
       ).rejects.toThrow(TypeError);
@@ -134,7 +131,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('rejects with TypeError when updater is not a function', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await expect(
         coord.upsert('m1', MessageState.COMPLETE, undefined as any)
       ).rejects.toThrow(TypeError);
@@ -144,7 +141,7 @@ describe('MessageUpsertCoordinator', () => {
   describe('updater return-value contract', () => {
     it('assigns messageID when the returned message has no id', async () => {
       const { manager, dispatch } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.COMPLETE, () => ({
         output: { generic: [] },
       }));
@@ -156,7 +153,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('rejects when the returned message has a different id', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await expect(
         coord.upsert('m1', MessageState.COMPLETE, () =>
           textResponse('WRONG', '')
@@ -166,7 +163,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('rejects with TypeError when updater returns null', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await expect(
         coord.upsert('m1', MessageState.COMPLETE, () => null as any)
       ).rejects.toThrow(TypeError);
@@ -176,7 +173,7 @@ describe('MessageUpsertCoordinator', () => {
       const { manager } = makeStubManager({
         m1: { id: 'm1', input: { text: 'hello' } },
       });
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await expect(
         coord.upsert('m1', MessageState.COMPLETE, () => textResponse('m1', ''))
       ).rejects.toThrow(/non-assistant/i);
@@ -185,7 +182,7 @@ describe('MessageUpsertCoordinator', () => {
     it('isolates both the previous message and the updater result', async () => {
       const original = textResponse('m1', 'before');
       const { manager, state } = makeStubManager({ m1: original });
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       let returned: MessageResponse;
 
       await coord.upsert('m1', MessageState.STREAMING, (previous) => {
@@ -211,7 +208,7 @@ describe('MessageUpsertCoordinator', () => {
   describe('pre:receive / receive firing predicate', () => {
     it('fires both events on undefined → COMPLETE', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', '')
       );
@@ -222,7 +219,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('does not fire on undefined → STREAMING', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', '')
       );
@@ -231,7 +228,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('fires once on STREAMING → COMPLETE, not on the intermediate STREAMING calls', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'a')
       );
@@ -252,7 +249,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('does NOT fire on COMPLETE → COMPLETE (regenerate-on-already-complete)', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', 'v1')
       );
@@ -265,7 +262,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('does NOT fire on COMPLETE → STREAMING (re-stream after complete)', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', 'v1')
       );
@@ -278,7 +275,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('does NOT fire on * → ERROR', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', '')
       );
@@ -292,7 +289,7 @@ describe('MessageUpsertCoordinator', () => {
   describe('serialization', () => {
     it('serializes calls for the same id', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       const order: string[] = [];
 
       const a = coord.upsert('m1', MessageState.STREAMING, async () => {
@@ -314,7 +311,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('interleaves calls for different ids', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       const order: string[] = [];
 
       const a = coord.upsert('m1', MessageState.STREAMING, async () => {
@@ -341,7 +338,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('a rejection in one upsert does not poison the chain for the same id', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       const first = coord.upsert('m1', MessageState.STREAMING, () => {
         throw new Error('boom');
@@ -357,7 +354,7 @@ describe('MessageUpsertCoordinator', () => {
 
   it('discards an awaiting updater and its queued successor after reset', async () => {
     const { manager, dispatch, fire } = makeStubManager();
-    const coord = new MessageUpsertCoordinator(manager);
+    const coord = new UpsertWorkflow(manager);
     let resolve: (message: MessageResponse) => void;
     const waiting = new Promise<MessageResponse>((done) => {
       resolve = done;
@@ -383,7 +380,7 @@ describe('MessageUpsertCoordinator', () => {
       ui_state_internal: Object.freeze({ agent_no_service_desk: true }),
     });
     const { manager, state } = makeStubManager({ m1: previous });
-    const coord = new MessageUpsertCoordinator(manager);
+    const coord = new UpsertWorkflow(manager);
 
     await coord.upsert('m1', MessageState.COMPLETE, (message) => message);
 
@@ -397,7 +394,7 @@ describe('MessageUpsertCoordinator', () => {
 
   it('stops slot events after reset during a user-defined response handler', async () => {
     const { manager, state, dispatch, chatActions, fire } = makeStubManager();
-    const coord = new MessageUpsertCoordinator(manager);
+    const coord = new UpsertWorkflow(manager);
     const entered = resolvablePromise<void>();
     const resume = resolvablePromise<void>();
     dispatch.mockImplementation((action: { type: string; message?: any }) => {
@@ -435,7 +432,7 @@ describe('MessageUpsertCoordinator', () => {
 
   it('does not finalize an old response after reset in its receive handler', async () => {
     const { manager, fire, finalizeStreamingMessage } = makeStubManager();
-    const coord = new MessageUpsertCoordinator(manager);
+    const coord = new UpsertWorkflow(manager);
     fire.mockImplementation(async (event) => {
       if (event.type === BusEventType.RECEIVE) {
         coord.clearAll();
@@ -455,7 +452,7 @@ describe('MessageUpsertCoordinator', () => {
     async (boundary) => {
       const { manager, state, fire, finalizeStreamingMessage } =
         makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       state.allMessageItemsByID.item1 = {
         fullMessageID: 'm1',
         ui_state: { id: 'item1' },
@@ -463,7 +460,7 @@ describe('MessageUpsertCoordinator', () => {
       };
       state.assistantMessageState.localMessageIDs = ['item1'];
       jest
-        .mocked(manager.receiveService.handleConnectToHumanAgent)
+        .mocked(manager.messageCoordinator.handleConnectToHumanAgent)
         .mockImplementation(async () => {
           if (boundary === 'clearAll') {
             coord.clearAll();
@@ -489,7 +486,7 @@ describe('MessageUpsertCoordinator', () => {
       }));
 
       expect(
-        manager.receiveService.handleConnectToHumanAgent
+        manager.messageCoordinator.handleConnectToHumanAgent
       ).toHaveBeenCalledTimes(1);
       expect(fire.mock.calls.map(([event]) => event.type)).toEqual([
         BusEventType.PRE_RECEIVE,
@@ -504,7 +501,7 @@ describe('MessageUpsertCoordinator', () => {
 
   it('ends snapshot liveness on error without receive events', async () => {
     const { manager, fire, dispatch } = makeStubManager();
-    const coord = new MessageUpsertCoordinator(manager);
+    const coord = new UpsertWorkflow(manager);
     await coord.upsert('m1', MessageState.STREAMING, () =>
       textResponse('m1', 'partial')
     );
@@ -523,7 +520,7 @@ describe('MessageUpsertCoordinator', () => {
   describe('clearAll', () => {
     it('drops recorded lifecycle state', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', '')
       );
@@ -545,7 +542,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('cancels an updater that settles after the generation is cleared', async () => {
       const { manager, dispatch, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       let release: (message: MessageResponse) => void;
       const result = new Promise<MessageResponse>((resolve) => {
         release = resolve;
@@ -580,7 +577,7 @@ describe('MessageUpsertCoordinator', () => {
           receivePayload = event.data;
         }
       });
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', 'original')
@@ -602,7 +599,7 @@ describe('MessageUpsertCoordinator', () => {
   describe('markStreaming / markComplete', () => {
     it('markComplete records COMPLETE so subsequent upsert(COMPLETE) suppresses receive', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       // Simulate that addMessage already landed for m1.
       coord.markComplete('m1');
@@ -615,7 +612,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('markStreaming records STREAMING; a follow-up upsert(COMPLETE) fires', async () => {
       const { manager, fire } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
       coord.markStreaming('m1');
 
       await coord.upsert('m1', MessageState.COMPLETE, () =>
@@ -628,7 +625,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('markStreaming does not register streaming liveness', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       // markStreaming is the receive-dedup hook the chunk path calls before the
       // generation check. Treating it as liveness would re-register stale ids after a
@@ -642,7 +639,7 @@ describe('MessageUpsertCoordinator', () => {
   describe('streaming liveness', () => {
     it('registers on STREAMING and drops on COMPLETE', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'partial')
@@ -657,7 +654,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('drops on ERROR', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'partial')
@@ -673,7 +670,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('tracks ids independently', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'a')
@@ -695,7 +692,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('endAllStreaming settles every registered id and drains', async () => {
       const { manager, dispatch } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'a')
@@ -717,7 +714,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('endAllStreaming is a no-op when nothing is registered', async () => {
       const { manager, dispatch } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', 'done')
@@ -731,7 +728,7 @@ describe('MessageUpsertCoordinator', () => {
 
     it('drains on clear and clearAll', async () => {
       const { manager } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'a')
@@ -754,7 +751,7 @@ describe('MessageUpsertCoordinator', () => {
         chatActions,
         hideStopStreamingButtonIfIdle,
       } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.STREAMING, () =>
         textResponse('m1', 'partial')
@@ -793,7 +790,7 @@ describe('MessageUpsertCoordinator', () => {
       // The button may be up for another request (showStopButtonImmediately); an upsert
       // that did not stream has nothing to take down.
       const { manager, hideStopStreamingButtonIfIdle } = makeStubManager();
-      const coord = new MessageUpsertCoordinator(manager);
+      const coord = new UpsertWorkflow(manager);
 
       await coord.upsert('m1', MessageState.COMPLETE, () =>
         textResponse('m1', 'one shot')

@@ -74,7 +74,7 @@ export async function coordinateUserDefinedResponseItems(
         ([, item]) => item.fullMessageID === originalMessage.id
       )
     );
-    const write = serviceManager.messageUpsertCoordinator.trackWrite(
+    const write = serviceManager.messageCoordinator.trackIncomingWrite(
       originalMessage.id
     );
     const isEventCurrent = () => isCurrent() && write.isCurrent();
@@ -234,7 +234,7 @@ export async function handleCustomFooterSlot(
     (state.allMessagesByID[originalMessage.id] === originalMessage ||
       state.allMessageItemsByID[localMessage.ui_state.id] === localMessage)
   ) {
-    const write = serviceManager.messageUpsertCoordinator.trackWrite(
+    const write = serviceManager.messageCoordinator.trackIncomingWrite(
       originalMessage.id
     );
     const isEventCurrent = () => isCurrent() && write.isCurrent();

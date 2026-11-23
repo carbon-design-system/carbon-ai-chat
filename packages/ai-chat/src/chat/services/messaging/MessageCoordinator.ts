@@ -52,6 +52,17 @@ import type { UpsertStamp } from './incomingWriteTypes';
 import type { MessageWriteOptions } from '../../store/messageWriteTypes';
 import type { UpsertMessageUpdater } from '../../../types/config/MessagingConfig';
 
+import { UpsertWorkflow } from './UpsertWorkflow';
+
+import { ChunkWorkflow } from './ChunkWorkflow';
+import type { StreamChunk, PauseItem } from '../../../types/messaging/Messages';
+import type { AddMessageOptions } from '../../../types/config/MessagingConfig';
+
+import { HistoryWorkflow } from './HistoryWorkflow';
+import type { HistoryItem } from '../../../types/messaging/History';
+import type { LoadedHistory } from '../../schema/historyToMessages';
+import { resetStopStreamingButton } from '../../utils/streamingUtils';
+
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
@@ -62,6 +73,145 @@ function messageTimeoutMS(timeoutSecs: number | undefined): number {
 }
 
 class MessageCoordinator {
+  private historyWorkflow?: HistoryWorkflow;
+
+  private getHistoryWorkflow() {
+    return (this.historyWorkflow ??= new HistoryWorkflow(this.serviceManager));
+  }
+
+  insertHistory(messages: HistoryItem[]) {
+    return this.getHistoryWorkflow().insertHistory(messages);
+  }
+
+  applyLoadedHistory(history: LoadedHistory) {
+    return this.getHistoryWorkflow().applyLoadedHistory(history);
+  }
+
+  openHistoryResponsePanel(local: LocalMessageItem) {
+    this.presentation?.openHistoryResponsePanel?.(local);
+  }
+
+  openHomeScreen() {
+    this.presentation?.openHomeScreen?.();
+  }
+
+  changeHydrationCounter(amount: 1 | -1) {
+    this.serviceManager.store.dispatch(actions.addIsHydratingCounter(amount));
+  }
+
+  markChatHydrated() {
+    this.serviceManager.store.dispatch(actions.chatWasHydrated());
+  }
+
+  setRestartInProgress(value: boolean) {
+    this.serviceManager.store.dispatch(actions.setIsRestarting(value));
+  }
+
+  resetMessageLoadingCounter() {
+    this.serviceManager.store.dispatch(actions.resetIsLoadingCounter());
+  }
+
+  resetStopButton() {
+    resetStopStreamingButton(this.serviceManager.store);
+  }
+
+  resetConversationStore() {
+    this.serviceManager.store.dispatch(actions.restartConversation());
+  }
+
+  private chunkWorkflow?: ChunkWorkflow;
+
+  private getChunkWorkflow() {
+    return (this.chunkWorkflow ??= new ChunkWorkflow(this.serviceManager));
+  }
+
+  receiveChunk(
+    chunk: StreamChunk,
+    messageID?: string,
+    options?: AddMessageOptions
+  ) {
+    return this.getChunkWorkflow().receiveChunk(chunk, messageID, options);
+  }
+
+  waitForPause(pause: PauseItem, initialRestartCount: number) {
+    return this.getChunkWorkflow().waitForPause(pause, initialRestartCount);
+  }
+
+  trackChunkRequestErrors(requestID: string, signal: AbortSignal) {
+    return this.getChunkWorkflow().trackRequestErrors(requestID, signal);
+  }
+
+  bumpChunkRestartGeneration() {
+    return this.getChunkWorkflow().bumpRestartGeneration();
+  }
+
+  private upsertWorkflow?: UpsertWorkflow;
+
+  private getUpsertWorkflow() {
+    return (this.upsertWorkflow ??= new UpsertWorkflow(this.serviceManager));
+  }
+
+  trackIncomingWrite(messageID: string) {
+    return this.incomingWriteLifetime.trackWrite(messageID);
+  }
+
+  markIncomingComplete(messageID: string | undefined) {
+    return this.getUpsertWorkflow().markComplete(messageID);
+  }
+
+  markIncomingStreaming(messageID: string | undefined) {
+    return this.getUpsertWorkflow().markStreaming(messageID);
+  }
+
+  getIncomingState(messageID: string) {
+    return this.getUpsertWorkflow().getState(messageID);
+  }
+
+  hasIncomingStreamingMessages() {
+    return this.getUpsertWorkflow().hasStreamingMessages();
+  }
+
+  endAllIncomingStreaming(reason?: string) {
+    return this.getUpsertWorkflow().endAllStreaming(reason);
+  }
+
+  endIncomingStreamingForRequest(requestID: string, generation?: number) {
+    return this.getUpsertWorkflow().endStreamingForRequest(
+      requestID,
+      generation
+    );
+  }
+
+  endIncomingStreamingMessage(messageID: string, generation?: number) {
+    return this.getUpsertWorkflow().endStreamingMessage(messageID, generation);
+  }
+
+  clearIncomingMessage(messageID: string) {
+    return this.getUpsertWorkflow().clear(messageID);
+  }
+
+  invalidatePendingUpserts() {
+    return this.getUpsertWorkflow().invalidatePendingUpserts();
+  }
+
+  clearAllIncomingWrites() {
+    return this.getUpsertWorkflow().clearAll();
+  }
+
+  upsertMessage(
+    messageID: string,
+    nextState: MessageState,
+    updater: UpsertMessageUpdater,
+    options?: MessageWriteOptions
+  ) {
+    return this.getUpsertWorkflow().upsert(
+      messageID,
+      nextState,
+      updater,
+      options
+    );
+  }
+
   private fullResponseWorkflow?: FullResponseWorkflow;
 
   private getFullResponseWorkflow() {
