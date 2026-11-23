@@ -15,6 +15,8 @@
 :host(#{$prefix}-button) {
   @extend :host(#{$cds-prefix}-button);
 
+  max-inline-size: 100%;
+
   .#{$cds-prefix}--btn--ghost:not([disabled]):not(
       .#{$cds-prefix}--btn--icon-only
     )
@@ -24,7 +26,7 @@
 
   .#{$cds-prefix}--btn {
     border-radius: convert.to-rem(24px);
-    max-inline-size: 19rem;
+    max-inline-size: min(19rem, 100%);
   }
 
   .#{$cds-prefix}--btn.#{$cds-prefix}--btn--md {
@@ -97,7 +99,7 @@
     overflow: hidden;
     border-radius: convert.to-rem(24px);
     inline-size: convert.to-rem(100px);
-    max-inline-size: 19rem;
+    max-inline-size: min(19rem, 100%);
 
     &.#{$cds-prefix}--btn--md {
       border-radius: convert.to-rem(20px);
