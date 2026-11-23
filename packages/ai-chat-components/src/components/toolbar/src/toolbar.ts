@@ -24,6 +24,7 @@ import { carbonElement } from '../../../globals/decorators/index.js';
 import '../../truncated-text/index.js';
 import { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
 import { PageObjectId } from '../../../testing/PageObjectId.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 
 const blockClass = `${prefix}-toolbar`;
 import { BUTTON_SIZE } from '@carbon/web-components/es/components/button/defs.js';
@@ -134,6 +135,10 @@ class CDSAIChatToolbar extends LitElement {
     this.resizeObserver = undefined;
     this.removeEventListener('keydown', this._handleToolbarKeydown);
     super.disconnectedCallback();
+  }
+
+  willUpdate() {
+    this.isRTL = isDirectionRTL();
   }
 
   firstUpdated() {
