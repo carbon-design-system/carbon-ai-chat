@@ -10,7 +10,10 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { createComponent, type EventName } from '@lit/react';
 import { withWebComponentBridge } from '@carbon/ai-chat-components/es/react/utils/withWebComponentBridge.js';
-import { InlineError } from '../responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { useSelector } from '../../hooks/useSelector';
+import type { AppState } from '../../../types/state/AppState';
+import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import IFrameBody, { type IFramePanelMessage } from './native/IFrameBody';
 import { PanelBodyContentAdapter } from './PanelBodyContentAdapter';
 import type {
@@ -41,6 +44,9 @@ const NativeIFrameBody = withWebComponentBridge(
 
 const IFramePanel = ({ messageItem }: IFramePanelProps) => {
   const [content, setContent] = useState<PanelBodyContentDetail>();
+  const iconLabel = useSelector(
+    (state: AppState) => state.languagePack.errors_iconLabel
+  );
   const active = useRef(true);
   useLayoutEffect(() => {
     active.current = true;
@@ -66,7 +72,9 @@ const IFramePanel = ({ messageItem }: IFramePanelProps) => {
       />
       {content && (
         <PanelBodyContentAdapter target={content.target}>
-          <InlineError text={content.text} />
+          <InlineError iconLabel={iconLabel}>
+            <MarkdownWithDefaults removeHTML text={content.text} />
+          </InlineError>
         </PanelBodyContentAdapter>
       )}
     </>
