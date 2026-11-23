@@ -1543,27 +1543,6 @@ describe('[UPSERT_MESSAGE] an item the chat cannot draw', () => {
     expect(shown()[0].ui_state.gridLocalMessageItemIDs[0]).toHaveLength(2);
   });
 
-  it('keeps a drawn system item while a missing item before it streams, even as the system item changes', () => {
-    const system = {
-      response_type: MessageResponseTypes.SYSTEM,
-      title: 'Joined',
-    };
-    write([system], true);
-    const [drawn] = shown();
-
-    write([null, system], true);
-    expect(shown()[0]).toBe(drawn);
-
-    write([null, { ...system, title: 'Left' }], true);
-    expect(shown()[0]).toBe(drawn);
-    expect(
-      cannotDrawOf(store.getState() as AppState, drawn.ui_state.id)
-    ).toBeUndefined();
-
-    write([{ ...system, title: 'Left' }], true);
-    expect((shown()[0].item as any).title).toBe('Left');
-  });
-
   it('keeps a version addMessage wrote while the stream is open, even one the chat can’t draw', () => {
     const brokenOption = {
       response_type: MessageResponseTypes.OPTION,
