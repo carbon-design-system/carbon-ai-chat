@@ -783,7 +783,7 @@ type StructuredFieldType (src/types/messaging/Messages.ts)
   = 'file' | 'mention' | 'command' | (string & {})
 
 type SystemMessageVariant (src/types/messaging/Messages.ts)
-  = 'default' | 'date' | 'agent'
+  = 'default' | 'divider' | 'date' | 'agent'
 
 type UpsertMessageUpdater (src/types/config/MessagingConfig.ts)
   = (previous: MessageResponse | undefined) => Promise<MessageResponse> | MessageResponse
