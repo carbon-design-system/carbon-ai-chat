@@ -191,14 +191,37 @@ if (typeof window !== 'undefined') {
         reportException(error);
       }
     };
-  const wrap = <T extends (...args: any[]) => unknown>(original: T): T => {
-    const wrapped = (callback: unknown, ...rest: unknown[]) =>
-      original(
+  // A page's timers end with the page: Jest's jsdom environment closed its
+  // window after each file, which cleared them. Vitest's happy-dom environment
+  // schedules on Node's timers, and the worker keeps running briefly after it
+  // removes the DOM globals. A callback still pending then, such as the
+  // trailing call of `cds-aichat-markdown`'s throttled render, runs with no
+  // `document` and fails the run as an unhandled error. Track each timer so
+  // the file's last hook can clear the ones left.
+  const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+  const wrap = <T extends (...args: any[]) => any>(
+    original: T,
+    timer?: 'once' | 'repeat'
+  ): T => {
+    const wrapped = (callback: unknown, ...rest: unknown[]) => {
+      const run =
         typeof callback === 'function'
           ? guard(callback as (...args: unknown[]) => unknown)
-          : callback,
+          : callback;
+      const handle = original(
+        timer === 'once' && typeof run === 'function'
+          ? (...args: unknown[]) => {
+              pendingTimers.delete(handle);
+              run(...args);
+            }
+          : run,
         ...rest
       );
+      if (timer) {
+        pendingTimers.add(handle);
+      }
+      return handle;
+    };
     // Keep properties such as setTimeout's promisified form.
     const own: PropertyDescriptorMap =
       Object.getOwnPropertyDescriptors(original);
@@ -208,9 +231,15 @@ if (typeof window !== 'undefined') {
     Object.defineProperties(wrapped, own);
     return wrapped as unknown as T;
   };
-  globalThis.setTimeout = wrap(globalThis.setTimeout);
-  globalThis.setInterval = wrap(globalThis.setInterval);
+  globalThis.setTimeout = wrap(globalThis.setTimeout, 'once');
+  globalThis.setInterval = wrap(globalThis.setInterval, 'repeat');
   globalThis.queueMicrotask = wrap(globalThis.queueMicrotask);
+  // Node's clearTimeout clears an interval too.
+  const clearTimer = globalThis.clearTimeout;
+  afterAll(() => {
+    pendingTimers.forEach((handle) => clearTimer(handle));
+    pendingTimers.clear();
+  });
 }
 
 // Jest's jsdom environment failed a test on an uncaught page error: when no
