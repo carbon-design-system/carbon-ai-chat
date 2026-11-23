@@ -29,6 +29,7 @@ import type {
   MarkdownPluginHostMountDetail,
 } from './utils/plugin-host-container.js';
 import {
+  getMarkdownPluginHostOwners,
   getMarkdownPluginHostTargets,
   releaseMarkdownPluginHostClaims,
 } from './utils/plugin-host-container.js';
@@ -371,6 +372,8 @@ class CDSAIChatMarkdown extends LitElement {
 
   private connectedControllerTargets: HTMLElement[] = [];
 
+  private connectedOwners: HTMLElement[] = [];
+
   /**
    * Tracks whether the markdown property has been explicitly set by the user.
    * When false, the component will monitor Light DOM changes.
@@ -406,6 +409,13 @@ class CDSAIChatMarkdown extends LitElement {
       controllerTargets.every(
         (target, index) => target === this.connectedControllerTargets[index]
       );
+    // A surface still above this element may stop owning its offers, as when
+    // it moves from the surface's shadow tree into its light DOM. Its hosts
+    // then go back to being offered, so the surface's own rule decides again.
+    const owners = getMarkdownPluginHostOwners(this);
+    const sameOwners =
+      owners.length === this.connectedOwners.length &&
+      owners.every((owner, index) => owner === this.connectedOwners[index]);
     // External event listeners have no registered owner to compare.
     const unknownClaim =
       this.connectedControllerTargets.length === 0 &&
@@ -418,6 +428,7 @@ class CDSAIChatMarkdown extends LitElement {
     const movedWithinTask =
       this.pendingDisconnect !== null &&
       sameControllers &&
+      sameOwners &&
       (!unknownClaim || sameAncestors);
     const reofferLocalHosts =
       movedWithinTask && controllerTargets.length === 0 && !sameAncestors;
@@ -427,6 +438,7 @@ class CDSAIChatMarkdown extends LitElement {
     this.pendingDisconnect = null;
     this.connectedAncestors = ancestors;
     this.connectedControllerTargets = controllerTargets;
+    this.connectedOwners = owners;
     super.connectedCallback();
     this.hasConnected = true;
     if (reofferLocalHosts) {
