@@ -8,21 +8,21 @@
  */
 
 import { ChatInstanceService } from './ChatInstanceService';
-import { ChunkProcessingService } from './ChunkProcessingService';
+import { ChunkProcessingService } from './messaging/inbound/ChunkProcessingService';
 import { HydrationService } from './HydrationService';
 import { InputActionsService } from './InputActionsService';
 import { PublicStateService } from './PublicStateService';
-import { ConversationLifecycleService } from './ConversationLifecycleService';
-import { ReceiveService } from './ReceiveService';
-import { SlotEventService } from './SlotEventService';
-import { SendService } from './SendService';
-import { StreamAnnouncerService } from './StreamAnnouncerService';
+import { ConversationLifecycleService } from './messaging/ConversationLifecycleService';
+import { ReceiveService } from './messaging/inbound/ReceiveService';
+import { SlotEventService } from './messaging/presentation/SlotEventService';
+import { SendService } from './messaging/outbound/SendService';
+import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
 import { ViewService } from './ViewService';
 import { EventBus } from '../events/EventBus';
 import { HistoryService } from './HistoryService';
 import { createCustomPanelManager } from './CustomPanelManager';
-import { MessageUpsertCoordinator } from './MessageUpsertCoordinator';
-import MessageService from './MessageService';
+import { MessageUpsertCoordinator } from './messaging/inbound/MessageUpsertCoordinator';
+import MessageService from './messaging/MessageService';
 import { NamespaceService } from './NamespaceService';
 import { ServiceManager } from './ServiceManager';
 import { ThemeWatcherService } from './ThemeWatcherService';
@@ -32,21 +32,21 @@ import {
   copyToSessionStorage,
   refreshLocalizationOnChange,
 } from '../store/subscriptions';
-import { AppConfig } from '../../types/state/AppConfig';
+import { PublicConfig } from '../../types/config/PublicConfig';
 import { WriteableElementName } from '../utils/constants';
 import { assertType, setEnableDebugLog } from '../utils/miscUtils';
 import { setIntl } from '../utils/intlUtils';
 import { isBrowser } from '../utils/browserUtils';
 
-type CreateServiceManagerFunction = (appConfig: AppConfig) => ServiceManager;
+type CreateServiceManagerFunction = (
+  publicConfig: PublicConfig
+) => ServiceManager;
 
 /**
  * This file contains the code needed to bootstrap all the shared services in Carbon AI Chat. Services are used to hold
  * functions that are used throughout the application that need access to the current instance of the Carbon AI Chat.
  */
-function createServiceManager(appConfig: AppConfig) {
-  const publicConfig = appConfig.public;
-
+function createServiceManager(publicConfig: PublicConfig) {
   const serviceManager = new ServiceManager();
 
   // Create all the services we will be using.

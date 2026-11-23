@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallbacks';
+import { HumanAgentCallbacks } from '../../../src/chat/services/haa/humanAgentCallbacks';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 
 function setup() {

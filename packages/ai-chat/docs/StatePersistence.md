@@ -45,7 +45,7 @@ Round-trip the whole {@link PersistableState}. If you store only part of it, the
 
 - Dropping `disclaimersAccepted` re-prompts the disclaimer on every reload and blocks messages until the user accepts again.
 - Dropping `humanAgentState` stops an in-progress human-agent conversation from reconnecting.
-- Dropping `hasSentNonWelcomeMessage` re-sends the welcome message.
+- Dropping `hasSentNonWelcomeMessage` can skip the announcement when the home screen closes. This field does not control welcome messages.
 
 Store the value verbatim to avoid all of these.
 

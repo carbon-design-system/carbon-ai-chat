@@ -9,7 +9,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
-import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
+import { HumanAgentCallbacks } from '../services/haa/humanAgentCallbacks';
 import type { ServiceManager } from '../services/ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
 
