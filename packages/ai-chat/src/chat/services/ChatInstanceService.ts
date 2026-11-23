@@ -219,7 +219,7 @@ class ChatInstanceService {
     localItemsByID?: Record<string, LocalMessageItem>,
     isCurrent?: () => boolean
   ) {
-    return this.serviceManager.slotEventService.handleUserDefinedResponseItems(
+    return this.serviceManager.messageCoordinator.handleUserDefinedResponseItems(
       localMessage,
       originalMessage,
       messageState,

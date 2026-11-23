@@ -511,7 +511,7 @@ class ChunkProcessingService {
           )
         : undefined;
     try {
-      await this.serviceManager.slotEventService.handleUserDefinedResponseItemsChunk(
+      await this.serviceManager.messageCoordinator.handleUserDefinedResponseItemsChunk(
         messageID,
         chunk,
         item,
