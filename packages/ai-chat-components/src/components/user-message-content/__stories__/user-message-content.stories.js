@@ -26,7 +26,7 @@ import {
 import './story-styles.scss';
 
 export default {
-  title: 'Preview/User message content',
+  title: 'Preview/Message item shell/User message content',
   component: 'cds-aichat-user-message-content',
 };
 
