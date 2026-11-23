@@ -42,7 +42,7 @@ async function doSystemMessage(
       },
     });
   }
-  if (variant === 'agent') {
+  if (variant === 'divider') {
     await sendResponse(instance, {
       id: uuid(),
       request_id: requestID,
@@ -51,7 +51,7 @@ async function doSystemMessage(
           {
             response_type: MessageResponseTypes.SYSTEM,
             title: 'Agent joined the chat',
-            variant: 'agent',
+            variant: 'divider',
           },
         ],
       },
@@ -69,60 +69,32 @@ async function doSystemMessage(
       },
     });
   }
-  if (variant === 'date') {
-    await sendResponse(instance, {
-      id: uuid(),
-      request_id: requestID,
-      output: {
-        generic: [
-          {
-            response_type: MessageResponseTypes.SYSTEM,
-            title: 'Monday, June 14th 2025',
-            variant: 'date',
-          },
-        ],
-      },
-    });
-    await sendResponse(instance, {
-      id: uuid(),
-      request_id: requestID,
-      output: {
-        generic: [
-          {
-            response_type: MessageResponseTypes.TEXT,
-            text: MARKDOWN,
-          },
-        ],
-      },
-    });
-  } else {
-    await sendResponse(instance, {
-      id: uuid(),
-      request_id: requestID,
-      output: {
-        generic: [
-          {
-            response_type: MessageResponseTypes.SYSTEM,
-            title: 'This is a system message',
-            variant: 'default',
-          },
-        ],
-      },
-    });
+  await sendResponse(instance, {
+    id: uuid(),
+    request_id: requestID,
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.SYSTEM,
+          title: 'This is a system message',
+          variant: 'default',
+        },
+      ],
+    },
+  });
 
-    await sendResponse(instance, {
-      id: uuid(),
-      request_id: requestID,
-      output: {
-        generic: [
-          {
-            response_type: MessageResponseTypes.TEXT,
-            text: MARKDOWN,
-          },
-        ],
-      },
-    });
-  }
+  await sendResponse(instance, {
+    id: uuid(),
+    request_id: requestID,
+    output: {
+      generic: [
+        {
+          response_type: MessageResponseTypes.TEXT,
+          text: MARKDOWN,
+        },
+      ],
+    },
+  });
 }
 
 export { doSystemMessage };

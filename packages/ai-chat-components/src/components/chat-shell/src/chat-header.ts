@@ -19,6 +19,7 @@ import type { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
 import prefix from '../../../globals/settings.js';
 import { PageObjectId } from '../../../testing/PageObjectId.js';
 import { tryFocus } from '../../../globals/utils/focus-utils.js';
+import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 import styles from './chat-header.scss?lit';
 
 /**
@@ -455,6 +456,10 @@ class CdsAiChatChatHeader extends LitElement {
         }
       </div>
     `;
+  }
+
+  willUpdate() {
+    this.isRTL = isDirectionRTL();
   }
 
   render() {
