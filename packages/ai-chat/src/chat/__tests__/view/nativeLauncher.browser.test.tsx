@@ -16,6 +16,7 @@ import {
   byTestId,
   contractSetup,
   getByTestId,
+  isShownWithin,
 } from '../helpers/contract';
 import {
   deep,
@@ -161,9 +162,20 @@ describe('native launcher', () => {
         await userEvent.click(getByTestId(PageObjectId.CLOSE_CHAT));
         await waitFor(() => expect(mainPanelShown()).toBe(false));
         await waitFor(() => expect(isVisible(launcher())).toBe(true));
-        // After a close, focus is on the page body. This pins today's result;
-        // it doesn't set a focus policy.
-        expect(document.activeElement).toBe(document.body);
+        // After a close, focus has left the window: no control a user can see
+        // in it keeps focus. Browsers differ on where focus lands when the
+        // focused element is hidden: Chromium moves it to the page body, while
+        // Firefox and WebKit leave it on the now hidden control. This pins
+        // only that focus left the window; it doesn't set a focus policy.
+        const chatWindow = byTestId(PageObjectId.CHAT_WIDGET);
+        expect(chatWindow).not.toBeNull();
+        expect(isVisible(chatWindow)).toBe(false);
+        const active = deepActive();
+        expect(
+          active === document.body ||
+            active === host.root.host ||
+            (isShownWithin(active, chatWindow) && !isVisible(active))
+        ).toBe(true);
         const button = launcherButton();
         button.focus();
         expect(deepActive()).toBe(button);
