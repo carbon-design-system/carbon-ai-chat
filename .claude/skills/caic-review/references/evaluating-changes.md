@@ -26,10 +26,10 @@ Check PR coherence against the [reviewability policy](../../../../references/pr-
 ## Test coverage
 
 - Identify which changed behavior is currently untested.
-- Check whether any existing proof got weaker, which a passing run will not tell you. A loosened assertion, a deleted case, a case newly skipped, or a regenerated snapshot all turn the light green while the criterion still reads as written. It's a **Blocker** when the weakened proof covers behavior this diff changed, and **Important** otherwise. Regenerating is allowed and sometimes correct ([tests.md](../../../../packages/ai-chat-components/references/tests.md) asks for the diff to be read before committing); what the review demands is the reason, not the command's absence.
+- Check whether any existing proof got weaker, which a passing run will not tell you. A loosened assertion, a deleted case, a case newly skipped, or a regenerated snapshot all turn the light green while the criterion still reads as written. It's a **Blocker** when the weakened proof covers behavior this diff changed, and **Important** otherwise. Regenerating is allowed and sometimes correct: ai-chat's `sdkSurface` snapshot exists so a reviewer reads its diff ([tests.md](../../../../packages/ai-chat/references/tests.md#checks-with-no-module)). What the review demands is the reason, not the command's absence.
 - Recommend the test style appropriate to the package:
   - `@carbon/ai-chat`: Vitest, colocated `__tests__/*.test.ts(x)`; package-wide checks in `packages/ai-chat/tests/` ([tests.md](../../../../packages/ai-chat/references/tests.md)).
-  - `@carbon/ai-chat-components`: Vitest, colocated `__tests__/`; `*.browser.test.ts` runs in a real browser.
+  - `@carbon/ai-chat-components`: Vitest, colocated `__tests__/`; `*.browser.test.ts` runs in a real browser ([tests.md](../../../../packages/ai-chat-components/references/tests.md)).
   - `demo/`: Playwright under `demo/tests/`.
   - `examples/**`: Playwright smoke tests (see [playwright.md](../../../../examples/references/playwright.md)).
 - For UI changes, call out whether a visual/interaction check in the browser is required in addition to automated tests.

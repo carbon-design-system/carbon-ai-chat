@@ -4,7 +4,7 @@ Load this when you write or change a test case in `@carbon/ai-chat` or `@carbon/
 
 Each package guide owns the rest: where the file goes, which project runs it, and the package's own helpers and signals. Read [ai-chat's tests.md](../packages/ai-chat/references/tests.md) or [the components tests.md](../packages/ai-chat-components/references/tests.md) when you place the file. Read [accessibility.md](accessibility.md#testing-accessibility) when a case checks roles, names, focus, or announcements.
 
-Examples use placeholder names for the code under test, and Vitest's `expect`. A components Lit test writes the same checks in its assertion style, from [the components tests.md](../packages/ai-chat-components/references/tests.md).
+Examples use placeholder names for the code under test, and Vitest's `expect`. A components Lit test writes the same checks in [its assertion style](../packages/ai-chat-components/references/tests.md#assertion-style).
 
 ## One scenario per case
 
