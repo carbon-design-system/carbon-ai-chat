@@ -226,7 +226,10 @@ class RichController
   setEditable(editable: boolean): void {
     this._disabled = !editable;
     if (this._disabled && this.hasFocus()) {
-      this.blur();
+      // Blur now rather than through Tiptap's `blur` command, which waits a
+      // frame. A deferred blur would land after a re-enable in the same frame
+      // and take back the focus the element returns to the surface.
+      this._editor?.view.dom.blur();
     }
     this._editor?.setEditable(editable);
     this._syncHostTabindex();
