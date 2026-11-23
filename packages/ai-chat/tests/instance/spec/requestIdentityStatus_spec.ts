@@ -68,7 +68,7 @@ describe('request identity in public status', () => {
     const send = instance.send('hello');
     await entered;
     await act(async () =>
-      serviceManager.messageService.cancelCurrentMessageRequest()
+      serviceManager.messageCoordinator.cancelCurrentMessageRequest()
     );
     release.doResolve();
     await send;

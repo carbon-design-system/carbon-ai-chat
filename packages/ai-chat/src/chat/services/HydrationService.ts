@@ -337,7 +337,7 @@ class HydrationService {
       serviceManager.messageUpsertCoordinator.clearAll();
 
       // A request that got no reply has already left the queue, so the cancel below never ends its timers.
-      serviceManager.messageService.messageLoadingManager.end();
+      serviceManager.messageCoordinator.messageLoadingManager.end();
 
       if (
         state.config.public.messaging.messageLoadingIndicatorTimeoutSecs !== 0
@@ -360,7 +360,7 @@ class HydrationService {
         await serviceManager.humanAgentService.endChat(true, false, false);
       }
 
-      await this.serviceManager.messageService.cancelAllMessageRequests();
+      await this.serviceManager.messageCoordinator.cancelAllMessageRequests();
       this.serviceManager.inputActionsService.cancelPendingUploads();
 
       // Hide the stop streaming button since we've canceled all streams. Unconditional
@@ -424,7 +424,7 @@ class HydrationService {
       // If we don't want to keep the open state then set the launcher to be open.
       newPersistedToBrowserStorage.viewState = VIEW_STATE_LAUNCHER_OPEN;
     }
-    this.serviceManager.messageService.cancelAllMessageRequests();
+    this.serviceManager.messageCoordinator.cancelAllMessageRequests();
     this.serviceManager.inputActionsService.cancelPendingUploads();
 
     this.serviceManager.messageUpsertCoordinator.clearAll();

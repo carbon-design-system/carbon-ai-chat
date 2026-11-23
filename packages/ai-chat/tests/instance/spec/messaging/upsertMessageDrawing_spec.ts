@@ -341,7 +341,7 @@ describe('upsertMessage with an item the chat cannot draw', () => {
 
     await (
       instance as any
-    ).serviceManager.messageService.cancelCurrentMessageRequest();
+    ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     await settle();
 
     expect(failedItemCount()).toBe(1);
@@ -359,7 +359,7 @@ describe('upsertMessage with an item the chat cannot draw', () => {
     await stream(gridOf({ items: [text('Kept')] }, {}));
     await (
       instance as any
-    ).serviceManager.messageService.cancelCurrentMessageRequest();
+    ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     await settle();
 
     await waitFor(() => expect(chatText()).toContain('Kept'));

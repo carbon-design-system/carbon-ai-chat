@@ -7,137 +7,46 @@
  *  @license
  */
 
-/**
- * MessageService orchestrates outbound sends and inbound streaming for the chat widget.
- *
- * High-level flow:
- * 1) `send()` queues a `MessageRequest` and kicks off the queue.
- * 2) `SendWorkflow.runQueueIfReady()` pulls the next pending request, fires PRE_SEND/SEND events, starts loading/timeout timers,
- *    and delegates the actual send to `customSendMessage` via `OutboundMessageCoordinator`.
- * 3) OutboundCoordinator clones/updates the message in store, calls `customSendMessage` (sync or async), and on success
- *    calls back into `processSuccess`; on error/cancel it resolves/rejects and advances the queue.
- * 4) Incoming stream chunks are handled through `ChunkProcessingService`, which marks streaming and finalization via
- *    `InboundStreamingCoordinator`. InboundCoordinator tracks response_id/item_id pairs so cancellations and
- *    finalization can advance the queue even when response_id differs from the original request id.
- * 5) FinalResponseChunk or cancellation clears streaming tracking and moves to the next queued message.
- *
- * Responsibilities:
- * - MessageCoordinator: queue membership and pending request lookup.
- * - SendWorkflow: queue execution, PRE_SEND/SEND events, loading and settlement.
- * - MessageService: queue entry, controller and stream tracking, cancellation entrypoints.
- * - OutboundMessageCoordinator: send lifecycle (store updates, calling customSendMessage, resolving/rejecting/canceling).
- * - InboundStreamingCoordinator: streaming id tracking (response_id/item_id), finalization, cancellation cleanup.
- */
 import actions from '../../store/actions';
-import {
-  ResolvablePromise,
-  resolvablePromise,
-} from '../../utils/resolvablePromise';
+import { BusEventType } from '../../../types/events/eventBusTypes';
+import { consoleError } from '../../utils/miscUtils';
+import type { PendingMessageRequest } from './pendingRequestTypes';
 import {
   resetStopStreamingButton,
   syncStopStreamingButton,
 } from '../../utils/streamingUtils';
 import { ServiceManager } from '../ServiceManager';
 import { InboundStreamingCoordinator } from './InboundStreamingCoordinator';
-import {
-  MessageInputType,
-  MessageRequest,
-  MessageResponse,
-} from '../../../types/messaging/Messages';
-import { SendOptions } from '../../../types/instance/ChatInstance';
-import { MessageSendSource } from '../../../types/events/eventBusTypes';
-import { PublicConfig } from '../../../types/config/PublicConfig';
+import type { StreamResponseMeta } from './state/StreamState';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import { CancellationReason } from '../../../types/config/MessagingConfig';
 
-/**
- * Extra data about a message response that we want included in the track event when the response is received.
- */
-interface ResponseTrackData {
-  /**
-   * The amount of time the last request took.
-   */
-  lastRequestTime: number;
+class TerminationWorkflow {
+  async requestStopFromInput(markPending: () => void): Promise<void> {
+    const serviceManager = this.serviceManager;
+    const { store } = serviceManager;
+    // Pending UI can flush host effects; capture visibility before calling it.
+    const chatShowsButton =
+      store.getState().assistantInputState.stopStreamingButtonState.isVisible;
+    markPending();
+    if (chatShowsButton) {
+      store.dispatch(actions.setStopStreamingButtonDisabled(true));
+    }
+    try {
+      await serviceManager.fire({ type: BusEventType.STOP_STREAMING });
+      if (chatShowsButton) {
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
+      }
+    } catch (error) {
+      consoleError('Error stopping stream:', error);
+      store.dispatch(actions.setStopStreamingButtonDisabled(false));
+    }
+  }
 
-  /**
-   * The number of errors that occurred. This does not include JWT errors or session expired errors.
-   */
-  numErrors: number;
+  registerMessageController(messageID: string, controller: AbortController) {
+    this.messageAbortControllers.set(messageID, controller);
+  }
 
-  /**
-   * The total time that all the requests took, in milliseconds.
-   */
-  totalRequestTime: number;
-}
-
-interface SendMessageRequest {
-  /**
-   * The message being sent.
-   */
-  message: MessageRequest<any>;
-
-  /**
-   * The promise to resolve once the send is complete.
-   */
-  sendMessagePromise: ResolvablePromise<void>;
-}
-
-// In order to be able to resolve the correct message in the queue, we pass along the promise we will return with the
-// message and call resolve/reject on "resolvablePromise".
-export interface PendingMessageRequest extends SendMessageRequest {
-  /** Conversation generation in which this request was accepted. */
-  generation?: number;
-
-  restartGeneration: number;
-
-  /**
-   * The ID of the {@link LocalMessageItem} created from the current request.
-   */
-  localMessageID: string;
-
-  /**
-   * The time the message started the send process. This occurs after the message was in the queue and is now the
-   * next message to be sent.
-   */
-  timeFirstRequest: number;
-
-  /**
-   * The time the most recent request started.
-   */
-  timeLastRequest: number;
-
-  /**
-   * The AbortController for when using customSendMessage.
-   */
-  sendMessageController?: AbortController;
-
-  /**
-   * The options that were included when the request was sent.
-   */
-  requestOptions: SendOptions;
-
-  /**
-   * The source of the message.
-   */
-  source: MessageSendSource;
-
-  /**
-   * The tracking data for this message.
-   */
-  trackData: ResponseTrackData;
-
-  /**
-   * Indicates if the response has been processed.
-   */
-  isProcessed: boolean;
-
-  /**
-   * Indicates if this message is streaming and we should wait for FinalResponseChunk before clearing from queue.
-   */
-  isStreaming?: boolean;
-}
-
-class MessageService {
   private nonCancellableResponseIDs = new Set<string>();
 
   /**
@@ -152,97 +61,20 @@ class MessageService {
 
   /**
    * Maps message IDs to their AbortControllers. This persists even after messages are cleared from the queue,
-   * allowing cancellation of streaming messages that have already "completed" from MessageService's perspective.
+   * allowing cancellation of streaming messages that have already "completed" from MessageCoordinator's perspective.
    */
   private messageAbortControllers = new Map<string, AbortController>();
-
-  get messageLoadingManager() {
-    return this.serviceManager.messageCoordinator.messageLoadingManager;
-  }
-
-  get timeoutMS() {
-    return this.serviceManager.messageCoordinator.timeoutMS;
-  }
-
-  set timeoutMS(value: number) {
-    this.serviceManager.messageCoordinator.timeoutMS = value;
-  }
 
   get currentRequestID() {
     const current = this.serviceManager.messageCoordinator.getCurrentRequest();
     return current && !current.isProcessed ? current.message.id : undefined;
   }
-  public registerRequestGeneration(
-    requestID: string,
-    restartGeneration: number
-  ) {
-    this.serviceManager.messageCoordinator.registerRequestGeneration(
-      requestID,
-      restartGeneration
-    );
-  }
-  public isRequestFromPreviousConversation(
-    requestID: string | undefined
-  ): boolean {
-    return this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
-      requestID
-    );
-  }
 
-  constructor(serviceManager: ServiceManager, publicConfig: PublicConfig) {
+  constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
     this.inboundStreaming = new InboundStreamingCoordinator(
-      this.messageAbortControllers,
-      () => this.moveToNextQueueItem()
+      this.messageAbortControllers
     );
-
-    this.serviceManager.messageCoordinator.configureMessageTimeout(
-      publicConfig
-    );
-  }
-
-  /**
-   * Add a new message to the message queue.
-   *
-   * @param message A new message to add to the message queue.
-   @param source The source of the message.
-   * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
-   * @param sendMessagePromise A promise that we will resolve or reject if the message is sent.
-   * @param requestOptions The options that were included when the request was sent.
-   */
-  private addToMessageQueue(
-    message: MessageRequest<any>,
-    source: MessageSendSource,
-    localMessageID: string,
-    sendMessagePromise: ResolvablePromise<void>,
-    requestOptions: SendOptions = {}
-  ) {
-    // Create AbortController immediately so it can be aborted even if message is still waiting
-    const controller = new AbortController();
-
-    // Store controller in map so it persists even after message is cleared from queue
-    this.messageAbortControllers.set(message.id, controller);
-
-    const newPendingMessage: PendingMessageRequest = {
-      generation: this.serviceManager.messageCoordinator.currentGeneration,
-      restartGeneration: this.serviceManager.restartCount,
-      localMessageID,
-      message,
-      sendMessagePromise,
-      requestOptions: requestOptions || {},
-      timeFirstRequest: 0,
-      timeLastRequest: 0,
-      trackData: {
-        numErrors: 0,
-        lastRequestTime: 0,
-        totalRequestTime: 0,
-      },
-      isProcessed: false,
-      source,
-      sendMessageController: controller,
-    };
-
-    this.serviceManager.messageCoordinator.enqueueRequest(newPendingMessage);
   }
 
   /**
@@ -253,45 +85,6 @@ class MessageService {
   }
   private moveToNextQueueItem() {
     this.serviceManager.messageCoordinator.advanceRequestQueue();
-  }
-
-  /**
-   * Send a message to the backend. Returns "any" in the error case.
-   *
-   * @param message Takes a {@link MessageRequest} object.
-   * @param source The source of the message.
-   * @param localMessageID The ID of the {@link LocalMessageItem} created from the current request.
-   * @param requestOptions The options that were included when the request was sent.
-   */
-  public send(
-    message: MessageRequest<any>,
-    source: MessageSendSource,
-    localMessageID?: string,
-    requestOptions?: SendOptions
-  ): Promise<MessageResponse | any> {
-    message.history.timestamp = message.history.timestamp || Date.now();
-
-    // The messageService does different things based off the message type so lets make sure one exists.
-    message.input = message.input || {};
-    message.input.message_type =
-      message.input.message_type || MessageInputType.TEXT;
-
-    // Create a Promise that the caller can wait on that we'll resolve if/when the message is finally successfully sent
-    // to the assistant. This gets resolved or rejected by the core success or error workflow.
-    const sendMessagePromise = resolvablePromise<void>();
-
-    // Add our new message to the queue and kick off the queue.
-    this.addToMessageQueue(
-      message,
-      source,
-      localMessageID,
-      sendMessagePromise,
-      requestOptions
-    );
-    this.serviceManager.messageCoordinator.runQueueIfReady();
-
-    // Return the promise that is either successfully resolve or rejected in this.processSuccess or this.processError.
-    return sendMessagePromise;
   }
 
   /**
@@ -356,7 +149,11 @@ class MessageService {
    * Called when a FinalResponseChunk is processed to clear the streaming message from the queue.
    */
   public finalizeStreamingMessage(messageID: string) {
-    this.inboundStreaming.finalizeStreamingMessage(messageID);
+    const responseId = this.inboundStreaming.resolveResponseId(messageID);
+    if (this.inboundStreaming.streamingMessageID === responseId) {
+      this.moveToNextQueueItem();
+    }
+    this.inboundStreaming.clearStreamingResponse(responseId);
     this.serviceManager.messageCoordinator.responseFinished(messageID);
   }
 
@@ -547,7 +344,7 @@ class MessageService {
 
   private findAbortControllerForCancellation(
     responseId: string,
-    streamingEntry: { requestId?: string; controller?: AbortController } | null,
+    streamingEntry: StreamResponseMeta | null,
     pendingRequest?: PendingMessageRequest
   ) {
     return (
@@ -558,7 +355,7 @@ class MessageService {
       (pendingRequest
         ? this.messageAbortControllers.get(pendingRequest.message.id)
         : undefined) ||
-      streamingEntry?.controller
+      this.inboundStreaming.getController(streamingEntry?.controllerToken)
     );
   }
 
@@ -708,4 +505,4 @@ class MessageService {
   }
 }
 
-export default MessageService;
+export { TerminationWorkflow };

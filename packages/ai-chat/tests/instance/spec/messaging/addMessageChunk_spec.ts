@@ -186,9 +186,11 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
     );
 
     expect(
-      serviceManager.messageService.inboundStreaming.streamingMessageID
+      serviceManager.messageCoordinator.inboundStreaming.streamingMessageID
     ).toBeNull();
-    expect(serviceManager.messageService.isAnyMessageStreaming()).toBe(false);
+    expect(serviceManager.messageCoordinator.isAnyMessageStreaming()).toBe(
+      false
+    );
     expect(
       store.getState().assistantInputState.stopStreamingButtonState.isVisible
     ).toBe(false);
@@ -411,7 +413,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       await firstFailure;
 
       expect(
-        serviceManager.messageService.inboundStreaming.streamingMessageID
+        serviceManager.messageCoordinator.inboundStreaming.streamingMessageID
       ).toBe('second-response');
       const secondItem = Object.values(
         store.getState().allMessageItemsByID
@@ -628,12 +630,12 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       expect(items[otherItem.ui_state.id]).toBe(otherItem);
       expect(otherItem.ui_state.streamingState.isDone).toBe(false);
       expect(
-        serviceManager.messageService.inboundStreaming.getStreamingMeta(
+        serviceManager.messageCoordinator.inboundStreaming.getStreamingMeta(
           'failed-response'
         )
       ).toBeUndefined();
       expect(
-        serviceManager.messageService.inboundStreaming.streamingMessageID
+        serviceManager.messageCoordinator.inboundStreaming.streamingMessageID
       ).toBeNull();
       expect(onError).toHaveBeenCalledTimes(mode === 'send' ? 1 : 0);
     }
@@ -1722,7 +1724,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
 
     await (
       instance as any
-    ).serviceManager.messageService.cancelCurrentMessageRequest();
+    ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     await sendPromise.catch(() => {});
 
     const after = store.getState().allMessageItemsByID[localItemID];
@@ -2111,7 +2113,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
       // Simulate stop button click by canceling current message
       (
         instance as any
-      ).serviceManager.messageService.cancelCurrentMessageRequest();
+      ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
 
       // Wait for message to complete/cancel
       await sendPromise.catch(() => {});
@@ -2536,7 +2538,7 @@ describe('ChatInstance.messaging.addMessageChunk', () => {
         );
         await (
           instance as any
-        ).serviceManager.messageService.cancelCurrentMessageRequest();
+        ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
         await sendPromise.catch(() => {});
         await new Promise((resolve) => setTimeout(resolve, 50));
 

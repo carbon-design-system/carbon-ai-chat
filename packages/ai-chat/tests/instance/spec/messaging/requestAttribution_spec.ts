@@ -117,7 +117,7 @@ describe('Request attribution across restart', () => {
           await instance.send('second');
           const state = store.getState();
           const endLoading = jest.spyOn(
-            serviceManager.messageService.messageLoadingManager,
+            serviceManager.messageCoordinator.messageLoadingManager,
             'end'
           );
           const announce = jest.spyOn(
@@ -138,7 +138,8 @@ describe('Request attribution across restart', () => {
 
           expect(store.getState()).toBe(state);
           expect(
-            serviceManager.messageService.inboundStreaming.streamingMessageID
+            serviceManager.messageCoordinator.inboundStreaming
+              .streamingMessageID
           ).toBe('current-response');
           expect(endLoading).not.toHaveBeenCalled();
           expect(announce).not.toHaveBeenCalled();
@@ -234,7 +235,7 @@ describe('Request attribution across restart', () => {
       await instance.send('second');
       const state = store.getState();
       const endLoading = jest.spyOn(
-        serviceManager.messageService.messageLoadingManager,
+        serviceManager.messageCoordinator.messageLoadingManager,
         'end'
       );
       receive.mockClear();
@@ -254,7 +255,7 @@ describe('Request attribution across restart', () => {
     const entered = resolvablePromise();
     const release = resolvablePromise();
     const endLoading = jest.spyOn(
-      serviceManager.messageService.messageLoadingManager,
+      serviceManager.messageCoordinator.messageLoadingManager,
       'end'
     );
     const pending = instance.messaging.upsertMessage(
@@ -296,7 +297,7 @@ describe('Request attribution across restart', () => {
         await instance.send('second');
       }
       const endLoading = jest.spyOn(
-        serviceManager.messageService.messageLoadingManager,
+        serviceManager.messageCoordinator.messageLoadingManager,
         'end'
       );
       release.doResolve();
@@ -359,7 +360,7 @@ describe('Request attribution across restart', () => {
     const second = instance.send('second');
     await waitFor(() => expect(requests).toHaveLength(2));
     const finalize = jest.spyOn(
-      serviceManager.messageService,
+      serviceManager.messageCoordinator,
       'finalizeStreamingMessage'
     );
     release.doResolve();
@@ -389,7 +390,7 @@ describe('Request attribution across restart', () => {
   it('accepts an attributed final reply after normal stop', async () => {
     const { instance, store, serviceManager, requests } = await setupChat();
     await instance.send('second');
-    await serviceManager.messageService.cancelMessageRequestByID(
+    await serviceManager.messageCoordinator.cancelMessageRequestByID(
       requests[0].id,
       false,
       CancellationReason.STOP_STREAMING

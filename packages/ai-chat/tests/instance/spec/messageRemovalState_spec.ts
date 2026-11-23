@@ -126,7 +126,7 @@ describe('message removal and public state', () => {
       expect(originalSnapshot.status).toBe('streaming');
       expect(publicText(originalSnapshot)).toBe('Original text');
       await act(async () => {
-        await serviceManager.messageService.cancelCurrentMessageRequest();
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
         await instance.messaging.removeMessages(['reused-response']);
       });
       expect(instance.state.get().status).toBe('ready');

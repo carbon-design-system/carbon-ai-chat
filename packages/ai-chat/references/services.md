@@ -31,7 +31,7 @@ This supports lazy initialization, handles circular dependencies, and makes test
 
 - **Simple data adapter:** [`HistoryService`](../src/chat/services/HistoryService.ts) loads and transforms history data.
 - **Lifecycle watcher:** [`ThemeWatcherService`](../src/chat/services/ThemeWatcherService.ts) watches browser theme changes and exposes start/stop methods.
-- **Orchestration engine:** [`MessageService`](../src/chat/services/messaging/MessageService.ts) manages the message queue and inbound/outbound coordinators.
+- **Orchestration engine:** [`MessageCoordinator`](../src/chat/services/messaging/MessageCoordinator.ts) manages the message queue and inbound/outbound coordinators.
 
 ## When to create a service
 

@@ -272,7 +272,7 @@ describe('conversation status', () => {
     await streaming;
     expect(instance.state.get().status).toBe('streaming');
 
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     release.doResolve();
     await pendingSend;
 
@@ -311,7 +311,7 @@ describe('conversation status', () => {
     const pendingSend = instance.send('first');
     await streaming;
 
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     release.doResolve();
     await pendingSend;
 
@@ -376,7 +376,7 @@ describe('conversation status', () => {
           : send;
       await chunksQueued;
       if (outcome === 'cancel') {
-        await serviceManager.messageService.cancelCurrentMessageRequest();
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       }
       releaseSend.doResolve();
       await sendSettled;
@@ -515,9 +515,9 @@ describe('conversation status', () => {
       );
 
       if (scope === 'global Stop') {
-        await serviceManager.messageService.cancelCurrentMessageRequest();
+        await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       } else {
-        await serviceManager.messageService.cancelMessageRequestByID(
+        await serviceManager.messageCoordinator.cancelMessageRequestByID(
           secondRequestID,
           false
         );
@@ -575,7 +575,7 @@ describe('conversation status', () => {
       await renderChatAndGetInstanceWithStore(config);
     const pendingSend = instance.send('first');
     await streaming;
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
     release.doResolve();
     await pendingSend;
 
@@ -734,7 +734,7 @@ describe('conversation status', () => {
         (state) => state.status,
         (status) => statuses.push(status)
       );
-      await serviceManager.messageService.cancelCurrentMessageRequest();
+      await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
       release.doResolve();
       await sending;
       await update(instance, 'after');
@@ -792,7 +792,7 @@ describe('conversation status', () => {
     await update('before');
     expect(instance.state.get().status).toBe('streaming');
 
-    await serviceManager.messageService.cancelCurrentMessageRequest();
+    await serviceManager.messageCoordinator.cancelCurrentMessageRequest();
 
     expect(signal.aborted).toBe(true);
     expect(instance.state.get().status).toBe('ready');
