@@ -278,6 +278,33 @@ describe('cds-aichat-chat-header', function () {
       expect(overflowMenu).to.exist;
     });
 
+    it('should align the navigation overflow menu for LTR and RTL', async () => {
+      const items = [{ text: 'Settings', onClick: () => {} }];
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header
+          navigation-type="overflow"
+          .navigationOverflowItems=${items}></cds-aichat-chat-header>
+      `);
+      const getMenu = () =>
+        el.shadowRoot!.querySelector('[slot="navigation"] cds-overflow-menu')!;
+      const isFlipped = () =>
+        getMenu()
+          .querySelector('cds-overflow-menu-body')!
+          .hasAttribute('flipped');
+      expect(getMenu().getAttribute('align')).to.equal('right');
+      expect(isFlipped()).to.be.false;
+
+      document.documentElement.dir = 'rtl';
+      try {
+        el.requestUpdate();
+        await el.updateComplete;
+        expect(getMenu().getAttribute('align')).to.equal('left');
+        expect(isFlipped()).to.be.true;
+      } finally {
+        document.documentElement.removeAttribute('dir');
+      }
+    });
+
     it('should use custom navigation slot when provided', async () => {
       const el = await fixture<CdsAiChatHeader>(
         html`<cds-aichat-chat-header navigation-type="back">

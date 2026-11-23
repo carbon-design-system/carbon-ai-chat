@@ -107,7 +107,13 @@ class PromptLineElement extends LitElement {
   @property({ type: Boolean, reflect: true })
   rich = false;
 
-  /** Disables editing. The surface stays mounted but non-editable. */
+  /**
+   * Disables editing. The surface stays mounted but non-editable, and gives up
+   * focus while disabled. When it held focus at the moment it was disabled, it
+   * takes focus back on re-enable, unless the user has since focused or clicked
+   * elsewhere, or `blur()` was called. A host can disable the prompt line while
+   * a send is pending without losing the user's place.
+   */
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
@@ -143,6 +149,11 @@ class PromptLineElement extends LitElement {
   /** Pending deferred teardown, cancelled if the element is reattached. */
   private _pendingTeardownTimer: ReturnType<typeof setTimeout> | null = null;
   private _focusedWithKeyboard: boolean | null = null;
+  /**
+   * The focus `disabled` took away, with its origin, so re-enabling can return
+   * it. `null` when the surface did not hold focus when it was disabled.
+   */
+  private _focusBeforeDisable: { keyboard: boolean } | null = null;
   /** Sticky latch — once rich is wanted it never reverts. */
   private _richLatched = false;
   private _upgrading = false;
@@ -234,7 +245,7 @@ class PromptLineElement extends LitElement {
       }
     }
     if (changed.has('disabled')) {
-      this._controller.setEditable(!this.disabled);
+      this._syncEditable(this._controller);
     }
     // The seed echo is skipped once — re-applying it would emit a spurious
     // host-origin change event. Every later update lands, including one that
@@ -280,6 +291,7 @@ class PromptLineElement extends LitElement {
   /** Destroy the editing surface. Deferred from `disconnectedCallback`. */
   private _teardownSurface(): void {
     this._focusedWithKeyboard = null;
+    this._forgetFocusBeforeDisable();
     this._failRichReady(new Error('Input is not currently rendered'));
     this._controller?.destroy();
     this._controller = null;
@@ -403,6 +415,7 @@ class PromptLineElement extends LitElement {
 
   override blur(): void {
     this._focusedWithKeyboard = null;
+    this._forgetFocusBeforeDisable();
     this._controller?.blur();
   }
 
@@ -455,6 +468,57 @@ class PromptLineElement extends LitElement {
   // ---------------------------------------------------------------------------
   // Internals
   // ---------------------------------------------------------------------------
+
+  /**
+   * Apply `disabled` to the surface. A disabled surface cannot hold focus, so
+   * the focus it gives up is remembered and returned on re-enable. Focus that
+   * has moved to another element in the meantime stays where it is.
+   */
+  private _syncEditable(controller: PromptLineController): void {
+    if (this.disabled) {
+      if (controller.hasFocus()) {
+        this._focusBeforeDisable = { keyboard: controller.getKeyboardFocus() };
+        // A click on text or other unfocusable content leaves focus on the
+        // body, which reads the same as no move at all. Listen for it.
+        this.ownerDocument.addEventListener(
+          'pointerdown',
+          this._onPointerDownWhileDisabled,
+          true
+        );
+      }
+      controller.setEditable(false);
+      return;
+    }
+    controller.setEditable(true);
+    const restore = this._focusBeforeDisable;
+    this._forgetFocusBeforeDisable();
+    const activeElement = this.ownerDocument.activeElement;
+    if (
+      restore &&
+      (!activeElement || activeElement === this.ownerDocument.body)
+    ) {
+      // Synchronous, so a queued focus cannot land after the user moves on.
+      controller.focus(restore.keyboard, true);
+    }
+  }
+
+  /** Drop the focus a disable took away, so re-enabling leaves focus alone. */
+  private _forgetFocusBeforeDisable(): void {
+    if (this._focusBeforeDisable) {
+      this.ownerDocument.removeEventListener(
+        'pointerdown',
+        this._onPointerDownWhileDisabled,
+        true
+      );
+    }
+    this._focusBeforeDisable = null;
+  }
+
+  private _onPointerDownWhileDisabled = (event: PointerEvent): void => {
+    if (!event.composedPath().includes(this)) {
+      this._forgetFocusBeforeDisable();
+    }
+  };
 
   private _wantsRich(): boolean {
     return this._richLatched || this.rich;
