@@ -121,7 +121,7 @@ Variant stories compose, never copy: `args: { ...Default.args, … }`, `argTypes
 ## Titles, grouping, interaction tests
 
 - Two groups only: `Components/<Name>` (stable, published contract) and `Preview/<Name>` (experimental). Lit and React titles for the same component are **identical strings**. `storySort` order lives in `.storybook/preview.js` — new top-level entries may need adding there.
-- **Play functions** have no runner here; use [Vitest](testing.md) for behavior tests and leave the empty Interactions panel.
+- **Play functions** have no runner here; use [Vitest](tests.md) for behavior tests and leave the empty Interactions panel.
 
 ## API tables and the manifest
 

@@ -1,6 +1,6 @@
 # component-authoring.md — `@carbon/ai-chat-components` component structure
 
-Load this when adding, renaming, or restructuring a component — its files, its public API, or its React wrapper. For stories/docs see [storybook.md](storybook.md); for tests see [testing.md](testing.md).
+Load this when adding, renaming, or restructuring a component — its files, its public API, or its React wrapper. For stories/docs see [storybook.md](storybook.md); for tests see [tests.md](tests.md).
 
 ## Directory shape
 

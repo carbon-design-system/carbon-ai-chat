@@ -132,4 +132,4 @@ The `browser` project needs Chromium once per machine: `npx playwright install c
 - [packages/ai-chat/AGENTS.md](../AGENTS.md): package overview
 - [services.md](services.md): service archetypes, for test setup background
 - [src/sdk/store/AGENTS.md](../src/sdk/store/AGENTS.md): store rules
-- [Components testing](../../ai-chat-components/references/testing.md): read when the behavior belongs to a component
+- [Components testing](../../ai-chat-components/references/tests.md): read when the behavior belongs to a component
