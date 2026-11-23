@@ -39,7 +39,8 @@ export function requestFocus(options: FocusManagerOptions): boolean {
       return false;
     }
     if (options.showDisclaimer) {
-      // True once the accept button is asked to take focus, as in 1.x.
+      // True only when focus lands on the accept button, so false while it's
+      // disabled.
       return doFocus(options.disclaimer);
     }
     let target: HasRequestFocus | null;

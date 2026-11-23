@@ -83,7 +83,7 @@ describe('requestFocus while the disclaimer shows', () => {
   contractSetup();
   afterEach(() => vi.restoreAllMocks());
 
-  it('returns true before the accept button can be pressed', async () => {
+  it('returns false and leaves focus where it is before the accept button can be pressed', async () => {
     // happy-dom has no layout. Make the disclaimer text overflow, unread, so the
     // accept button stays disabled. happy-dom keeps clientHeight on HTMLElement.
     vi.spyOn(Element.prototype, 'scrollHeight', 'get').mockReturnValue(1000);
@@ -92,10 +92,9 @@ describe('requestFocus while the disclaimer shows', () => {
     // Outlast the chat's checks of whether the text was read.
     await pause(600);
     expect(byRole('button', ACCEPT_LABEL).hasAttribute('disabled')).toBe(true);
-    focusHostButton();
-    // Where focus goes depends on how the browser treats the disabled button,
-    // which happy-dom doesn't match, so only the result is checked.
-    expect(await requestFocus(instance)).toBe(true);
+    const button = focusHostButton();
+    expect(await requestFocus(instance)).toBe(false);
+    expect(deepActiveElement()).toBe(button);
   });
 
   it('returns true and keeps focus when the accept button already has it', async () => {
@@ -148,7 +147,7 @@ describe('requestFocus while the disclaimer shows', () => {
     expect(focusIsOnAccept()).toBe(true);
   });
 
-  it('returns true once it moves focus to the accept button, even when the page then moves focus away', async () => {
+  it('returns false when the page moves focus away from the accept button', async () => {
     const instance = await mountDisclaimer();
     await waitForAcceptEnabled();
     const button = focusHostButton();
@@ -162,7 +161,7 @@ describe('requestFocus while the disclaimer shows', () => {
     };
     document.addEventListener('focusin', trap);
     try {
-      expect(await requestFocus(instance)).toBe(true);
+      expect(await requestFocus(instance)).toBe(false);
       expect(trapped).toBe(1);
       expect(deepActiveElement()).toBe(button);
     } finally {
