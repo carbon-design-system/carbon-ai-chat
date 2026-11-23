@@ -7,18 +7,14 @@
  *  @license
  */
 
-import merge from 'lodash-es/merge.js';
-
 import actions from '../store/actions';
 import {
   CompleteItemChunk,
   ConversationalSearchItem,
   FinalResponseChunk,
   GenericItem,
-  MessageResponse,
   MessageResponseTypes,
   PartialItemChunk,
-  PartialOrCompleteItemChunk,
   StreamChunk,
   TextItem,
   UserDefinedItem,
@@ -166,35 +162,6 @@ function deriveStreamingItemText(
 }
 
 /**
- * Returns the message `addMessageChunk` stores for a `partial_item` or `complete_item`
- * chunk. Item content never reaches it before `final_response`: a new stream starts from
- * an empty placeholder, and a chunk only deep-merges its `message_options` in, ignoring
- * any other `partial_response` field. With nothing to merge, `prev` comes back as is.
- *
- * @param prev The message stored under `messageID`, if any.
- * @param chunk The chunk being applied.
- * @param messageID The resolved message ID, which the chunk itself may not carry.
- */
-function applyChunk(
-  prev: MessageResponse | undefined,
-  chunk: PartialOrCompleteItemChunk,
-  messageID: string
-): MessageResponse {
-  const message: MessageResponse = prev ?? {
-    id: messageID,
-    output: { generic: [] },
-    history: { timestamp: Date.now() },
-  };
-  const messageOptions = chunk.partial_response?.message_options;
-  return messageOptions
-    ? {
-        ...message,
-        message_options: merge({}, message.message_options, messageOptions),
-      }
-    : message;
-}
-
-/**
  * Checks if an item has displayable content.
  * This is the core logic shared by chunk, message, and upserted item content detection.
  *
@@ -281,7 +248,6 @@ function messageHasDisplayableContent(
 }
 
 export {
-  applyChunk,
   chunkHasDisplayableContent,
   hasDisplayableContentForItem,
   deriveStreamingItemText,
