@@ -195,6 +195,18 @@ function forwardedNames(subject: Subject): string[] | null {
   );
 }
 
+/**
+ * The `cds-aichat-container` whose shadow root holds the chat's own content:
+ * the subject itself, or the one inside the custom element's shadow root.
+ */
+function innerContainer(subject: Subject): HTMLElement {
+  return (
+    subject.host.shadowRoot?.querySelector<HTMLElement>(
+      'cds-aichat-container'
+    ) ?? subject.host
+  );
+}
+
 /** The host a container appended for `slotName`, if it appended one. */
 function hostFor(subject: Subject, slotName: string) {
   // `:not(slot)` because a nested container's own forwarders are
@@ -321,6 +333,79 @@ describe('plugin-host protocol: all three containers agree', () => {
         hostedAfter: false,
         forwardedAfter: forwardedNames(subject) === null ? undefined : false,
       }))
+    );
+  });
+
+  /**
+   * Host-app content, such as a user-defined response, lives in a surface's
+   * light DOM, or with `renderUserDefinedResponse` on the custom element, in
+   * the inner container's light DOM. Markdown there is already where page CSS
+   * reaches. The surface has to leave its offer to the markdown element, or
+   * the host moves away and the element's slot forwarder can't reach it.
+   */
+  it('leaves an offer from host-app content to the markdown element', async () => {
+    const results = await acrossSubjects(async (subject) => {
+      const placements: Record<string, HTMLElement> = {
+        'light DOM': subject.host,
+      };
+      if (subject.host === customElement) {
+        placements['inner container light DOM'] = innerContainer(subject);
+      }
+      const outcomes: Record<string, unknown> = {};
+      for (const [placement, parent] of Object.entries(placements)) {
+        const slotName = `parity-host-app-${subject.name}-${placement}`;
+        const userContent = document.createElement('div');
+        parent.appendChild(userContent);
+        const live = document.createElement('div');
+        const event = mountEvent(rendererDetail(slotName, live));
+        userContent.dispatchEvent(event);
+        await subject.settle();
+        userContent.remove();
+        outcomes[placement] = {
+          claimed: event.defaultPrevented,
+          moved: live.parentElement !== null,
+          forwarded: forwardedNames(subject)?.includes(slotName),
+        };
+      }
+      return outcomes;
+    });
+
+    const declined = (subject: Subject) => ({
+      claimed: false,
+      moved: false,
+      forwarded: forwardedNames(subject) === null ? undefined : false,
+    });
+    expect(results).toEqual(
+      sameForAll((subject) =>
+        subject.host === customElement
+          ? {
+              'light DOM': declined(subject),
+              'inner container light DOM': declined(subject),
+            }
+          : { 'light DOM': declined(subject) }
+      )
+    );
+  });
+
+  /** The chat's own content renders in the inner container's shadow root. */
+  it("claims an offer from the chat's own content", async () => {
+    const results = await acrossSubjects(async (subject) => {
+      const slotName = `parity-chat-content-${subject.name}`;
+      const chatContent = document.createElement('div');
+      innerContainer(subject).shadowRoot?.appendChild(chatContent);
+      const live = document.createElement('div');
+      const event = mountEvent(rendererDetail(slotName, live));
+      chatContent.dispatchEvent(event);
+      await subject.settle();
+      chatContent.remove();
+      return {
+        claimed: event.defaultPrevented,
+        hosted: hostFor(subject, slotName) === live,
+      };
+    });
+
+    expect(results).toEqual(
+      sameForAll(() => ({ claimed: true, hosted: true }))
     );
   });
 
