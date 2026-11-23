@@ -17,7 +17,7 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 - Theme switching, layout config, direction switching (LTR/RTL)
 - Header, launcher, homescreen configuration
 - Launcher: keyboard open/dismiss, unread labels, live avatar config, reduced motion, and missing animation events, on the React host (float, LTR) and the web-component host (float, RTL) (`tests/native-launcher.spec.ts`).
-- Header menus: arrow keys, Escape focus return, and AI-label keyboard access, on the React host (float, LTR) and the web-component host (sidebar, RTL) (`tests/overflow-menu-arrow-navigation.spec.ts`).
+- Header menus: arrow keys, Escape focus return, and AI-label keyboard access, on the React host (float, LTR) and the web-component host (sidebar, RTL) (`packages/ai-chat/src/chat/components/header/__tests__/headerMenuFocus.browser.test.ts`).
 - Native panel frames: direct slot chains, custom event order, option reset, focus/reactivation, retained DOM/React state, and response, citation, and mobile-history openings on both hosts (`tests/native-panel-composition.spec.ts`).
 - Native autocomplete fixture: delayed list readiness, keyboard selection, retained React context and state, root replacement, borrowed elements, two chats, direct slots, editor focus, and narrow/wide height caps (`tests/native-autocomplete.spec.ts`). The production input uses the same native autocomplete owner.
 - Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`tests/homescreen.spec.ts`).
