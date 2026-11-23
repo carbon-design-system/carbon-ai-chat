@@ -16,6 +16,7 @@ import {
   isEnterKey,
   getScrollBottom,
   getDeepActiveElement,
+  doFocus,
 } from '../../../src/chat/utils/domUtils';
 
 // Mock DOM environment
@@ -202,6 +203,8 @@ describe('getDeepActiveElement', () => {
   afterEach(() => {
     // Clean up after each test
     document.body.innerHTML = '';
+    // Some tests mock activeElement on the document itself, which shadows the prototype getter.
+    Reflect.deleteProperty(document, 'activeElement');
   });
 
   it('should return document.activeElement when no shadow DOM exists', () => {
@@ -407,5 +410,40 @@ describe('getDeepActiveElement', () => {
     const result = getDeepActiveElement();
     // In jsdom, focus might not work perfectly, but we should get a result
     expect(result).toBeTruthy();
+  });
+});
+
+describe('doFocus', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('returns true when it moves focus to the element', () => {
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+
+    expect(doFocus(button)).toBe(true);
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('returns false when the element cannot take focus', () => {
+    const outside = document.createElement('button');
+    const div = document.createElement('div');
+    document.body.append(outside, div);
+    outside.focus();
+
+    expect(doFocus(div)).toBe(false);
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it('returns true when a shadow host passes focus to its inner control', () => {
+    const host = document.createElement('div');
+    const inner = document.createElement('button');
+    host.attachShadow({ mode: 'open' }).appendChild(inner);
+    host.focus = () => inner.focus();
+    document.body.appendChild(host);
+
+    expect(doFocus(host)).toBe(true);
+    expect(getDeepActiveElement()).toBe(inner);
   });
 });
