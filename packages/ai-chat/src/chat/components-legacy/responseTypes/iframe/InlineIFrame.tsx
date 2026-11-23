@@ -17,7 +17,8 @@ import {
 } from '../../../utils/cspStyleUtils';
 import { getMediaDimensions } from '../../../../sdk/utils/messageUtils';
 import { getResponsiveElementPaddingValue } from '../../../../sdk/utils/miscUtils';
-import { InlineError } from '../../../components/responseTypes/error/InlineError';
+import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
+import { MarkdownWithDefaults } from '../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { IFrameComponent } from './IFrameComponent';
 import { IFrameItem } from '../../../../types/messaging/Messages';
 import { AppState } from '../../../../types/state/AppState';
@@ -36,6 +37,9 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
   const ariaAnnouncer = useAriaAnnouncer();
   const errors_iframeSource = useSelector(
     (state: AppState) => state.languagePack.errors_iframeSource
+  );
+  const errors_iconLabel = useSelector(
+    (state: AppState) => state.languagePack.errors_iconLabel
   );
   const [isError, setIsError] = useState(false);
   const { source, title } = messageItem;
@@ -66,7 +70,11 @@ function InlineIFrame({ messageItem }: InlineIframeProps) {
   }, [ariaAnnouncer, errors_iframeSource]);
 
   if (isError) {
-    return <InlineError text={errors_iframeSource} />;
+    return (
+      <InlineError iconLabel={errors_iconLabel}>
+        <MarkdownWithDefaults removeHTML text={errors_iframeSource} />
+      </InlineError>
+    );
   }
 
   return (
