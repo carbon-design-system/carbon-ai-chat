@@ -22,6 +22,7 @@ import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/
 import { createMarkdownPluginHostController } from '@carbon/ai-chat-components/es/components/markdown/src/utils/plugin-host-container.js';
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
 import { placeHosts } from '../../chat/utils/removeHostsOnUnmount';
+import { isChatContentOffer } from '../shared/pluginHostOffers';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import {
@@ -260,14 +261,33 @@ class ChatCustomElement extends FlattenedConfigElement {
    * element's own light DOM — page DOM, since a `cds-aichat-custom-element` is
    * always the outermost chat element in its shadow chain — so a
    * consumer-loaded stylesheet reaches the plugin output. There is no outer
-   * chat ancestor to defer to, so this surface takes hosting unconditionally.
+   * chat ancestor to defer to, so this surface takes every offer from the
+   * chat's own content.
+   *
+   * The chat's own content lives in the inner container's shadow root.
+   * Host-app content, such as markdown in a user-defined response, lives in
+   * this element's light DOM or, with `renderUserDefinedResponse`, in the inner
+   * container's light DOM. Both are inside this element's shadow tree, so the
+   * controller's default `event.target` check can't separate them; this asks
+   * about the inner container. Declined offers stay with the markdown element,
+   * for the reason `cds-aichat-container` gives, which also explains why the
+   * check is passed twice.
    */
   private pluginHostController = createMarkdownPluginHostController(this, {
     onSlotNamesChange: (slotNames) => {
       this._pluginSlotNames = slotNames;
     },
     placeHost: (host) => placeHosts(this, [host]),
+    ownsOffer: (event) =>
+      isChatContentOffer(event, this, this.innerContainer()),
+    shouldDefer: (event) =>
+      !isChatContentOffer(event, this, this.innerContainer()),
   });
+
+  /** The `cds-aichat-container` this element renders. */
+  private innerContainer() {
+    return this.renderRoot?.querySelector('cds-aichat-container');
+  }
 
   connectedCallback() {
     super.connectedCallback();
