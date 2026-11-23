@@ -6,11 +6,9 @@
 
 # PersistedStateConfig
 
-**Experimental.**
-
 - Kind: Interface
 - Category: Config
-- Reference: https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.PersistedStateConfig.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.PersistedStateConfig.html
 
 Hands session-state persistence to the host page, set on PublicConfig.persistedState. By
 default Carbon AI Chat stores session state in the browser's `sessionStorage`; providing either
@@ -35,27 +33,27 @@ interface PersistedStateConfig
 
 `initialState?: PersistableState`
 
-**Experimental.**
+The session state to boot from: a value you saved from PersistedStateConfig.onStateChange,
+or one you build. When restoring, pass back the whole value you saved. The chat uses it in place of
+reading `sessionStorage`. Resolve any asynchronous load (for example from your own backend) before
+constructing the chat and pass the resolved value here. When omitted, the chat starts a fresh session
+but still reports changes to PersistedStateConfig.onStateChange.
 
-The session state to boot from, used in place of reading `sessionStorage`. Resolve any
-asynchronous load (for example from your own backend) before constructing the chat and pass the
-resolved value here. When omitted, the chat starts a fresh session but still reports changes to
-PersistedStateConfig.onStateChange.
+In 1.x, passing any `initialState` counts as a restored session, so
+PublicConfig.openChatByDefault doesn't open the window.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.PersistedStateConfig.html#initialstate)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.PersistedStateConfig.html#initialstate)
 
 ### onStateChange
 
 `onStateChange?: (state: PersistableState) => void`
-
-**Experimental.**
 
 Called whenever the persistable session state changes, so the host can store it wherever it likes
 (its own backend, `localStorage`, and so on). Replaces the internal `sessionStorage` write. The
 argument is the complete PersistableState; persist it verbatim so it can later seed
 PersistedStateConfig.initialState.
 
-[Reference](https://chat.carbondesignsystem.com/version/v1.25.0/docs/interfaces/Type_reference.PersistedStateConfig.html#onstatechange)
+[Reference](https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/interfaces/Type_reference.PersistedStateConfig.html#onstatechange)
 
 ## Related
 

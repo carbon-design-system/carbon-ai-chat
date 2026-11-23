@@ -8,14 +8,14 @@
 
 - Kind: TypeAlias
 - Category: Messaging
-- Reference: https://chat.carbondesignsystem.com/version/v1.25.0/docs/types/Type_reference.SystemMessageVariant.html
+- Reference: https://chat.carbondesignsystem.com/version/v1.26.0-rc.0/docs/types/Type_reference.SystemMessageVariant.html
 
 Visual layout for a SystemMessageItem.
 
 ## Signature
 
 ```ts
-type SystemMessageVariant = "default" | "date" | "agent"
+type SystemMessageVariant = "default" | "divider" | "date" | "agent"
 ```
 
 ## Related
