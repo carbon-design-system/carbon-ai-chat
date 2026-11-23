@@ -23,6 +23,8 @@ import { PublicConfig } from '../../types/config/PublicConfig';
 
 import { FlattenedConfigElement } from '../shared/FlattenedConfigElement';
 
+import { isChatContentOffer } from '../shared/pluginHostOffers';
+
 import {
   getDefaultRenderer,
   whenDefaultRenderer,
@@ -333,9 +335,19 @@ class ChatContainer extends FlattenedConfigElement {
    * consumer-loaded stylesheet reaches the plugin output; the markdown
    * element's own light DOM sits inside the chat's shadow root, where it
    * cannot.
+   *
+   * Offers from host-app content, such as markdown in a user-defined
+   * response, are declined: that content is in this element's light DOM,
+   * already in page DOM, so the markdown element hosts it locally. The check
+   * runs twice. `ownsOffer` keeps the slot from being tracked at all.
+   * `shouldDefer` covers an older `@carbon/ai-chat-components` controller,
+   * which ignores `ownsOffer`. Drop that half once the components floor
+   * includes `ownsOffer`.
    */
   private pluginHostController = createMarkdownPluginHostController(this, {
-    shouldDefer: (event) => this.hasOuterChatHandler(event),
+    ownsOffer: (event) => isChatContentOffer(event, this),
+    shouldDefer: (event) =>
+      !isChatContentOffer(event, this) || this.hasOuterChatHandler(event),
     placeHost: (host) => placeHosts(this, [host]),
   });
 

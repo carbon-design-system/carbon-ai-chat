@@ -1,0 +1,48 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+@use '../../../globals/scss/vars' as *;
+@use '@carbon/layout';
+@use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/type';
+
+$block-class: #{$prefix}-inline-error;
+
+:host(#{$block-class}) {
+  display: flex;
+  flex-direction: row;
+}
+
+.#{$block-class}__icon {
+  display: flex;
+  flex: 0 0 layout.$spacing-05;
+  align-items: flex-start;
+  margin-block-start: layout.$spacing-01;
+  margin-inline-end: layout.$spacing-03;
+
+  svg {
+    block-size: layout.$spacing-05;
+    fill: theme.$support-error;
+    inline-size: layout.$spacing-05;
+    vertical-align: middle;
+  }
+
+  svg path[data-icon-path='inner-path'] {
+    fill: theme.$icon-on-color;
+    opacity: 1;
+  }
+}
+
+.#{$block-class}__text {
+  @include type.type-style('body-01');
+
+  flex: 1;
+  color: theme.$text-error;
+  margin-block-start: 1px;
+}
