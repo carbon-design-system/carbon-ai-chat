@@ -18,7 +18,7 @@ import { reasoningSteps } from './story-data';
 import { profileImage } from '../../user-avatar/__stories__/story-data';
 
 export default {
-  title: 'Preview/Message byline',
+  title: 'Preview/Message item shell/Message byline',
   component: 'cds-aichat-message-byline',
 };
 
