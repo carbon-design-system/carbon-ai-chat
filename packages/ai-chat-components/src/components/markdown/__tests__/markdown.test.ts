@@ -3265,17 +3265,19 @@ HTTP: http://example.com
       });
     }
 
-    it('reoffers a delegated block plugin after its light-DOM controller changes', async () => {
+    it('reoffers a delegated block plugin after its controller changes', async () => {
       const first = await createRelocationHarness();
       const second = await createRelocationHarness();
       const el = await first.addMarkdown('::tag::', {
         markdownItPlugins: [blockTagPlugin],
       } as Partial<MarkdownElementInstance>);
-      first.harness.appendChild(el);
+      // Moves stay in each surface's shadow tree: markdown in a surface's light
+      // DOM is host-app content, which the surface leaves to the markdown element.
+      first.harness.shadowRoot?.appendChild(el);
       await el.updateComplete;
       const [[slotName, oldHost]] = [...first.pluginHosts.entries()];
 
-      second.harness.appendChild(el);
+      second.harness.shadowRoot?.appendChild(el);
       await el.updateComplete;
 
       expect(first.pluginHosts.has(slotName)).to.equal(false);
@@ -3847,9 +3849,11 @@ HTTP: http://example.com
             detail,
           })
         );
-      // A third-party emitter that never sends an unmount.
+      // A third-party emitter that never sends an unmount. It sits in the
+      // target's shadow tree, since the target leaves offers from its light DOM
+      // to the markdown element.
       const sender = document.createElement('span');
-      target.appendChild(sender);
+      target.attachShadow({ mode: 'open' }).appendChild(sender);
       offer(sender, {
         kind: 'pluginFallback',
         slotName: 'orphan',
