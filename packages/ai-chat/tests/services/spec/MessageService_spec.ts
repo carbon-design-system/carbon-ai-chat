@@ -7,6 +7,7 @@
  *  @license
  */
 
+import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import MessageService, {
   PendingMessageRequest,
 } from '../../../src/chat/services/messaging/MessageService';
@@ -129,6 +130,56 @@ const createServiceManagerStub = (
 };
 
 describe('MessageService', () => {
+  it.each<[string | undefined, string, number]>([
+    [undefined, 'generated-local', 1],
+    ['', '', 0],
+  ])(
+    'defaults local ID %p only after pre-send completes',
+    async (localID, expectedID, allocations) => {
+      const serviceManager = createServiceManagerStub(
+        jest.fn().mockResolvedValue(undefined)
+      );
+      const service = new MessageService(serviceManager, {
+        messaging: { messageTimeoutSecs: 0 },
+      });
+      const reachedPreSend = createDeferred();
+      const releasePreSend = createDeferred();
+      (serviceManager.eventBus.fire as jest.Mock).mockImplementation(
+        async (event) => {
+          if (event.type === BusEventType.PRE_SEND) {
+            reachedPreSend.resolve();
+            await releasePreSend.promise;
+          }
+        }
+      );
+      const uuid = jest
+        .spyOn(uuidUtils, 'uuid')
+        .mockReturnValue('generated-local');
+      const sent = service.send(
+        createMessage('request'),
+        MessageSendSource.MESSAGE_INPUT,
+        localID
+      );
+      try {
+        await reachedPreSend.promise;
+        expect(uuid).not.toHaveBeenCalled();
+        releasePreSend.resolve();
+        await sent;
+        expect(uuid).toHaveBeenCalledTimes(allocations);
+        expect(serviceManager.store.dispatch).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'UPDATE_LOCAL_MESSAGE_ITEM',
+            messageItem: expect.objectContaining({
+              ui_state: expect.objectContaining({ id: expectedID }),
+            }),
+          })
+        );
+      } finally {
+        releasePreSend.resolve();
+        uuid.mockRestore();
+      }
+    }
+  );
   it('retains request ownership after its callback returns and across restarts', async () => {
     const customSendMessage = jest.fn().mockResolvedValue(undefined);
     const serviceManager = createServiceManagerStub(customSendMessage);
