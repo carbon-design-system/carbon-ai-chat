@@ -203,6 +203,7 @@ export interface MarkdownPluginHostController {
 const MOUNT = 'cds-aichat-markdown-plugin-host-mount';
 const UPDATE = 'cds-aichat-markdown-plugin-host-update';
 const UNMOUNT = 'cds-aichat-markdown-plugin-host-unmount';
+const OWNERSHIP = 'cds-aichat-markdown-plugin-host-ownership';
 
 const connectedControllers = new WeakMap<HTMLElement, (name: string) => void>();
 
@@ -216,6 +217,24 @@ export function getMarkdownPluginHostTargets(sender: Node): HTMLElement[] {
     node = node instanceof ShadowRoot ? node.host : node.parentNode;
   }
   return targets;
+}
+
+/**
+ * Lists the connected surfaces that would host an offer from `sender` where it
+ * sits now, in the order the offer reaches them. Each surface answers with its
+ * own `ownsOffer`, so moving `sender` between a surface's shadow tree and its
+ * light DOM changes the list even though the surface is still an ancestor.
+ */
+export function getMarkdownPluginHostOwners(sender: Element): HTMLElement[] {
+  const owners: HTMLElement[] = [];
+  sender.dispatchEvent(
+    new CustomEvent<HTMLElement[]>(OWNERSHIP, {
+      bubbles: true,
+      composed: true,
+      detail: owners,
+    })
+  );
+  return owners;
 }
 
 // A detached or reparented sender can no longer bubble through its old owners.
@@ -409,6 +428,12 @@ export function createMarkdownPluginHostController(
     hosts.delete(slotName);
   };
 
+  const handleOwnership = (event: Event) => {
+    if (ownsOffer(event)) {
+      (event as CustomEvent<HTMLElement[]>).detail?.push(target);
+    }
+  };
+
   const handleUnmount = (event: Event) => {
     const detail = (event as CustomEvent<{ slotName: string } | undefined>)
       .detail;
@@ -424,6 +449,7 @@ export function createMarkdownPluginHostController(
       target.addEventListener(MOUNT, handleMount);
       target.addEventListener(UPDATE, handleUpdate);
       target.addEventListener(UNMOUNT, handleUnmount);
+      target.addEventListener(OWNERSHIP, handleOwnership);
     },
     disconnect() {
       if (connectedControllers.get(target) === releaseClaim) {
@@ -433,6 +459,7 @@ export function createMarkdownPluginHostController(
       target.removeEventListener(MOUNT, handleMount);
       target.removeEventListener(UPDATE, handleUpdate);
       target.removeEventListener(UNMOUNT, handleUnmount);
+      target.removeEventListener(OWNERSHIP, handleOwnership);
       for (const host of hosts.values()) {
         if (host.parentNode === target) {
           host.remove();
