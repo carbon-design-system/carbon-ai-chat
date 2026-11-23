@@ -29,6 +29,7 @@ const CUSTOM_ICON = {
   content: [{ elem: 'path', attrs: { d: 'M0 0h16v16H0z' } }],
 } as any;
 
+const IMAGE_URL = 'https://example.com/image.png';
 const CUSTOM_ICON_SELECTOR = 'svg[data-icon="custom"]';
 const HIDDEN_LABEL_SELECTOR = '.cds-aichat--visually-hidden';
 const HIDDEN_LABEL_CLASS_SELECTOR = '.cds-aichat--button-item--hidden-label';
@@ -154,6 +155,16 @@ describe('url button of kind LINK without `image_url`', () => {
       'aria-label',
       'Launch'
     );
+  });
+});
+
+describe.each(CASES)('$name button with `image_url`', (buttonCase) => {
+  it('keeps the default icon when `icon` is absent and `image_url` is set', () => {
+    const { container } = renderButton(buttonCase, { image_url: IMAGE_URL });
+
+    expect(container.querySelector(`img[src="${IMAGE_URL}"]`)).not.toBeNull();
+    expect(container.querySelector(CUSTOM_ICON_SELECTOR)).toBeNull();
+    expect(container.querySelector('svg')).toBeInTheDocument();
   });
 });
 
