@@ -16,13 +16,13 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 
 - Theme switching, layout config, direction switching (LTR/RTL)
 - Header, launcher, homescreen configuration
-- Launcher: keyboard open/dismiss, unread labels, live avatar config, reduced motion, and missing animation events, on the React host (float, LTR) and the web-component host (float, RTL) (`tests/native-launcher.spec.ts`).
+- Launcher: keyboard open/dismiss, unread labels, live avatar config, reduced motion, and missing animation events, on the React host (float, LTR) and the web-component host (float, RTL) (`packages/ai-chat/src/chat/__tests__/view/nativeLauncher.browser.test.tsx`).
 - Header menus: arrow keys, Escape focus return, and AI-label keyboard access, on the React host (float, LTR) and the web-component host (sidebar, RTL) (`packages/ai-chat/src/chat/components/header/__tests__/headerMenuFocus.browser.test.ts`).
-- Native panel frames: direct slot chains, custom event order, option reset, focus/reactivation, retained DOM/React state, and response, citation, and mobile-history openings on both hosts (`tests/native-panel-composition.spec.ts`).
+- Native panel frames: direct slot chains, custom event order, option reset, focus/reactivation, retained DOM/React state, and response, citation, and mobile-history openings on both hosts (`packages/ai-chat/src/chat/__tests__/panels/panelComposition.browser.test.tsx`).
 - Native autocomplete fixture: delayed list readiness, keyboard selection, retained React context and state, root replacement, borrowed elements, two chats, direct slots, editor focus, and narrow/wide height caps (`packages/ai-chat/src/chat/__tests__/input/nativeAutocomplete.browser.test.tsx`). The production input uses the same native autocomplete owner.
 - Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`tests/homescreen.spec.ts`).
 - Chat instance controls (focus, scroll, input visibility, restart)
-- Native shell lifecycle: phone viewport resize, same-parent moves with retained message/input and live regions, mobile programmatic-focus suppression, user focus, and close/reopen on both hosts (`tests/native-shell-lifecycle.spec.ts`).
+- Native shell lifecycle: phone viewport resize, same-parent moves with retained message/input and live regions, mobile programmatic-focus suppression, user focus, and close/reopen on both hosts (`packages/ai-chat/src/chat/__tests__/view/mobileShell.browser.test.tsx`).
 - Remount behavior: under **Chat Configuration → Lifecycle**, pick **Reuse the chat**, send a message, connect to an agent, then select **Remount the chat**. The new chat element keeps the transcript and the agent chat. With **New chat (default)**, a remount starts over; check that by hand. The reuse case runs on both hosts in `tests/remount-reuse.spec.ts`.
 - Slots, layout frame/content width settings
 - Writeable elements, layout frame/content width settings
