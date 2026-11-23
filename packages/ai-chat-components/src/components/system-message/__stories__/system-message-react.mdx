@@ -1,0 +1,89 @@
+import { ArgTypes, Canvas, Meta } from '@storybook/addon-docs/blocks';
+import * as Stories from './system-message-react.stories';
+
+<Meta of={Stories} />
+
+# System message
+
+[Source code](https://github.com/carbon-design-system/carbon-ai-chat/tree/main/packages/ai-chat-components/src/components/system-message) &nbsp;|&nbsp; [Feedback](https://github.com/carbon-design-system/carbon-ai-chat/issues)
+
+## Overview
+
+Use `SystemMessage` for a status line between messages. This component is experimental, and its API may change without a deprecation window.
+
+<Canvas of={Stories.Default} />
+
+## Key features
+
+- **Inline**: The component adds its own outer spacing by default. Set `inline` when it sits inside a message bubble, which owns the spacing.
+- **Divider**: Set `divider` to draw a line above the text.
+- **Response stopped**: Set `responseStopped` to render the message in the "response stopped" indicator styling.
+- **Optional icon**: Pass a `@carbon/icons` icon to `icon` to show it before the text.
+- **Text-only children**: Pass the text as children.
+
+## Examples
+
+### With a divider
+
+```jsx
+import SystemMessage from '@carbon/ai-chat-components/es/react/system-message.js';
+
+function Notice() {
+  return (
+    <SystemMessage divider>The agent joined the conversation</SystemMessage>
+  );
+}
+```
+
+<Canvas of={Stories.Divider} />
+
+### With an icon
+
+```jsx
+import Headset16 from '@carbon/icons/es/headset/16.js';
+import SystemMessage from '@carbon/ai-chat-components/es/react/system-message.js';
+
+function Notice() {
+  return (
+    <SystemMessage icon={Headset16}>
+      The agent joined the conversation
+    </SystemMessage>
+  );
+}
+```
+
+<Canvas of={Stories.WithIcon} />
+
+### Response stopped
+
+```jsx
+import SystemMessage from '@carbon/ai-chat-components/es/react/system-message.js';
+
+function Notice() {
+  return (
+    <SystemMessage responseStopped>Response generation stopped</SystemMessage>
+  );
+}
+```
+
+<Canvas of={Stories.ResponseStopped} />
+
+## Accessibility
+
+The component gets `role="status"` unless you set a role yourself. That role already announces changes politely, so the component adds no `aria-live` attribute. The icon is decorative and hidden from assistive technology, so the text must carry the full meaning.
+
+## Component API
+
+### `<SystemMessage>`
+
+<ArgTypes of={Stories.Default} />
+
+## JSX (via import)
+
+```jsx
+import SystemMessage from '@carbon/ai-chat-components/es/react/system-message.js';
+```
+
+## Feedback
+
+Open an issue at https://github.com/carbon-design-system/carbon-ai-chat/issues to provide feedback or request changes.
