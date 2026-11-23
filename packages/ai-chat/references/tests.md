@@ -4,14 +4,16 @@ Load this when adding, moving, or fixing a test for this package, or when decidi
 
 Tests sit beside the code they cover, in `__tests__/<name>.test.ts(x)`. Vitest runs them. The package's `tests/` folder holds only setup and the checks with no module to sit beside.
 
+Write the case by [writing-tests.md](../../../references/writing-tests.md); test accessibility by [accessibility.md](../../../references/accessibility.md#testing-accessibility).
+
 ## Where a test goes
 
 Use the cheapest test that can show the behavior. Answer in order, and stop at the first yes.
 
 1. **One module owns the behavior.** Write a unit test in `__tests__/` beside that module. Build only what it needs: a stub, a test store, or one rendered component. Don't mount the chat to reach a service or the store.
 2. **Several modules work together.** Write a cross-module test in the `__tests__/` of the entry it drives (table below). Boot the least you need (see [Helpers](#helpers)).
-3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A test whose stub stands in for the geometry, focus or slotting the behavior depends on, such as a `getClientRects` stub so tabbable sees every element, belongs here without the stub. A unit that takes a measurement as its input, such as a scroll controller fed element sizes, may stub that measurement and stay where it is. Contract tests stay in their project; only scripts edit them. A real browser alone is no reason to use the demo.
-4. **It needs the built demo:** the production build, a demo toggle, the host-compatibility pages, or the demo's response corpus. Only then add a spec to [demo/tests/](../../../demo/tests/), and only if no example's spec covers it. The [example suite](../../../examples/references/playwright.md) covers host integrations.
+3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. So is a test that reads `activeElement` or what's tabbable. A test whose stub stands in for the geometry, focus or slotting the behavior depends on, such as a `getClientRects` stub so tabbable sees every element, belongs here without the stub. A unit fed its input stays put: a scroll controller fed element sizes may stub the sizes, and logic that picks a focus target from a fixed list needs no browser. Contract tests stay in their project; only scripts edit them. A real browser alone is no reason to use the demo.
+4. **It needs the built demo:** the production build, which a strict-CSP check needs, a demo toggle, the host-compatibility pages, or the demo's response corpus. Only then add a spec to [demo/tests/](../../../demo/tests/), whose `npm test` [builds only the demo](../../../demo/AGENTS.md#build-run-test). Add it only if [no example's spec covers it](../../../examples/references/playwright.md#which-specs-run-against-which-example); examples cover host integrations.
 
 Check one behavior at one level. When a cheaper test shows it, delete the costlier copy, unless the costlier copy is a contract test.
 
@@ -24,19 +26,19 @@ Check one behavior at one level. When a cheaper test shows it, delete the costli
 
 Tests follow their folder's [import rules](../AGENTS.md#source-boundaries). A test under `src/sdk/` can import a framework's types but never its values: no React, Lit, Testing Library, or `src/chat/`, including through `vi.mock` or `vi.importActual`. If its assertions need them, it's a `chat/` test.
 
-**Reusable component behavior** (rendering, tokens, HTML, keyboard handling inside an element) belongs in `@carbon/ai-chat-components`' tests. Keep chat state, config, messaging, and the wiring between them here.
+**A test lives with the code that owns the behavior,** not where it shows up. [Components](../../ai-chat-components/references/tests.md) owns rendering, tokens, HTML, keyboard handling, and traversal and focus inside an element. This package owns chat state, config, messaging, their wiring, and which target gets focus after a chat action (open, close, send, a panel), in a cross-module `.browser.test`. If both test an element behavior, keep the components test and one wiring case here. Code copied into both is tested in each. A test here that inspects an element's markup likely belongs there.
 
 ## Prefer public behavior
 
 Aim each behavior test at a public boundary: the `ChatInstance`, a host's props, attributes, slots, and events, or the SDK handle. Calling an internal class's exported methods doesn't make a test external.
 
-Keep an internal-only test when it shows something public tests can't reach cheaply, such as a large input matrix or a structural-sharing check. Say why in a comment: what it protects, why public tests don't cover it, and why it's worth keeping.
+Keep an internal-only test when it shows something public tests can't reach cheaply, such as a large input matrix or a structural-sharing check. Say why in a comment: what it protects, why public tests don't cover it, and why it's worth keeping. Reducer tests, today in `src/chat/state/__tests__/`, need no comment: public tests can't cheaply reach their transition logic over many inputs.
 
 To remove a test as a duplicate, show the surviving test covers it. Plant a narrow source break the old test catches, and show the survivor fails on it too.
 
 ## Contract tests pin host behavior
 
-For a change a host can observe, add or change a contract test in the same commit. Name it `<name>.contract.test.ts(x)`; it runs in `node` or `happy-dom`. The manifest refuses a `.contract.browser.test` file for now, because CI checks the manifest without a browser. Put it in the folder of the entry it drives (`src/chat/__tests__/<area>/`, `src/sdk/__tests__/`, `src/react/__tests__/hosts/`, `src/web-components/__tests__/`, or `src/__tests__/exports/`). Shared drivers and fixtures go in `src/chat/__tests__/helpers/contract/`. The SDK's go in `src/sdk/__tests__/helpers/publicContract.ts` and `lifecycleControl.ts`.
+For a change a host can observe, add or change a contract test in the same commit. A new contract test for existing behavior follows the same rules and manifest. Name it `<name>.contract.test.ts(x)`; it runs in `node` or `happy-dom`. The manifest refuses a `.contract.browser.test` file for now, because CI checks the manifest without a browser. Put it in the folder of the entry it drives (`src/chat/__tests__/<area>/`, `src/sdk/__tests__/`, `src/react/__tests__/hosts/`, `src/web-components/__tests__/`, or `src/__tests__/exports/`). Shared drivers and fixtures go in `src/chat/__tests__/helpers/contract/`. The SDK's go in `src/sdk/__tests__/helpers/publicContract.ts` and `lifecycleControl.ts`.
 
 Drive the `ChatInstance` handed to a host, public host props or attributes, slots, events, or the handle from `createChatSDK`. Assert returned values, `getState()` snapshots, the handle's `state`, events, and public callbacks such as `customSendMessage` and render props. A store-shape assertion belongs in an internal test.
 
@@ -58,7 +60,7 @@ npm run test:contract-manifest
 
 Commit `tests/contract/MANIFEST.tsv` with the tests. Generation discovers every expanded case through Vitest. It hashes test bodies, helper files, and shared context such as fixtures, hooks, and parameter data. A check reads without writing and fails on stale rows. Run `npm run format:write` before generating, so formatting can't make a row stale.
 
-CI compares the PR's exact base and head manifests. Added rows pass. Changed or removed rows require `behavior-change`. A rename removes an old row. Changing a shared parameter table can require the label even when it adds cases. A base without a manifest starts with an empty baseline.
+CI compares the PR's exact base and head manifests. Added rows pass. Changed or removed rows require `behavior-change`. A rename removes an old row. Changing a shared parameter table or a hashed helper can require the label even when it adds cases. A base without a manifest starts with an empty baseline.
 
 ### Check contract execution
 
@@ -90,7 +92,7 @@ Under `src/sdk/`, add `// @vitest-environment happy-dom` only to prove the SDK l
 | A wait on a real event or call | `untilCalled()`, `untilDom()` | `src/chat/__tests__/helpers/waits.ts` |
 | A page that prefers reduced motion, in a browser test | `emulateReducedMotion()` | `src/chat/__tests__/helpers/browserMedia.ts` |
 
-Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()`, from `helpers/boot.ts`, after each test that boots. The `browser` project loads the same helpers; browser tests already use `createBaseConfig()`, `setupBeforeEach()`, `setupAfterEach()` and the waits. Wait on the event or promise a test needs, or use fake timers. Don't raise a timeout to make a slow test pass.
+Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()`, from `helpers/boot.ts`, after each test that boots. The `browser` project loads the same helpers; browser tests already use `createBaseConfig()`, `setupBeforeEach()`, `setupAfterEach()` and the waits.
 
 ## Checks with no module
 
@@ -129,7 +131,5 @@ The `browser` project needs Chromium once per machine: `npx playwright install c
 
 ## Related guidance
 
-- [packages/ai-chat/AGENTS.md](../AGENTS.md): package overview
 - [services.md](services.md): service archetypes, for test setup background
 - [src/sdk/store/AGENTS.md](../src/sdk/store/AGENTS.md): store rules
-- [Components testing](../../ai-chat-components/references/tests.md): read when the behavior belongs to a component
