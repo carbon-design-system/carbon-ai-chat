@@ -17,7 +17,7 @@ import {
 } from './inline-error.stories';
 
 export default {
-  title: 'Preview/Inline error',
+  title: 'Preview/Message item shell/Inline error',
   component: InlineError,
 };
 
