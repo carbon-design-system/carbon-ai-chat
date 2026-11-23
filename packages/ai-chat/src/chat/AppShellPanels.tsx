@@ -77,6 +77,9 @@ export function useAppShellPanels({
   const errorText = useSelector(
     (state: AppState) => state.languagePack.errors_singleMessage
   );
+  const iconLabel = useSelector(
+    (state: AppState) => state.languagePack.errors_iconLabel
+  );
   const onPanelContentError = useCallback(
     (errorData: OnErrorData) => {
       serviceManager.actions.errorOccurred(errorData);
@@ -136,6 +139,7 @@ export function useAppShellPanels({
         <PanelContentErrorBoundary
           key={item.ui_state.id}
           errorText={errorText}
+          iconLabel={iconLabel}
           onError={onPanelContentError}
           isBody>
           <BodyMessageComponents {...responseProps} />
@@ -145,6 +149,7 @@ export function useAppShellPanels({
         <PanelContentErrorBoundary
           key={item.ui_state.id}
           errorText={errorText}
+          iconLabel={iconLabel}
           onError={onPanelContentError}>
           <FooterButtonComponents {...responseProps} />
         </PanelContentErrorBoundary>
@@ -183,6 +188,7 @@ export function useAppShellPanels({
     responsePanelState.isMessageForInput,
     serviceManager,
     errorText,
+    iconLabel,
     onPanelContentError,
     iframeTitle,
     iFramePanelState.messageItem,
