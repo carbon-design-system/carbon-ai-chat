@@ -30,7 +30,7 @@ import {
 import { Default as DefaultWC } from './user-message-content.stories';
 
 export default {
-  title: 'Preview/User message content',
+  title: 'Preview/Message item shell/User message content',
   component: UserMessageContent,
 };
 
