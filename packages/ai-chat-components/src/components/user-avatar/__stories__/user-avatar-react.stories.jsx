@@ -17,7 +17,7 @@ import {
 } from './user-avatar.stories';
 
 export default {
-  title: 'Preview/User avatar',
+  title: 'Preview/Message item shell/User avatar',
   component: UserAvatar,
 };
 
