@@ -130,8 +130,11 @@ describe.each(INPUT_HOSTS)('%s native input', (host) => {
         expect(textarea).toHaveAttribute('placeholder', placeholder);
         expect(textarea.matches(':placeholder-shown')).toBe(true);
       }
-      await userEvent.fill(input(), 'Enabled again');
+      // Click and type, as a user does. WebKit's `fill` inserts nothing into a
+      // contenteditable inside a shadow root.
+      await userEvent.click(input());
       expect(deepActiveElement()).toBe(input());
+      await userEvent.keyboard('Enabled again');
       await waitFor(() =>
         expect(instance.getState().input.rawValue).toBe('Enabled again')
       );
