@@ -11,7 +11,6 @@ import { act, waitFor } from '@testing-library/react';
 import { userEvent } from 'vitest/browser';
 
 import { PageObjectId } from '../../../testing/PageObjectId';
-import { prefersReducedMotion } from '../../utils/prefersReducedMotion';
 import {
   allByRole,
   byTestId,
@@ -25,12 +24,7 @@ import {
   mountPanelHost,
   type HostFramework,
 } from '../helpers/browserPanels';
-
-// A browser test can't emulate the reduced-motion media query, so the 'reduce'
-// cases have the chat's one reader of it report reduce. A browser test can't
-// spy on a module export directly; this spies on the whole module, and each
-// export keeps its real behavior otherwise.
-vi.mock('../../utils/prefersReducedMotion', { spy: true });
+import { emulateReducedMotion } from '../helpers/browserMedia';
 
 const AVATAR =
   'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24"/%3E';
@@ -60,16 +54,16 @@ function mainPanelShown(): boolean {
 
 describe('native launcher', () => {
   contractSetup();
-  afterEach(() => {
+  afterEach(async () => {
     document.documentElement.dir = '';
+    await emulateReducedMotion(null);
   });
 
   for (const framework of ['react', 'web-component'] as HostFramework[]) {
     for (const reducedMotion of ['reduce', 'no-preference'] as const) {
       it(`${framework} launcher keyboard, live config, and ${reducedMotion}`, async () => {
-        vi.mocked(prefersReducedMotion).mockReturnValue(
-          reducedMotion === 'reduce'
-        );
+        // The page itself reports the preference, as a user's system would.
+        await emulateReducedMotion(reducedMotion);
         document.documentElement.dir = framework === 'react' ? 'ltr' : 'rtl';
         const host = await mountPanelHost(framework, 'float', {
           openChatByDefault: false,
@@ -91,6 +85,12 @@ describe('native launcher', () => {
           (launcher() as unknown as { tooltipPosition: string }).tooltipPosition
         ).toBe(framework === 'react' ? 'left' : 'right');
         const container = deep('.cds-aichat-launcher', host.root);
+        // Record each CSS animation and transition the greeting's expand
+        // starts, so the stylesheet's reduced-motion rules show.
+        const motion: string[] = [];
+        for (const type of ['animationstart', 'transitionrun']) {
+          container.addEventListener(type, () => motion.push(type), true);
+        }
         if (reducedMotion === 'no-preference') {
           // Suppress completion events to exercise the 600ms fallback.
           for (const type of ['animationend', 'animationcancel']) {
@@ -120,6 +120,12 @@ describe('native launcher', () => {
             )
           ).toBe(true)
         );
+
+        if (reducedMotion === 'reduce') {
+          expect(motion).toEqual([]);
+        } else {
+          expect(motion.length).toBeGreaterThan(0);
+        }
 
         const dismiss = allByRole(
           'button',

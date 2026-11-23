@@ -71,6 +71,7 @@ Executed lines do not prove assertions. For each new runtime branch, name the co
 | File | Project | Runs in |
 | --- | --- | --- |
 | `*.browser.test.ts(x)`, under `src/` | `browser` | Chromium. Nightly adds Firefox and WebKit; set `CAIC_ALL_BROWSERS=1` to run them locally |
+| `*.phone.browser.test.ts(x)`, under `src/` | `browser`, in its phone instances | The same browsers, loaded with a phone's user agent and screen, so the chat detects a phone |
 | `src/sdk/**`, `tests/**` | `node` | Node, with no DOM. This shows the engine runs without a view |
 | any other file under `src/` | `happy-dom` | happy-dom |
 
@@ -87,6 +88,7 @@ Under `src/sdk/`, add `// @vitest-environment happy-dom` only to prove the SDK l
 | One component with chat context | `TestChatContext`, `makeConfigStore` | `src/chat/__tests__/helpers/` |
 | Assertions on the rendered chat | `renderChatAndGetInstance()` | `src/chat/__tests__/helpers/render.ts` |
 | A wait on a real event or call | `untilCalled()`, `untilDom()` | `src/chat/__tests__/helpers/waits.ts` |
+| A page that prefers reduced motion, in a browser test | `emulateReducedMotion()` | `src/chat/__tests__/helpers/browserMedia.ts` |
 
 Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()`, from `helpers/boot.ts`, after each test that boots. The `browser` project loads the same helpers; browser tests already use `createBaseConfig()`, `setupBeforeEach()`, `setupAfterEach()` and the waits. Wait on the event or promise a test needs, or use fake timers. Don't raise a timeout to make a slow test pass.
 

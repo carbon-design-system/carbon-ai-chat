@@ -9,6 +9,7 @@
 
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
+import { browserCommands } from './tests/setup/browserCommands';
 import { inheritedEnumStrings } from './tests/setup/inheritedEnumStrings';
 import { chatStyleStrings } from './tests/setup/styleStrings';
 
@@ -17,6 +18,16 @@ const tests = ['**/*.test.ts', '**/*.test.tsx'];
 // Every folder the node and happy-dom projects read; their excludes hand each
 // browser test here, so a test file runs in exactly one project.
 const browserTests = ['**/*.browser.test.ts', '**/*.browser.test.tsx'];
+// A `.phone.browser.test` file runs only in the phone instances below, which
+// load the page as a phone does: a phone's user agent and screen size, so the
+// chat's own phone detection sees a phone.
+const phoneTests = [
+  '**/*.phone.browser.test.ts',
+  '**/*.phone.browser.test.tsx',
+];
+const PHONE_SIZE = { width: 390, height: 844 };
+const PHONE_USER_AGENT =
+  'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
 
 // Chromium by default. CAIC_ALL_BROWSERS=1 adds Firefox and WebKit, as the
 // nightly jobs do.
@@ -165,13 +176,38 @@ export default defineConfig({
             provider: playwright(),
             // The same page size as components' browser tests.
             viewport: { width: 800, height: 600 },
+            commands: browserCommands,
+            // Each browser runs twice: once as a desktop page for every
+            // browser test but the phone ones, and once as a phone for those.
             // Concurrent Firefox pages can stall focus and selection, so
             // Firefox runs one file at a time everywhere.
-            instances: browsers.map((browser) =>
-              browser === 'firefox'
-                ? { browser, fileParallelism: false }
-                : { browser }
-            ),
+            instances: browsers.flatMap((browser) => {
+              const firefox = browser === 'firefox';
+              const shared = firefox ? { fileParallelism: false } : {};
+              return [
+                {
+                  browser,
+                  ...shared,
+                  exclude: ['**/node_modules/**', ...phoneTests],
+                },
+                {
+                  browser,
+                  ...shared,
+                  name: `browser (${browser} phone)`,
+                  include: phoneTests.map((glob) => `src/${glob}`),
+                  viewport: PHONE_SIZE,
+                  provider: playwright({
+                    contextOptions: {
+                      userAgent: PHONE_USER_AGENT,
+                      screen: PHONE_SIZE,
+                      hasTouch: true,
+                      // Firefox has no mobile viewport emulation.
+                      ...(firefox ? {} : { isMobile: true }),
+                    },
+                  }),
+                },
+              ];
+            }),
             // Failure screenshots go with the other run attachments, which
             // git ignores.
             screenshotDirectory: '.vitest-attachments/screenshots',

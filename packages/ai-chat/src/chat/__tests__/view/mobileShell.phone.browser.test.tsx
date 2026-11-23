@@ -24,17 +24,9 @@ import {
 } from '../helpers/browserPanels';
 
 // The chat detects a phone once, from the user agent and screen size, when
-// it loads. A browser test can't set the user agent, so the chat's own
-// detection reports a phone here; the page itself is phone sized, and the
-// layout, viewport and focus stay real. The components package's prebundled
-// copy of the detection can't be mocked; it only adds a phone class to the
-// textarea.
-vi.mock('../../../sdk/utils/browserUtils', async (importOriginal) => ({
-  ...(await importOriginal<object>()),
-  IS_MOBILE: true,
-  IS_PHONE: true,
-  IS_PHONE_IN_PORTRAIT_MODE: true,
-}));
+// it loads. This file runs in the phone browser instances, which load the
+// page with a phone's user agent and screen, so the chat and the components
+// package both detect a phone, and the layout, viewport and focus are real.
 
 /** Whether the shell and the input sit inside the visual viewport. */
 function withinViewport(): boolean {
@@ -67,14 +59,25 @@ function inputFocused(): boolean {
   return deepActive() === input();
 }
 
+/** Resolves after the browser paints `count` more frames. */
+async function frames(count: number) {
+  for (let index = 0; index < count; index += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
 /** Blurs the input, asks the chat for focus, then clicks the input. */
 async function expectFocusOnlyByClick(instance: ChatInstance) {
   input().blur();
+  let found: boolean | void;
   await act(async () => {
-    instance.requestFocus();
+    found = instance.requestFocus();
   });
-  // A phone keeps its keyboard closed: requestFocus leaves the input alone.
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  // A phone keeps its keyboard closed: requestFocus answers that it moved
+  // nothing. The rich editor takes focus a frame after it is asked, so let
+  // two frames pass before checking that nothing did.
+  expect(found).toBe(false);
+  await frames(2);
   expect(inputFocused()).toBe(false);
   await userEvent.click(input());
   await waitFor(() => expect(inputFocused()).toBe(true));
@@ -82,11 +85,8 @@ async function expectFocusOnlyByClick(instance: ChatInstance) {
 
 describe('native shell lifecycle', () => {
   contractSetup();
-  beforeEach(async () => {
-    await page.viewport(390, 844);
-  });
   afterEach(async () => {
-    await page.viewport(800, 600);
+    await page.viewport(390, 844);
   });
 
   for (const framework of ['react', 'web-component'] as HostFramework[]) {
@@ -126,6 +126,7 @@ describe('native shell lifecycle', () => {
         await native.whenReady();
       });
       const widget = deep('cds-aichat-shell');
+      expect(navigator.userAgent).toMatch(/Android/);
       expect(
         deep('.cds-aichat--container--render').classList.contains(
           'cds-aichat--is-phone'
