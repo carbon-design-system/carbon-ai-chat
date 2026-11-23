@@ -7,7 +7,23 @@
  *  @license
  */
 
+import type { DeepPartial } from '../../../types/utilities/DeepPartial';
+import type { ResponseUserProfile } from '../../../types/messaging/Messages';
+
+interface StreamAnnouncementContent {
+  hasReasoning: boolean;
+  hasDisplayableContent: boolean;
+  responseUserProfile?: DeepPartial<ResponseUserProfile>;
+}
+
 interface MessagePresentationPort {
+  getMessagesScrollBottom?(): number | undefined;
+  restoreMessagesScroll?(scrollBottom: number | undefined): void;
+  announceSendFailure?(): void;
+  announceStreamStarts?(
+    messageID: string,
+    content: StreamAnnouncementContent
+  ): void;
   getUserDefinedResponseSlot?(messageItemID: string): string | undefined;
   hasCustomPromptLine(): boolean;
   announceSending(): void;
@@ -17,4 +33,4 @@ interface MessagePresentationPort {
   closeHomeScreen(): void;
 }
 
-export type { MessagePresentationPort };
+export type { MessagePresentationPort, StreamAnnouncementContent };

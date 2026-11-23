@@ -13,7 +13,10 @@ import { MessageLoadingManager } from '../../utils/messageServiceUtils';
 import { consoleError } from '../../utils/miscUtils';
 import type { PublicConfig } from '../../../types/config/PublicConfig';
 import { coordinateSend, type SendOrder } from './coordinateSend';
-import type { MessagePresentationPort } from './presentationPort';
+import type {
+  MessagePresentationPort,
+  StreamAnnouncementContent,
+} from './presentationPort';
 import type { MessageRequest } from '../../../types/messaging/Messages';
 import type { MessageSendSource } from '../../../types/events/eventBusTypes';
 import type {
@@ -40,6 +43,9 @@ import type {
 import type { DeepPartial } from '../../../types/utilities/DeepPartial';
 import type { AppStateMessages } from '../../../types/state/AppState';
 
+import { coordinateReasoningEvents } from './coordinateReasoningEvents';
+import { HeadlessReasoningObserver } from './HeadlessReasoningObserver';
+
 // The maximum amount of time we allow sending to take place. If we pass this time limit, we throw an error, and
 // move on to the next item in the queue.
 const MS_MAX_ATTEMPT = 150 * 1000;
@@ -50,6 +56,52 @@ function messageTimeoutMS(timeoutSecs: number | undefined): number {
 }
 
 class MessageCoordinator {
+  getMessagesScrollBottom() {
+    return this.presentation?.getMessagesScrollBottom?.();
+  }
+
+  restoreMessagesScroll(scrollBottom: number | undefined) {
+    this.presentation?.restoreMessagesScroll?.(scrollBottom);
+  }
+
+  announceSendFailure() {
+    this.presentation?.announceSendFailure?.();
+  }
+
+  announceStreamStarts(messageID: string, content: StreamAnnouncementContent) {
+    this.presentation?.announceStreamStarts?.(messageID, content);
+  }
+
+  private reasoningObserver?: HeadlessReasoningObserver;
+
+  onInstanceReady() {
+    this.reasoningObserver?.observe();
+  }
+
+  disposeReasoningObserver() {
+    this.reasoningObserver?.dispose();
+  }
+
+  notifyReasoning(
+    session: Set<string>,
+    message: Message,
+    isCurrent?: () => boolean
+  ) {
+    coordinateReasoningEvents(
+      session,
+      message,
+      async (local, full) =>
+        this.handleUserDefinedResponseItems(
+          local,
+          full,
+          undefined,
+          undefined,
+          isCurrent
+        ),
+      isCurrent
+    );
+  }
+
   handleUserDefinedResponseItemsChunk(
     messageID: string,
     chunk: PartialOrCompleteItemChunk,
@@ -137,6 +189,13 @@ class MessageCoordinator {
     private presentation?: MessagePresentationPort
   ) {
     this.terminationWorkflow = new TerminationWorkflow(serviceManager);
+    if (!presentation) {
+      this.reasoningObserver = new HeadlessReasoningObserver(
+        serviceManager,
+        (session, message, isCurrent) =>
+          this.notifyReasoning(session, message, isCurrent)
+      );
+    }
   }
 
   /**

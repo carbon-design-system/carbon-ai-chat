@@ -7,9 +7,19 @@
  *  @license
  */
 
-import type { MessagePresentationPort } from '../presentationPort';
+import type {
+  MessagePresentationPort,
+  StreamAnnouncementContent,
+} from '../presentationPort';
 
 interface MessagePresentationCapabilities {
+  getMessagesScrollBottom?(): number | undefined;
+  restoreMessagesScroll?(scrollBottom: number | undefined): void;
+  announceSendFailure?(): void;
+  announceStreamStarts?(
+    messageID: string,
+    content: StreamAnnouncementContent
+  ): void;
   getUserDefinedResponseSlot?(messageItemID: string): string | undefined;
   hasCustomPromptLine(): boolean;
   announceSending(): void;
@@ -25,6 +35,22 @@ class MessagePresentationAdapter implements MessagePresentationPort {
 
   getUserDefinedResponseSlot(messageItemID: string) {
     return this.capabilities.getUserDefinedResponseSlot?.(messageItemID);
+  }
+
+  getMessagesScrollBottom() {
+    return this.capabilities.getMessagesScrollBottom?.();
+  }
+
+  restoreMessagesScroll(scrollBottom: number | undefined) {
+    this.capabilities.restoreMessagesScroll?.(scrollBottom);
+  }
+
+  announceSendFailure() {
+    this.capabilities.announceSendFailure?.();
+  }
+
+  announceStreamStarts(messageID: string, content: StreamAnnouncementContent) {
+    this.capabilities.announceStreamStarts?.(messageID, content);
   }
 
   hasCustomPromptLine() {
