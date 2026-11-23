@@ -82,6 +82,9 @@ const config: PublicConfig = {
   markdown: { markdownItPlugins: [inlinePlugin] },
   messaging: {
     customSendMessage: () => undefined,
+    // Nothing here replies, so the loading indicator would appear 4s after
+    // each send and move the list under a test's pointer.
+    messageLoadingIndicatorTimeoutSecs: 0,
     // A welcome exchange in history shows the welcome writeable element.
     customLoadHistory: async () =>
       [
