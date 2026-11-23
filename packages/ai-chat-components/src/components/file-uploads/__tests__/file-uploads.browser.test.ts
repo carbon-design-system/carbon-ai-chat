@@ -8,13 +8,13 @@
  */
 
 import { aTimeout, expect, fixture, html, oneEvent } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/file-uploads/index.js';
-import '@carbon/ai-chat-components/es/components/prompt-line/index.js';
-import type FileUploadsElement from '@carbon/ai-chat-components/es/components/file-uploads/src/file-uploads.js';
+import '../index.js';
+import '../../prompt-line/index.js';
+import type FileUploadsElement from '../src/file-uploads.js';
 import {
   FileStatusValue,
   type FileUpload,
-} from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
+} from '../../prompt-line/src/types.js';
 
 // Longer than the AriaAnnouncerManager's 250 ms NVDA debounce.
 const ANNOUNCE_DELAY = 320;

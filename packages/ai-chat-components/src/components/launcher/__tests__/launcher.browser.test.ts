@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/launcher/index.js';
-import Launcher from '@carbon/ai-chat-components/es/components/launcher/src/launcher.js';
+import '../index.js';
+import Launcher from '../src/launcher.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 describe('launcher', function () {

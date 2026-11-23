@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/card/index.js';
-import Card from '@carbon/ai-chat-components/es/components/card/src/card.js';
+import '../index.js';
+import Card from '../src/card.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const cardContent = html`

@@ -8,12 +8,12 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
-import CdsAiChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
+import '../index.js';
+import CdsAiChatHeader from '../src/chat-header.js';
 import {
   composedContains,
   getDeepActiveElement,
-} from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
+} from '../../../globals/utils/focus-utils.js';
 
 // Mock icon objects for testing
 const Close = { name: 'close', size: 16 };

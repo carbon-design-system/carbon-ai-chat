@@ -13,8 +13,8 @@ import {
   sendKeys,
   sendMouse,
 } from '../../../__tests__/browser/input.js';
-import '@carbon/ai-chat-components/es/components/chat-history/src/history-panel-item.js';
-import type HistoryPanelItem from '@carbon/ai-chat-components/es/components/chat-history/src/history-panel-item.js';
+import '../src/history-panel-item.js';
+import type HistoryPanelItem from '../src/history-panel-item.js';
 import type OverflowMenu from '@carbon/web-components/es/components/overflow-menu/overflow-menu.js';
 import type OverflowMenuBody from '@carbon/web-components/es/components/overflow-menu/overflow-menu-body.js';
 import type OverflowMenuItem from '@carbon/web-components/es/components/overflow-menu/overflow-menu-item.js';

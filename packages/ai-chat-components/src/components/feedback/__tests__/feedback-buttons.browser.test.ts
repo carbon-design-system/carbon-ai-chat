@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/feedback/index.js';
-import FeedbackButtons from '@carbon/ai-chat-components/es/components/feedback/src/feedback-buttons.js';
+import '../index.js';
+import FeedbackButtons from '../src/feedback-buttons.js';
 
 function thumbsButtons(el: FeedbackButtons): Element[] {
   return Array.from(el.shadowRoot!.querySelectorAll('cds-icon-button'));

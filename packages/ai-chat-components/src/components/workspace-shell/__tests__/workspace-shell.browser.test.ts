@@ -8,15 +8,15 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
-import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import '../index.js';
+import '../../toolbar/index.js';
 import Launch16 from '@carbon/icons/es/launch/16.js';
 import Maximize16 from '@carbon/icons/es/maximize/16.js';
 import Close16 from '@carbon/icons/es/close/16.js';
-import CDSAIChatWorkspaceShell from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell.js';
-import CDSAIChatWorkspaceShellHeader from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-header.js';
-import CDSAIChatWorkspaceShellBody from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-body.js';
-import CDSAIChatWorkspaceShellFooter from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-footer.js';
+import CDSAIChatWorkspaceShell from '../src/workspace-shell.js';
+import CDSAIChatWorkspaceShellHeader from '../src/workspace-shell-header.js';
+import CDSAIChatWorkspaceShellBody from '../src/workspace-shell-body.js';
+import CDSAIChatWorkspaceShellFooter from '../src/workspace-shell-footer.js';
 
 const actions = [
   {

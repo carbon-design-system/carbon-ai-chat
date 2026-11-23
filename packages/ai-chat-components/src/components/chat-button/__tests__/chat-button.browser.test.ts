@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chat-button/index.js';
-import ChatButton from '@carbon/ai-chat-components/es/components/chat-button/src/chat-button.js';
+import '../index.js';
+import ChatButton from '../src/chat-button.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 // scope for testing: test only cds-aichat-button specific functionality, no need to test cds-button functionality.

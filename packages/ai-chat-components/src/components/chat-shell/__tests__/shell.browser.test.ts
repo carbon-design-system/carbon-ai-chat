@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
-import CDSAIChatShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
+import '../index.js';
+import CDSAIChatShell from '../src/shell.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const nextFrame = (frames = 1) =>

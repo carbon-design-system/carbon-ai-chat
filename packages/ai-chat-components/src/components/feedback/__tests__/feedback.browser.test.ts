@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/feedback/index.js';
-import Feedback from '@carbon/ai-chat-components/es/components/feedback/src/feedback.js';
+import '../index.js';
+import Feedback from '../src/feedback.js';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 describe('feedback', function () {

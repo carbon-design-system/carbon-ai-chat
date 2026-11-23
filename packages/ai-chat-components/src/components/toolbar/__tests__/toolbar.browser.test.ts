@@ -9,10 +9,8 @@
 
 import { html, fixture, expect, waitUntil } from '@open-wc/testing';
 import { LitElement } from 'lit';
-import '@carbon/ai-chat-components/es/components/toolbar/index.js';
-import Toolbar, {
-  Action,
-} from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
+import '../index.js';
+import Toolbar, { Action } from '../src/toolbar.js';
 import {
   Version16,
   Download16,

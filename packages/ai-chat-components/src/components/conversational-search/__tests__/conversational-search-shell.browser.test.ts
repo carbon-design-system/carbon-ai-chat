@@ -9,13 +9,13 @@
 
 import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 import { emulateMedia, sendKeys } from '../../../__tests__/browser/input.js';
-import ConversationalSearchShell from '@carbon/ai-chat-components/es/components/conversational-search/src/conversational-search-shell.js';
-import '@carbon/ai-chat-components/es/components/markdown/index.js';
-import '@carbon/ai-chat-components/es/components/conversational-search/index.js';
-import '@carbon/ai-chat-components/es/components/carousel/index.js';
-import type CitationCard from '@carbon/ai-chat-components/es/components/conversational-search/src/citation-card.js';
-import type Carousel from '@carbon/ai-chat-components/es/components/carousel/src/carousel.js';
-import Markdown from '@carbon/ai-chat-components/es/components/markdown/src/markdown.js';
+import ConversationalSearchShell from '../src/conversational-search-shell.js';
+import '../../markdown/index.js';
+import '../index.js';
+import '../../carousel/index.js';
+import type CitationCard from '../src/citation-card.js';
+import type Carousel from '../../carousel/src/carousel.js';
+import Markdown from '../../markdown/src/markdown.js';
 import { insertHighlightMarkdown } from '../src/citation-utils.js';
 
 async function answer() {

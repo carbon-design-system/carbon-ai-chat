@@ -9,8 +9,8 @@
 
 import { html, fixture, expect, waitUntil } from '@open-wc/testing';
 import { emulateMedia } from '../../../__tests__/browser/input.js';
-import '@carbon/ai-chat-components/es/components/carousel/index.js';
-import Carousel from '@carbon/ai-chat-components/es/components/carousel/src/carousel.js';
+import '../index.js';
+import Carousel from '../src/carousel.js';
 import prefix from '../../../globals/settings';
 import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 

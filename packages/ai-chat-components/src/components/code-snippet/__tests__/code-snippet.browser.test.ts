@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/code-snippet/index.js';
-import CDSAIChatCodeSnippet from '@carbon/ai-chat-components/es/components/code-snippet/src/code-snippet.js';
+import '../index.js';
+import CDSAIChatCodeSnippet from '../src/code-snippet.js';
 
 describe('code-snippet', function () {
   it('should render cds-aichat-code-snippet with copy button in toolbar by default', async () => {
