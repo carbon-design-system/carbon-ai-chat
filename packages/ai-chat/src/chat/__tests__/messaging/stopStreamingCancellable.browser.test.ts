@@ -16,10 +16,17 @@ import {
   contractSetup,
   deepActiveElement,
 } from '../helpers/contract';
+import { isVisible } from '../helpers/browserPanels';
 import { STREAM_ROUTES, startCancellableStream } from '../helpers/stopStream';
 
 const STOP = 'Stop response';
 const stop = () => byRole('button', STOP);
+
+/** Whether exactly one stop button exists and a user can see it. */
+function expectOneVisibleStop() {
+  expect(allByRole('button', STOP)).toHaveLength(1);
+  expect(isVisible(stop())).toBe(true);
+}
 
 /** Real focus and key presses, so a disabled button must refuse both. */
 async function focusAndPress(key: string) {
@@ -35,12 +42,13 @@ describe.each(STREAM_ROUTES)('cancellable stop through %s', (route) => {
     try {
       await stream.write(true);
       await waitFor(() => expect(stop()).toBeEnabled());
+      expectOneVisibleStop();
       stop().focus();
       expect(deepActiveElement()).toBe(stop());
 
       await stream.write(false);
       await waitFor(() => expect(stop()).toBeDisabled());
-      expect(allByRole('button', STOP)).toHaveLength(1);
+      expectOneVisibleStop();
       await userEvent.click(stop(), { force: true });
       await focusAndPress('{Enter}');
       await userEvent.keyboard(' ');
@@ -48,6 +56,7 @@ describe.each(STREAM_ROUTES)('cancellable stop through %s', (route) => {
 
       await stream.write(undefined);
       expect(stop()).toBeDisabled();
+      expectOneVisibleStop();
       await stream.write(true);
       await waitFor(() => expect(stop()).toBeEnabled());
       await focusAndPress('{Enter}');

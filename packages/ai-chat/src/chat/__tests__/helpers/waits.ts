@@ -21,9 +21,16 @@ import type { Mock } from 'vitest';
  * React updates that land while waiting need no `act`.
  */
 
-/** Every shadow root under `node`, including nested ones. */
+/**
+ * Every shadow root of `node` and under it, including nested ones. A watched
+ * element's own shadow root counts: a custom element renders there.
+ */
 function shadowRootsUnder(node: Node): ShadowRoot[] {
   const found: ShadowRoot[] = [];
+  const own = node instanceof Element ? node.shadowRoot : null;
+  if (own) {
+    found.push(own);
+  }
   const visit = (current: Node) => {
     const walker = document.createTreeWalker(current, NodeFilter.SHOW_ELEMENT);
     for (let next = walker.nextNode(); next; next = walker.nextNode()) {
@@ -35,6 +42,9 @@ function shadowRootsUnder(node: Node): ShadowRoot[] {
     }
   };
   visit(node);
+  if (own) {
+    visit(own);
+  }
   return found;
 }
 

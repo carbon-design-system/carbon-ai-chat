@@ -25,6 +25,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../helpers/chat';
+import { isVisible } from '../helpers/browserPanels';
 import { untilCalled, untilDom } from '../helpers/waits';
 
 const REQUEST_FOOTER_SLOT = 'div[slot^="request-footer-"]';
@@ -95,10 +96,12 @@ describe('custom request footer layout', () => {
     await send(instance, 'measure me');
 
     await untilDom([document.body, root], () => {
-      expect(root.querySelector(REQUEST_FOOTER_WRAPPER)).not.toBeNull();
+      expect(isVisible(root.querySelector(REQUEST_FOOTER_WRAPPER))).toBe(true);
       expect(
-        document.querySelector(`${REQUEST_FOOTER_SLOT} .request-footer-box`)
-      ).not.toBeNull();
+        isVisible(
+          document.querySelector(`${REQUEST_FOOTER_SLOT} .request-footer-box`)
+        )
+      ).toBe(true);
     });
     const wrapper = root.querySelector<HTMLElement>(REQUEST_FOOTER_WRAPPER);
 
@@ -149,9 +152,13 @@ describe('custom request footer layout', () => {
 
     await untilDom([document.body, root], () => {
       expect(
-        document.querySelector(`${REQUEST_FOOTER_SLOT} .request-footer-box`)
-      ).not.toBeNull();
-      expect(root.querySelector('.cds-aichat--message-footer')).not.toBeNull();
+        isVisible(
+          document.querySelector(`${REQUEST_FOOTER_SLOT} .request-footer-box`)
+        )
+      ).toBe(true);
+      expect(isVisible(root.querySelector('.cds-aichat--message-footer'))).toBe(
+        true
+      );
     });
     const footers = document.querySelectorAll<HTMLElement>(REQUEST_FOOTER_SLOT);
     const footer = footers[footers.length - 1];

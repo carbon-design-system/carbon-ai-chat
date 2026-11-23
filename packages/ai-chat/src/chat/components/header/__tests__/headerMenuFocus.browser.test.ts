@@ -18,14 +18,15 @@ import {
 } from '../../../__tests__/helpers/contract';
 import {
   HOSTS,
-  cleanupChat,
+  FOCUS_WAIT,
+  focusSetup,
   focusPath,
   hasFocus,
   isVisible,
   openChat,
 } from '../../../__tests__/helpers/browserFocus';
 
-afterEach(cleanupChat);
+focusSetup();
 
 /** The text of the focused header menu item, or `null` when none has focus. */
 function focusedMenuItemText(): string | null {
@@ -74,18 +75,18 @@ for (const framework of HOSTS) {
     const options = byRole('button', 'Options');
     await userEvent.click(options);
     await expect
-      .poll(() => shownMenuItems().every((item) => item !== null))
+      .poll(() => shownMenuItems().every((item) => item !== null), FOCUS_WAIT)
       .toBe(true);
     const [help] = shownMenuItems();
     help.focus();
     expect(focusedMenuItemText()).toBe('Help');
 
     await userEvent.keyboard('{ArrowDown}');
-    await expect.poll(focusedMenuItemText).toBe('Documentation');
+    await expect.poll(focusedMenuItemText, FOCUS_WAIT).toBe('Documentation');
     await userEvent.keyboard('{Escape}');
-    await expect.poll(focusedMenuItemText).toBeNull();
+    await expect.poll(focusedMenuItemText, FOCUS_WAIT).toBeNull();
     // Escape returns focus to the overflow menu's own trigger.
-    await expect.poll(() => hasFocus(options)).toBe(true);
+    await expect.poll(() => hasFocus(options), FOCUS_WAIT).toBe(true);
     expect(document.documentElement.dir).toBe(
       framework === 'react' ? 'ltr' : 'rtl'
     );
@@ -96,10 +97,10 @@ for (const framework of HOSTS) {
     const aiLabel = byRole('button', 'AI - Show information');
     aiLabel.focus();
     await userEvent.keyboard('{Enter}');
-    await expect.poll(() => isVisible(heading)).toBe(true);
+    await expect.poll(() => isVisible(heading), FOCUS_WAIT).toBe(true);
     aiLabel.focus();
     await userEvent.keyboard('{Enter}');
-    await expect.poll(() => isVisible(heading)).toBe(false);
+    await expect.poll(() => isVisible(heading), FOCUS_WAIT).toBe(false);
 
     const opener = byRole('button', 'Close the chat window');
     opener.focus();
@@ -112,11 +113,11 @@ for (const framework of HOSTS) {
     await act(async () => {
       panel.open({ title: 'Header focus proof', disableAnimation: true });
     });
-    await expect.poll(() => hasFocus(panelButton)).toBe(true);
+    await expect.poll(() => hasFocus(panelButton), FOCUS_WAIT).toBe(true);
     await userEvent.click(panelButton);
-    await expect.poll(() => isVisible(panelButton)).toBe(false);
+    await expect.poll(() => isVisible(panelButton), FOCUS_WAIT).toBe(false);
     // Closing the panel from its slotted content returns focus to its opener.
-    await expect.poll(() => hasFocus(opener)).toBe(true);
+    await expect.poll(() => hasFocus(opener), FOCUS_WAIT).toBe(true);
 
     // Start from outside the header, so the header's own focus result shows.
     byTestId(PageObjectId.INPUT).focus();
@@ -136,6 +137,6 @@ for (const framework of HOSTS) {
     // Navigation comes first, so the header focuses the Options trigger
     // inside the overflow menu's shadow root and counts that as success.
     expect(header.requestFocus()).toBe(true);
-    await expect.poll(() => hasFocus(options)).toBe(true);
+    await expect.poll(() => hasFocus(options), FOCUS_WAIT).toBe(true);
   });
 }

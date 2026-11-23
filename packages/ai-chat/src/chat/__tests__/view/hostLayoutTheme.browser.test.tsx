@@ -286,7 +286,7 @@ describe('host layout and theme', () => {
           .getByTestId(PageObjectId.CHAT_HEADER)
           .getByTestId(PageObjectId.HEADER_TITLE)
       )
-      .toHaveTextContent('Inherited theme remains live');
+      .toHaveTextContent(/^\s*Inherited theme remains live\s*$/);
     await expect.poll(() => paintedBackground(action)).toBe(SECOND_COLOR);
     expect(host.before).toHaveBeenCalledTimes(1);
     expect(host.before.mock.calls[0][0]).toBe(host.instance);

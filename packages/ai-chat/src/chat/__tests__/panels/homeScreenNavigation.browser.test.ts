@@ -18,13 +18,14 @@ import {
 import { byRole, byTestId } from '../helpers/contract';
 import {
   HOSTS,
-  cleanupChat,
+  FOCUS_WAIT,
+  focusSetup,
   hasFocus,
   isVisible,
   openChat,
 } from '../helpers/browserFocus';
 
-afterEach(cleanupChat);
+focusSetup();
 
 for (const framework of HOSTS) {
   for (const keyboard of [false, true]) {
@@ -62,20 +63,20 @@ for (const framework of HOSTS) {
         await userEvent.click(starter);
       }
       await expect
-        .poll(() => sends)
+        .poll(() => sends, FOCUS_WAIT)
         .toEqual([
           {
             text: 'Start conversation',
             source: MessageSendSource.HOME_SCREEN_STARTER,
           },
         ]);
-      await expect.poll(() => isVisible(homePanel())).toBe(false);
+      await expect.poll(() => isVisible(homePanel()), FOCUS_WAIT).toBe(false);
       await expect
-        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)))
+        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)), FOCUS_WAIT)
         .toBe(true);
 
       await userEvent.click(byRole('button', 'Return to the home screen'));
-      await expect.poll(() => isVisible(homePanel())).toBe(true);
+      await expect.poll(() => isVisible(homePanel()), FOCUS_WAIT).toBe(true);
       const back = byRole('button', 'Return to conversation');
       if (keyboard) {
         back.focus();
@@ -83,10 +84,10 @@ for (const framework of HOSTS) {
       } else {
         await userEvent.click(back);
       }
-      await expect.poll(() => isVisible(homePanel())).toBe(false);
+      await expect.poll(() => isVisible(homePanel()), FOCUS_WAIT).toBe(false);
       // The return button leaves with the home screen; focus moves to the input.
       await expect
-        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)))
+        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)), FOCUS_WAIT)
         .toBe(true);
       expect(sends).toHaveLength(1);
     });

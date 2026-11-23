@@ -21,7 +21,6 @@ import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/d
 
 import { MessageResponseTypes } from '../../../types/messaging/Messages';
 import { setupAfterEach, setupBeforeEach } from '../helpers/chat';
-import { untilDom } from '../helpers/waits';
 import {
   type Responder,
   type ScrollChat,
@@ -150,8 +149,9 @@ describe('streamed carousel through upsertMessage', () => {
           );
         })
         .toBe(true);
+    // The indicator renders in the carousel's own shadow root.
     const untilIndicator = (text: string) =>
-      untilDom(carousel, () => expect(indicator()).toBe(text));
+      expect.poll(indicator, { timeout: 5000 }).toBe(text);
 
     await untilIndicator('1 / 3');
     await expectUnclippedCard();

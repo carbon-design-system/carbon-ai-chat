@@ -36,10 +36,28 @@ describe('native panel bodies', () => {
   contractSetup();
   afterEach(() => {
     document.documentElement.dir = '';
+    vi.restoreAllMocks();
   });
 
   for (const framework of ['react', 'web-component'] as HostFramework[]) {
     it(`${framework} disclaimer keeps its body slot and enables Accept after reading`, async () => {
+      // The chat checks whether the disclaimer was read by sending its panel
+      // body three scroll events after the panel connects. Count them, so the
+      // test knows when the last check has run.
+      const readChecks: Event[] = [];
+      const dispatch = EventTarget.prototype.dispatchEvent;
+      vi.spyOn(EventTarget.prototype, 'dispatchEvent').mockImplementation(
+        function (this: EventTarget, event: Event) {
+          if (
+            event.type === 'scroll' &&
+            this instanceof Element &&
+            this.classList.contains('panel-body')
+          ) {
+            readChecks.push(event);
+          }
+          return dispatch.call(this, event);
+        }
+      );
       document.documentElement.dir = framework === 'react' ? 'ltr' : 'rtl';
       const host = await mountPanelHost(framework, 'sidebar', {
         injectCarbonTheme: CarbonTheme.G100,
@@ -82,9 +100,9 @@ describe('native panel bodies', () => {
       const scrollBody =
         panel.shadowRoot.querySelector<HTMLElement>('.panel-body');
       expect(scrollBody.scrollHeight).toBeGreaterThan(scrollBody.clientHeight);
-      // Outlast the chat's own read checks, so a disabled Accept means the
+      // Wait for the chat's last read check, so a disabled Accept means the
       // unscrolled text is still unread.
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await waitFor(() => expect(readChecks.length).toBeGreaterThanOrEqual(3));
       expect(accept.disabled).toBe(true);
       scrollBody.scrollTop = scrollBody.scrollHeight;
       await waitFor(() => expect(accept.disabled).toBe(false));

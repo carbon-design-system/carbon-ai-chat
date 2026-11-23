@@ -19,10 +19,13 @@ import { ChatInstance, PageObjectId, PublicConfig } from '../../../aiChatEntry';
 import {
   byTestId,
   contractChat,
-  contractCleanup,
   contractElement,
+  contractSetup,
   fakeBackend,
 } from './contract';
+import { isVisible } from './browserPanels';
+
+export { isVisible };
 
 /** The two hosts each case runs on. */
 export const HOSTS = ['react', 'web-component'] as const;
@@ -55,10 +58,12 @@ export function hasFocus(element: Element | null): boolean {
   return element !== null && focusPath().includes(element);
 }
 
-/** Whether `element` is rendered and visible in the real layout. */
-export function isVisible(element: Element | null): boolean {
-  return Boolean(element?.isConnected && element.checkVisibility());
-}
+/**
+ * How long a focus wait may take: the 5 seconds the demo's waits allowed. An
+ * animated close and the overflow row's measure can outlast the 1 second
+ * default under a loaded machine.
+ */
+export const FOCUS_WAIT = { timeout: 5000 };
 
 /**
  * Mounts the chat open on `host`: `ChatContainer` for `react`, and a sized
@@ -94,26 +99,36 @@ export async function openChat(
         });
   const homescreen = (config.homescreen as { isOn?: boolean })?.isOn;
   await expect
-    .poll(() =>
-      isVisible(
-        byTestId(
-          homescreen ? PageObjectId.HOME_SCREEN_PANEL : PageObjectId.MAIN_PANEL
-        )
-      )
+    .poll(
+      () =>
+        isVisible(
+          byTestId(
+            homescreen
+              ? PageObjectId.HOME_SCREEN_PANEL
+              : PageObjectId.MAIN_PANEL
+          )
+        ),
+      FOCUS_WAIT
     )
     .toBe(true);
   if (!homescreen) {
-    await expect.poll(() => hasFocus(byTestId(PageObjectId.INPUT))).toBe(true);
+    await expect
+      .poll(() => hasFocus(byTestId(PageObjectId.INPUT)), FOCUS_WAIT)
+      .toBe(true);
   }
   return instance;
 }
 
 /**
- * Cleanup for every case: unmount, empty the document and storage, and put
- * back the direction and page size a case may have changed.
+ * Setup for a focus file. It mounts and unmounts the chat once before the
+ * first case, so the first case's focus waits don't also wait out the chat's
+ * cold load. After each case it unmounts, empties the document and storage,
+ * and puts back the direction and page size a case may have changed.
  */
-export async function cleanupChat(): Promise<void> {
-  await contractCleanup();
-  document.documentElement.removeAttribute('dir');
-  await page.viewport(800, 600);
+export function focusSetup(): void {
+  contractSetup();
+  afterEach(async () => {
+    document.documentElement.removeAttribute('dir');
+    await page.viewport(800, 600);
+  });
 }

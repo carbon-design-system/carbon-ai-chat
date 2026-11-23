@@ -9,10 +9,8 @@
 
 import React from 'react';
 import { act } from '@testing-library/react';
-import { cdp, server, userEvent } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 import Add16 from '@carbon/icons/es/add--large/16.js';
-// Types `cdp()` with Playwright's session methods.
-import type {} from '@vitest/browser-playwright';
 
 import {
   ButtonItemType,
@@ -22,16 +20,23 @@ import {
 } from '../../../aiChatEntry';
 import {
   DANA,
+  accessibleName,
   allByRole,
   byRole,
   byTestId,
   fakeDesk,
+  flatParent,
+  focusHostButton,
+  roleOf,
   shownText,
 } from '../helpers/contract';
+import { deepAll } from '../helpers/browserPanels';
+import { emulateReducedMotion } from '../helpers/browserMedia';
 import {
   DIRECTIONS,
   HOSTS,
-  cleanupChat,
+  FOCUS_WAIT,
+  focusSetup,
   focusPath,
   hasFocus,
   isVisible,
@@ -49,7 +54,7 @@ const SHARE_TITLE = 'Share your screen with the agent?';
 const SHARE_DECLINE = 'Keep the screen private';
 const ACTIONS_MENU = 'Focus actions';
 
-afterEach(cleanupChat);
+focusSetup();
 
 /** Opens the custom panel with one button in its slotted content. */
 async function openCustomPanel(
@@ -68,7 +73,7 @@ async function openCustomPanel(
   await act(async () => {
     panel.open({ title: 'Focus proof', disableAnimation });
   });
-  await expect.poll(() => isVisible(button)).toBe(true);
+  await expect.poll(() => isVisible(button), FOCUS_WAIT).toBe(true);
   return button;
 }
 
@@ -77,6 +82,22 @@ function blurAll() {
   const path = focusPath();
   (path[path.length - 1] as HTMLElement | undefined)?.blur();
   expect(document.activeElement).toBe(document.body);
+}
+
+/**
+ * Whether `node` shows inside the element `ancestor` slots into its `footer`
+ * slot: some element between them in the flat tree is `slot="footer"`.
+ */
+function inFooterOf(node: Node, ancestor: Element): boolean {
+  let footer = false;
+  for (let current = node; current; current = flatParent(current)) {
+    if (current === ancestor) {
+      return footer;
+    }
+    footer ||=
+      current instanceof Element && current.getAttribute('slot') === 'footer';
+  }
+  return false;
 }
 
 /** Config for a chat whose service desk can ask to share the screen. */
@@ -111,15 +132,18 @@ async function requestScreenShare(desk: ReturnType<typeof fakeDesk>) {
   void desk.callback().screenShareRequest();
   const shownPrompt = () =>
     allByRole('dialog', SHARE_TITLE).find(isVisible) ?? null;
-  await expect.poll(shownPrompt).not.toBeNull();
+  await expect.poll(shownPrompt, FOCUS_WAIT).not.toBeNull();
   const prompt = shownPrompt();
-  // The header close shares the decline name; take the visibly labeled one.
+  // The header close shares the decline name; take the visibly labeled one
+  // in the prompt's footer.
   const decline = () =>
     allByRole('button', SHARE_DECLINE).find(
       (control) =>
-        isVisible(control) && shownText(control).trim() === SHARE_DECLINE
+        isVisible(control) &&
+        shownText(control).trim() === SHARE_DECLINE &&
+        inFooterOf(control, prompt)
     ) ?? null;
-  await expect.poll(() => hasFocus(decline())).toBe(true);
+  await expect.poll(() => hasFocus(decline()), FOCUS_WAIT).toBe(true);
   return prompt;
 }
 
@@ -140,8 +164,8 @@ for (const framework of HOSTS) {
         );
         close.focus();
         await userEvent.keyboard('{Enter}');
-        await expect.poll(() => isVisible(close)).toBe(false);
-        await expect.poll(() => hasFocus(opener)).toBe(true);
+        await expect.poll(() => isVisible(close), FOCUS_WAIT).toBe(false);
+        await expect.poll(() => hasFocus(opener), FOCUS_WAIT).toBe(true);
       });
 
       it(`${framework} ${direction} ${animation}: closing a cover returns focus to the covered panel's control`, async () => {
@@ -157,8 +181,8 @@ for (const framework of HOSTS) {
         counter.focus();
         const prompt = await requestScreenShare(desk);
         await userEvent.keyboard('{Escape}');
-        await expect.poll(() => isVisible(prompt)).toBe(false);
-        await expect.poll(() => hasFocus(counter)).toBe(true);
+        await expect.poll(() => isVisible(prompt), FOCUS_WAIT).toBe(false);
+        await expect.poll(() => hasFocus(counter), FOCUS_WAIT).toBe(true);
       });
     }
   }
@@ -195,17 +219,25 @@ for (const framework of HOSTS) {
           );
         // The expanded row measures its actions before the overflow trigger
         // shows, so wait for real layout to show it.
-        await expect.poll(() => isVisible(host())).toBe(true);
+        await expect.poll(() => isVisible(host()), FOCUS_WAIT).toBe(true);
         const button = host().shadowRoot.querySelector('button');
         button.focus();
         await userEvent.keyboard('{Enter}');
         const menu = () =>
           allByRole('menu', ACTIONS_MENU).find(isVisible) ?? null;
-        await expect.poll(menu).not.toBeNull();
+        // Every menu with this name in the document, shown or not.
+        const menusInDocument = () =>
+          deepAll('[role]').filter(
+            (element) =>
+              roleOf(element) === 'menu' &&
+              accessibleName(element) === ACTIONS_MENU
+          ).length;
+        await expect.poll(menu, FOCUS_WAIT).not.toBeNull();
         await userEvent.keyboard('{ArrowDown}');
         await userEvent.keyboard('{Escape}');
-        await expect.poll(menu).toBeNull();
-        await expect.poll(() => hasFocus(button)).toBe(true);
+        // Escape removes the menu, not only hides it.
+        await expect.poll(menusInDocument, FOCUS_WAIT).toBe(0);
+        await expect.poll(() => hasFocus(button), FOCUS_WAIT).toBe(true);
       });
     }
 
@@ -223,9 +255,9 @@ for (const framework of HOSTS) {
         });
         const homePanel = () => byTestId(PageObjectId.HOME_SCREEN_PANEL);
         await userEvent.click(byRole('button', 'Start conversation'));
-        await expect.poll(() => isVisible(homePanel())).toBe(false);
+        await expect.poll(() => isVisible(homePanel()), FOCUS_WAIT).toBe(false);
         await userEvent.click(byRole('button', 'Return to the home screen'));
-        await expect.poll(() => isVisible(homePanel())).toBe(true);
+        await expect.poll(() => isVisible(homePanel()), FOCUS_WAIT).toBe(true);
         const back = byRole('button', 'Return to conversation');
         if (keyboard) {
           back.focus();
@@ -233,9 +265,9 @@ for (const framework of HOSTS) {
         } else {
           await userEvent.click(back);
         }
-        await expect.poll(() => isVisible(homePanel())).toBe(false);
+        await expect.poll(() => isVisible(homePanel()), FOCUS_WAIT).toBe(false);
         await expect
-          .poll(() => hasFocus(byTestId(PageObjectId.INPUT)))
+          .poll(() => hasFocus(byTestId(PageObjectId.INPUT)), FOCUS_WAIT)
           .toBe(true);
       });
     }
@@ -251,44 +283,62 @@ for (const framework of HOSTS) {
       );
       close.focus();
       await userEvent.keyboard('{Enter}');
-      await expect.poll(() => isVisible(close)).toBe(false);
+      await expect.poll(() => isVisible(close), FOCUS_WAIT).toBe(false);
       await expect
-        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)))
+        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)), FOCUS_WAIT)
         .toBe(true);
+    });
+
+    it(`${framework} ${direction}: requestFocus reports whether it found a place to focus`, async () => {
+      const instance = await openChat(framework, direction);
+      const pageControl = focusHostButton();
+      let found: boolean | void;
+      await act(async () => {
+        found = instance.requestFocus();
+      });
+      expect(found).toBe(true);
+      await expect
+        .poll(() => hasFocus(byTestId(PageObjectId.INPUT)), FOCUS_WAIT)
+        .toBe(true);
+
+      // Close the window it just focused: nothing in it can take focus now.
+      await act(() =>
+        instance.changeView({ mainWindow: false, launcher: true })
+      );
+      await expect
+        .poll(() => instance.getState().viewState.mainWindow, FOCUS_WAIT)
+        .toBe(false);
+      pageControl.focus();
+      await act(async () => {
+        found = instance.requestFocus();
+      });
+      expect(found).toBe(false);
+      expect(hasFocus(pageControl)).toBe(true);
     });
   }
 }
 
-// Reduced motion is a media feature, so the page itself must report it. Only
-// Chromium exposes the protocol call that emulates it.
-it.runIf(server.browser === 'chromium')(
-  'reduced motion: closing a custom panel from its content returns focus to the opener',
-  async () => {
-    await cdp().send('Emulation.setEmulatedMedia', {
-      features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
-    });
-    try {
-      expect(
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ).toBe(true);
-      const instance = await openChat('react', 'ltr');
-      const opener = byRole('button', CLOSE_CHAT);
-      opener.focus();
-      const close = await openCustomPanel(
-        instance,
-        'Close from content',
-        false,
-        true
-      );
-      close.focus();
-      await userEvent.keyboard('{Enter}');
-      await expect.poll(() => isVisible(close)).toBe(false);
-      await expect.poll(() => hasFocus(opener)).toBe(true);
-    } finally {
-      await cdp().send('Emulation.setEmulatedMedia', { features: [] });
-    }
+// Reduced motion is a media feature, so the page itself reports it.
+it('reduced motion: closing a custom panel from its content returns focus to the opener', async () => {
+  await emulateReducedMotion('reduce');
+  try {
+    const instance = await openChat('react', 'ltr');
+    const opener = byRole('button', CLOSE_CHAT);
+    opener.focus();
+    const close = await openCustomPanel(
+      instance,
+      'Close from content',
+      false,
+      true
+    );
+    close.focus();
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => isVisible(close), FOCUS_WAIT).toBe(false);
+    await expect.poll(() => hasFocus(opener), FOCUS_WAIT).toBe(true);
+  } finally {
+    await emulateReducedMotion(null);
   }
-);
+});
 
 for (const framework of HOSTS) {
   it(`${framework}: closing a cover returns focus to a control in user-defined response panel content`, async () => {
@@ -341,15 +391,22 @@ for (const framework of HOSTS) {
       } as never)
     );
     await userEvent.click(byRole('button', 'Open the user-defined panel'));
+    // The response panel shows, named by its title.
+    await expect
+      .poll(
+        () => allByRole('dialog', 'User-defined panel').find(isVisible) ?? null,
+        FOCUS_WAIT
+      )
+      .not.toBeNull();
     const panelControl = () =>
       allByRole('button', 'Panel content control').find(isVisible) ?? null;
-    await expect.poll(panelControl).not.toBeNull();
+    await expect.poll(panelControl, FOCUS_WAIT).not.toBeNull();
     const shown = panelControl();
     shown.focus();
     expect(hasFocus(shown)).toBe(true);
     const prompt = await requestScreenShare(desk);
     await userEvent.keyboard('{Escape}');
-    await expect.poll(() => isVisible(prompt)).toBe(false);
-    await expect.poll(() => hasFocus(shown)).toBe(true);
+    await expect.poll(() => isVisible(prompt), FOCUS_WAIT).toBe(false);
+    await expect.poll(() => hasFocus(shown), FOCUS_WAIT).toBe(true);
   });
 }
