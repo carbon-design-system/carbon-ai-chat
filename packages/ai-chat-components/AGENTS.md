@@ -37,5 +37,5 @@ npm test                        # every Vitest project (see tests.md)
 
 For guidance-only edits, use the [guidance gate](../../references/definition-of-done.md#minimum-gate-by-area-edited). For component changes:
 
-- `npm run build --workspace=@carbon/ai-chat-components`, then `npm run test --workspace=@carbon/ai-chat-components` (runs every Vitest project). Build first; read [tests.md](references/tests.md#gotchas) when a browser test fails against correct source.
+- `npm run build --workspace=@carbon/ai-chat-components`, then `npm run test --workspace=@carbon/ai-chat-components` (runs every Vitest project). Build first: the React wrapper tests read `es/`. Read [tests.md](references/tests.md#debugging-failures) when a test fails against correct source.
 - For JSDoc, prop, slot, event, or CSS-part changes, follow the [manifest and wrapper workflow](references/component-authoring.md#manifest-and-react-wrappers).

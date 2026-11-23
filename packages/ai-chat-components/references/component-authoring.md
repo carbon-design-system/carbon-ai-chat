@@ -15,10 +15,10 @@ component-name/
     component-name-<part>.ts  # sub-elements (e.g. card-footer, card-steps)
   __stories__/                # see storybook.md
   __tests__/
-    component-name.browser.test.ts  # Vitest browser project, with __snapshots__/
+    component-name.browser.test.ts  # Vitest browser project
 ```
 
-Shared pieces: [../src/components/shared/](../src/components/shared/); design tokens / utilities: [../src/globals/](../src/globals/); test helpers: [../src/testing/](../src/testing/); ambient types: [../src/typings/](../src/typings/).
+Shared pieces: [../src/components/shared/](../src/components/shared/); design tokens / utilities: [../src/globals/](../src/globals/); code shipped for hosts' tests, such as `PageObjectId`: [../src/testing/](../src/testing/); test helpers: [`../src/__tests__/browser/`](../src/__tests__/browser/); ambient types: [../src/typings/](../src/typings/).
 
 ### Nested sub-component directories
 
@@ -37,7 +37,7 @@ component-name/
       sub-component.scss
     __stories__/        # stories specific to the sub-component
     __tests__/
-      sub-component.test.ts
+      sub-component.browser.test.ts
 ```
 
 Rules for this pattern:
