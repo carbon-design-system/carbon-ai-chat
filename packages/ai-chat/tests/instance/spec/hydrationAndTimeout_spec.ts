@@ -41,12 +41,11 @@ describe('hydration and timeout isolation', () => {
       .mockResolvedValue(undefined);
     const opening = instance.changeView({ mainWindow: true, launcher: false });
     await waitFor(() => expect(customLoadHistory).toHaveBeenCalledTimes(1));
-    const generation =
-      serviceManager.conversationLifecycleService.currentGeneration;
+    const generation = serviceManager.messageCoordinator.currentGeneration;
     const restart = instance.messaging.restartConversation();
     await waitFor(() =>
       expect(
-        serviceManager.conversationLifecycleService.currentGeneration
+        serviceManager.messageCoordinator.currentGeneration
       ).toBeGreaterThan(generation)
     );
     await act(async () => {
@@ -140,9 +139,7 @@ describe('hydration and timeout isolation', () => {
       })
     );
     expect(
-      serviceManager.conversationLifecycleService.hasFailureForRequest(
-        originalRequestID
-      )
+      serviceManager.messageCoordinator.hasFailureForRequest(originalRequestID)
     ).toBe(true);
     expect(instance.state.get().status).toBe('error');
   });
@@ -177,7 +174,7 @@ describe('hydration and timeout isolation', () => {
         });
       let timeout: () => void;
       jest
-        .spyOn(serviceManager.messageService.messageLoadingManager, 'start')
+        .spyOn(serviceManager.messageCoordinator.messageLoadingManager, 'start')
         .mockImplementation((_message, _options, onTimeout) => {
           timeout = onTimeout;
         });
@@ -189,16 +186,13 @@ describe('hydration and timeout isolation', () => {
       );
       await waitFor(() => expect(customSendMessage).toHaveBeenCalledTimes(1));
       const next = instance.send('next');
-      const queue = (
-        serviceManager.messageService as unknown as {
-          queue: {
-            waiting: unknown[];
-            current: { sendMessagePromise: { isRejected: boolean } };
-          };
-        }
-      ).queue;
-      await waitFor(() => expect(queue.waiting).toHaveLength(1));
-      const timedOutRequest = queue.current;
+      await waitFor(() =>
+        expect(serviceManager.messageCoordinator.getWaitingRequestCount()).toBe(
+          1
+        )
+      );
+      const timedOutRequest =
+        serviceManager.messageCoordinator.getCurrentRequest();
       await act(async () => {
         timeout();
         expect(timedOutRequest.sendMessagePromise.isRejected).toBe(true);

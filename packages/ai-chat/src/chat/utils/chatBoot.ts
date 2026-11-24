@@ -344,46 +344,15 @@ export async function initServiceManagerAndInstance(options: {
       message?: string
     ): void {
       debugLog('Called instance.updateIsMessageLoadingCounter', direction);
-      const { store } = serviceManager;
-
-      if (direction === 'reset') {
-        store.dispatch(actions.resetIsLoadingCounter());
-      } else if (direction === 'increase') {
-        store.dispatch(actions.addIsLoadingCounter(1, message));
-      } else if (direction === 'decrease') {
-        if (
-          store.getState().assistantMessageState.isMessageLoadingCounter <= 0
-        ) {
-          return;
-        }
-        store.dispatch(actions.addIsLoadingCounter(-1, message));
-      } else if (!direction && message) {
-        store.dispatch(actions.addIsLoadingCounter(0, message));
-      } else if (direction) {
-        consoleError(
-          `[updateIsMessageLoadingCounter] Invalid direction: ${direction}. Valid values are undefined (with loading message), "reset", "increase" and "decrease".`
-        );
-      }
+      serviceManager.messageCoordinator.updateIsMessageLoadingCounter(
+        direction,
+        message
+      );
     },
 
     updateIsChatLoadingCounter(direction: string): void {
       debugLog('Called instance.updateIsChatLoadingCounter', direction);
-      const { store } = serviceManager;
-
-      if (direction === 'reset') {
-        store.dispatch(actions.resetIsHydratingCounter());
-      } else if (direction === 'increase') {
-        store.dispatch(actions.addIsHydratingCounter(1));
-      } else if (direction === 'decrease') {
-        if (store.getState().assistantMessageState.isHydratingCounter <= 0) {
-          return;
-        }
-        store.dispatch(actions.addIsHydratingCounter(-1));
-      } else {
-        consoleError(
-          `[updateIsChatLoadingCounter] Invalid direction: ${direction}. Valid values are "reset", "increase" and "decrease".`
-        );
-      }
+      serviceManager.messageCoordinator.updateIsChatLoadingCounter(direction);
     },
 
     messaging: {
@@ -397,13 +366,13 @@ export async function initServiceManagerAndInstance(options: {
           message = cloneDeep(message);
         }
         if (
-          serviceManager.messageService.isRequestFromPreviousConversation(
+          serviceManager.messageCoordinator.isRequestFromPreviousConversation(
             message.request_id
           )
         ) {
           return Promise.resolve();
         }
-        serviceManager.messageService.messageLoadingManager.end();
+        serviceManager.messageCoordinator.messageLoadingManager.end();
         return serviceManager.actions.receive(
           message,
           options?.isLatestWelcomeNode ?? false,
@@ -428,14 +397,14 @@ export async function initServiceManagerAndInstance(options: {
         debugLog('Called instance.messaging.upsertMessage', messageID, state);
         const { restartCount } = serviceManager;
         try {
-          await serviceManager.messageUpsertCoordinator.upsert(
+          await serviceManager.messageCoordinator.upsertMessage(
             messageID,
             state,
             updater
           );
         } catch (error) {
           if (restartCount === serviceManager.restartCount) {
-            serviceManager.messageService.messageLoadingManager.end();
+            serviceManager.messageCoordinator.messageLoadingManager.end();
           }
           throw error;
         }
@@ -502,6 +471,7 @@ export async function initServiceManagerAndInstance(options: {
   }
 
   serviceManager.instance = instance;
+  serviceManager.messageCoordinator.onInstanceReady();
 
   return { serviceManager, instance };
 }

@@ -11,6 +11,7 @@ import { captureMessageEvent } from '../../utils/messageEventOwnership';
 import { BusEventType } from '../../../types/events/eventBusTypes';
 import { outputItemToLocalItem } from '../../schema/outputItemToLocalItem';
 import actions from '../../store/actions';
+import { markHumanAgentIngress } from '../../store/messageOwnership';
 import { LocalMessageItem } from '../../../types/messaging/LocalMessageItem';
 import { conditionalSetTimeout } from '../../utils/browserUtils';
 import { asyncForEach } from '../../utils/lang/arrayUtils';
@@ -234,10 +235,12 @@ async function addMessages(
           }
           const owned = cloneDeep({ localMessage, originalMessage });
           serviceManager.store.dispatch(
-            actions.addLocalMessageItem(
-              owned.localMessage,
-              owned.originalMessage,
-              index === 0
+            markHumanAgentIngress(
+              actions.addLocalMessageItem(
+                owned.localMessage,
+                owned.originalMessage,
+                index === 0
+              )
             )
           );
         });

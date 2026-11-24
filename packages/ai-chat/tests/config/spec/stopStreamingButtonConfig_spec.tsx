@@ -265,7 +265,7 @@ describe('stop streaming button from input config', () => {
       .mockResolvedValue(undefined);
     instance.on({ type: BusEventType.STOP_STREAMING, handler });
     const cancel = jest.spyOn(
-      instance.serviceManager.messageService,
+      instance.serviceManager.messageCoordinator,
       'cancelCurrentMessageRequest'
     );
     const log = jest.spyOn(console, 'error').mockImplementation(() => {});

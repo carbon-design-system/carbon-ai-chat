@@ -418,7 +418,7 @@ describe('ChatInstance.send', () => {
         // Simulate clicking stop button by canceling via serviceManager
         await (
           instance as any
-        ).serviceManager.messageService.cancelCurrentMessageRequest();
+        ).serviceManager.messageCoordinator.cancelCurrentMessageRequest();
 
         await sendPromise;
 

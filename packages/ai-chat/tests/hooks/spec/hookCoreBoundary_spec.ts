@@ -28,7 +28,7 @@ const coreFiles = [
   'src/chat/utils/historyMobileDetection.ts',
   'src/chat/utils/panelCallbacks.ts',
   'src/chat/utils/carbonTheme.ts',
-  'src/chat/services/humanAgentCallbacks.ts',
+  'src/chat/services/haa/humanAgentCallbacks.ts',
   'src/chat/utils/mobileViewportLayout.ts',
   'src/chat/services/inputCallbacks.ts',
   'src/chat/services/inputExtensions.ts',
