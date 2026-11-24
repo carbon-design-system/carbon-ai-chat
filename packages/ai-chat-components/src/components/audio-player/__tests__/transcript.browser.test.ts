@@ -7,9 +7,8 @@
  *  @license
  */
 
-import { expect, fixture, html, waitUntil } from '@open-wc/testing';
+import { expect, fixture, html, oneEvent, waitUntil } from '@open-wc/testing';
 import '../index.js';
-import '../../markdown/index.js';
 
 /** A paragraph, a list, a fenced code block, and HTML that sanitizing must neutralize. */
 const MARKDOWN = [
@@ -32,14 +31,17 @@ interface MarkdownElement extends HTMLElement {
   updateComplete: Promise<boolean>;
 }
 
+interface TranscriptElement extends HTMLElement {
+  text: string;
+  updateComplete: Promise<boolean>;
+}
+
 interface CodeSnippetElement extends HTMLElement {
   code: string;
 }
 
 async function renderTranscript(text: string) {
-  const transcript = await fixture<
-    HTMLElement & { updateComplete: Promise<boolean> }
-  >(
+  const transcript = await fixture<TranscriptElement>(
     html`<cds-aichat-transcript expanded .text=${text}></cds-aichat-transcript>`
   );
   await transcript.updateComplete;
@@ -51,23 +53,49 @@ async function renderTranscript(text: string) {
     () => markdown.shadowRoot?.querySelector('cds-aichat-code-snippet'),
     'the code block renders'
   );
-  return markdown;
+  return { transcript, markdown };
 }
 
+/** The text of each list item the markdown element rendered. */
+function listItems(markdown: MarkdownElement) {
+  return [...markdown.shadowRoot!.querySelectorAll('cds-list-item, li')].map(
+    (item) => item.textContent?.trim()
+  );
+}
+
+// These cases read the markdown element's rendered markup, because what it
+// renders from the transcript's text is the behavior under test.
 describe('cds-aichat-transcript markdown', () => {
+  afterEach(() => {
+    delete (window as { transcriptXss?: boolean }).transcriptXss;
+  });
+
   it('hands its text to the markdown renderer unchanged', async () => {
-    const markdown = await renderTranscript(MARKDOWN);
+    const { markdown } = await renderTranscript(MARKDOWN);
     expect(markdown.markdown).to.equal(MARKDOWN);
   });
 
-  it('renders every list item and the whole code block', async () => {
-    const markdown = await renderTranscript(MARKDOWN);
-    const root = markdown.shadowRoot!;
-    const items = [...root.querySelectorAll('cds-list-item, li')].map((item) =>
-      item.textContent?.trim()
+  it('hands over new text when the text changes', async () => {
+    const { transcript, markdown } = await renderTranscript(MARKDOWN);
+    transcript.text = '- Only point';
+    await transcript.updateComplete;
+    await markdown.updateComplete;
+    expect(markdown.markdown).to.equal('- Only point');
+    await waitUntil(
+      () => !markdown.shadowRoot?.querySelector('cds-aichat-code-snippet'),
+      'the old code block goes'
     );
-    expect(items).to.deep.equal(['First point', 'Second point', 'Third point']);
-    const snippet = root.querySelector<CodeSnippetElement>(
+    expect(listItems(markdown)).to.deep.equal(['Only point']);
+  });
+
+  it('renders every list item and the whole code block', async () => {
+    const { markdown } = await renderTranscript(MARKDOWN);
+    expect(listItems(markdown)).to.deep.equal([
+      'First point',
+      'Second point',
+      'Third point',
+    ]);
+    const snippet = markdown.shadowRoot!.querySelector<CodeSnippetElement>(
       'cds-aichat-code-snippet'
     )!;
     expect(snippet.code).to.include('const first = 1;');
@@ -75,10 +103,14 @@ describe('cds-aichat-transcript markdown', () => {
   });
 
   it('still sanitizes the markdown', async () => {
-    const markdown = await renderTranscript(MARKDOWN);
+    const { markdown } = await renderTranscript(MARKDOWN);
     const image = markdown.shadowRoot!.querySelector('img');
     expect(image, 'the image itself renders').to.not.equal(null);
     expect(image!.hasAttribute('onerror')).to.equal(false);
+    // An unsanitized handler would run once the missing image fails to load.
+    if (!image!.complete) {
+      await oneEvent(image!, 'error');
+    }
     expect((window as { transcriptXss?: boolean }).transcriptXss).to.equal(
       undefined
     );
