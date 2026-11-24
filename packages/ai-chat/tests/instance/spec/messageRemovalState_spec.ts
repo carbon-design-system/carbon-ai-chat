@@ -8,7 +8,7 @@
  */
 
 import { act } from '@testing-library/react';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import type { PublicChatState } from '../../../src/types/instance/PublicChatState';

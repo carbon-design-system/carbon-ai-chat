@@ -7,10 +7,10 @@
  *  @license
  */
 
-import type { ServiceManager } from '../services/ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import { WriteableElementName } from '../../types/instance/WriteableElements';
-import { selectInputState } from '../store/selectors';
+import { selectInputState } from '../../shared/store/selectors';
 import {
   getWriteableElementContent,
   hasMeaningfulContent,

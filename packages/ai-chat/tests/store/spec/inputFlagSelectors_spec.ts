@@ -19,11 +19,11 @@ import {
   selectInputIsReadonly,
   selectInputIsDisabled,
   selectInputFieldVisible,
-} from '../../../src/chat/store/selectors';
+} from '../../../src/shared/store/selectors';
 import {
   createAppConfig,
   createInitialState,
-} from '../../../src/chat/store/doCreateStore';
+} from '../../../src/shared/store/doCreateStore';
 import { AppState, InputState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 

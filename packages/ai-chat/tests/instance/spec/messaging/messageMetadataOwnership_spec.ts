@@ -8,13 +8,13 @@
  */
 
 import { act } from '@testing-library/react';
-import type { ServiceManager } from '../../../../src/chat/services/ServiceManager';
-import { addMessages } from '../../../../src/chat/services/haa/humanAgentUtils';
+import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { addMessages } from '../../../../src/shared/services/haa/humanAgentUtils';
 import {
   mergeMessageHistoryFromView,
   setMessageOptionSelectedFromView,
 } from '../../../../src/chat/utils/messageMetadataCommands';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {

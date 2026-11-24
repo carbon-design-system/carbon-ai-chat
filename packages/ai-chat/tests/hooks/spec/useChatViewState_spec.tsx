@@ -12,9 +12,9 @@ import { act, render, screen } from '@testing-library/react';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { useIntl } from '../../../src/chat/hooks/useIntl';
 import { useWindowSize } from '../../../src/chat/hooks/useWindowSize';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import { setIntl } from '../../../src/chat/utils/intlUtils';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import { setIntl } from '../../../src/shared/utils/intlUtils';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type { LanguagePack } from '../../../src/types/config/LanguagePack';
 import {
   createTestViewState,

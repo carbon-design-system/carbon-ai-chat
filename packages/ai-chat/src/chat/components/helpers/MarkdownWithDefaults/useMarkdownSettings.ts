@@ -13,7 +13,7 @@ import { useSelector } from '../../../hooks/useSelector';
 
 import { useShouldSanitizeHTML } from '../../../hooks/useShouldSanitizeHTML';
 import { AppState } from '../../../../types/state/AppState';
-import { shallowEqual } from '../../../store/appStore';
+import { shallowEqual } from '../../../../shared/store/appStore';
 
 export function useMarkdownSettings(overrideSanitize?: boolean) {
   let doSanitize = useShouldSanitizeHTML();

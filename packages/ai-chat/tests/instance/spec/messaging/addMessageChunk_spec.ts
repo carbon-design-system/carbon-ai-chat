@@ -16,8 +16,8 @@ import {
   setupBeforeEach,
   setupAfterEach,
 } from '../../../test_helpers';
-import actions, { UPSERT_MESSAGE } from '../../../../src/chat/store/actions';
-import type { MessageWriteOptions } from '../../../../src/chat/store/messageWriteTypes';
+import actions, { UPSERT_MESSAGE } from '../../../../src/shared/store/actions';
+import type { MessageWriteOptions } from '../../../../src/shared/store/messageWriteTypes';
 import {
   BusEventChunkUserDefinedResponse,
   BusEventPreReceive,
@@ -39,7 +39,7 @@ import {
 } from '../../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 import {
   MALFORMED,
   fixtureMessage,

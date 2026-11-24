@@ -21,7 +21,7 @@ import { LitElement } from 'lit';
 import type { PropertyDeclaration, PropertyDeclarations } from 'lit';
 
 import { PublicConfig } from '../../types/config/PublicConfig';
-import { consoleWarn } from '../../chat/utils/miscUtils';
+import { consoleWarn } from '../../shared/utils/miscUtils';
 import {
   FLATTENED_PUBLIC_CONFIG_FIELDS,
   resolveFlattenedConfig,

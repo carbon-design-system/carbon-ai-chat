@@ -9,7 +9,7 @@
 
 import type { AppStore } from '../store/appStore';
 import { IntlShape } from '../utils/i18n';
-import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
+import type { AriaAnnouncerFunctionType } from '../../chat/services/ariaAnnouncer';
 
 import { EventBus } from '../events/EventBus';
 import { AppState } from '../../types/state/AppState';
@@ -30,9 +30,9 @@ import { PublicStateService } from './PublicStateService';
 import { MessageCoordinator } from './messaging/MessageCoordinator';
 import { SlotEventService } from './messaging/presentation/SlotEventService';
 import { StreamAnnouncerService } from './messaging/presentation/StreamAnnouncerService';
-import { ViewService } from './ViewService';
+import { ViewService } from '../../chat/services/ViewService';
 import { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
-import type { InputFunctions } from '../utils/inputTypes';
+import type { InputFunctions } from '../../chat/utils/inputTypes';
 
 interface UserDefinedElementRegistryItem {
   slotName: string;

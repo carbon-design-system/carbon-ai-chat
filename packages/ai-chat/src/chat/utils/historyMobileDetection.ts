@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { getCSSVariableValue } from './colors';
-import actions from '../store/actions';
-import type { ServiceManager } from '../services/ServiceManager';
+import { getCSSVariableValue } from '../../shared/utils/colors';
+import actions from '../../shared/store/actions';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 
 export interface HistoryMobileDetectionOptions {
   container: HTMLElement | null;

@@ -17,14 +17,14 @@ import Button from '../../../components/carbon/Button';
 import React, { ReactNode, useEffect, useState } from 'react';
 
 import { HasServiceManager } from '../../../hocs/withServiceManager';
-import { HumanAgentsOnlineStatus } from '../../../services/haa/HumanAgentService';
+import { HumanAgentsOnlineStatus } from '../../../../shared/services/haa/HumanAgentService';
 import {
   AppState,
   HumanAgentDisplayState,
   HumanAgentState,
 } from '../../../../types/state/AppState';
 import { useSelector } from '../../../hooks/useSelector';
-import { shallowEqual } from '../../../store/appStore';
+import { shallowEqual } from '../../../../shared/store/appStore';
 import { PersistedHumanAgentState } from '../../../../types/state/PersistedHumanAgentState';
 import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';

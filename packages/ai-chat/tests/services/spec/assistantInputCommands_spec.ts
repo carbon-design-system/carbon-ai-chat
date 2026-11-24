@@ -7,13 +7,13 @@
  *  @license
  */
 
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import { requestStopFromInput } from '../../../src/chat/services/assistantInputCommands';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import actions from '../../../src/chat/store/actions';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { requestStopFromInput } from '../../../src/shared/services/assistantInputCommands';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import actions from '../../../src/shared/store/actions';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
-import * as miscUtils from '../../../src/chat/utils/miscUtils';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import * as miscUtils from '../../../src/shared/utils/miscUtils';
 
 function commandHost(isVisible: boolean) {
   const order: string[] = [];

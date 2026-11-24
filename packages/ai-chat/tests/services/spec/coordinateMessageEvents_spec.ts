@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { coordinateUserDefinedResponseItems } from '../../../src/chat/services/messaging/coordinateMessageEvents';
-import type { MessagePresentationPort } from '../../../src/chat/services/messaging/presentationPort';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { coordinateUserDefinedResponseItems } from '../../../src/shared/services/messaging/coordinateMessageEvents';
+import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import {
   MessageResponseTypes,

@@ -25,12 +25,12 @@ import { useInputConfig } from '../../../src/chat/hooks/useInputConfig';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import type {
   InputFunctions,
   InputProps,
 } from '../../../src/chat/utils/inputTypes';
-import { createIntl } from '../../../src/chat/utils/i18n';
+import { createIntl } from '../../../src/shared/utils/i18n';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import type {
   InputConfig,

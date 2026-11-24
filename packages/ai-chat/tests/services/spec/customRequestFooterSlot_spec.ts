@@ -7,15 +7,15 @@
  *  @license
  */
 
-import { ChatInstanceService } from '../../../src/chat/services/ChatInstanceService';
-import { EventBus } from '../../../src/chat/events/EventBus';
-import { HydrationService } from '../../../src/chat/services/HydrationService';
-import { InputActionsService } from '../../../src/chat/services/InputActionsService';
-import { PublicStateService } from '../../../src/chat/services/PublicStateService';
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import { SlotEventService } from '../../../src/chat/services/messaging/presentation/SlotEventService';
+import { ChatInstanceService } from '../../../src/shared/services/ChatInstanceService';
+import { EventBus } from '../../../src/shared/events/EventBus';
+import { HydrationService } from '../../../src/shared/services/HydrationService';
+import { InputActionsService } from '../../../src/shared/services/InputActionsService';
+import { PublicStateService } from '../../../src/shared/services/PublicStateService';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { SlotEventService } from '../../../src/shared/services/messaging/presentation/SlotEventService';
 import { ViewService } from '../../../src/chat/services/ViewService';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   BusEvent,
   BusEventCustomRequestFooterSlot,

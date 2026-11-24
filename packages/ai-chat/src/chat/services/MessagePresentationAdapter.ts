@@ -10,9 +10,9 @@
 import type {
   MessagePresentationPort,
   StreamAnnouncementContent,
-} from '../presentationPort';
+} from '../../shared/services/messaging/presentationPort';
 
-import type { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+import type { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 
 interface MessagePresentationCapabilities {
   openHomeScreen?(): void;

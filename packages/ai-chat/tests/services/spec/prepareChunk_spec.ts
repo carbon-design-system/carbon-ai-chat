@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { IncomingMessageService } from '../../../src/chat/services/messaging/inbound/IncomingMessageService';
-import { ChunkWorkflow } from '../../../src/chat/services/messaging/ChunkWorkflow';
-import type { MessageWriteOptions } from '../../../src/chat/store/messageWriteTypes';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { IncomingMessageService } from '../../../src/shared/services/messaging/inbound/IncomingMessageService';
+import { ChunkWorkflow } from '../../../src/shared/services/messaging/ChunkWorkflow';
+import type { MessageWriteOptions } from '../../../src/shared/store/messageWriteTypes';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import {
   MessageResponseTypes,
   type MessageResponse,
@@ -19,7 +19,7 @@ import {
   type TextItem,
 } from '../../../src/types/messaging/Messages';
 import type { DeepPartial } from '../../../src/types/utilities/DeepPartial';
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
 
 const incoming = new IncomingMessageService();
 function chunk(): PartialItemChunk {

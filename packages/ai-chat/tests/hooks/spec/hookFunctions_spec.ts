@@ -22,14 +22,16 @@ import {
 } from '../../../src/chat/utils/windowSize';
 import { getCarbonTheme } from '../../../src/chat/utils/carbonTheme';
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
-import { createAppStore } from '../../../src/chat/store/appStore';
+import { createAppStore } from '../../../src/shared/store/appStore';
 import type {
   AppState,
   PersistedState,
 } from '../../../src/types/state/AppState';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 
-jest.mock('../../../src/chat/utils/browserUtils', () => ({ IS_MOBILE: false }));
+jest.mock('../../../src/shared/utils/browserUtils', () => ({
+  IS_MOBILE: false,
+}));
 
 describe('plain hook functions', () => {
   it('gives the disclaimer priority until it is accepted for the current host', () => {

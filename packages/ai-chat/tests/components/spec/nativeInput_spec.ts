@@ -28,13 +28,13 @@ import type {
 } from '../../../src/chat/utils/inputTypes';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import actions from '../../../src/chat/store/actions';
-import { selectInputState } from '../../../src/chat/store/selectors';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import actions from '../../../src/shared/store/actions';
+import { selectInputState } from '../../../src/shared/store/selectors';
 import * as draftUtils from '../../../src/chat/utils/restoreInputDraft';
-import * as miscUtils from '../../../src/chat/utils/miscUtils';
+import * as miscUtils from '../../../src/shared/utils/miscUtils';
 import {
   applyConfigChange,
   makeConfigStore,

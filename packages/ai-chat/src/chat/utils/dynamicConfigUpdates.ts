@@ -9,18 +9,18 @@
 
 import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
-import { ServiceManager } from '../services/ServiceManager';
-import { NamespaceService } from '../services/NamespaceService';
-import { messageTimeoutMS } from '../services/messaging/MessageCoordinator';
-import actions from '../store/actions';
-import createHumanAgentService from '../services/haa/HumanAgentServiceImpl';
-import { consoleDebug, consoleError } from './miscUtils';
+import { ServiceManager } from '../../shared/services/ServiceManager';
+import { NamespaceService } from '../../shared/services/NamespaceService';
+import { messageTimeoutMS } from '../../shared/services/messaging/MessageCoordinator';
+import actions from '../../shared/store/actions';
+import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
+import { consoleDebug, consoleError } from '../../shared/utils/miscUtils';
 import {
   buildLanguagePack,
   createAppConfig,
   reconcileAppConfigReferences,
-} from '../store/doCreateStore';
-import { isBrowser } from './browserUtils';
+} from '../../shared/store/doCreateStore';
+import { isBrowser } from '../../shared/utils/browserUtils';
 
 /**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`

@@ -15,6 +15,7 @@
       "entry": [
         "src/aiChatEntry.tsx",
         "src/serverEntry.ts",
+        "src/sdk/index.ts",
         "src/web-components/**/index.ts",
         "tasks/rollup.aichat.js",
         "tests/**/*.{ts,tsx}"

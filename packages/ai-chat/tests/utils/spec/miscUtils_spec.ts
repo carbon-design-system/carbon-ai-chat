@@ -19,7 +19,7 @@ import {
   consoleLog,
   consoleWarn,
   consoleDebug,
-} from '../../../src/chat/utils/miscUtils';
+} from '../../../src/shared/utils/miscUtils';
 
 describe('miscUtils', () => {
   describe('assertType', () => {

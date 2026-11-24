@@ -25,7 +25,7 @@ import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import type { ConversationalSearchItemCitation } from '../../../src/types/messaging/Messages';
-import actions from '../../../src/chat/store/actions';
+import actions from '../../../src/shared/store/actions';
 import {
   createBaseConfig,
   getChatShadowRoot,

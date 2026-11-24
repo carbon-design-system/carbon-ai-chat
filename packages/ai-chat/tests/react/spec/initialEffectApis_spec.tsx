@@ -12,7 +12,7 @@ import { render, waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
 import { useServiceManager } from '../../../src/chat/hooks/useServiceManager';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';

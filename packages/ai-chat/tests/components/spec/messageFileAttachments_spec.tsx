@@ -19,7 +19,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 import { MessageFileAttachments } from '../../../src/chat/components/helpers/MessageFileAttachments/MessageFileAttachments';
-import type { MessageFileAttachment } from '../../../src/chat/utils/fileAttachments';
+import type { MessageFileAttachment } from '../../../src/shared/utils/fileAttachments';
 
 const ATTACHMENTS: MessageFileAttachment[] = [
   { id: 'a', name: 'report.pdf', mimeType: 'application/pdf' },

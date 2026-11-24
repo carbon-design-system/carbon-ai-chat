@@ -15,7 +15,7 @@ import { ChatContainerProps } from '../../../src/types/component/ChatContainer';
 import { createBaseTestProps } from '../../test_helpers';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
-import { setEnableDebugLog } from '../../../src/chat/utils/miscUtils';
+import { setEnableDebugLog } from '../../../src/shared/utils/miscUtils';
 
 // ---------------------------------------------------------------------------
 // Helpers

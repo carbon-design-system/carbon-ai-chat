@@ -13,7 +13,7 @@ import {
   asyncForEach,
   findLastWithMap,
   arrayLastValue,
-} from '../../../src/chat/utils/lang/arrayUtils';
+} from '../../../src/shared/utils/lang/arrayUtils';
 
 describe('arrayUtils', () => {
   describe('asArray', () => {

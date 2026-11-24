@@ -18,8 +18,8 @@
 import {
   getMessageFileAttachments,
   shouldSendSilently,
-} from '../../../src/chat/utils/fileAttachments';
-import { deepFreeze } from '../../../src/chat/utils/lang/objectUtils';
+} from '../../../src/shared/utils/fileAttachments';
+import { deepFreeze } from '../../../src/shared/utils/lang/objectUtils';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 
 function fileField(value: unknown, id = 'file'): StructuredData {

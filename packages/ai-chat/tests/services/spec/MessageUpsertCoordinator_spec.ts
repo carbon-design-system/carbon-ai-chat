@@ -7,10 +7,10 @@
  *  @license
  */
 
-import { resolvablePromise } from '../../../src/chat/utils/resolvablePromise';
-import { UpsertWorkflow } from '../../../src/chat/services/messaging/UpsertWorkflow';
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { UpsertWorkflow } from '../../../src/shared/services/messaging/UpsertWorkflow';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import {

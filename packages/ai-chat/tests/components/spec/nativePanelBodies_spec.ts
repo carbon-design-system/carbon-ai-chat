@@ -21,10 +21,10 @@ import type { PanelBodyContentReadyEvent } from '../../../src/chat/components/pa
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
-import { NamespaceService } from '../../../src/chat/services/NamespaceService';
-import { createIntl } from '../../../src/chat/utils/i18n';
-import actions from '../../../src/chat/store/actions';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+import { createIntl } from '../../../src/shared/utils/i18n';
+import actions from '../../../src/shared/store/actions';
 import {
   applyConfigChange,
   makeConfigStore,

@@ -15,7 +15,7 @@ import {
   MessageResponse,
   WidthOptions,
 } from '../../../../types/messaging/Messages';
-import { MessageTypeComponentProps } from '../../../../types/messaging/MessageTypeComponentProps';
+import { MessageTypeComponentProps } from '../../MessageTypeComponentProps';
 import { GridItemCell } from './GridItemCell';
 
 // This regex is for validating a number (1) or pixel value (10px) which are the only valid width values for a column.

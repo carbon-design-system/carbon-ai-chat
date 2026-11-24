@@ -27,7 +27,7 @@ import {
 } from '../../../../src/types/config/MessagingConfig';
 import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../../src/chat/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
 
 describe('ChatInstance.messaging.restartConversation', () => {
   beforeEach(setupBeforeEach);

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { MessageLoadingManager } from '../../../src/chat/utils/messageServiceUtils';
+import { MessageLoadingManager } from '../../../src/shared/utils/messageServiceUtils';
 
 describe('MessageLoadingManager', () => {
   beforeEach(() => {

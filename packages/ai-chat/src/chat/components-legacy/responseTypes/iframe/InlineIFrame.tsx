@@ -15,8 +15,8 @@ import {
   applyDynamicStyles,
   clearDynamicStyles,
 } from '../../../utils/cspStyleUtils';
-import { getMediaDimensions } from '../../../utils/messageUtils';
-import { getResponsiveElementPaddingValue } from '../../../utils/miscUtils';
+import { getMediaDimensions } from '../../../../shared/utils/messageUtils';
+import { getResponsiveElementPaddingValue } from '../../../../shared/utils/miscUtils';
 import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { MarkdownWithDefaults } from '../../../components/helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 import { IFrameComponent } from './IFrameComponent';

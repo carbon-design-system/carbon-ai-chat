@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { MessageCoordinator } from '../../../src/chat/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
 describe('MessageCoordinator', () => {
   let service: MessageCoordinator;

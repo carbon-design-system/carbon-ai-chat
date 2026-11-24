@@ -15,7 +15,7 @@ import {
   createAppStore,
   UnknownAction,
   shallowEqual,
-} from '../../../src/chat/store/appStore';
+} from '../../../src/shared/store/appStore';
 import { TestChatContext } from '../../test_helpers';
 
 interface State {

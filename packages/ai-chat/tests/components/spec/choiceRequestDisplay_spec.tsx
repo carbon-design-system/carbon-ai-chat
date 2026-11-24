@@ -10,7 +10,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MessageTypeComponent } from '../../../src/chat/components-legacy/MessageTypeComponent';
-import { createIntl } from '../../../src/chat/utils/i18n';
+import { createIntl } from '../../../src/shared/utils/i18n';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   MessageRequestHistory,

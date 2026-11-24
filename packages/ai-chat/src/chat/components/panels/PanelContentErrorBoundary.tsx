@@ -9,7 +9,7 @@
 
 import React, { type ReactNode } from 'react';
 import type { OnErrorData } from '../../../types/config/ErrorConfig';
-import { createDidCatchErrorData } from '../../utils/miscUtils';
+import { createDidCatchErrorData } from '../../../shared/utils/miscUtils';
 import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { MarkdownWithDefaults } from '../helpers/MarkdownWithDefaults/MarkdownWithDefaults';
 

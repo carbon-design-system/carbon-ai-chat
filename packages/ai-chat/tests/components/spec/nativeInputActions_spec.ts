@@ -16,9 +16,9 @@ import {
   connectInputActionsOverflow,
 } from '../../../src/chat/utils/inputActionsLayout';
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
+import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import { createIntl } from '../../../src/chat/utils/i18n';
+import { createIntl } from '../../../src/shared/utils/i18n';
 import type { ToolbarAction } from '../../../src/types/config/HeaderConfig';
 import {
   makeConfigStore,
