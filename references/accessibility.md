@@ -56,8 +56,9 @@ Assert what assistive technology reads: roles and accessible names, focus target
   it('announces nothing when the list is unchanged', () => {
     vi.useFakeTimers();
     setItems(sameItems);
-    vi.advanceTimersByTime(250); // past the announcer's debounce
-    // Only now assert that both channels are empty.
+    vi.advanceTimersByTime(251); // past the announcer's debounce
+    expect(politeRegion.textContent).toBe('');
+    expect(assertiveRegion.textContent).toBe('');
   });
   ```
 

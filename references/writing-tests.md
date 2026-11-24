@@ -54,7 +54,7 @@ it.each([
 
 ## Helpers hide setup, not the claim
 
-A helper may build the fixture. It may also perform the case's action when the call in the case names that action, as `typeAt(editor, 'hi')` does. A helper never asserts: the checks stay in the case, where a reader sees them. Name a helper for what it does. If it waits, its name says so, as `untilDom()` and `waitForRich()` do.
+A helper may build the fixture. It may also perform the case's action when the call in the case names that action, as a placeholder `enterDraft(editor, 'hi')` would. A helper never asserts: the checks stay in the case, where a reader sees them. Name a helper for what it does. If it waits, its name says so, as `untilDom()` and `waitForRich()` do.
 
 ```ts
 it('closes on Escape', async () => {
