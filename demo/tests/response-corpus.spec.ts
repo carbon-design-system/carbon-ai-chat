@@ -281,7 +281,10 @@ test.describe('every demo response draws', () => {
         { SEND: BusEventType.SEND, RECEIVE: BusEventType.RECEIVE }
       );
 
-      await page.evaluate((message) => window.chatInstance!.send(message), key);
+      await page.evaluate(
+        (message) => window.chatInstance!.messaging.send(message),
+        key
+      );
       await expect
         .poll(() => completedResponses.length, {
           message: `Completed responses for "${key}"`,

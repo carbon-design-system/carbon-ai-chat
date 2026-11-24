@@ -63,12 +63,8 @@ class FullResponseWorkflow {
     isCallerCurrent: () => boolean = () => true
   ) {
     const { restartCount: initialRestartCount } = this.serviceManager;
-    const { messageCoordinator: messageService } = this.serviceManager;
     if (
-      !isCallerCurrent() ||
-      messageService.isRequestFromPreviousConversation(
-        message.request_id ?? requestMessage?.id
-      )
+      this.isOutdated(isCallerCurrent, message.request_id ?? requestMessage?.id)
     ) {
       return;
     }
@@ -77,6 +73,8 @@ class FullResponseWorkflow {
     if (!message.id) {
       message.id = uuid();
     }
+    // A handler may change the ID; a streamed reply shows under this one.
+    const receivedID = message.id;
 
     const write = this.serviceManager.messageCoordinator.trackIncomingWrite(
       message.id
@@ -94,12 +92,12 @@ class FullResponseWorkflow {
       // Fire the pre:receive event. User code is allowed to modify the message at this point.
       await this.serviceManager.fire(preReceiveEvent, isCurrent);
 
-      if (
-        !isCurrent() ||
-        initialRestartCount !== this.serviceManager.restartCount ||
-        messageService.isRequestFromPreviousConversation(message.request_id)
-      ) {
+      if (this.isOvertaken(message, initialRestartCount, isCurrent)) {
         // If a restart occurred during the await above, we need to exit.
+        return;
+      }
+      if (preReceiveEvent.cancel) {
+        await this.dropCanceledReply(receivedID);
         return;
       }
 
@@ -141,18 +139,53 @@ class FullResponseWorkflow {
         isCurrent
       );
 
-      // Record COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for
-      // the same id suppresses a second `pre:receive` / `receive`.
-      if (
-        isCurrent() &&
-        initialRestartCount === this.serviceManager.restartCount
-      ) {
-        this.serviceManager.messageCoordinator.markIncomingComplete(message.id);
-      }
+      this.recordComplete(message.id, initialRestartCount, isCurrent);
     } finally {
       this.pendingReceiveRemovals.delete(removedIDs);
       write.release();
     }
+  }
+
+  /**
+   * Records COMPLETE so a later `upsertMessage(id, MessageState.COMPLETE, ...)` for the same
+   * id suppresses a second `pre:receive` / `receive`.
+   */
+  private recordComplete(
+    messageID: string,
+    initialRestartCount: number,
+    isCurrent: () => boolean
+  ) {
+    if (
+      isCurrent() &&
+      initialRestartCount === this.serviceManager.restartCount
+    ) {
+      this.serviceManager.messageCoordinator.markIncomingComplete(messageID);
+    }
+  }
+
+  /** True when the caller's write ended, or the request belongs to an earlier conversation. */
+  private isOutdated(isCallerCurrent: () => boolean, requestID?: string) {
+    return (
+      !isCallerCurrent() ||
+      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
+        requestID
+      )
+    );
+  }
+
+  /** True when a restart or removal while the `pre:receive` handlers ran overtook this write. */
+  private isOvertaken(
+    message: MessageResponse,
+    initialRestartCount: number,
+    isCurrent: () => boolean
+  ) {
+    return (
+      !isCurrent() ||
+      initialRestartCount !== this.serviceManager.restartCount ||
+      this.serviceManager.messageCoordinator.isRequestFromPreviousConversation(
+        message.request_id
+      )
+    );
   }
 
   private writeReceivedMessage(
@@ -255,6 +288,22 @@ class FullResponseWorkflow {
       this.serviceManager.messageCoordinator.clearIncomingMessage(id);
     }
     this.serviceManager.store.dispatch(actions.removeMessages(messageIDs));
+  }
+
+  /**
+   * Keeps a reply out of the conversation after a `pre:receive` handler canceled it. A reply
+   * that is still streaming already shows, so its stream ends the way a final response ends
+   * it, and then the reply is removed. A settled message stored under the ID stays.
+   */
+  async dropCanceledReply(messageID: string) {
+    const coordinator = this.serviceManager.messageCoordinator;
+    if (!coordinator.isResponseStreaming(messageID)) {
+      return;
+    }
+    coordinator.finalizeStreamingMessage(messageID);
+    await this.removeMessages([messageID]);
+    // Removal hides the button only for upsert streams; a chunk stream needs it here.
+    coordinator.hideStopStreamingButtonIfIdle();
   }
 
   async runReceivedWrite(

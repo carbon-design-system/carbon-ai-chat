@@ -16,7 +16,7 @@ import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { useSelector } from '../../../hooks/useSelector';
 import { usePublicChatState } from '../../../hooks/usePublicChatState';
 import { shallowEqual } from '../../../../shared/store/appStore';
-import { selectHumanAgentDisplayState } from '../../../../shared/store/selectors';
+import { humanAgentDisplayStateOf } from '../../../../shared/store/selectors';
 import { RealConnectToHumanAgent } from './RealConnectToHumanAgent';
 import {
   ConnectToHumanAgentItem,
@@ -61,17 +61,14 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
   // longer re-render when human-agent state changes (typing indicators, unread
   // counts). `shallowEqual` keeps a new slice reference with unchanged fields
   // from re-rendering.
-  const agentDisplayState = useSelector(
-    selectHumanAgentDisplayState,
-    shallowEqual
-  );
-  const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState,
-    shallowEqual
-  );
   const humanAgent = usePublicChatState(
     (state) => state.humanAgent,
     shallowEqual
+  );
+  const agentDisplayState = humanAgentDisplayStateOf(humanAgent);
+  // Which card is connecting is view state; public state doesn't publish it.
+  const activeLocalMessageID = useSelector(
+    (state: AppState) => state.humanAgentState.activeLocalMessageID
   );
 
   const hasServiceDesk = useSelector((state: AppState) =>
@@ -89,8 +86,8 @@ function ConnectToHumanAgent(props: ConnectToHumanAgentProps) {
         originalMessage={originalMessage}
         serviceManager={serviceManager}
         disableUserInputs={childDisableUserInputs}
-        humanAgentState={humanAgentState}
-        persistedHumanAgentState={humanAgent}
+        activeLocalMessageID={activeLocalMessageID}
+        humanAgent={humanAgent}
         agentDisplayState={agentDisplayState}
         requestFocus={requestFocus}
       />

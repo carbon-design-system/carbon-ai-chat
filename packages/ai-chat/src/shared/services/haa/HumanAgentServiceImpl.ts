@@ -45,8 +45,11 @@ import {
   addDefaultsToMessage,
   createMessageRequestForFileUpload,
   createMessageRequestForText,
+  createMessageResponseForItem,
   createMessageResponseForText,
   hasServiceDesk,
+  isConnectToHumanAgent,
+  isResponse,
 } from '../../utils/messageUtils';
 import { assertType, consoleError, debugLog } from '../../utils/miscUtils';
 import {
@@ -58,6 +61,7 @@ import {
   HumanAgentsOnlineStatus,
   CreateHumanAgentServiceFunction,
   HumanAgentService,
+  StartConversationOptions,
 } from './HumanAgentService';
 import {
   addHumanAgentEndChatMessage,
@@ -73,9 +77,11 @@ import {
   ConnectToHumanAgentItem,
   Message,
   MessageResponse,
+  MessageResponseTypes,
   TextItem,
 } from '../../../types/messaging/Messages';
 import type { ConversationAppConfig } from '../../../types/state/ConversationState';
+import type { ChatSDKServiceDeskConfig } from '../../../types/config/ChatSDKServiceDeskConfig';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import {
   AdditionalDataToAgent,
@@ -90,6 +96,8 @@ import {
 } from '../../../types/config/ServiceDeskConfig';
 import {
   BusEventHumanAgentPreEndChat,
+  BusEventHumanAgentPreReceive,
+  BusEventHumanAgentPreSend,
   BusEventHumanAgentPreStartChat,
   BusEventType,
 } from '../../../types/events/eventBusTypes';
@@ -210,6 +218,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
   screenShareRequestPromise: ResolvablePromise<ScreenShareState>;
 
   /**
+   * Aborts the signal the host's `onScreenShareRequest` got, when the request
+   * it's answering ends before it answers.
+   */
+  private screenShareAbortController: AbortController | null = null;
+
+  /**
    * We only want to show the refresh/leave warning when the first agent joins, so we use this boolean to track if the
    * warning has been shown.
    */
@@ -294,10 +308,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
    * contain specific information to send to the service desk as part of the connection. This can include things
    * like a message to display to a human agent.
    * @param originalMessage The full original message that this Connect to Agent item belongs to.
+   * @param options `payload` seeds the pre-start event's `preStartChatPayload`.
    */
   public async startChat(
-    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem>,
-    originalMessage: Message
+    localConnectMessage: LocalMessageItem<ConnectToHumanAgentItem> | null,
+    originalMessage: Message,
+    options?: Pick<StartConversationOptions, 'payload'>
   ): Promise<void> {
     // The catch below reports a failed start to the user; a start that can't begin is only logged.
     try {
@@ -308,6 +324,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
     }
 
     const { serviceManager } = this;
+    // A throw while this is set came from a host's handler, not the desk.
+    let inPreStartHandlers = false;
 
     try {
       this.chatStarted = true;
@@ -318,13 +336,12 @@ class HumanAgentServiceImpl implements HumanAgentService {
       );
 
       // Fire off the pre-start event.
-      const event: BusEventHumanAgentPreStartChat = {
-        type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
-        message: originalMessage as MessageResponse,
-      };
+      const event = createPreStartChatEvent(originalMessage, options);
+      inPreStartHandlers = true;
       await serviceManager.fire(event);
+      inPreStartHandlers = false;
 
-      if (event.cancelStartChat) {
+      if (event.cancel || event.cancelStartChat) {
         // Abort the connecting.
         this.chatStarted = false;
         await this.fireEndChat(false, true);
@@ -344,32 +361,88 @@ class HumanAgentServiceImpl implements HumanAgentService {
         );
       }
 
+      // A start from code has no card; the connecting state shows without one.
       serviceManager.store.dispatch(
-        setIsConnecting(true, localConnectMessage.ui_state.id)
+        setIsConnecting(true, localConnectMessage?.ui_state.id ?? null)
       );
 
       await this.serviceDesk.startChat(originalMessage as MessageResponse, {
         preStartChatPayload: event.preStartChatPayload,
       });
     } catch (error) {
-      consoleError(
-        '[startChat] An error with the service desk occurred.',
-        error
-      );
-      // If it failed to start, then stop connecting and clear the service desk.
-      if (this.serviceDeskCallback) {
-        await this.serviceDeskCallback.setErrorStatus({
-          type: ErrorType.CONNECTING,
-          logInfo: error,
-        });
-      }
-
-      serviceManager.store.dispatch(setIsConnecting(false, null));
-      this.chatStarted = false;
-      this.cancelHumanAgentJoinedTimer();
-
+      await this.abandonFailedStart(error, inPreStartHandlers);
       throw error;
     }
+  }
+
+  /**
+   * Backs out of a start that threw: shows the connecting error and stops
+   * connecting. `fromHandler` says a `pre:startChat` handler threw, not the desk.
+   */
+  private async abandonFailedStart(error: unknown, fromHandler: boolean) {
+    consoleError(
+      fromHandler
+        ? 'A human_agent:pre:startChat handler threw, so the chat did not start the conversation with an agent and showed its connecting error.'
+        : '[startChat] An error with the service desk occurred.',
+      error
+    );
+    // If it failed to start, then stop connecting and clear the service desk.
+    if (this.serviceDeskCallback) {
+      await this.serviceDeskCallback.setErrorStatus({
+        type: ErrorType.CONNECTING,
+        // A handler's throw is logged once, above; the desk didn't fail.
+        ...(!fromHandler && { logInfo: error }),
+      });
+    }
+
+    this.serviceManager.store.dispatch(setIsConnecting(false, null));
+    this.chatStarted = false;
+    this.cancelHumanAgentJoinedTimer();
+  }
+
+  /**
+   * `serviceDesk.startConversation()`. With `messageID`, starts the chat that
+   * response's first `connect_to_agent` card would. With none, starts one from
+   * a code-made response holding a bare `connect_to_agent` item. That response
+   * isn't added to the conversation, so no card shows. Unlike the card, it
+   * never ends a suspended conversation: that's for the host to do.
+   */
+  public async startConversation(
+    options: StartConversationOptions = {}
+  ): Promise<void> {
+    if (this.chatStarted) {
+      throw new Error(
+        'A conversation with a human agent is already connecting, connected, or suspended, so startConversation started nothing. Call serviceDesk.endConversation() first.'
+      );
+    }
+    const { messageID } = options;
+    let localItem: LocalMessageItem<ConnectToHumanAgentItem> | null = null;
+    let message: Message;
+    if (messageID === undefined) {
+      message = createMessageResponseForItem<ConnectToHumanAgentItem>({
+        response_type: MessageResponseTypes.CONNECT_TO_HUMAN_AGENT,
+      });
+    } else {
+      const state = this.serviceManager.store.getState();
+      message = state.allMessagesByID[messageID];
+      localItem = isResponse(message)
+        ? state.assistantMessageState.localMessageIDs
+            .map((id) => state.allMessageItemsByID[id])
+            .find(
+              (item): item is LocalMessageItem<ConnectToHumanAgentItem> =>
+                item?.fullMessageID === messageID &&
+                isConnectToHumanAgent(item.item)
+            )
+        : undefined;
+      if (!localItem) {
+        throw new Error(
+          `No response with a connect_to_agent item has the ID "${messageID}", so startConversation started nothing.`
+        );
+      }
+    }
+    // The connecting state shows in the conversation, not on the home screen.
+    this.serviceManager.view?.current?.messaging.closeHomeScreenIfOpen?.();
+    return this.startChat(localItem, message, options);
   }
 
   /**
@@ -453,7 +526,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     let event: BusEventHumanAgentPreEndChat;
     if (isConnected) {
       event = await this.firePreEndChat(false);
-      if (event.cancelEndChat) {
+      if (event.cancel || event.cancelEndChat) {
         return;
       }
     }
@@ -534,7 +607,8 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
-   * Sends a message to the agent in the service desk.
+   * Sends a message to the agent in the service desk. A `human_agent:pre:send` handler can
+   * cancel it.
    *
    * @param text The message from the user.
    * @param uploads An optional set of files to upload.
@@ -566,11 +640,15 @@ class HumanAgentServiceImpl implements HumanAgentService {
     serviceManager.store.dispatch(actions.clearStructuredData(true));
 
     // Fire the pre:send event that will allow code to customize the message.
-    await serviceManager.fire({
+    const preSendEvent: BusEventHumanAgentPreSend = {
       type: BusEventType.HUMAN_AGENT_PRE_SEND,
       data: originalMessage,
       files: uploads,
-    });
+    };
+    await serviceManager.fire(preSendEvent);
+    if (preSendEvent.cancel) {
+      return;
+    }
 
     // Add the outgoing message to the store immediately.
     const textMessage: LocalMessageItem<TextItem> = inputItemToLocalItem(
@@ -625,13 +703,20 @@ class HumanAgentServiceImpl implements HumanAgentService {
       let messageSucceeded = false;
       let messageFailed = false;
       let failure: ReturnType<typeof serviceManager.messageCoordinator.fail>;
-      const reportFailure = () => {
+      const reportFailure = (deskError?: { thrown: unknown }) => {
         if (messageSucceeded || messageFailed) {
           return;
         }
         messageFailed = true;
         failure = serviceManager.messageCoordinator.fail(
-          { messageID: originalMessage.id },
+          {
+            errorType: OnErrorType.MESSAGE_COMMUNICATION,
+            message: deskError
+              ? 'The service desk could not send the message, so the chat marked it failed.'
+              : 'The service desk did not confirm that the message was sent, so the chat marked it failed.',
+            ...(deskError && { otherData: deskError.thrown }),
+            messageID: originalMessage.id,
+          },
           generation
         );
       };
@@ -673,7 +758,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
           files: uploads,
         });
       } catch (error) {
-        reportFailure();
+        reportFailure({ thrown: error });
         consoleError(
           '[sendMessageToAgent] An error with the service desk occurred.',
           error
@@ -993,6 +1078,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     this.cancelHumanAgentJoinedTimer();
     this.sendTimers.forEach((timer) => clearTimeout(timer));
     this.sendTimers.clear();
+    this.abortScreenShareConsent();
     this.screenShareRequestPromise?.doResolve(ScreenShareState.CANCELLED);
     this.screenShareRequestPromise = null;
   }
@@ -1090,22 +1176,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       this.requestViewFocus();
 
       if (!didReconnect) {
-        this.chatStarted = false;
-        const wasSuspended = this.isSuspended();
-        store.dispatch(endChat());
-
-        if (allowEndChatMessages) {
-          // If we didn't reconnect, then show the "end chat" messages to the user.
-          const { responseUserProfile } = this.persistedHumanAgentState();
-          await addHumanAgentEndChatMessage(
-            HumanAgentMessageType.CHAT_WAS_ENDED,
-            responseUserProfile,
-            false,
-            wasSuspended,
-            this.serviceManager
-          );
-          await addAssistantReturnMessage(0, wasSuspended, this.serviceManager);
-        }
+        await this.endChatAfterFailedReconnect(allowEndChatMessages);
       } else {
         this.showLeaveWarning = false;
       }
@@ -1113,9 +1184,38 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
+   * Ends a saved agent conversation that didn't reconnect, with the "end chat"
+   * messages when `allowEndChatMessages` is set.
+   */
+  private async endChatAfterFailedReconnect(allowEndChatMessages: boolean) {
+    this.chatStarted = false;
+    const wasSuspended = this.isSuspended();
+    // A screen-share request made during the reconnect ends with the chat.
+    if (this.screenShareRequestPromise) {
+      this.closeScreenShareRequestPanel(ScreenShareState.CANCELLED);
+    }
+    this.serviceManager.store.dispatch(endChat());
+
+    if (allowEndChatMessages) {
+      // If we didn't reconnect, then show the "end chat" messages to the user.
+      const { responseUserProfile } = this.persistedHumanAgentState();
+      await addHumanAgentEndChatMessage(
+        HumanAgentMessageType.CHAT_WAS_ENDED,
+        responseUserProfile,
+        false,
+        wasSuspended,
+        this.serviceManager
+      );
+      await addAssistantReturnMessage(0, wasSuspended, this.serviceManager);
+    }
+  }
+
+  /**
    * Closes the screen share request panel and completes the promise waiting on it.
    */
   closeScreenShareRequestPanel(state: ScreenShareState) {
+    // A host still deciding learns the request ended without its answer.
+    this.abortScreenShareConsent();
     this.serviceManager.store.dispatch(setShowScreenShareRequest(false));
 
     // If someone is waiting on the Promise, then resolve it.
@@ -1129,6 +1229,59 @@ class HumanAgentServiceImpl implements HumanAgentService {
   }
 
   /**
+   * Asks the host's `onScreenShareRequest` to answer `request`. An answer that
+   * comes after the request ended is ignored. A throw, a rejection, or any
+   * other value answers `DECLINED`, with one console error.
+   */
+  async askHostForScreenShare(
+    onScreenShareRequest: ScreenShareRequestHook,
+    request: ResolvablePromise<ScreenShareState>
+  ) {
+    const controller = new AbortController();
+    this.screenShareAbortController = controller;
+    let answer: unknown;
+    let failed = false;
+    try {
+      answer = await new Promise((resolve) => {
+        resolve(onScreenShareRequest({ signal: controller.signal }));
+      });
+    } catch (error) {
+      failed = true;
+      answer = error;
+    }
+    if (
+      controller.signal.aborted ||
+      this.screenShareAbortController !== controller ||
+      this.screenShareRequestPromise !== request
+    ) {
+      return;
+    }
+    this.screenShareAbortController = null;
+    if (failed) {
+      consoleError(
+        'serviceDesk.onScreenShareRequest failed, so the chat declined the screen share.',
+        answer
+      );
+    } else if (!isScreenShareAnswer(answer)) {
+      consoleError(
+        'serviceDesk.onScreenShareRequest resolved with a value other than ACCEPTED, DECLINED, or CANCELLED, so the chat declined the screen share.',
+        answer
+      );
+    }
+    await this.screenShareUpdateRequestState(
+      !failed && isScreenShareAnswer(answer)
+        ? answer
+        : ScreenShareState.DECLINED
+    );
+  }
+
+  /** Aborts the signal of a host still deciding on a screen share, if any. */
+  private abortScreenShareConsent() {
+    this.screenShareAbortController?.abort();
+    this.screenShareAbortController = null;
+  }
+
+  /**
    * Adds a local agent message.
    */
   async addHumanAgentLocalMessage(
@@ -1139,15 +1292,17 @@ class HumanAgentServiceImpl implements HumanAgentService {
     if (!responseUserProfile) {
       responseUserProfile = this.persistedHumanAgentState().responseUserProfile;
     }
-    const { localMessage, originalMessage } =
-      await createHumanAgentLocalMessage(
-        agentMessageType,
-        this.serviceManager,
-        responseUserProfile,
-        fireEvents
-      );
+    const created = await createHumanAgentLocalMessage(
+      agentMessageType,
+      this.serviceManager,
+      responseUserProfile,
+      fireEvents
+    );
+    if (!created) {
+      return;
+    }
     await addMessages(
-      [toPair([localMessage], originalMessage)],
+      [toPair([created.localMessage], created.originalMessage)],
       !this.isSuspended(),
       this.serviceManager
     );
@@ -1352,11 +1507,15 @@ class ServiceDeskCallbackImpl<
     responseUserProfile = cloneDeep(responseUserProfile);
 
     // Fire the pre:receive event that will allow code to customize the message.
-    await serviceManager.fire({
+    const preReceiveEvent: BusEventHumanAgentPreReceive = {
       type: BusEventType.HUMAN_AGENT_PRE_RECEIVE,
       data: messageResponse,
       responseUserProfile,
-    });
+    };
+    await serviceManager.fire(preReceiveEvent);
+    if (preReceiveEvent.cancel) {
+      return;
+    }
 
     messageResponse.message_options = messageResponse.message_options || {};
     messageResponse.message_options.response_user_profile = responseUserProfile;
@@ -1458,7 +1617,7 @@ class ServiceDeskCallbackImpl<
     }
 
     const event = await this.service.firePreEndChat(true);
-    if (event.cancelEndChat) {
+    if (event.cancel || event.cancelEndChat) {
       return;
     }
 
@@ -1680,9 +1839,37 @@ class ServiceDeskCallbackImpl<
     if (!request) {
       request = resolvablePromise();
       this.service.screenShareRequestPromise = request;
-      this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
+      // A mounted chat always asks with its modal, as before the hook existed. With no
+      // view, the hook answers, or the chat declines. A second request while this one
+      // waits gets the same answer.
+      const hasView = Boolean(this.serviceManager.view?.current);
+      // `PublicConfig` leaves the hook out; it's SDK config.
+      const sdkServiceDesk = this.serviceManager.store.getState().config.public
+        .serviceDesk as ChatSDKServiceDeskConfig | undefined;
+      const onScreenShareRequest = hasView
+        ? undefined
+        : sdkServiceDesk?.onScreenShareRequest;
+      if (!onScreenShareRequest && hasView) {
+        this.serviceManager.store.dispatch(setShowScreenShareRequest(true));
+      }
 
       await this.service.addHumanAgentLocalMessage(SHARING_REQUESTED);
+
+      // The desk or shutdown can end the request during the await.
+      if (this.service.screenShareRequestPromise === request) {
+        if (onScreenShareRequest) {
+          // The desk already has its answer if adding the note fails.
+          this.service
+            .askHostForScreenShare(onScreenShareRequest, request)
+            .catch((error) =>
+              consoleError('Failed to answer a screen-share request.', error)
+            );
+        } else if (!hasView) {
+          await this.service.screenShareUpdateRequestState(
+            ScreenShareState.DECLINED
+          );
+        }
+      }
     }
 
     return request;
@@ -1759,6 +1946,38 @@ class ServiceDeskCallbackImpl<
     }
     store.dispatch(setPersistedServiceDeskState(deepFreeze(newState)));
   }
+}
+
+/** The host's `serviceDesk.onScreenShareRequest`. */
+type ScreenShareRequestHook = NonNullable<
+  ChatSDKServiceDeskConfig['onScreenShareRequest']
+>;
+
+/** The answers a host's `onScreenShareRequest` may give. */
+function isScreenShareAnswer(value: unknown): value is ScreenShareState {
+  return (
+    value === ScreenShareState.ACCEPTED ||
+    value === ScreenShareState.DECLINED ||
+    value === ScreenShareState.CANCELLED
+  );
+}
+
+/**
+ * The `pre:startChat` event for a start. A `payload` from
+ * `startConversation` seeds `preStartChatPayload`; without one the event has
+ * no such key, as before.
+ */
+function createPreStartChatEvent(
+  originalMessage: Message,
+  options?: Pick<StartConversationOptions, 'payload'>
+): BusEventHumanAgentPreStartChat {
+  return {
+    type: BusEventType.HUMAN_AGENT_PRE_START_CHAT,
+    message: originalMessage as MessageResponse,
+    ...(options && 'payload' in options
+      ? { preStartChatPayload: options.payload }
+      : {}),
+  };
 }
 
 /**

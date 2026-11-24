@@ -15,6 +15,7 @@
 
 import {
   OnErrorType,
+  ScreenShareState,
   ViewType,
   type ChatInstance,
   type ChatSDKConfig,
@@ -46,6 +47,7 @@ export const sdkConfigFields: Record<keyof ChatSDKConfig, true> = {
   messaging: true,
   isReadonly: true,
   humanAgentState: true,
+  upload: true,
 };
 export const sdkMessagingFields: Record<keyof ChatSDKConfigMessaging, true> = {
   skipWelcome: true,
@@ -60,11 +62,32 @@ export const sdkServiceDeskFields: Record<
   availabilityTimeoutSeconds: true,
   agentJoinTimeoutSeconds: true,
   allowReconnect: true,
+  onScreenShareRequest: true,
+};
+
+// The screen-share hook gets a signal; a hook written without it still fits.
+export const screenShareHookWithSignal: ChatSDKServiceDeskConfig = {
+  onScreenShareRequest: ({ signal }) =>
+    new Promise((resolve) => {
+      signal.addEventListener('abort', () =>
+        resolve(ScreenShareState.CANCELLED)
+      );
+    }),
+};
+export const screenShareHookWithoutOptions: ChatSDKServiceDeskConfig = {
+  onScreenShareRequest: async () => ScreenShareState.DECLINED,
+};
+// The prebuilt chat's config has no screen-share hook; it always shows its modal.
+export const prebuiltScreenShareHook: ServiceDeskPublicConfig = {
+  skipConnectHumanAgentCard: true,
+  // @ts-expect-error onScreenShareRequest is SDK config only.
+  onScreenShareRequest: async () => ScreenShareState.ACCEPTED,
 };
 export const sdkErrorFields: Record<keyof ChatSDKErrorData, true> = {
   errorType: true,
   message: true,
   otherData: true,
+  messageID: true,
 };
 
 // SDK callbacks receive the conversation; a view member fails to compile.

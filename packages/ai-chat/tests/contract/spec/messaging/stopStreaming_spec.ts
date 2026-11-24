@@ -123,6 +123,7 @@ describeShared('errors during a stream', (makeDriver) => {
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: SEND_ERROR_MESSAGE,
       otherData: 'handler failed',
+      messageID: started.sent.request.id,
     });
     expect(chat.status()).toBe('error');
   });

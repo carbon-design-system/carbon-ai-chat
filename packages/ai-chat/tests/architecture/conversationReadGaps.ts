@@ -19,13 +19,17 @@
  * an alias, fails the spec until the entry changes.
  *
  * Owners:
- * - #2693: messages and message items, which the message model replaces, and
- *   restart in progress.
- * - #2352: the agent state the interface shows beyond the connection.
- * - #2351: pending uploads. #1816: whether the turn can be stopped.
+ * - #2693: messages and message items, which the message model replaces.
+ * - #2824: view state the conversation partition still holds: which connect
+ *   card is connecting, and the screen-share request the modal shows.
  * - #2747: read-only state, the history load trigger, and attaching the view.
  * - #2748: the shell's home screen and loading decisions.
- * - #2751: the input slice, its routing to the agent, and its flags.
+ * - #2751: the input slice, its routing to the agent, and its flags,
+ *   including when the Stop button shows. Hosts tell whether a turn can be
+ *   stopped from `status` (#2693 O8, amended November 10). Also the
+ *   service desk's upload limits and the files staged for it. Hosts read
+ *   pending uploads from `state.pendingUploads` and `hasInFlightUploads`
+ *   (#2693 O7, amended November 10).
  * - #1741: slot bookkeeping. #1732: saving the session.
  * - #1833: config updates.
  */
@@ -61,52 +65,10 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2693',
   },
   {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBanner.tsx',
-    read: 'humanAgentState',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBanner.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBannerContainer.tsx',
-    read: 'humanAgentState',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/humanAgent/HumanAgentBannerContainer.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
-  },
-  {
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
     read: 'allMessagesByID',
     count: 1,
     owner: '#2693',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
-    read: 'humanAgentState',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
-    read: 'persistedToBrowserStorage',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/MessagesComponent.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 4,
-    owner: '#2352',
   },
   {
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
@@ -134,27 +96,9 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     file: 'src/chat/components-legacy/responseTypes/humanAgent/ConnectToHumanAgent.tsx',
-    read: 'humanAgentState',
+    read: 'humanAgentState.activeLocalMessageID',
     count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components-legacy/responseTypes/humanAgent/ConnectToHumanAgent.tsx',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/components/header/chat-header.ts',
-    read: 'isRestarting',
-    count: 1,
-    owner: '#2693',
-  },
-  {
-    file: 'src/chat/components/header/chat-header.ts',
-    read: 'selectHumanAgentDisplayState()',
-    count: 1,
-    owner: '#2352',
+    owner: '#2824',
   },
   {
     file: 'src/chat/components/input/ChatInput.ts',
@@ -250,7 +194,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/hooks/useInputCallbacks.tsx',
     read: 'selectInputUploads()',
     count: 1,
-    owner: '#2351',
+    owner: '#2751',
   },
   {
     file: 'src/chat/services/attachChatView.ts',
@@ -343,16 +287,10 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2693',
   },
   {
-    // Hands the instance builder, which wraps the two reads around it, to
-    // createChatSDK; it goes when they do.
+    // Hands the instance builder, which wraps the custom panel read above, to
+    // createChatSDK; it goes when that read does.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
-    count: 1,
-    owner: '#2747',
-  },
-  {
-    file: 'src/chat/utils/chatBoot.ts',
-    read: 'selectInputIsReadonly()',
     count: 1,
     owner: '#2747',
   },
@@ -394,15 +332,9 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
-    read: 'humanAgentState.fileUploadInProgress',
-    count: 2,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/utils/shellLifecycle.ts',
     read: 'humanAgentState.showScreenShareRequest',
     count: 2,
-    owner: '#2352',
+    owner: '#2824',
   },
   // Also #2751: the shell disables send until history loads.
   {
@@ -437,12 +369,6 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
-    read: 'selectHumanAgentDisplayState()',
-    count: 4,
-    owner: '#2352',
-  },
-  {
-    file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputFieldVisible()',
     count: 2,
     owner: '#2751',
@@ -463,13 +389,13 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectInputUploadAndStreamingFields()',
     count: 3,
-    owner: '#2351',
+    owner: '#2751',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'selectStopStreamingButtonVisible()',
     count: 2,
-    owner: '#1816',
+    owner: '#2751',
   },
 ];
 

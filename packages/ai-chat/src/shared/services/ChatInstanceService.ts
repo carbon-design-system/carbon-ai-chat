@@ -11,7 +11,9 @@ import {
   ServiceManager,
   type UserDefinedElementRegistryItem,
 } from './ServiceManager';
+import type { StartConversationOptions } from './haa/HumanAgentService';
 import { VIEW_STATE_ALL_CLOSED } from '../store/reducerUtils';
+import { hasServiceDesk } from '../utils/messageUtils';
 import { agentUpdateIsSuspended } from '../store/humanAgentActions';
 import { AppStateMessages } from '../../types/state/ChatMessagesState';
 import { ViewState, ViewType } from '../../types/instance/apiTypes';
@@ -311,7 +313,10 @@ class ChatInstanceService {
   }
 
   conversationErrorOccurred(error: OnErrorData, generation?: number) {
-    const failure = this.serviceManager.messageCoordinator.fail({}, generation);
+    const failure = this.serviceManager.messageCoordinator.fail(
+      error,
+      generation
+    );
     if (failure) {
       this.errorOccurred(error);
     }
@@ -338,6 +343,65 @@ class ChatInstanceService {
    */
   agentEndConversation(endedByUser: boolean) {
     return this.serviceManager.humanAgentService.endChat(endedByUser);
+  }
+
+  /**
+   * `serviceDesk.startConversation()`. The desk is created while the chat
+   * loads, so a chat that hasn't loaded loads first, with no welcome turn for
+   * the start to wait on. The service is looked up after the load, since a
+   * factory change can replace it.
+   */
+  async agentStartConversation(options?: StartConversationOptions) {
+    const { serviceManager } = this;
+    const removed = () =>
+      new Error('The chat was removed, so startConversation started nothing.');
+    if (serviceManager.isShutdown) {
+      throw removed();
+    }
+    if (!hasServiceDesk(serviceManager.store.getState().config)) {
+      throw new Error(
+        "There's no serviceDeskFactory in the config, so startConversation started nothing."
+      );
+    }
+    const { restartCount } = serviceManager;
+    const wasLoaded = serviceManager.store.getState().isHydrated;
+    const failure = await serviceManager.hydrationService.hydrateChat(
+      undefined,
+      undefined,
+      true
+    );
+    if (serviceManager.isShutdown) {
+      throw removed();
+    }
+    if (restartCount !== serviceManager.restartCount) {
+      throw new Error(
+        'The conversation restarted while the chat loaded, so startConversation started nothing.'
+      );
+    }
+    // A load that failed before this call is the host's to retry by restarting.
+    if (failure && !wasLoaded) {
+      throw failure.error;
+    }
+    await serviceManager.humanAgentService.startConversation(options);
+    // Removal can land while the pre-start handlers run.
+    if (serviceManager.isShutdown) {
+      throw removed();
+    }
+  }
+
+  /**
+   * `serviceDesk.stopScreenShare()`: what the "stop sharing" button does, and
+   * nothing when no share is running, including on a removed chat.
+   */
+  async agentStopScreenShare() {
+    const { serviceManager } = this;
+    if (
+      serviceManager.isShutdown ||
+      !serviceManager.store.getState().humanAgentState.isScreenSharing
+    ) {
+      return;
+    }
+    await serviceManager.humanAgentService.screenShareStop();
   }
 
   /**

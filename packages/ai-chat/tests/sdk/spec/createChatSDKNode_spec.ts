@@ -14,10 +14,8 @@
  */
 
 import { createChatSDK } from '../../../src/sdk';
-import { chatOf } from '../../../src/sdk/internal';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type { ChatSDKInstance } from '../../../src/types/instance/ChatSDKInstance';
-import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import {
   MessageResponseTypes,
   type MessageRequest,
@@ -63,8 +61,7 @@ it('sends and receives through a chat createChatSDK started', async () => {
     expect(sent).toEqual(['']);
     expect(chat.state.get().messages).toHaveLength(2);
 
-    // `messaging.send` arrives with #1826; this is the path it will call.
-    await chatOf(chat).actions.send('hello', MessageSendSource.INSTANCE_SEND);
+    await chat.messaging.send('hello');
     expect(sent).toEqual(['', 'hello']);
     const texts = chat.state
       .get()

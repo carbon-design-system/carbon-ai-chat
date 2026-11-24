@@ -230,7 +230,7 @@ describe('ChatContainer', () => {
       //
       // Note: instead of driving the chat through the input UI to fire the
       // send flow, this test captures the chat instance via `onBeforeRender`
-      // and calls `instance.send(...)` directly. Driving the input through
+      // and calls `instance.messaging.send(...)` directly. Driving the input through
       // the UI under happy-dom is unreliable (`@lit/react`'s onChange
       // listener does not fire there, so the send button stays disabled);
       // the public instance API exercises the same customSendMessage path
@@ -287,7 +287,7 @@ describe('ChatContainer', () => {
       );
 
       await act(async () => {
-        await chatInstance.send('Hello');
+        await chatInstance.messaging.send('Hello');
       });
 
       // The rendered output is portaled into the light DOM of the host element,

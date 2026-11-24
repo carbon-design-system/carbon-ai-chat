@@ -137,16 +137,22 @@ class OutboundMessageCoordinator {
 
     this.addErrorMessageIfSilent(pendingRequest);
 
-    this.serviceManager.messageCoordinator.fail(
-      { messageID: pendingRequest.message.id },
+    const { messageCoordinator } = this.serviceManager;
+    const messageID = pendingRequest.message.id;
+    const sendError = {
+      errorType: OnErrorType.MESSAGE_COMMUNICATION,
+      message: 'An error occurred sending a message',
+      otherData: resultText,
+      messageID,
+    };
+    // An error that was already reported, such as a failed chunk, stays the one state.error holds.
+    messageCoordinator.fail(
+      (!reportSendError && messageCoordinator.errorForRequest(messageID)) ||
+        sendError,
       pendingRequest.generation
     );
     if (reportSendError) {
-      this.serviceManager.actions.errorOccurred({
-        errorType: OnErrorType.MESSAGE_COMMUNICATION,
-        message: 'An error occurred sending a message',
-        otherData: resultText,
-      });
+      this.serviceManager.actions.errorOccurred(sendError);
     }
 
     // A `customSendMessage` that throws mid-stream never sends a closing chunk, so settle
@@ -192,32 +198,38 @@ class OutboundMessageCoordinator {
 
     const resultText = getSendErrorText(error, false);
     this.addErrorMessageIfSilent(pendingRequest);
-    if (pendingRequest.source === MessageSendSource.WELCOME_REQUEST) {
-      this.serviceManager.messageCoordinator.fail(
-        { messageID: pendingRequest.message.id },
-        pendingRequest.generation
-      );
-    }
-    this.serviceManager.actions.errorOccurred({
+    const handlerError = {
       errorType: OnErrorType.MESSAGE_COMMUNICATION,
       message: 'An error occurred sending a message',
       otherData: resultText,
-    });
-    this.rejectFinalErrorOnMessage(pendingRequest, resultText, error);
+    };
+    if (pendingRequest.source === MessageSendSource.WELCOME_REQUEST) {
+      this.serviceManager.messageCoordinator.fail(
+        { ...handlerError, messageID: pendingRequest.message.id },
+        pendingRequest.generation
+      );
+    }
+    this.serviceManager.actions.errorOccurred(handlerError);
+    this.rejectFinalErrorOnMessage(pendingRequest, resultText, true, error);
   }
 
   /**
    * Marks a message as failed and rejects its send with `rejection`, an `Error` with the result text by default.
+   * `markFailed: false` rejects and settles the request without marking it, for a turn whose responses show the
+   * failure instead.
    */
   rejectFinalErrorOnMessage(
     pendingRequest: PendingMessageRequest,
     resultText = 'An undefined error occurred trying to send your message.',
+    markFailed = true,
     rejection: unknown = new Error(resultText)
   ) {
     const { sendMessagePromise } = pendingRequest;
 
     // At this point we've failed; mark the message accordingly.
-    this.setMessageErrorState(pendingRequest, MessageErrorState.FAILED);
+    if (markFailed) {
+      this.setMessageErrorState(pendingRequest, MessageErrorState.FAILED);
+    }
 
     // After updating the error state get the message from the pendingRequest since it has potentially been updated by
     // setting the error state.

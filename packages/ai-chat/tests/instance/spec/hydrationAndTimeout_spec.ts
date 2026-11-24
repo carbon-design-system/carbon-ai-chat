@@ -193,11 +193,23 @@ describe('hydration and timeout isolation', () => {
       );
       const timedOutRequest =
         serviceManager.messageCoordinator.getCurrentRequest();
+      const seenErrors: unknown[] = [];
+      const stopWatching = instance.state.subscribe(() =>
+        seenErrors.push(instance.state.get().error)
+      );
       await act(async () => {
         timeout();
         expect(timedOutRequest.sendMessagePromise.isRejected).toBe(true);
         expect(onError).not.toHaveBeenCalled();
+        // The queued send clears it in the same tick, so read what subscribers saw.
+        expect(seenErrors).toContainEqual({
+          errorType: OnErrorType.MESSAGE_COMMUNICATION,
+          message: CancellationReason.TIMEOUT,
+          otherData: undefined,
+          messageID: timedOutRequest.message.id,
+        });
       });
+      stopWatching();
       expect(await outcome).toEqual(
         expect.objectContaining({ message: CancellationReason.TIMEOUT })
       );
@@ -206,6 +218,7 @@ describe('hydration and timeout isolation', () => {
         errorType: OnErrorType.MESSAGE_COMMUNICATION,
         message: CancellationReason.TIMEOUT,
         otherData: undefined,
+        messageID: timedOutRequest.message.id,
       });
       expect(Object.isFrozen(onError.mock.calls[0][0])).toBe(false);
       await waitFor(() => expect(customSendMessage).toHaveBeenCalledTimes(2));

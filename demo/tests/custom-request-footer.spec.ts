@@ -186,7 +186,7 @@ test('requests with no bubble content render no footer', async ({ page }) => {
   // gets no footer either. Driven through `send` so it takes the real outbound
   // path — the one place the footer event fires.
   await page.evaluate(async () => {
-    await window.chatInstance?.send({
+    await window.chatInstance?.messaging.send({
       input: { message_type: 'text', text: '' },
     } as never);
   });

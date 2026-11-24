@@ -8,7 +8,9 @@
  */
 
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
-import type { Message } from '../messaging/Messages';
+import type { Message, StructuredData } from '../messaging/Messages';
+import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
+import type { AgentAvailability } from '../config/ServiceDeskConfig';
 
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
@@ -22,14 +24,39 @@ import type { Message } from '../messaging/Messages';
  * - `error`: the conversation is in a failure state.
  *
  * Failure takes precedence over loading, and loading takes precedence over turn activity.
- * You can retain error details received through {@link PublicConfig.onError}. An error
- * status does not guarantee an error callback.
+ * The failure behind `error` is in {@link ChatSDKState.error}. An error status does not
+ * guarantee a {@link PublicConfig.onError} call.
  *
  * @category Instance
  * @category SDK
  */
 export type ConversationStatus =
   'ready' | 'loading' | 'submitted' | 'streaming' | 'error';
+
+/**
+ * A file on its way into the next message.
+ *
+ * @category SDK
+ */
+export interface ChatSDKPendingUpload {
+  /** Made by the chat. {@link ChatSDKInstanceMessaging.addFile} resolves with it, and `removeFile` takes it. */
+  readonly id: string;
+
+  /** The file that was added. */
+  readonly file: File;
+
+  /** Whether the file is still uploading, finished, or failed. */
+  readonly status: 'uploading' | 'complete' | 'error';
+
+  /** What your `onFileUpload` returned, once it resolved. */
+  readonly contributedData?: StructuredData;
+
+  /**
+   * Why the file failed, when `status` is `'error'`: the message your `onFileUpload` threw, or, for
+   * a file staged for a service desk, the message the desk reported.
+   */
+  readonly errorMessage?: string;
+}
 
 /**
  * Current connection state of the human agent experience.
@@ -41,6 +68,49 @@ export type PublicChatHumanAgentState = Readonly<
   PersistedHumanAgentState & {
     /** Indicates if Carbon AI Chat is attempting to connect to an agent. */
     isConnecting: boolean;
+
+    /**
+     * `true` from the moment the user accepts a service desk's request to share their screen until
+     * the share ends: the service desk ends it, the user clicks the prebuilt chat's "stop sharing"
+     * button, you call {@link ChatInstanceServiceDeskActions.stopScreenShare}, or the conversation
+     * with the agent ends. It's never saved, so a reload starts it as `false`. A chat that was
+     * removed keeps its last state, so it can still read `true`.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isScreenSharing?: boolean;
+
+    /**
+     * `true` while the chat reconnects to an agent conversation saved from an earlier session, when
+     * the service desk supports reconnecting. It ends once the desk reconnects, or the reconnect
+     * fails.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isReconnecting?: boolean;
+
+    /**
+     * `true` while the service desk reports that the agent is typing.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isTyping?: boolean;
+
+    /**
+     * While the chat connects to an agent, what the service desk last reported about the wait, such
+     * as a position in the queue. It's `null` before the desk reports any, and whenever the chat
+     * isn't connecting.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    availability?: AgentAvailability | null;
+
+    /**
+     * `true` while files sent to the agent are still uploading to the service desk.
+     *
+     * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+     */
+    isUploadingFile?: boolean;
   }
 >;
 
@@ -64,6 +134,53 @@ export interface ChatSDKState {
 
   /** The current conversation phase. See {@link ConversationStatus} for each value and its precedence. */
   readonly status: ConversationStatus;
+
+  /**
+   * The failure behind a `status` of `error`, or `null` when there is none. It's set and cleared
+   * together with `status`. A send that fails or times out, a failed history load, a streamed
+   * response the chat can't process, or {@link ChatSDKInstanceMessaging.failTurn} sets it. The next
+   * send, a restart, a history load, or {@link ChatSDKInstanceMessaging.clearError} clears it, and
+   * so does a human agent's send that the service desk confirms late.
+   *
+   * It has the same fields as the object {@link PublicConfig.onError} gets for that failure,
+   * with `messageID` naming the failed request when the error belongs to a turn. A failure the
+   * chat doesn't report to `onError`, such as a human agent's send timing out or a turn you fail
+   * with `failTurn`, still sets it.
+   * The object is frozen, but `otherData` keeps its reference, so it can be a live `Error`.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly error?: Readonly<ChatSDKErrorData> | null;
+
+  /**
+   * Files attached to the next message, in the order they were added. Each entry shows its upload
+   * status. {@link ChatSDKInstanceMessaging.addFile} adds one, and
+   * {@link ChatSDKInstanceMessaging.removeFile} takes one out. The next send carries them, then the
+   * list empties. During a human agent conversation it lists the files for the service desk, which
+   * transfers them when the message is sent; until then they show as `'complete'`. A restart keeps
+   * them, as it keeps the prebuilt input's attachments.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly pendingUploads?: readonly ChatSDKPendingUpload[];
+
+  /**
+   * `true` while any file in `pendingUploads` is still uploading.
+   * {@link ChatSDKInstanceMessaging.send} rejects while it's `true`.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly hasInFlightUploads?: boolean;
+
+  /**
+   * `true` while {@link ChatSDKInstanceMessaging.restartConversation} or
+   * {@link ChatSDKInstanceMessaging.clearConversation} clears the conversation, from when it begins
+   * until it's done. It stays `false` when a {@link BusEventType.PRE_RESTART_CONVERSATION} handler
+   * cancels a restart.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly isRestarting?: boolean;
 
   /**
    * Current human agent state.

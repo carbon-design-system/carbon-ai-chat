@@ -25,7 +25,7 @@ import {
   withServiceManager,
 } from '../hocs/withServiceManager';
 import {
-  selectHumanAgentDisplayState,
+  humanAgentDisplayStateOf,
   selectInputIsReadonly,
 } from '../../shared/store/selectors';
 import { AppState, ChatMessagesState } from '../../types/state/AppState';
@@ -194,8 +194,8 @@ type MessagesLanguagePackStrings = Pick<
  */
 interface MessagesInjectedState {
   allMessagesByID: AppState['allMessagesByID'];
-  humanAgentState: AppState['humanAgentState'];
-  persistedToBrowserStorage: AppState['persistedToBrowserStorage'];
+  /** The agent state, from public state. */
+  humanAgent: PublicChatState['humanAgent'];
   disclaimersAccepted: AppState['view']['persistedToBrowserStorage']['disclaimersAccepted'];
   /** Effective whole-chat read-only state (override or config). */
   isInputReadonly: boolean;
@@ -366,8 +366,8 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
     snapshot: number | null
   ): void {
     // Check if human agent banner just became visible
-    const oldDisplayState = selectHumanAgentDisplayState(oldProps);
-    const newDisplayState = selectHumanAgentDisplayState(this.props);
+    const oldDisplayState = humanAgentDisplayStateOf(oldProps.humanAgent);
+    const newDisplayState = humanAgentDisplayStateOf(this.props.humanAgent);
 
     // Request focus when banner transitions from hidden to visible
     if (
@@ -611,7 +611,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       hideAvatar,
     } = this.props;
 
-    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
+    const { isHumanAgentTyping } = humanAgentDisplayStateOf(
+      this.props.humanAgent
+    );
 
     // If there is a disclaimer, messages should only be rendered once it's accepted.
     if (disclaimerIsOn && !disclaimersAccepted[window.location.hostname]) {
@@ -862,7 +864,9 @@ class MessagesComponent extends PureComponent<MessagesProps, MessagesState> {
       assistantName,
       languagePack,
     } = this.props;
-    const { isHumanAgentTyping } = selectHumanAgentDisplayState(this.props);
+    const { isHumanAgentTyping } = humanAgentDisplayStateOf(
+      this.props.humanAgent
+    );
     const { scrollHandleHasFocus, scrollDown } = this.state;
 
     const messageIDForInput = getMessageIDForUserInput(
@@ -946,11 +950,12 @@ const selectMessagesState = (
   state: AppState
 ): Omit<
   MessagesInjectedState,
-  'languagePack' | 'isMessageLoadingCounter' | 'isMessageLoadingText'
+  | 'languagePack'
+  | 'isMessageLoadingCounter'
+  | 'isMessageLoadingText'
+  | 'humanAgent'
 > => ({
   allMessagesByID: state.allMessagesByID,
-  humanAgentState: state.humanAgentState,
-  persistedToBrowserStorage: state.persistedToBrowserStorage,
   disclaimersAccepted: state.view.persistedToBrowserStorage.disclaimersAccepted,
   isInputReadonly: selectInputIsReadonly(state),
   disclaimerIsOn: state.config.public.disclaimer?.isOn,
@@ -975,9 +980,10 @@ const selectMessagesStrings = (
   messages_scrollMoreButton: state.languagePack.messages_scrollMoreButton,
 });
 
-const selectPublicLoadingState = (state: PublicChatState) => ({
+const selectPublicMessagesState = (state: PublicChatState) => ({
   isMessageLoadingCounter: state.isMessageLoadingCounter,
   isMessageLoadingText: state.isMessageLoadingText,
+  humanAgent: state.humanAgent,
 });
 
 // Functional wrapper to supply the narrow state slice via hooks
@@ -987,8 +993,8 @@ const MessagesStateInjector = React.forwardRef<
 >((props, ref) => {
   const state = useSelector(selectMessagesState, shallowEqual);
   const languagePack = useSelector(selectMessagesStrings, shallowEqual);
-  const loadingState = usePublicChatState(
-    selectPublicLoadingState,
+  const publicState = usePublicChatState(
+    selectPublicMessagesState,
     shallowEqual
   );
   return (
@@ -996,7 +1002,7 @@ const MessagesStateInjector = React.forwardRef<
       ref={ref}
       {...(props as MessagesOwnProps)}
       {...state}
-      {...loadingState}
+      {...publicState}
       languagePack={languagePack}
     />
   );

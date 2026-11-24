@@ -8,11 +8,9 @@
  */
 
 import React from 'react';
-import { useSelector } from '../../hooks/useSelector';
-import { shallowEqual } from '../../../shared/store/appStore';
 
-import { selectHumanAgentDisplayState } from '../../../shared/store/selectors';
-import { AppState } from '../../../types/state/AppState';
+import { humanAgentDisplayStateOf } from '../../../shared/store/selectors';
+import { usePublicChatState } from '../../hooks/usePublicChatState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { HumanAgentBanner } from './HumanAgentBanner';
 
@@ -35,11 +33,9 @@ function HumanAgentBannerContainer({
   onButtonClick,
   bannerRef,
 }: HumanAgentBannerContainerProps) {
-  const humanAgentState = useSelector(
-    (state: AppState) => state.humanAgentState
-  );
-  const displayState = useSelector(selectHumanAgentDisplayState, shallowEqual);
-  if (displayState.isConnectingOrConnected || humanAgentState.isScreenSharing) {
+  const humanAgent = usePublicChatState((state) => state.humanAgent);
+  const displayState = humanAgentDisplayStateOf(humanAgent);
+  if (displayState.isConnectingOrConnected || humanAgent.isScreenSharing) {
     return <HumanAgentBanner ref={bannerRef} onButtonClick={onButtonClick} />;
   }
   return null;

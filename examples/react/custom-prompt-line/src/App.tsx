@@ -77,7 +77,7 @@ function Composer({ instance }: { instance: ChatInstance | null }) {
     setBusy(true);
     setError('');
     try {
-      await instance.send({
+      await instance.messaging.send({
         input: {
           text,
           structured_data: { fields: [{ id: 'composer', value: 'custom' }] },

@@ -8,19 +8,22 @@
  */
 
 import { StructuredData } from '../messaging/Messages';
+import type { ChatSDKUploadConfig } from './ChatSDKUploadConfig';
 
 /**
- * Configuration for file upload behavior in the chat input.
+ * Configuration for file upload behavior in the chat input. It extends {@link ChatSDKUploadConfig}
+ * with `isOn`, which draws the attach button. {@link ChatInstanceMessaging.addFile} works whenever
+ * `onFileUpload` is set, so you can attach files from your own control with the button off.
  *
  * @category Config
  */
-export interface UploadConfig {
+export interface UploadConfig extends ChatSDKUploadConfig {
   /**
-   * Whether file upload is enabled. When `true`, the chat renders a file attachment button
-   * in the input area. Defaults to `false`.
+   * Whether the input shows its file attachment button. Defaults to `false`.
+   * {@link ChatInstanceMessaging.addFile} doesn't need it.
    *
-   * Set both `isOn` and `onFileUpload`. If you set only one of them, the chat logs
-   * an error and hides the attachment button.
+   * The button needs `onFileUpload` too. If `isOn` is `true` but `onFileUpload` isn't
+   * set, the chat logs an error and hides the attachment button.
    */
   isOn?: boolean;
 
@@ -43,8 +46,8 @@ export interface UploadConfig {
   maxFiles?: number;
 
   /**
-   * Called once per file when the user selects it. Without `isOn: true`, the chat
-   * logs an error and hides the attachment button, so this is never called.
+   * Called once per file when the user selects it, or when you attach one with
+   * {@link ChatInstanceMessaging.addFile}.
    *
    * Return a {@link StructuredData} object representing this file's contribution to the
    * pending message. The widget merges the returned `StructuredData` into

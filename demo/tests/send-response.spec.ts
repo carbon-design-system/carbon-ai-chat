@@ -200,7 +200,7 @@ test.describe('demo send mode in the chat', () => {
         })
     );
     await page.evaluate(() => {
-      void window.chatInstance!.send('card (stream)');
+      void window.chatInstance!.messaging.send('card (stream)');
     });
 
     await finalHeld;

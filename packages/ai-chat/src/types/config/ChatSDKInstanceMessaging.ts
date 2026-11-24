@@ -7,7 +7,9 @@
  *  @license
  */
 
+import type { SendOptions } from '../instance/ChatInstance';
 import type { HistoryItem } from '../messaging/History';
+import type { MessageRequest } from '../messaging/Messages';
 import type { MessageState, UpsertMessageUpdater } from './MessagingConfig';
 
 /**
@@ -24,6 +26,215 @@ import type { MessageState, UpsertMessageUpdater } from './MessagingConfig';
  * @category SDK
  */
 export interface ChatSDKInstanceMessaging {
+  /**
+   * Sends a message to the assistant. Fires `pre:send` and then `send` on the event bus, then
+   * calls {@link ChatSDKConfigMessaging.customSendMessage}. Messages sent while another turn runs
+   * wait in a queue and go out in order.
+   *
+   * In the prebuilt chat, sends during a human agent conversation still call
+   * {@link ChatSDKConfigMessaging.customSendMessage}. Only what the user types in the chat's input
+   * reaches the service desk.
+   *
+   * If a send starts loading the prebuilt chat, that send and sends queued behind it during loading
+   * wait until every `chat:ready` handler settles. A handler that never settles holds those sends,
+   * so they never reach `customSendMessage`. If opening the chat starts loading first, sends wait
+   * for that load alone. Sends made after `chat:ready` fires don't wait.
+   *
+   * **When the promise resolves:**
+   * - When `customSendMessage` resolves and the chat records the turn as sent. It doesn't wait
+   *   for a reply: a response that's still streaming keeps streaming after the promise resolves.
+   *   To react to the assistant's messages, listen for the `receive` event.
+   * - When the turn is stopped or canceled before it finishes, or when the conversation restarts
+   *   while the message waits in the queue or runs.
+   *
+   * **When the promise rejects:**
+   * - When `customSendMessage` throws or rejects, the turn times out
+   *   ({@link ChatSDKConfigMessaging.messageTimeoutSecs}), or you mark the turn failed with
+   *   {@link ChatSDKInstanceMessaging.failTurn} before `customSendMessage` resolves. The
+   *   conversation's `status` becomes `'error'`.
+   * - In the prebuilt chat, when a `pre:send` or `send` handler throws. The promise rejects with
+   *   that handler's own error, `customSendMessage` isn't called, and `status` stays `'ready'`.
+   * - In read-only mode, or while a file upload is still running. In these cases the message isn't
+   *   sent and `pre:send` doesn't fire. `state.get().hasInFlightUploads` is `true` while an upload
+   *   runs. Files that finished uploading, in `state.get().pendingUploads`, go out with the message.
+   *
+   * It never throws: every failure comes back as a rejected promise.
+   *
+   * @param message The message to send: its text, or a full {@link MessageRequest}.
+   * @param options Options for this message, such as sending it without showing it.
+   *
+   * @example Send a message and wait for the turn
+   * ```ts
+   * await instance.messaging.send("What is the weather today?");
+   * // customSendMessage has resolved. Replies arrive through the receive event.
+   * ```
+   *
+   * @example Send a message the conversation doesn't show
+   * ```ts
+   * await instance.messaging.send("Resync context", { silent: true });
+   * ```
+   *
+   * @example Handle a failed send
+   * ```ts
+   * try {
+   *   await instance.messaging.send({ input: { text: "Book a table for two" } });
+   * } catch (error) {
+   *   // The send failed, timed out, or the chat is read-only.
+   *   console.error(error);
+   * }
+   * ```
+   */
+  send: (
+    message: MessageRequest | string,
+    options?: SendOptions
+  ) => Promise<void>;
+
+  /**
+   * Stops the active turn, the way the chat's Stop button does. It fires the `stopStreaming`
+   * event, then aborts the turn's `customSendMessage` signal with
+   * {@link CancellationReason.STOP_STREAMING}.
+   *
+   * A turn is active from the time a message is sent until its response stops streaming, which
+   * you usually see as `state.get().status` being `'submitted'` or `'streaming'`. A stop works on
+   * any active turn, even one whose stream isn't marked cancellable. Messages to a human agent
+   * aren't turns, so a stop leaves them alone.
+   *
+   * The stop settles the turn at once: `status` returns to `'ready'`, and the stopped turn's
+   * {@link ChatSDKInstanceMessaging.send} promise resolves. Content already streamed stays in the
+   * conversation. Chunks that arrive for the stopped turn afterward are dropped. An
+   * `upsertMessage` call still writes, because it's your own write, but it doesn't make the turn
+   * active again. Queued messages still go out.
+   *
+   * Resolves once the abort signal is delivered, without waiting for your `customSendMessage`
+   * to return. With no active turn, it resolves at once, fires no event, and changes nothing.
+   * Calls made while a stop is running share it, so the turn is stopped once. It never rejects:
+   * if a `stopStreaming` handler throws, the error is logged and the turn still stops. If a handler
+   * ends the turn itself, or the conversation restarts while handlers run, nothing more is
+   * stopped.
+   *
+   * @example Stop the response from your own button
+   * ```ts
+   * stopButton.addEventListener("click", () => {
+   *   instance.messaging.stop();
+   * });
+   * ```
+   *
+   * @example Show your Stop button only while a turn can be stopped
+   * ```ts
+   * instance.state.select(
+   *   (state) => state.status === "submitted" || state.status === "streaming",
+   *   (canStop) => {
+   *     stopButton.hidden = !canStop;
+   *   },
+   * );
+   * ```
+   */
+  stop: () => Promise<void>;
+
+  /**
+   * Marks a turn failed. Call it when your stream dies after `customSendMessage` resolved, so the
+   * reply would otherwise just stop. `state.get().status` becomes `'error'`, and `state.get().error`
+   * names the turn's request in `messageID`.
+   *
+   * With no `messageID`, it fails the active turn, else the last one. A turn is active from the time
+   * its message is sent until its response stops streaming. Pass `messageID` to name the turn by
+   * its request or by any of its responses. A response you stream without a `request_id` counts as
+   * part of the last turn. It fails assistant turns only.
+   *
+   * **On a turn that's still running:** it aborts the turn's `customSendMessage` signal with
+   * {@link CancellationReason.TURN_FAILED}. If that turn's {@link ChatSDKInstanceMessaging.send}
+   * promise hasn't settled, it rejects with the error message. Chunks that arrive for the turn
+   * afterward are dropped. An `upsertMessage` call still writes, because it's your own write, but
+   * `status` stays `'error'`. A resolve that comes later from your `customSendMessage` is ignored.
+   * Queued messages still go out. It fires no `stopStreaming` event and adds no "Request canceled"
+   * message.
+   *
+   * **What the prebuilt chat shows:** each response still streaming keeps its content and shows an
+   * inline error. A turn with no response marks the sent message as failed, as a failed send does.
+   * Screen readers hear the same announcement as for a send that fails.
+   *
+   * It doesn't call {@link ChatSDKConfig.onError}, because you made the call. Calling it again on
+   * the failed turn replaces `state.get().error` without announcing again. The next send, a restart,
+   * or {@link ChatSDKInstanceMessaging.clearError} clears the error.
+   *
+   * Resolves once the abort is delivered and the state is updated. Rejects when `messageID` names no
+   * message, or a turn other than the active or last one, when the turn is with a human agent, or
+   * when the conversation has no turn.
+   *
+   * @param options The turn to fail, and the error to show in `state.get().error`.
+   *
+   * @example Fail the turn when your stream breaks
+   * ```ts
+   * async function customSendMessage(request, { signal }, instance) {
+   *   const stream = openStream(request, signal);
+   *   stream.on("error", (error) => {
+   *     // Name the turn: a later message may have started by the time the stream breaks.
+   *     instance.messaging.failTurn({
+   *       messageID: request.id,
+   *       error: { message: "The response stream closed early.", otherData: error },
+   *     });
+   *   });
+   * }
+   * ```
+   */
+  failTurn: (options?: FailTurnOptions) => Promise<void>;
+
+  /**
+   * Clears the error behind `status: 'error'`. `state.get().status` goes back to what the
+   * conversation is doing, and `state.get().error` becomes `null`. The failed turn stays in the
+   * conversation, with its failure marks.
+   *
+   * It clears an error the chat found, too, such as a failed send. It does nothing when there's no
+   * error. It never closes the prebuilt chat's error panel for a catastrophic error.
+   *
+   * @example Let the user dismiss the error
+   * ```ts
+   * dismissButton.addEventListener("click", () => {
+   *   instance.messaging.clearError();
+   * });
+   * ```
+   */
+  clearError: () => void;
+
+  /**
+   * Attaches a file to the next message, through the same steps the prebuilt input uses. It checks
+   * {@link ChatSDKUploadConfig.accept}, `maxFileSizeBytes`, and `maxFiles`, then calls your
+   * {@link ChatSDKUploadConfig.onFileUpload}. The prebuilt chat's `upload.isOn` setting doesn't
+   * gate it. During a human agent conversation, it checks the service desk's limits instead and
+   * hands the file to the desk, which receives it with the next message.
+   *
+   * Resolves with the file's ID once the upload starts (or, for a service desk, once the file is
+   * staged), so you can pass the ID to
+   * {@link ChatSDKInstanceMessaging.removeFile} while it runs. Progress and failure show in
+   * `state.get().pendingUploads`. Rejects when a file breaks a limit, when there's no
+   * `onFileUpload` (or, during a human agent conversation, when the desk doesn't take files), or
+   * after the chat was removed.
+   *
+   * @param file The file to attach.
+   *
+   * @example Attach a file from your own control
+   * ```ts
+   * fileInput.addEventListener("change", async () => {
+   *   for (const file of fileInput.files) {
+   *     try {
+   *       await instance.messaging.addFile(file);
+   *     } catch (error) {
+   *       showError(error.message);
+   *     }
+   *   }
+   * });
+   * ```
+   */
+  addFile: (file: File) => Promise<{ id: string }>;
+
+  /**
+   * Takes a file out of the next message. A file still uploading has its upload aborted. An unknown
+   * ID does nothing.
+   *
+   * @param id The ID {@link ChatSDKInstanceMessaging.addFile} resolved with.
+   */
+  removeFile: (id: string) => void;
+
   /**
    * Inserts or updates a single message identified by `messageID`. The `updater` receives
    * the {@link MessageResponse} currently stored under `messageID` (or `undefined` when no
@@ -140,4 +351,29 @@ export interface ChatSDKInstanceMessaging {
    * agent, now or earlier in the session.
    */
   restartConversation: () => Promise<void>;
+}
+
+/**
+ * Options for {@link ChatSDKInstanceMessaging.failTurn}.
+ *
+ * @category Messaging
+ * @category SDK
+ */
+export interface FailTurnOptions {
+  /**
+   * The turn to fail: its request's ID, or the ID of any of its responses. Leave it out to fail
+   * the active turn, else the last one.
+   */
+  messageID?: string;
+
+  /**
+   * What `state.get().error` shows. Its `errorType` is always
+   * {@link OnErrorType.MESSAGE_COMMUNICATION}, and its `messageID` is the turn's request ID.
+   */
+  error?: {
+    /** Shown as `state.get().error.message`. Defaults to a general message. */
+    message?: string;
+    /** Shown as `state.get().error.otherData`, by reference, so it can be a live `Error`. */
+    otherData?: unknown;
+  };
 }

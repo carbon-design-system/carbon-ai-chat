@@ -72,8 +72,16 @@ class SendWorkflow {
     return this.serviceManager.messageCoordinator.timeoutMS;
   }
 
-  rejectFinalErrorOnMessage(request: PendingMessageRequest, text?: string) {
-    this.outboundCoordinator.rejectFinalErrorOnMessage(request, text);
+  rejectFinalErrorOnMessage(
+    request: PendingMessageRequest,
+    text?: string,
+    markFailed?: boolean
+  ) {
+    this.outboundCoordinator.rejectFinalErrorOnMessage(
+      request,
+      text,
+      markFailed
+    );
   }
 
   resolveCancelledMessage(request: PendingMessageRequest) {

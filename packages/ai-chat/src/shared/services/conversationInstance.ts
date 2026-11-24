@@ -8,9 +8,13 @@
  */
 
 import type { ChatSDKInstanceMessaging } from '../../types/config/ChatSDKInstanceMessaging';
+import { MessageSendSource } from '../../types/events/eventBusTypes';
+import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { ChatInstanceServiceDeskActions } from '../../types/instance/ChatInstanceServiceDeskActions';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import type { HistoryItem } from '../../types/messaging/History';
+import type { MessageRequest } from '../../types/messaging/Messages';
+import { selectInputIsReadonly } from '../store/selectors';
 import { debugLog } from '../utils/miscUtils';
 import type { ServiceManager } from './ServiceManager';
 
@@ -25,6 +29,43 @@ function createConversationInstance<Self>(
 ) {
   const { publicStateService } = serviceManager;
   const messaging: ChatSDKInstanceMessaging = {
+    send: async (message: MessageRequest | string, options?: SendOptions) => {
+      debugLog('Called instance.messaging.send', message, options);
+      if (selectInputIsReadonly(serviceManager.store.getState())) {
+        throw new Error('You are unable to send messages in read only mode.');
+      }
+      return serviceManager.actions.send(
+        message,
+        MessageSendSource.INSTANCE_SEND,
+        options
+      );
+    },
+
+    stop: () => {
+      debugLog('Called instance.messaging.stop');
+      return serviceManager.messageCoordinator.stop();
+    },
+
+    failTurn: (options) => {
+      debugLog('Called instance.messaging.failTurn', options);
+      return serviceManager.messageCoordinator.failTurn(options);
+    },
+
+    addFile: (file) => {
+      debugLog('Called instance.messaging.addFile', file);
+      return serviceManager.inputActionsService.addFile(file);
+    },
+
+    removeFile: (id) => {
+      debugLog('Called instance.messaging.removeFile', id);
+      serviceManager.inputActionsService.removeFile(id);
+    },
+
+    clearError: () => {
+      debugLog('Called instance.messaging.clearError');
+      serviceManager.messageCoordinator.clearError();
+    },
+
     upsertMessage: async (messageID, state, updater) => {
       debugLog('Called instance.messaging.upsertMessage', messageID, state);
       const { restartCount } = serviceManager;
@@ -67,6 +108,16 @@ function createConversationInstance<Self>(
     },
   };
   const serviceDesk: ChatInstanceServiceDeskActions = {
+    startConversation: (options) => {
+      debugLog('Called instance.serviceDesk.startConversation', options);
+      return serviceManager.actions.agentStartConversation(options);
+    },
+
+    stopScreenShare: () => {
+      debugLog('Called instance.serviceDesk.stopScreenShare');
+      return serviceManager.actions.agentStopScreenShare();
+    },
+
     endConversation: () => {
       debugLog('Called instance.serviceDesk.endConversation');
       return serviceManager.actions.agentEndConversation(false);
