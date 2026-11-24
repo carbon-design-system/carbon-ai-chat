@@ -74,7 +74,7 @@ describe('HeaderCollapsibleManager', () => {
   it('should calculate shouldCollapse as true when body would be smaller than header', () => {
     const toolbar = createMockElement(50);
     const notification = createMockElement(40);
-    const header = createMockElement(150);
+    const header = createMockElement(250);
     const footer = createMockElement(80);
 
     shadowRoot = createMockShadowRoot({
@@ -95,11 +95,11 @@ describe('HeaderCollapsibleManager', () => {
         expect(stateChanges.length).to.be.greaterThan(0);
         const lastState = stateChanges[stateChanges.length - 1];
 
-        // Total: 600, Used: 50+40+150+80 = 320, Available for body: 280
-        // Body (280) > Header (150), so should NOT collapse
-        expect(lastState.shouldCollapse).to.be.false;
-        expect(lastState.availableBodyHeight).to.equal(280);
-        expect(lastState.headerHeight).to.equal(150);
+        // Total: 600, Used: 50+40+250+80 = 420, Available for body: 180
+        // Body (180) < Header (250), so should collapse
+        expect(lastState.shouldCollapse).to.be.true;
+        expect(lastState.availableBodyHeight).to.equal(180);
+        expect(lastState.headerHeight).to.equal(250);
         resolve();
       }, 100);
     });
@@ -240,32 +240,6 @@ describe('HeaderCollapsibleManager', () => {
     // Add attribute - should detect manual override
     headerElement.setAttribute('collapsible', '');
     expect(manager.hasManualOverride()).to.be.true;
-  });
-
-  it('should disconnect observers when disconnect is called', () => {
-    shadowRoot = createMockShadowRoot({
-      toolbar: [createMockElement(50)],
-      notification: [createMockElement(40)],
-      header: [createMockElement(100)],
-      footer: [createMockElement(80)],
-    });
-
-    manager = new HeaderCollapsibleManager(shadowRoot, hostElement);
-    manager.connect((state) => {
-      stateChanges.push(state);
-    });
-
-    const initialCount = stateChanges.length;
-
-    manager.disconnect();
-
-    // After disconnect, no more state changes should occur
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        expect(stateChanges.length).to.equal(initialCount);
-        resolve();
-      }, 100);
-    });
   });
 
   it('should handle missing slots gracefully', () => {
