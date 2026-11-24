@@ -8,7 +8,7 @@
  */
 
 import { LitElement, PropertyValues, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { carbonElement } from '../../../globals/decorators/index.js';
 import prefix from '../../../globals/settings.js';
 import commonStyles from '../../../globals/scss/common.scss?lit';
@@ -34,6 +34,20 @@ export type MessageItemShellRowType = 'request' | 'response';
  * @slot - default slot. The message content.
  * @slot attachment - File upload chips or other attachments. The shell adds no announcements; the slotted content decides what screen readers hear.
  * @slot footer - Footer content from the host.
+ *
+ * The `byline`, `attachment`, and `footer` areas take no space while their
+ * slot is empty. A slot is empty when it holds no element and no non-blank
+ * text, including a forwarded `<slot>` with nothing assigned.
+ *
+ * ### CSS custom properties
+ *
+ * - `--cds-aichat-message-item-shell-inset-start` sets the start padding of
+ *   the row body. A response ignores it when `hide-avatar` is set.
+ * - `--cds-aichat-message-item-shell-gap-block-start` sets the space between a
+ *   response's byline and its content. It only applies with a byline present.
+ * - `--cds-aichat-message-item-shell-byline-gap-before` sets the space above
+ *   the byline, which separates the row from the one before it. It only
+ *   applies with a byline present. Set it to `0` to remove the gap.
  */
 @carbonElement(blockClass)
 class CDSAIChatMessageItemShell extends LitElement {
@@ -62,6 +76,18 @@ class CDSAIChatMessageItemShell extends LitElement {
    */
   @property({ type: Boolean, attribute: 'hide-avatar', reflect: true })
   hideAvatar = false;
+
+  /**
+   * Whether each slot holds content. A wrapper with an empty slot is hidden.
+   */
+  @state()
+  private _hasByline = false;
+
+  @state()
+  private _hasAttachment = false;
+
+  @state()
+  private _hasFooter = false;
 
   /**
    * Watches the slotted byline for an avatar added, removed, or re-slotted
@@ -114,11 +140,34 @@ class CDSAIChatMessageItemShell extends LitElement {
   };
 
   /**
+   * Whether the slot holds an element or non-blank text once forwarded slots
+   * are flattened.
+   */
+  private _slotHasContent(event: Event): boolean {
+    return (event.target as HTMLSlotElement)
+      .assignedNodes({ flatten: true })
+      .some(
+        (node) =>
+          node.nodeType === Node.ELEMENT_NODE ||
+          (node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim())
+      );
+  }
+
+  /**
    * Re-targets the observer at the current byline, then syncs the avatar.
    */
-  private _handleBylineSlotChange = (): void => {
+  private _handleBylineSlotChange = (event: Event): void => {
+    this._hasByline = this._slotHasContent(event);
     this._observeByline();
     this._syncAvatar();
+  };
+
+  private _handleAttachmentSlotChange = (event: Event): void => {
+    this._hasAttachment = this._slotHasContent(event);
+  };
+
+  private _handleFooterSlotChange = (event: Event): void => {
+    this._hasFooter = this._slotHasContent(event);
   };
 
   private _observeByline(): void {
@@ -136,18 +185,25 @@ class CDSAIChatMessageItemShell extends LitElement {
 
   render() {
     return html`
-      <div class="${blockClass}__byline">
+      <div class="${blockClass}__byline" ?hidden=${!this._hasByline}>
         <slot name="byline" @slotchange=${this._handleBylineSlotChange}></slot>
       </div>
-      <div class="${blockClass}__body">
+      <div
+        class="${blockClass}__body ${
+          this._hasByline ? `${blockClass}__body--has-byline` : ''
+        }">
         <div class="${blockClass}__content">
           <slot></slot>
         </div>
-        <div class="${blockClass}__attachment">
-          <slot name="attachment"></slot>
+        <div class="${blockClass}__attachment" ?hidden=${!this._hasAttachment}>
+          <slot
+            name="attachment"
+            @slotchange=${this._handleAttachmentSlotChange}></slot>
         </div>
-        <div class="${blockClass}__footer">
-          <slot name="footer"></slot>
+        <div class="${blockClass}__footer" ?hidden=${!this._hasFooter}>
+          <slot
+            name="footer"
+            @slotchange=${this._handleFooterSlotChange}></slot>
         </div>
       </div>
     `;

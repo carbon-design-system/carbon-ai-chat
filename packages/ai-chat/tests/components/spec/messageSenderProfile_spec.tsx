@@ -52,7 +52,27 @@ function messages() {
 }
 
 function label(message: HTMLElement) {
-  return message.querySelector('.cds-aichat--message__label').textContent;
+  const byline = message.querySelector('cds-aichat-message-byline') as any;
+  if (!byline) {
+    return '';
+  }
+  const shadowText = byline.shadowRoot?.querySelector(
+    '.cds-aichat-message-byline__label'
+  )?.textContent;
+  if (shadowText) {
+    return shadowText;
+  }
+  return [byline.label, byline.timestamp].filter(Boolean).join(' ');
+}
+
+function avatarImage(message: HTMLElement) {
+  const userAvatar = message.querySelector('cds-aichat-user-avatar');
+  if (!userAvatar || (userAvatar as HTMLElement).hidden) {
+    return null;
+  }
+  return (
+    userAvatar?.shadowRoot?.querySelector('img') ?? message.querySelector('img')
+  );
 }
 
 describe('request sender attribution', () => {
@@ -117,7 +137,7 @@ describe('request sender attribution', () => {
       expect(label(message)).toMatch(/^You /);
       expect(message).not.toHaveClass('cds-aichat--message--named-request');
       expect(message.textContent).toContain('You said');
-      expect(message.querySelector('img')).toBeNull();
+      expect(avatarImage(message)).toBeNull();
     }
   );
 
@@ -129,7 +149,7 @@ describe('request sender attribution', () => {
     expect(label(messages()[0])).toMatch(/^You /);
     expect(messages()[0]).not.toHaveClass('cds-aichat--message--named-request');
     expect(messages()[0].textContent).toContain('You said');
-    expect(messages()[0].querySelector('img')).toBeNull();
+    expect(avatarImage(messages()[0])).toBeNull();
   });
 
   it('renders nickname markup as literal text', async () => {
@@ -145,7 +165,9 @@ describe('request sender attribution', () => {
     });
     expect(label(messages()[0])).toContain('<b>Jane</b>');
     expect(
-      messages()[0].querySelector('.cds-aichat--message__label b')
+      messages()[0]
+        .querySelector('cds-aichat-message-byline')
+        ?.shadowRoot?.querySelector('.cds-aichat-message-byline__label b')
     ).toBeNull();
   });
 
@@ -155,11 +177,13 @@ describe('request sender attribution', () => {
       await insertRequest(instance, request('picture', profile));
     });
     const [message] = messages();
-    const image = message.querySelector('img');
-    expect(image.getAttribute('src')).toBe(profile.profile_picture_url);
-    expect(image.getAttribute('alt')).toBe('');
-    fireEvent.error(image);
-    expect(message.querySelector('img')).toBeNull();
+    const image = avatarImage(message);
+    expect(image?.getAttribute('src')).toBe(profile.profile_picture_url);
+    expect(image?.getAttribute('alt')).toBe('');
+    fireEvent.error(image!);
+    await waitFor(() => {
+      expect(avatarImage(message)).toBeNull();
+    });
     expect(label(message)).toMatch(/^Jane Doe /);
   });
 
@@ -184,7 +208,7 @@ describe('request sender attribution', () => {
       });
       for (const message of messages()) {
         expect(label(message)).toMatch(/^Jane Doe /);
-        expect(message.querySelector('img')).toBeNull();
+        expect(avatarImage(message)).toBeNull();
       }
     }
   );
@@ -227,10 +251,8 @@ describe('request sender attribution', () => {
     expect(root.textContent).toContain('Support agent');
     expect(root.textContent).toContain('Test assistant said');
     const responseLabels = Array.from(
-      root.querySelectorAll(
-        '.cds-aichat--message--response .cds-aichat--message__label'
-      )
-    ).map((element) => element.textContent);
+      root.querySelectorAll('.cds-aichat--message--response')
+    ).map((element) => label(element as HTMLElement));
     expect(responseLabels).toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^From Test assistant at /),

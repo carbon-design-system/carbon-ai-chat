@@ -10,6 +10,8 @@
 /**
  * Renders the custom footer slot below a user message. The chat mints the slot name from the local message item, so
  * unlike the assistant-side slot there is nothing in the message data to read it from and no options to honor.
+ *
+ * This renders a bare forwarding `<slot>` so the message item shell collapses its footer when the host assigns nothing.
  */
 
 import React from 'react';
@@ -27,9 +29,11 @@ function MessageCustomRequestFooterSlot(
   const { slotName } = props;
 
   return (
-    <div className="cds-aichat--request-footer-slot">
-      <slot name={slotName} />
-    </div>
+    <slot
+      className="cds-aichat--request-footer-slot"
+      slot="footer"
+      name={slotName}
+    />
   );
 }
 

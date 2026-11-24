@@ -28,9 +28,8 @@ import {
 // each name, so an unscoped attribute selector counts every footer twice.
 const REQUEST_FOOTER_SLOT = 'div[slot^="request-footer-"]';
 
-// The chat's own wrapper, which renders for every user message whether or not a
-// host filled it.
-const REQUEST_FOOTER_WRAPPER = '.cds-aichat--request-footer-slot';
+// The chat's own forwarding slot, rendered for every user message with a bubble.
+const REQUEST_FOOTER_FORWARDING_SLOT = '.cds-aichat--request-footer-slot';
 
 // A footer the demo filled with its green box. React renders the box as a div in
 // the portal; the web-component demo renders a custom element whose content
@@ -97,36 +96,33 @@ test('an unfilled footer slot costs the message no height', async ({
 }) => {
   await sendChatMessage(page, 'measure me');
 
-  const wrapper = page.locator(REQUEST_FOOTER_WRAPPER).first();
-  await expect(wrapper).toBeAttached();
+  const forwardingSlot = page.locator(REQUEST_FOOTER_FORWARDING_SLOT).first();
+  await expect(forwardingSlot).toBeAttached();
 
-  // Measure the whole sent column, not the wrapper alone: a margin on the
-  // wrapper would not show up in its own bounding box but would still push the
-  // next message down.
-  const column = page.locator('.cds-aichat--sent').first();
-  const filled = await column.evaluate(
+  // Measure the whole message row, not the slot alone: spacing outside the
+  // slot's own bounding box would still push the next message down.
+  const message = page.locator('.cds-aichat--message--request').first();
+  const filled = await message.evaluate(
     (node) => node.getBoundingClientRect().height
   );
 
-  // Emptying the slot must return the column to the height it would have on
-  // main, where no host opted in and the wrapper renders empty.
+  // Emptying the slot must return the message to its unfooted height.
   await page.evaluate((selector) => {
     document
       .querySelectorAll(selector)
       .forEach((node) => node.parentElement?.removeChild(node));
   }, '[slot^="request-footer-"]');
 
-  const emptied = await column.evaluate(
+  const emptied = await message.evaluate(
     (node) => node.getBoundingClientRect().height
   );
 
-  // The wrapper is still in the DOM and still empty, and the column is back to
-  // its unfooted height.
-  await expect(wrapper).toBeAttached();
+  // The slot stays in the DOM, empty and zero height.
+  await expect(forwardingSlot).toBeAttached();
   expect(emptied).toBeLessThan(filled);
   await expect
     .poll(async () =>
-      wrapper.evaluate((node) => node.getBoundingClientRect().height)
+      forwardingSlot.evaluate((node) => node.getBoundingClientRect().height)
     )
     .toBe(0);
 });
@@ -167,9 +163,9 @@ test('slot visibility off fills no footer', async ({ page }) => {
 
   await sendChatMessage(page, 'no box please');
 
-  // The chat still renders its wrapper for the message; the demo just hands it
-  // nothing, so no host element is created.
-  await expect(page.locator(REQUEST_FOOTER_WRAPPER)).toHaveCount(1, {
+  // The chat still renders its forwarding slot for the message; the demo just
+  // hands it nothing, so no host element is created.
+  await expect(page.locator(REQUEST_FOOTER_FORWARDING_SLOT)).toHaveCount(1, {
     timeout: 10000,
   });
   await expect(page.locator(REQUEST_FOOTER_SLOT)).toHaveCount(0);
@@ -182,23 +178,23 @@ test('slot visibility off fills no footer', async ({ page }) => {
 });
 
 test('requests with no bubble content render no footer', async ({ page }) => {
-  // The wrapper follows the bubble: a request the chat renders no bubble for
-  // gets no footer either. Driven through `send` so it takes the real outbound
-  // path — the one place the footer event fires.
+  // The forwarding slot follows the bubble: a request the chat renders no bubble
+  // for gets no footer either. Driven through `send` so it takes the real
+  // outbound path — the one place the footer event fires.
   await page.evaluate(async () => {
     await window.chatInstance?.send({
       input: { message_type: 'text', text: '' },
     } as never);
   });
 
-  await expect(page.locator(REQUEST_FOOTER_WRAPPER)).toHaveCount(0, {
+  await expect(page.locator(REQUEST_FOOTER_FORWARDING_SLOT)).toHaveCount(0, {
     timeout: 10000,
   });
 
   // A message that does render a bubble gets one, so the absence above is the
   // gate working rather than the feature being off.
   await sendChatMessage(page, 'a message with text');
-  await expect(page.locator(REQUEST_FOOTER_WRAPPER)).toHaveCount(1, {
+  await expect(page.locator(REQUEST_FOOTER_FORWARDING_SLOT)).toHaveCount(1, {
     timeout: 10000,
   });
 });

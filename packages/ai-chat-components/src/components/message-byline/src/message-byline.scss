@@ -53,5 +53,7 @@ $block-class: #{$prefix}-message-byline;
 }
 
 .#{$block-class}__reasoning-separator {
+  @include type.type-style('body-01');
+
   margin-inline: layout.$spacing-03;
 }

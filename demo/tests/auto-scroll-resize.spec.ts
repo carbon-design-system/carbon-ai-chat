@@ -254,7 +254,12 @@ async function startReadingStream(page: Page, useUpsertMessage: boolean) {
   await page.evaluate(async () => {
     await window.chatInstance!.messaging.addMessage({
       output: {
-        generic: [{ response_type: 'text', text: 'Earlier conversation' }],
+        generic: [
+          {
+            response_type: 'text',
+            text: 'Earlier conversation\n\nEarlier paragraph 1\n\nEarlier paragraph 2',
+          },
+        ],
       },
     });
     void window.chatInstance!.send('Read this answer');
