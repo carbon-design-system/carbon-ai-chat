@@ -5,7 +5,7 @@
  *  LICENSE file in the root directory of this source tree.
  */
 
-import { PageObjectId } from '@carbon/ai-chat/server';
+import { CarbonTheme, PageObjectId } from '@carbon/ai-chat/server';
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
 import {
@@ -46,6 +46,59 @@ test.afterEach(async ({ page }) => {
 });
 
 for (const framework of ['react', 'web-component']) {
+  test(`${framework} disclaimer keeps its body slot and enables Accept after reading`, async ({
+    page,
+  }) => {
+    await prepareHost(page, framework);
+    await page.evaluate(
+      (theme) =>
+        window.setChatConfig({
+          openChatByDefault: true,
+          injectCarbonTheme: theme,
+          disclaimer: {
+            isOn: true,
+            disclaimerHTML: Array.from(
+              { length: 60 },
+              (_, index) => `<p>Disclaimer paragraph ${index} must be read.</p>`
+            ).join(''),
+          },
+        }),
+      CarbonTheme.G100
+    );
+    await openChatWindow(page);
+    const panel = page.getByTestId(PageObjectId.DISCLAIMER_PANEL);
+    await expect(panel).toBeVisible();
+    const body = panel.locator('cds-aichat-disclaimer-body');
+    await expect(body.locator('p')).toHaveCount(60);
+    expect(
+      await body.evaluate((node) => ({
+        shadow: Boolean(node.shadowRoot),
+        slot: node.parentElement.assignedSlot?.name,
+        display: getComputedStyle(node).display,
+        svgParent: node.querySelector('svg')?.parentElement.className,
+      }))
+    ).toEqual({
+      shadow: false,
+      slot: 'body',
+      display: 'contents',
+      svgParent: 'cds-aichat--disclaimer__icon',
+    });
+    const accept = page
+      .getByTestId(PageObjectId.DISCLAIMER_ACCEPT_BUTTON)
+      .locator('button');
+    await expect(accept).toBeDisabled();
+    await panel.locator('.panel-body').evaluate((node) => {
+      node.scrollTop = node.scrollHeight;
+    });
+    await expect(accept).toBeEnabled();
+    await accept.focus();
+    await expect(accept).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeHidden();
+    await expect(page.getByTestId(PageObjectId.MAIN_PANEL)).toBeVisible();
+    await expect(page.locator('.cds-aichat--aria-announcer')).toHaveCount(1);
+  });
+
   test(`${framework} native confirmation keeps direct slots, keyboard actions, and rank`, async ({
     page,
   }) => {
