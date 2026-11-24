@@ -7,7 +7,8 @@
  *  @license
  */
 
-import type { AppStore } from '../store/appStore';
+import { closeStore, type AppStore } from '../store/appStore';
+import { consoleError } from '../utils/miscUtils';
 import { IntlShape } from '../utils/i18n';
 
 import { EventBus } from '../events/EventBus';
@@ -15,7 +16,6 @@ import { ConversationState } from '../../types/state/ConversationState';
 import { HumanAgentService } from './haa/HumanAgentService';
 import { HistoryService } from './HistoryService';
 import { NamespaceService } from './NamespaceService';
-import { ThemeWatcherService } from './ThemeWatcherService';
 import { UserSessionStorageService } from './UserSessionStorageService';
 import { ChatInstance } from '../../types/instance/ChatInstance';
 import { WriteableElements } from '../../types/instance/WriteableElements';
@@ -141,11 +141,6 @@ class ServiceManager {
   namespace: NamespaceService;
 
   /**
-   * Service that watches CSS variables and updates theme when CarbonTheme is not set.
-   */
-  themeWatcherService: ThemeWatcherService;
-
-  /**
    * Indicates the number of times that a restart has occurred. This can be used by various asynchronous operations to
    * determine if a restart occurred during the operation and if the results should be ignored.
    */
@@ -168,6 +163,57 @@ class ServiceManager {
    * methods and events are removed.
    */
   renderPromise: Promise<ChatInstance>;
+
+  private shutdownPromise?: Promise<void>;
+
+  /**
+   * True once {@link shutdown} has started, including while its first steps
+   * run, so an abort listener that calls back in sees it. Late async work
+   * checks it.
+   */
+  isShutdown = false;
+
+  /**
+   * Stops this chat's service work for good. Removing the chat's element calls
+   * it; hosts never do. The store closes first: its subscriptions go, and
+   * later dispatches change nothing, so saved session state stays as it was
+   * at removal. Then the bus drops every handler, and requests, streams,
+   * uploads, and timers stop. Works for a chat still starting up. A repeat
+   * call returns the first call's promise.
+   */
+  shutdown(): Promise<void> {
+    if (!this.shutdownPromise) {
+      this.isShutdown = true;
+      this.shutdownPromise = this.stopServices();
+    }
+    return this.shutdownPromise;
+  }
+
+  private async stopServices() {
+    // The steps run back to back, and each runs even if one before it throws.
+    const run = (step: () => unknown) => {
+      try {
+        return step();
+      } catch (error) {
+        consoleError('A step of the chat shutdown failed.', error);
+        return undefined;
+      }
+    };
+    if (this.store) {
+      run(() => closeStore(this.store));
+    }
+    run(() => this.eventBus?.clear());
+    // Before anything aborts: an abort listener that ends the agent chat must
+    // not reach the real desk.
+    run(() => this.humanAgentService?.shutdown());
+    run(() => this.publicStateService?.destroy());
+    run(() => this.inputActionsService?.abortAllUploads());
+    try {
+      await run(() => this.messageCoordinator?.shutdown());
+    } catch (error) {
+      consoleError('A step of the chat shutdown failed.', error);
+    }
+  }
 
   /**
    * Convenience functions for firing events on the event bus.

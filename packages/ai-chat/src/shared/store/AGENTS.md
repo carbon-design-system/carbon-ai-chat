@@ -30,6 +30,7 @@ Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENT
 - `actions.ts` — synchronous action creators.
 - `selectors.ts` — plain functions deriving state.
 - `subscriptions.ts` — store-subscription side effects.
+- `valueStore.ts` — a standalone store for one value, with no imports and no reducer. The rules above are for the reducer store, not this one.
 
 ## Partitions
 

@@ -75,6 +75,10 @@ async function refreshLocalization(
   if (localeChanged) {
     const locale = state.config.public.locale || 'en';
     const localePack = await loadLocale(locale);
+    // dayjs's locale is global, so a chat that shut down must not set it.
+    if (serviceManager.isShutdown) {
+      return;
+    }
     dayjs.locale(localePack);
     setIntl(serviceManager, localePack.name, languagePack);
     serviceManager.store.dispatch(

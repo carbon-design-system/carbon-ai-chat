@@ -27,7 +27,7 @@ interface ChatStoreOwner<StoreState> {
  * lives as long as the chat, not as long as a mount.
  *
  * @returns Whether this call added the partition. It's `false` when the chat
- * already had it.
+ * already had it, or has shut down.
  */
 function attachStorePartition<StoreState, PartState>(
   chat: ChatStoreOwner<StoreState>,

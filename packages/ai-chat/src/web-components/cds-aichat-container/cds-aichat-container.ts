@@ -44,6 +44,8 @@ import type { ChatViewState } from '../../chat/services/chatViewState';
 
 import type { ExtensionHosts } from '../../chat/services/extensionHosts';
 
+import type { ThemeWatcherService } from '../../chat/services/ThemeWatcherService';
+
 import type { AppliedConfig } from '../../chat/utils/appConfigUpdates';
 
 import type { ChatAppEntryProps } from '../../chat/ChatAppEntry';
@@ -108,6 +110,7 @@ interface MountState {
   afterRenderTimer?: ReturnType<typeof setTimeout>;
   removeWindowListeners?: () => void;
   detachView?: () => void;
+  themeWatcher?: ThemeWatcherService;
 }
 
 /**
@@ -124,6 +127,7 @@ export const bootModuleLoader = {
       import('../../chat/services/chatViewState'),
       import('../../chat/services/extensionHosts'),
       import('../../chat/services/createViewBindings'),
+      import('../../chat/services/ThemeWatcherService'),
     ]),
 };
 
@@ -397,28 +401,31 @@ class ChatContainer extends FlattenedConfigElement {
 
   /**
    * Retires the current mount: no more rendering or callbacks from it, and
-   * nothing it collected survives. This is not service teardown — its
-   * services keep running, and work the host's callbacks started is not
-   * canceled, except that each pending upload's abort signal fires.
-   * Exhaustive disposal is #1681.
+   * nothing it collected survives. Then its chat shuts down: requests and
+   * uploads are cancelled, an agent conversation is disconnected without
+   * ending it, and saved session state stays for the next mount.
    */
   private releaseMount() {
     const state = this.current;
     if (state) {
       this.current = undefined;
-      clearTimeout(state.afterRenderTimer);
-      state.removeWindowListeners?.();
-      state.serviceManager?.inputActionsService.abortPendingUploads();
-      // Settle the private waits so a boot paused on one resumes, finds it is
-      // retired, and stops.
-      state.initialViewCommitted.doResolve();
-      state.hosts?.disconnect();
-      state.viewState?.announcer.disconnect();
-      state.announcerRegion?.remove();
-      state.viewState?.disconnect();
-      this.viewStateProvider.setValue(undefined);
-      state.mount?.unmount();
-      state.detachView?.();
+      try {
+        clearTimeout(state.afterRenderTimer);
+        state.removeWindowListeners?.();
+        // Settle the private waits so a boot paused on one resumes, finds it is
+        // retired, and stops.
+        state.initialViewCommitted.doResolve();
+        state.hosts?.disconnect();
+        state.viewState?.announcer.disconnect();
+        state.announcerRegion?.remove();
+        state.viewState?.disconnect();
+        this.viewStateProvider.setValue(undefined);
+        state.mount?.unmount();
+        state.detachView?.();
+        state.themeWatcher?.disconnect();
+      } finally {
+        void state.serviceManager?.shutdown();
+      }
     }
 
     this._instance?.off(this._mountHandlers);
@@ -555,6 +562,7 @@ class ChatContainer extends FlattenedConfigElement {
         { ChatViewState },
         { ExtensionHosts },
         { createViewBindings },
+        { ThemeWatcherService },
       ] = await bootModuleLoader.loadBootModules();
       if (!isCurrent()) {
         return;
@@ -567,8 +575,12 @@ class ChatContainer extends FlattenedConfigElement {
         customHostElement: this.element,
       });
       if (!isCurrent()) {
+        // Released while its services started; nothing else holds them.
+        void serviceManager.shutdown();
         return;
       }
+      // Held first, so a release reaches it even if a step below throws.
+      state.serviceManager = serviceManager;
 
       // Read markdown off the original config, not the merged one, to keep the
       // host's plugin and renderer references for the slice's isEqual guard.
@@ -578,9 +590,10 @@ class ChatContainer extends FlattenedConfigElement {
         );
       }
       state.App = ChatAppEntry;
-      state.serviceManager = serviceManager;
       state.viewState = new ChatViewState(serviceManager, getWindowSize());
       state.viewState.connect();
+      state.themeWatcher = new ThemeWatcherService(serviceManager.store);
+      state.themeWatcher.connect();
       // Attach before the host's callbacks and the initial view change, which
       // both may change the view before the shell renders.
       state.detachView = serviceManager.view.attach(
@@ -698,11 +711,7 @@ class ChatContainer extends FlattenedConfigElement {
     state.viewState.announcer.connect(region);
   }
 
-  /**
-   * Feeds window size to the view state and page visibility to the store, and stops
-   * the theme watcher's polling when the mount goes. The watcher is the one
-   * service the retired React effect named; broader disposal is #1681.
-   */
+  /** Feeds window size to the view state and page visibility to the store. */
   private listenToWindow(viewState: ChatViewState) {
     const { serviceManager } = viewState;
     const onResize = () => {
@@ -724,7 +733,6 @@ class ChatContainer extends FlattenedConfigElement {
     return () => {
       view.removeEventListener('resize', onResize);
       doc.removeEventListener('visibilitychange', onVisibilityChange);
-      serviceManager.themeWatcherService?.stopWatching();
     };
   }
 
