@@ -328,6 +328,10 @@ export enum MessageSendSource {
 
   /**
    * The user chose a value from the date picker.
+   *
+   * @deprecated Removed in 2.0.0, with the date response type. To ask for a date, send a
+   * {@link MessageResponseTypes.USER_DEFINED} response with your own date input, or an
+   * {@link MessageResponseTypes.OPTION} response with date choices.
    */
   DATE_PICKER = 'datePicker',
 

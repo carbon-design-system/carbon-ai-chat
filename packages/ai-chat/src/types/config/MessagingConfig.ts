@@ -230,7 +230,8 @@ export interface CustomSendMessageOptions {
    *   — an option-response control.
    * - {@link MessageSendSource.POST_BACK_BUTTON} — a post-back button in a
    *   response.
-   * - {@link MessageSendSource.DATE_PICKER} — a date-picker response.
+   * - {@link MessageSendSource.DATE_PICKER} — a date-picker response. Deprecated, and removed in
+   *   2.0.0 with the date response type.
    * - {@link MessageSendSource.INSTANCE_SEND} — a programmatic call to
    *   {@link ChatInstanceMessaging.send}, or to the deprecated {@link ChatInstance.send}.
    * - {@link MessageSendSource.WELCOME_REQUEST} — the internally generated
