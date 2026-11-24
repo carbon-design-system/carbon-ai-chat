@@ -37,6 +37,8 @@ When the chat is removed, it keeps running for a short grace window. A chat moun
 
 Each mount gets its own {@link ChatInstance}. Handlers you added through the old mount's instance stop when it's removed, so add them again in {@link ChatContainerProps.onBeforeRender | onBeforeRender}, which runs for every mount. Nothing tells your code whether a mount got a new chat or a running one. To add a welcome message only once, check `instance.state.get().messages.length` rather than counting mounts.
 
+A user-defined response that arrives during the grace window has no view to render into. The mount that picks the chat up fires {@link BusEventType.USER_DEFINED_RESPONSE | userDefinedResponse} for it again, so its handler can render it.
+
 ## The grace window
 
 A removed chat waits {@link ChatSDKLifecycleConfig.releaseGraceMs | lifecycle.releaseGraceMs} for the next mount, 3000 ms by default. Raise it when your app can take longer than that to mount the chat again, such as while a slow route loads.
@@ -71,7 +73,7 @@ function SupportChat({ user }: { user?: { id: string } }) {
 
 Removing the chat then ends it for good:
 
-- A live human agent conversation ends. Your handlers see the end-of-chat events, but they can't cancel them.
+- A live human agent conversation ends. Your handlers see the end-of-chat events, but they can't cancel them. The old instance's `state.get().humanAgent` keeps its last value, so read the end from those events.
 - Saved session state is cleared, so the next user doesn't get the last user's accepted disclaimers or agent connection.
 - The next mount starts a new chat, even inside the grace window. It starts once the old chat finishes ending, which waits for a live human agent conversation to end.
 
