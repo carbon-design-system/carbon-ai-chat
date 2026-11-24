@@ -34,13 +34,6 @@ interface HumanAgentState {
   availability?: AgentAvailability;
 
   /**
-   * Indicates the number of messages from an agent that are unread by a user. This is only indicated if the user is
-   * on the assistant view. All agent messages are marked as read if the user switches to the agent view. This count does
-   * not include "agent joined" messages.
-   */
-  numUnreadMessages: number;
-
-  /**
    * Indicates if there is currently a file upload in progress.
    */
   fileUploadInProgress: boolean;

@@ -41,12 +41,12 @@ describe('ChatInstance.updateCatastrophicErrorPanel', () => {
 
     // Test catastrophicErrorType is initially undefined
     let state = store.getState();
-    expect(state.catastrophicErrorType).toBe(undefined);
+    expect(state.view.catastrophicErrorType).toBe(undefined);
 
     // Test catastrophicErrorType is set to true after opening panel with updateCatastrophicErrorPanel()
     instance.updateCatastrophicErrorPanel({ isOpen: true });
     state = store.getState();
-    expect(state.catastrophicErrorType).toBe(true);
+    expect(state.view.catastrophicErrorType).toBe(true);
   });
 
   it('should not set catastrophicErrorType in app state to true if not opening panel', async () => {
@@ -55,7 +55,7 @@ describe('ChatInstance.updateCatastrophicErrorPanel', () => {
 
     // Test catastrophicErrorType is initially undefined
     let state = store.getState();
-    expect(state.catastrophicErrorType).toBe(undefined);
+    expect(state.view.catastrophicErrorType).toBe(undefined);
 
     // Test catastrophicErrorType is still undefined after calling updateCatastrophicErrorPanel() without setting isOpen to true
     instance.updateCatastrophicErrorPanel({
@@ -64,7 +64,7 @@ describe('ChatInstance.updateCatastrophicErrorPanel', () => {
       bodyText: 'Custom body text',
     });
     state = store.getState();
-    expect(state.catastrophicErrorType).toBe(undefined);
+    expect(state.view.catastrophicErrorType).toBe(undefined);
   });
 
   it('should correctly set custom title and body text on panel', async () => {
@@ -77,7 +77,9 @@ describe('ChatInstance.updateCatastrophicErrorPanel', () => {
       bodyText: 'Custom body text',
     });
     const state = store.getState();
-    expect(state.catastrophicErrorPanelState.title).toBe('Custom title');
-    expect(state.catastrophicErrorPanelState.bodyText).toBe('Custom body text');
+    expect(state.view.catastrophicErrorPanelState.title).toBe('Custom title');
+    expect(state.view.catastrophicErrorPanelState.bodyText).toBe(
+      'Custom body text'
+    );
   });
 });

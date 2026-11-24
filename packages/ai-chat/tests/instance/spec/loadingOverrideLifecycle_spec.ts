@@ -60,7 +60,7 @@ it.each([
       applyOverride(() =>
         instance.updateIsMessageLoadingCounter(undefined, 'Host progress')
       );
-      expect(store.getState().assistantMessageState).toMatchObject({
+      expect(store.getState().view).toMatchObject({
         isMessageLoadingCounter: 1,
         isMessageLoadingText: 'Host progress',
       });

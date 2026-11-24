@@ -75,7 +75,7 @@ import {
   MessageResponse,
   TextItem,
 } from '../../../types/messaging/Messages';
-import { AppConfig } from '../../../types/state/AppConfig';
+import type { ConversationAppConfig } from '../../../types/state/ConversationState';
 import { OnErrorType } from '../../../types/config/ErrorConfig';
 import {
   AdditionalDataToAgent,
@@ -201,6 +201,13 @@ class HumanAgentServiceImpl implements HumanAgentService {
 
   constructor(serviceManager: ServiceManager) {
     this.serviceManager = serviceManager;
+  }
+
+  /** Changes the attached view's message loading counter, if one is attached. */
+  private changeViewLoadingCounter(amount: number) {
+    this.serviceManager.view?.current?.humanAgent.changeMessageLoadingCounter?.(
+      amount
+    );
   }
 
   /**
@@ -802,7 +809,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
   async handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
-    config: AppConfig,
+    config: ConversationAppConfig,
     initialRestartCount: number,
     isCurrent: () => boolean = () => true
   ) {
@@ -813,7 +820,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       return;
     }
 
-    store.dispatch(actions.addIsLoadingCounter(1));
+    this.changeViewLoadingCounter(1);
     let agentAvailability: HumanAgentsOnlineStatus;
     try {
       if (!canApply()) {
@@ -853,7 +860,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
     } finally {
       // Removal leaves this operation's loading counter active; restart resets it.
       if (initialRestartCount === this.serviceManager.restartCount) {
-        store.dispatch(actions.addIsLoadingCounter(-1));
+        this.changeViewLoadingCounter(-1);
       }
     }
 
@@ -1123,6 +1130,10 @@ class ServiceDeskCallbackImpl<
   constructor(serviceManager: ServiceManager, service: HumanAgentServiceImpl) {
     this.serviceManager = serviceManager;
     this.service = service;
+  }
+  /** Reads a message to screen readers in the attached view, if one is attached. */
+  private announceInView(messageID: string) {
+    this.serviceManager.view?.current?.humanAgent.announce?.({ messageID });
   }
 
   /**
@@ -1511,11 +1522,7 @@ class ServiceDeskCallbackImpl<
         // below is rendered but not announced on its own (the status icon
         // deliberately carries no aria-label to avoid the message live region
         // double-reading), mirroring the success announcement above.
-        store.dispatch(
-          actions.announceMessage({
-            messageID: 'fileSharing_uploadFailed',
-          })
-        );
+        this.announceInView('fileSharing_uploadFailed');
 
         if (errorMessage) {
           // Generate an inline error message to show the error to the user.
@@ -1539,11 +1546,7 @@ class ServiceDeskCallbackImpl<
             FileStatusValue.SUCCESS
           )
         );
-        store.dispatch(
-          actions.announceMessage({
-            messageID: 'fileSharing_ariaAnnounceSuccess',
-          })
-        );
+        this.announceInView('fileSharing_ariaAnnounceSuccess');
       }
     } else if (isError) {
       // Update the input area.

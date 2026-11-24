@@ -44,7 +44,9 @@ export function useMarkdownSettings(overrideSanitize?: boolean) {
   );
   // Host markdown config, read from its own store slice (set in ChatAppEntry)
   // rather than a global context provider.
-  const markdownConfig = useSelector((state: AppState) => state.markdownConfig);
+  const markdownConfig = useSelector(
+    (state: AppState) => state.view.markdownConfig
+  );
 
   const getPaginationSupplementalText = useMemo(
     () =>

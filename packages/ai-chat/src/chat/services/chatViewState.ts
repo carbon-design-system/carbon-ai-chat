@@ -16,6 +16,7 @@ import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 import type { MainWindowFunctions } from '../../types/utilities/MainWindowFunctions';
 import type { AriaAnnouncerFunctionType } from './ariaAnnouncer';
 import type { InputFunctions } from '../utils/inputTypes';
+import { chatStore } from './attachChatView';
 
 /** A response card's own confirmation, shown in the end-chat panel. */
 interface HumanAgentConfirmation {
@@ -102,7 +103,7 @@ class ChatViewState {
       humanAgentConfirmation: null,
     });
     this.announcer = new AriaAnnouncer(
-      serviceManager.store,
+      chatStore(serviceManager),
       intl?.formatMessage
     );
   }

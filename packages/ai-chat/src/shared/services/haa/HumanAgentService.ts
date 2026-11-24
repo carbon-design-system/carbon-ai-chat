@@ -19,7 +19,7 @@ import {
   Message,
   MessageResponse,
 } from '../../../types/messaging/Messages';
-import { AppConfig } from '../../../types/state/AppConfig';
+import type { ConversationAppConfig } from '../../../types/state/ConversationState';
 import { JSONContent } from '@tiptap/core';
 
 /**
@@ -130,7 +130,7 @@ interface HumanAgentService {
   handleConnectToHumanAgent(
     localMessageItem: LocalMessageItem,
     fullMessage: MessageResponse,
-    config: AppConfig,
+    config: ConversationAppConfig,
     initialRestartCount: number,
     isCurrent?: () => boolean
   ): Promise<void>;

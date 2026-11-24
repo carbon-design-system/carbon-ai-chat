@@ -7,31 +7,31 @@
  *  @license
  */
 
-import {
-  AppState,
-  HumanAgentDisplayState,
-  InputState,
-  PendingUploadStatus,
-} from '../../types/state/AppState';
+import { ConversationState } from '../../types/state/ConversationState';
+import { HumanAgentDisplayState } from '../../types/state/HumanAgentState';
+import { InputState, PendingUploadStatus } from '../../types/state/InputState';
 import { LanguagePack } from '../../types/config/LanguagePack';
 
-const getAssistantInputState = (state: Pick<AppState, 'assistantInputState'>) =>
-  state.assistantInputState;
-const getHumanAgentInputState = (state: Pick<AppState, 'humanAgentState'>) =>
-  state.humanAgentState.inputState;
-const getHumanAgentState = (state: Pick<AppState, 'humanAgentState'>) =>
-  state.humanAgentState;
+const getAssistantInputState = (
+  state: Pick<ConversationState, 'assistantInputState'>
+) => state.assistantInputState;
+const getHumanAgentInputState = (
+  state: Pick<ConversationState, 'humanAgentState'>
+) => state.humanAgentState.inputState;
+const getHumanAgentState = (
+  state: Pick<ConversationState, 'humanAgentState'>
+) => state.humanAgentState;
 const getPersistedHumanAgent = (
-  state: Pick<AppState, 'persistedToBrowserStorage'>
+  state: Pick<ConversationState, 'persistedToBrowserStorage'>
 ) => state.persistedToBrowserStorage.humanAgentState;
 
 /**
  * Structural input for `selectHumanAgentDisplayState`. Declared as a `Pick` so
- * components that hold a narrowed AppState slice (e.g. `MessagesComponent`'s
- * injected props bag) can call the selector without a wide `as AppState` cast.
+ * components that hold a narrowed ConversationState slice (e.g. `MessagesComponent`'s
+ * injected props bag) can call the selector without a wide `as ConversationState` cast.
  */
 type HumanAgentDisplayStateInput = Pick<
-  AppState,
+  ConversationState,
   'humanAgentState' | 'persistedToBrowserStorage'
 >;
 
@@ -76,14 +76,14 @@ function selectHumanAgentDisplayState(
 /**
  * Is the chat currently routed to a human agent?
  */
-function selectIsInputToHumanAgent(state: AppState): boolean {
+function selectIsInputToHumanAgent(state: ConversationState): boolean {
   return selectHumanAgentDisplayState(state).isConnectingOrConnected;
 }
 
 /**
  * Pick either the agent's input slice or the bot's.
  */
-function selectInputState(state: AppState) {
+function selectInputState(state: ConversationState) {
   return selectIsInputToHumanAgent(state)
     ? getHumanAgentInputState(state)
     : getAssistantInputState(state);
@@ -94,7 +94,7 @@ function selectInputState(state: AppState) {
  * is refused for this window, so both the send guard and the public
  * `hasInFlightUploads` state read this one predicate.
  */
-function selectHasInFlightUpload(state: AppState): boolean {
+function selectHasInFlightUpload(state: ConversationState): boolean {
   return selectInputState(state).pendingUploads.some(
     (upload) => upload.status === PendingUploadStatus.UPLOADING
   );
@@ -107,7 +107,7 @@ function selectHasInFlightUpload(state: AppState): boolean {
  * {@link PublicConfig.isReadonly}; the human-agent input has no config baseline
  * (it is driven entirely by the service-desk flow).
  */
-function selectInputIsReadonly(state: AppState): boolean {
+function selectInputIsReadonly(state: ConversationState): boolean {
   if (selectIsInputToHumanAgent(state)) {
     return Boolean(getHumanAgentInputState(state).isReadonly);
   }
@@ -120,7 +120,7 @@ function selectInputIsReadonly(state: AppState): boolean {
  * assistant input reads `PublicConfig.input.isDisabled` directly; the
  * human-agent input has no isDisabled concept.
  */
-function selectInputIsDisabled(state: AppState): boolean {
+function selectInputIsDisabled(state: ConversationState): boolean {
   if (selectIsInputToHumanAgent(state)) {
     return false;
   }
@@ -133,7 +133,7 @@ function selectInputIsDisabled(state: AppState): boolean {
  * deprecated `instance.updateInputFieldVisibility`, or the human-agent flow on
  * its own slice) wins. Defaults to visible when nothing specifies otherwise.
  */
-function selectInputFieldVisible(state: AppState): boolean {
+function selectInputFieldVisible(state: ConversationState): boolean {
   if (selectIsInputToHumanAgent(state)) {
     const override = getHumanAgentInputState(state).fieldVisible;
     return override != null ? override : true;
@@ -154,7 +154,7 @@ function selectInputFieldVisible(state: AppState): boolean {
  * hides a button the host asked for. The human-agent input has no config
  * baseline.
  */
-function selectStopStreamingButtonVisible(state: AppState): boolean {
+function selectStopStreamingButtonVisible(state: ConversationState): boolean {
   const { isVisible } = selectInputState(state).stopStreamingButtonState;
   if (selectIsInputToHumanAgent(state)) {
     return isVisible;
@@ -183,7 +183,7 @@ type InputUploadAndStreamingFields = Pick<
  * re-rendering on `rawValue` / `displayValue` updates (every keystroke).
  */
 function selectInputUploadAndStreamingFields(
-  state: AppState
+  state: ConversationState
 ): InputUploadAndStreamingFields {
   const slice = selectInputState(state);
   return {
@@ -210,13 +210,15 @@ function selectInputUploadAndStreamingFields(
  * string.
  */
 function selectLanguagePack(
-  state: Pick<AppState, 'languagePack'>
+  state: Pick<ConversationState, 'languagePack'>
 ): LanguagePack {
   return state.languagePack;
 }
 
 /** The locale the date library formats times with, once its data has loaded. */
-function selectLoadedLocale(state: Pick<AppState, 'loadedLocale'>): string {
+function selectLoadedLocale(
+  state: Pick<ConversationState, 'loadedLocale'>
+): string {
   return state.loadedLocale;
 }
 

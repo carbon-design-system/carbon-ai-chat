@@ -8,8 +8,12 @@
  */
 
 import { getCSSVariableValue } from '../../shared/utils/colors';
-import actions from '../../shared/store/actions';
+
 import type { ServiceManager } from '../../shared/services/ServiceManager';
+
+import { viewActions } from '../../view/state';
+
+import { chatStore } from '../services/attachChatView';
 
 export interface HistoryMobileDetectionOptions {
   container: HTMLElement | null;
@@ -51,12 +55,12 @@ export function updateHistoryMobileDetection(
   const shouldBeMobile = isFloatMode || width < requiredWidthForHistory;
 
   // Get current state directly from store to avoid dependency loop
-  const currentState = serviceManager.store.getState();
-  const currentIsMobile = currentState.historyPanelState.isMobile;
+  const currentState = chatStore(serviceManager).getState();
+  const currentIsMobile = currentState.view.historyPanelState.isMobile;
 
   if (currentIsMobile !== shouldBeMobile) {
     const config = currentState.config.public;
-    let newIsOpen = currentState.historyPanelState.isOpen;
+    let newIsOpen = currentState.view.historyPanelState.isOpen;
 
     // Only auto-adjust open state if NOT using startClosed
     if (!config.history?.startClosed) {
@@ -66,7 +70,7 @@ export function updateHistoryMobileDetection(
     // If startClosed is true, preserve current state
 
     serviceManager.store.dispatch(
-      actions.setHistoryPanelOptions(shouldBeMobile, newIsOpen)
+      viewActions.setHistoryPanelOptions(shouldBeMobile, newIsOpen)
     );
   }
 }

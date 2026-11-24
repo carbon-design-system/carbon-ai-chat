@@ -16,7 +16,7 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import { PersistableState } from '../../types/config/PersistedStateConfig';
-import { PersistedState } from '../../types/state/AppState';
+import { PersistedState } from '../../types/state/PersistedState';
 import { VERSION } from '../utils/environmentVariables';
 import { DEFAULT_PERSISTED_TO_BROWSER } from './reducerUtils';
 

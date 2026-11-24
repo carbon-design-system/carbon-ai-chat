@@ -10,63 +10,43 @@
 import isEqual from 'lodash-es/isEqual.js';
 
 import { VERSION } from '../utils/environmentVariables';
+
+import { ConversationState } from '../../types/state/ConversationState';
 import {
-  AnnounceMessage,
-  AppState,
   AppStateMessages,
   ChatMessagesState,
-  CustomPanelState,
-  WorkspacePanelState,
-  HistoryPanelState,
-  HumanAgentState,
-  IFramePanelState,
-  InputState,
-  MessagePanelState,
-  ThemeState,
-  ViewSourcePanelState,
-  ViewState,
-  PersistedState,
-} from '../../types/state/AppState';
-import {
-  DefaultCustomPanelConfigOptions,
-  WorkspaceCustomPanelConfigOptions,
-  PanelType,
-  PanelConfigOptionsByType,
-} from '../../types/instance/apiTypes';
-import {
-  LauncherConfig,
-  TIME_TO_ENTRANCE_ANIMATION_START,
-} from '../../types/config/LauncherConfig';
-import {
-  CornersType,
-  DEFAULT_CUSTOM_PANEL_ID,
-  WORKSPACE_CUSTOM_PANEL_ID,
-} from '../utils/constants';
+} from '../../types/state/ChatMessagesState';
+import { HumanAgentState } from '../../types/state/HumanAgentState';
+import { InputState } from '../../types/state/InputState';
+import { ThemeState } from '../../types/state/ThemeState';
+import { ViewState } from '../../types/instance/apiTypes';
+import { PersistedState } from '../../types/state/PersistedState';
+import { CornersType } from '../utils/constants';
 import { deepFreeze } from '../utils/lang/objectUtils';
-import {
-  HeaderConfig,
-  MinimizeButtonIconType,
-} from '../../types/config/HeaderConfig';
-import { LayoutConfig } from '../../types/config/LayoutConfig';
-import { ChatShortcutConfig } from '../../types/config/ShortcutConfig';
+
 import {
   LocalMessageItem,
   LocalMessageUIState,
 } from '../../types/messaging/LocalMessageItem';
+
 import {
   GenericItem,
   Message,
   MessageResponse,
 } from '../../types/messaging/Messages';
+
 import ObjectMap from '../../types/utilities/ObjectMap';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
+
 import type { MessageWriteOptions } from './messageWriteTypes';
+
 import {
   createLocalMessageItemsForNestedMessageItems,
   findDrawIssues,
   keepNestedLocalIDs,
   outputItemToLocalItem,
 } from '../schema/outputItemToLocalItem';
+
 import {
   isCarouselResponseType,
   isGridResponseType,
@@ -75,137 +55,18 @@ import {
   isResponseWithNestedItems,
   streamItemID,
 } from '../utils/messageUtils';
+
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
 /**
  * Miscellaneous utilities to help in reducers.
  */
 
-const DEFAULT_HEADER: HeaderConfig = {
-  isOn: true,
-  minimizeButtonIconType: MinimizeButtonIconType.MINIMIZE,
-  showAiLabel: true,
-  hasContentMaxWidth: false,
-};
-
-deepFreeze(DEFAULT_HEADER);
-
-const DEFAULT_LAUNCHER: LauncherConfig = {
-  isOn: true,
-  mobile: {
-    isOn: false,
-    title: '',
-    timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
-  },
-  desktop: {
-    isOn: false,
-    title: '',
-    timeToExpand: TIME_TO_ENTRANCE_ANIMATION_START,
-  },
-};
-deepFreeze(DEFAULT_LAUNCHER);
-
-/**
- * Defaults for the message focus toggle shortcut, merged field by field with whatever the
- * host passes on {@link KeyboardShortcuts.messageFocusToggle}, so a host that sets only
- * `key` still gets the default `modifiers` and `isOn`.
- *
- * F6 is a standard accessibility shortcut used in Windows and many applications for cycling
- * between major regions and panels. It doesn't produce special characters and is widely
- * recognized for navigation purposes.
- *
- * The shortcut is off by default; a host opts in with `isOn: true`.
- */
-const DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT: ChatShortcutConfig = {
-  key: 'F6',
-  modifiers: {},
-  isOn: false,
-};
-deepFreeze(DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT);
-
-const DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS: DefaultCustomPanelConfigOptions = {
-  hideBackButton: false,
-  disableAnimation: false,
-  fullWidth: false,
-  backButtonType: 'minimize',
-  showChatHeader: false,
-  openFromSide: false,
-};
-deepFreeze(DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS);
-
-const WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS: WorkspaceCustomPanelConfigOptions =
-  {
-    preferredLocation: 'end',
-  };
-deepFreeze(WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS);
-
-const PANEL_CONFIG_OPTIONS_BY_TYPE: PanelConfigOptionsByType = {
-  [PanelType.DEFAULT]: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  [PanelType.WORKSPACE]: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
-};
-deepFreeze(PANEL_CONFIG_OPTIONS_BY_TYPE);
-
-const DEFAULT_CUSTOM_PANEL_STATE: CustomPanelState = {
-  isOpen: false,
-  panelID: DEFAULT_CUSTOM_PANEL_ID,
-  options: DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-};
-deepFreeze(DEFAULT_CUSTOM_PANEL_STATE);
-
-const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
-  isOpen: false,
-  workspaceID: undefined,
-  panelID: WORKSPACE_CUSTOM_PANEL_ID,
-  options: WORKSPACE_CUSTOM_PANEL_CONFIG_OPTIONS,
-  localMessageItem: undefined,
-  fullMessage: undefined,
-  additionalData: undefined,
-};
-deepFreeze(DEFAULT_WORKSPACE_PANEL_STATE);
-
-const DEFAULT_HISTORY_PANEL_STATE: HistoryPanelState = {
-  isOpen: false,
-  isMobile: false,
-};
-deepFreeze(DEFAULT_HISTORY_PANEL_STATE);
-
-const DEFAULT_IFRAME_PANEL_STATE: IFramePanelState = {
-  isOpen: false,
-  messageItem: null,
-};
-deepFreeze(DEFAULT_IFRAME_PANEL_STATE);
-
-const DEFAULT_CITATION_PANEL_STATE: ViewSourcePanelState = {
-  isOpen: false,
-  citationItem: null,
-};
-deepFreeze(DEFAULT_CITATION_PANEL_STATE);
-
-const DEFAULT_MESSAGE_PANEL_STATE: MessagePanelState<any> = {
-  isOpen: false,
-  localMessageItem: null,
-  isMessageForInput: false,
-};
-
-deepFreeze(DEFAULT_MESSAGE_PANEL_STATE);
-
 const VIEW_STATE_ALL_CLOSED: ViewState = {
   launcher: false,
   mainWindow: false,
 };
 deepFreeze(VIEW_STATE_ALL_CLOSED);
-
-const VIEW_STATE_LAUNCHER_OPEN: ViewState = {
-  launcher: true,
-  mainWindow: false,
-};
-deepFreeze(VIEW_STATE_LAUNCHER_OPEN);
-
-const VIEW_STATE_MAIN_WINDOW_OPEN: ViewState = {
-  mainWindow: true,
-  launcher: false,
-};
-deepFreeze(VIEW_STATE_MAIN_WINDOW_OPEN);
 
 const DEFAULT_INPUT_STATE: InputState = {
   rawValue: '',
@@ -257,7 +118,6 @@ const DEFAULT_HUMAN_AGENT_STATE: HumanAgentState = {
   isConnecting: false,
   isReconnecting: false,
   availability: null,
-  numUnreadMessages: 0,
   fileUploadInProgress: false,
   activeLocalMessageID: null,
   showScreenShareRequest: false,
@@ -271,9 +131,6 @@ const DEFAULT_CHAT_MESSAGES_STATE: ChatMessagesState = {
   localMessageIDs: [],
   messageIDs: [],
   activeResponseId: null,
-  isMessageLoadingCounter: 0,
-  isMessageLoadingText: undefined,
-  isHydratingCounter: 0,
 };
 deepFreeze(DEFAULT_CHAT_MESSAGES_STATE);
 
@@ -299,103 +156,19 @@ const DEFAULT_THEME_STATE: ThemeState = {
 };
 deepFreeze(DEFAULT_THEME_STATE);
 
-const DEFAULT_LAYOUT_STATE: LayoutConfig = {
-  showFrame: true,
-  hasContentMaxWidth: true,
-};
-deepFreeze(DEFAULT_LAYOUT_STATE);
-
-/**
- * Determines the {@link AnnounceMessage} to show based on a potential change in the visibility of the widget. If the
- * widget is either opened or closed, an announcement should be made and this will set that announcement. If the state
- * of the widget hasn't changed, this will return the current announcement unchanged.
- *
- * @param previousState The previous state of the application.
- * @param newViewState Indicates the widgets new view state.
- */
-function calcAnnouncementForWidgetOpen(
-  previousState: AppState,
-  newViewState: ViewState
-): AnnounceMessage {
-  if (
-    isEqual(previousState.persistedToBrowserStorage.viewState, newViewState)
-  ) {
-    // No change in the view state so return the current announcement.
-    return previousState.announceMessage;
-  }
-
-  // The view has changed so show the appropriate message.
-  return {
-    messageID: newViewState.mainWindow
-      ? 'window_ariaWindowOpened'
-      : 'window_ariaWindowClosed',
-  };
-}
-
 /**
  * Returns a new state that has the {@link ChatMessagesState} modified for the given chat type with the new properties.
  * If the chat state is for a thread, then the thread that is currently being viewed will be modified.
  */
 function applyAssistantMessageState(
-  state: AppState,
+  state: ConversationState,
   newState: Partial<ChatMessagesState>
-): AppState {
+): ConversationState {
   return {
     ...state,
     assistantMessageState: {
       ...state.assistantMessageState,
       ...newState,
-    },
-  };
-}
-
-function handleViewStateChange(
-  state: AppState,
-  viewState: ViewState
-): AppState {
-  // If the main window is opened and the page is visible, mark any unread messages as read.
-  let { showUnreadIndicator } = state.persistedToBrowserStorage;
-  let topHuman = state.humanAgentState;
-  if (viewState.mainWindow && state.isBrowserPageVisible) {
-    if (topHuman.numUnreadMessages !== 0) {
-      topHuman = {
-        ...topHuman,
-        numUnreadMessages: 0,
-      };
-    }
-    showUnreadIndicator = false;
-  }
-
-  return {
-    ...state,
-    humanAgentState: topHuman,
-    announceMessage: calcAnnouncementForWidgetOpen(state, viewState),
-    persistedToBrowserStorage: {
-      ...state.persistedToBrowserStorage,
-      viewState,
-      showUnreadIndicator,
-    },
-  };
-}
-
-function setHomeScreenOpenState(
-  state: AppState,
-  isOpen: boolean,
-  showBackToAssistant?: boolean
-): AppState {
-  if (showBackToAssistant === undefined) {
-    showBackToAssistant =
-      state.persistedToBrowserStorage.homeScreenState.showBackToAssistant;
-  }
-  return {
-    ...state,
-    persistedToBrowserStorage: {
-      ...state.persistedToBrowserStorage,
-      homeScreenState: {
-        ...state.persistedToBrowserStorage.homeScreenState,
-        isHomeScreenOpen: isOpen,
-        showBackToAssistant,
-      },
     },
   };
 }
@@ -412,7 +185,7 @@ function setHomeScreenOpenState(
 function applyLocalMessageUIState<
   TPropertyName extends keyof LocalMessageUIState,
 >(
-  state: AppState,
+  state: ConversationState,
   localMessageID: string,
   propertyName: TPropertyName,
   propertyValue: LocalMessageUIState[TPropertyName]
@@ -479,7 +252,7 @@ function chunkItemLocalID(messageID: string, item: DeepPartial<GenericItem>) {
  * has a streaming id.
  */
 function resolvePreviousLocalItem(
-  state: AppState,
+  state: ConversationState,
   messageID: string,
   streamId: string | undefined,
   positional: LocalMessageItem | undefined
@@ -659,7 +432,7 @@ function keepsLastDrawn(
  * runs, except items the message already showed, so nothing visible disappears.
  */
 function rebuildLocalItemsForUpsert(
-  state: AppState,
+  state: ConversationState,
   message: MessageResponse,
   isStreaming = false,
   hidesSilent = true,
@@ -771,9 +544,9 @@ function rebuildLocalItemsForUpsert(
  * [1.1, 1.2, 2.2, 2.1, 3.1], and 2.4 shows later, as its own item.
  */
 function keepStreamedItemsOnly(
-  state: AppState,
+  state: ConversationState,
   message: MessageResponse
-): AppState {
+): ConversationState {
   const messageID = message.id;
   const itemIDsInNewMessage = message.output.generic
     .map((item) => streamItemID(messageID, item))
@@ -848,7 +621,7 @@ function keepPriorUIStateInternal(
  * every upsert.
  */
 function keepMessageRefIfUnchanged(
-  state: AppState,
+  state: ConversationState,
   message: MessageResponse,
   newLocalIDsForMessage: string[],
   newLocalItemsByID: ObjectMap<LocalMessageItem>
@@ -897,7 +670,10 @@ function computeLocalIDInsertionPoint(
  * Adds the given full message to the redux store. This will add it global to the global map as well as add the
  * id to the specific chat type.
  */
-function applyFullMessageWithIdentity(state: AppState, message: Message) {
+function applyFullMessageWithIdentity(
+  state: ConversationState,
+  message: Message
+) {
   let messageID: string;
   // Add the original message to the global map.
   const newState = {
@@ -1029,7 +805,7 @@ function nextChunkLocalItem(
  * list rather than with its message, and no nested items are built for it.
  */
 function applyChunkWriteWithIdentity(
-  state: AppState,
+  state: ConversationState,
   message: MessageResponse,
   { item: chunkItem, isComplete, isStopped }: MessageWriteOptions['chunk']
 ) {
@@ -1065,30 +841,14 @@ function applyChunkWriteWithIdentity(
 }
 
 export {
-  DEFAULT_HEADER,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,
   DEFAULT_HUMAN_AGENT_STATE,
   VIEW_STATE_ALL_CLOSED,
-  VIEW_STATE_MAIN_WINDOW_OPEN,
-  VIEW_STATE_LAUNCHER_OPEN,
-  DEFAULT_IFRAME_PANEL_STATE,
-  DEFAULT_CITATION_PANEL_STATE,
-  DEFAULT_CUSTOM_PANEL_STATE,
-  DEFAULT_WORKSPACE_PANEL_STATE,
-  DEFAULT_HISTORY_PANEL_STATE,
-  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  PANEL_CONFIG_OPTIONS_BY_TYPE,
-  DEFAULT_LAUNCHER,
-  DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT,
-  DEFAULT_MESSAGE_PANEL_STATE,
   DEFAULT_THEME_STATE,
-  DEFAULT_LAYOUT_STATE,
   DEFAULT_INPUT_STATE,
-  setHomeScreenOpenState,
   applyAssistantMessageState,
-  handleViewStateChange,
   applyChunkWriteWithIdentity,
   applyFullMessageWithIdentity,
   applyLocalMessageUIState,

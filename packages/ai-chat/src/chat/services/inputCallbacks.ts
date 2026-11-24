@@ -7,13 +7,13 @@
  *  @license
  */
 
-import actions from '../store/actions';
+import actions from '../../shared/store/actions';
 import {
   selectInputState,
   selectIsInputToHumanAgent,
-} from '../store/selectors';
-import { createMessageRequestForText } from '../utils/messageUtils';
-import { shouldSendSilently } from '../utils/fileAttachments';
+} from '../../shared/store/selectors';
+import { createMessageRequestForText } from '../../shared/utils/messageUtils';
+import { shouldSendSilently } from '../../shared/utils/fileAttachments';
 import {
   BusEventType,
   MainWindowCloseReason,
@@ -21,12 +21,14 @@ import {
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
 import { ViewType } from '../../types/instance/apiTypes';
-import type { ServiceManager } from './ServiceManager';
+import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { AppState } from '../../types/state/AppState';
 import type { SendOptions } from '../../types/instance/ChatInstance';
 import type { JSONContent } from '@tiptap/core';
-import { requestStopFromInput } from './assistantInputCommands';
-import { fireUserEvent } from './fireUserEvent';
+import { requestStopFromInput } from '../../shared/services/assistantInputCommands';
+import { fireUserEvent } from '../../shared/services/fireUserEvent';
+import { viewActions } from '../../view/state';
+import { chatStore } from './attachChatView';
 
 export class InputCallbacks {
   private scrollTimers = new Set<ReturnType<typeof setTimeout>>();
@@ -86,10 +88,9 @@ export class InputCallbacks {
   };
 
   onToggleHomeScreen = () => {
-    const willShowMessages =
-      this.serviceManager.store.getState().persistedToBrowserStorage
-        .homeScreenState.isHomeScreenOpen;
-    this.serviceManager.store.dispatch(actions.toggleHomeScreen());
+    const willShowMessages = chatStore(this.serviceManager).getState().view
+      .persistedToBrowserStorage.homeScreenState.isHomeScreenOpen;
+    this.serviceManager.store.dispatch(viewActions.toggleHomeScreen());
     if (willShowMessages) {
       const timer = setTimeout(() => {
         this.scrollTimers.delete(timer);
@@ -100,7 +101,7 @@ export class InputCallbacks {
   };
 
   onAcceptDisclaimer = () => {
-    this.serviceManager.store.dispatch(actions.acceptDisclaimer());
+    this.serviceManager.store.dispatch(viewActions.acceptDisclaimer());
     fireUserEvent(this.serviceManager, {
       type: BusEventType.DISCLAIMER_ACCEPTED,
     });

@@ -21,7 +21,7 @@
 import {
   createAppConfig,
   reconcileAppConfigReferences,
-} from '../../../src/shared/store/doCreateStore';
+} from '../../../src/chat/utils/appConfig';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 /**

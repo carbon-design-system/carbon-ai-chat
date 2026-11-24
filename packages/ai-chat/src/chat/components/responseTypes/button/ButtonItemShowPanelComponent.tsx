@@ -14,11 +14,16 @@ import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
-import actions from '../../../../shared/store/actions';
+
 import { selectInputIsReadonly } from '../../../../shared/store/selectors';
+
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
+
 import { ButtonItem } from '../../../../types/messaging/Messages';
+
 import { BaseButtonItemComponent } from './BaseButtonItemComponent';
+
+import { viewActions } from '../../../../view/state';
 
 interface ButtonItemShowPanelComponentProps {
   localMessageItem: LocalMessageItem<ButtonItem>;
@@ -49,9 +54,9 @@ function ButtonItemShowPanelComponent({
    * Once the button is clicked, render the panel content and update the message history to remember the panel being.
    */
   const onClickHandler = useCallback(async () => {
-    serviceManager.store.dispatch(actions.setResponsePanelIsOpen(true));
+    serviceManager.store.dispatch(viewActions.setResponsePanelIsOpen(true));
     serviceManager.store.dispatch(
-      actions.setResponsePanelContent(localMessageItem, isMessageForInput)
+      viewActions.setResponsePanelContent(localMessageItem, isMessageForInput)
     );
   }, [localMessageItem, isMessageForInput, serviceManager]);
 

@@ -18,7 +18,7 @@ function constructViewState(
   newView: ViewType | Partial<ViewState>,
   appState: AppState
 ): ViewState {
-  const { viewState } = appState.persistedToBrowserStorage;
+  const { viewState } = appState.view.persistedToBrowserStorage;
 
   // Start with the existing view state.
   let newViewState: ViewState;

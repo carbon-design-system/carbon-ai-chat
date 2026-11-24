@@ -12,16 +12,14 @@ import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
 
 function setup() {
-  const state = {
-    persistedToBrowserStorage: { humanAgentState: { isConnected: false } },
-  };
+  const state = { humanAgent: { isConnected: false } };
   const service = {
     endChat: jest.fn(),
     userTyping: jest.fn(),
     filesSelectedForUpload: jest.fn(),
   };
   const manager = {
-    store: { getState: () => state },
+    instance: { state: { get: () => state } },
     humanAgentService: service,
   } as unknown as ServiceManager;
   const focus = jest.fn();
@@ -57,7 +55,7 @@ it('reads current connection state for typing and honors upload focus policy', (
   const { controller, state, service, focus } = setup();
   controller.onUserTyping(true);
   expect(service.userTyping).not.toHaveBeenCalled();
-  state.persistedToBrowserStorage.humanAgentState.isConnected = true;
+  state.humanAgent.isConnected = true;
   controller.onUserTyping(false);
   expect(service.userTyping).toHaveBeenCalledWith(false);
   const uploads: Parameters<

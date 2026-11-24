@@ -104,7 +104,7 @@ for (const framework of ['react', 'web-component']) {
     });
     await page.waitForFunction(
       () =>
-        window.chatInstance?.serviceManager?.store.getState()
+        window.chatInstance?.serviceManager?.store.getState().view
           .initialViewChangeComplete
     );
     // Configure chat with menu options enabled

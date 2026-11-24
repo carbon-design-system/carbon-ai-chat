@@ -12,13 +12,14 @@ import {
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
   HISTORY_PANEL_ID,
-} from '../utils/constants';
-import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../store/reducerUtils';
+} from '../../shared/utils/constants';
+
 import {
   createCustomPanelInstance,
   CustomPanelInstance,
 } from './CustomPanelInstance';
-import { ServiceManager } from './ServiceManager';
+import { ServiceManager } from '../../shared/services/ServiceManager';
+import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../../view/state';
 
 /**
  * This function takes in the service manager to help create a custom panel manager. The panel manager is created
@@ -60,4 +61,4 @@ function createCustomPanelManager(serviceManger: ServiceManager): CustomPanels {
   });
 }
 
-export { createCustomPanelManager, CustomPanels as CustomPanelManager };
+export { createCustomPanelManager };

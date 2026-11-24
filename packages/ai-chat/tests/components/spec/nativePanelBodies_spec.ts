@@ -9,28 +9,41 @@
 
 import React from 'react';
 import { flushSync } from 'react-dom';
+
 import type CDSLoading from '@carbon/web-components/es/components/loading/loading.js';
 import { act, fireEvent, render } from '@testing-library/react';
+
 import { ContextProvider } from '@lit/context';
+
 import { LitElement, nothing } from 'lit';
+
 import HydrationBody from '../../../src/chat/components/panels/native/HydrationBody';
 import IFrameBody from '../../../src/chat/components/panels/native/IFrameBody';
 import IFramePanel from '../../../src/chat/components/panels/IFramePanel';
 import { IFrameComponent } from '../../../src/chat/components-legacy/responseTypes/iframe/IFrameComponent';
+
 import type { PanelBodyContentReadyEvent } from '../../../src/chat/components/panels/native/panelBodyContent';
+
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+
 import { ChatContext } from '../../../src/chat/contexts/ChatContext';
+
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
+
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+
 import { createIntl } from '../../../src/shared/utils/i18n';
-import actions from '../../../src/shared/store/actions';
+
 import {
   applyConfigChange,
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
 
 class PanelBodyProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -141,9 +154,7 @@ describe('native hydration body', () => {
       store.getState().languagePack.window_ariaWindowLoading
     );
     const renderView = jest.spyOn(view as any, 'renderView');
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     await flush(view);
     expect(renderView).not.toHaveBeenCalled();
     applyConfigChange(store, {
@@ -313,9 +324,7 @@ describe('native iframe panel body', () => {
     });
     await flush(view);
     const renderView = jest.spyOn(view as any, 'renderView');
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     state.setWindowSize({ width: 400, height: 600 });
     await flush(view);
     expect(renderView).not.toHaveBeenCalled();
@@ -533,7 +542,7 @@ describe('native iframe panel body', () => {
     }
     const renderer = jest.fn(() => React.createElement(StatefulError));
     store.dispatch(
-      actions.setAppStateValue('markdownConfig', {
+      viewActions.setViewValue('markdownConfig', {
         customRenderers: { codeBlock: renderer },
       })
     );
@@ -579,9 +588,7 @@ describe('native iframe panel body', () => {
         '.cds-aichat--i-frame-component__status-container'
       );
       await act(async () => {
-        store.dispatch(
-          actions.setChatMessagesStateProperty('isMessageLoadingCounter', 2)
-        );
+        store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 2));
         await flush();
       });
       expect(host.shadowRoot.querySelector('[data-retained-error]')).toBe(

@@ -32,6 +32,7 @@ import {
   type ShellLayoutRefs,
   type ShellLayoutTargets,
 } from './renderShellLayout';
+import { chatStore } from '../../services/attachChatView';
 
 @carbonElement('cds-aichat-chat-shell')
 class ChatShell extends NativeChatView {
@@ -267,11 +268,11 @@ class ChatShell extends NativeChatView {
       const owner = this.owner;
       this.releaseErrorView = subscribeToSelectedValue(
         {
-          getSnapshot: owner.serviceManager.store.getState,
-          subscribe: owner.serviceManager.store.subscribe,
+          getSnapshot: chatStore(owner.serviceManager).getState,
+          subscribe: chatStore(owner.serviceManager).subscribe,
         },
         (state) => ({
-          panel: state.catastrophicErrorPanelState,
+          panel: state.view.catastrophicErrorPanelState,
           shell: selectShellState(state),
         }),
         () => {

@@ -38,7 +38,7 @@ async function prepare(page: Page, framework: string, expanded: boolean) {
   });
   await page.waitForFunction(
     () =>
-      window.chatInstance?.serviceManager.store.getState()
+      window.chatInstance?.serviceManager.store.getState().view
         .initialViewChangeComplete
   );
   await page.evaluate(

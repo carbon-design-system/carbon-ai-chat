@@ -42,6 +42,7 @@ import './native/PromptLineSlot';
 import type { InputFunctions, InputProps } from '../../utils/inputTypes';
 import type { AutocompleteContent } from '../../services/autocompleteContent';
 import type { ChatViewState } from '../../services/chatViewState';
+import { chatStore } from '../../services/attachChatView';
 import type { ToolbarAction } from '../../../types/config/HeaderConfig';
 import type { IntlShape } from '../../../shared/utils/i18n';
 import type { LanguagePack } from '../../../types/config/LanguagePack';
@@ -71,6 +72,7 @@ import { restoreInputDraft } from '../../utils/restoreInputDraft';
 import { validateFileSelection } from '../../utils/fileUploadValidation';
 import { formatShortcutForDisplay } from '../../utils/keyboardUtils';
 import { consoleError } from '../../../shared/utils/miscUtils';
+import { viewActions } from '../../../view/state';
 
 const EMPTY_UPLOADS: FileUpload[] = [];
 const descriptorIcon = (icon: ToolbarAction['icon']) => icon as CarbonIcon;
@@ -213,7 +215,7 @@ class ChatInput extends NativeChatView {
       this.languagePack = pack;
     });
     this.selectStore(
-      (next) => next.chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
+      (next) => next.view.chatWidthBreakpoint === ChatWidthBreakpoint.WIDE,
       (wide) => {
         this.wide = wide;
       }
@@ -592,11 +594,11 @@ class ChatInput extends NativeChatView {
       );
     }
     if (focused && !this.hasAnnouncedShortcut) {
-      const shortcut =
-        store.getState().config.derived.keyboardShortcuts.messageFocusToggle;
+      const shortcut = chatStore(this.serviceManager).getState().config.derived
+        .keyboardShortcuts.messageFocusToggle;
       if (shortcut.isOn) {
         store.dispatch(
-          actions.announceMessage({
+          viewActions.announceMessage({
             messageID: 'input_keyboardShortcutAnnouncement',
             messageValues: { key: formatShortcutForDisplay(shortcut) },
           })

@@ -22,7 +22,7 @@ import {
   shouldDisableSend as sendDisabled,
   selectInputUploads,
   isUploadButtonDisabled,
-} from '../../shared/services/inputCallbacks';
+} from '../services/inputCallbacks';
 import type { MessageSendSource } from '../../types/events/eventBusTypes';
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import type { SendOptions } from '../../types/instance/ChatInstance';

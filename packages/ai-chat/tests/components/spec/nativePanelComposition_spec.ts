@@ -8,34 +8,48 @@
  */
 
 import { ContextProvider } from '@lit/context';
+
 import { LitElement, nothing } from 'lit';
+
 import '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
 import type NativePanel from '@carbon/ai-chat-components/es/components/chat-shell/src/panel.js';
 import type NativeShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
 import '../../../src/chat/components/panels/NativePanels';
 import type NativePanels from '../../../src/chat/components/panels/NativePanels';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
+
 import { ChatViewState } from '../../../src/chat/services/chatViewState';
+
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+
 import type {
   PanelViewInputs,
   PanelCompositionCallbacks,
   PanelName,
 } from '../../../src/chat/utils/panelComposition';
+
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
+
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+
 import { createIntl } from '../../../src/shared/utils/i18n';
-import actions from '../../../src/shared/store/actions';
+
 import { ChatWidthBreakpoint } from '../../../src/types/state/AppState';
+
 import { EventBus } from '../../../src/shared/events/EventBus';
+
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
+
 import { ScreenShareState } from '../../../src/types/config/ServiceDeskConfig';
+
 import {
   applyConfigChange,
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
 
 class PanelProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
@@ -68,7 +82,9 @@ async function fixture(
     disclaimer: { isOn: true, disclaimerHTML: '<p>Terms</p>' },
     history: { isOn: true },
   });
-  store.dispatch(actions.setViewState({ mainWindow: true, launcher: false }));
+  store.dispatch(
+    viewActions.setViewState({ mainWindow: true, launcher: false })
+  );
   const subscriptions = new Set<() => void>();
   const originalSubscribe = store.subscribe;
   store.subscribe = (listener) => {
@@ -138,15 +154,15 @@ async function fixture(
     isHydratingComplete: true,
     shouldShowHydrationPanel: false,
     isHomeScreenActive: false,
-    customPanelState: current.customPanelState,
-    historyPanelState: { ...current.historyPanelState, isMobile: true },
+    customPanelState: current.view.customPanelState,
+    historyPanelState: { ...current.view.historyPanelState, isMobile: true },
     showDisclaimer: false,
-    responsePanelState: current.responsePanelState,
+    responsePanelState: current.view.responsePanelState,
     responseHasMessage: false,
-    iFramePanelState: current.iFramePanelState,
-    viewSourcePanelState: current.viewSourcePanelState,
+    iFramePanelState: current.view.iFramePanelState,
+    viewSourcePanelState: current.view.viewSourcePanelState,
     isInputReadonly: false,
-    catastrophicErrorPanelState: current.catastrophicErrorPanelState,
+    catastrophicErrorPanelState: current.view.catastrophicErrorPanelState,
     contentRevision: {},
     ...overrides,
   };
@@ -304,7 +320,7 @@ describe('native panel composition', () => {
   it('preserves initial desired opens without inventing initial transition callbacks', async () => {
     const seed = makeConfigStore({}).getState();
     const f = await fixture({
-      customPanelState: { ...seed.customPanelState, isOpen: true },
+      customPanelState: { ...seed.view.customPanelState, isOpen: true },
     });
     expect(f.panel('custom').open).toBe(true);
     expect(
@@ -318,7 +334,7 @@ describe('native panel composition', () => {
   it('preserves the first desired open value for a later-created conditional history frame', async () => {
     const seed = makeConfigStore({}).getState();
     const f = await fixture({
-      historyPanelState: { ...seed.historyPanelState, isMobile: false },
+      historyPanelState: { ...seed.view.historyPanelState, isMobile: false },
     });
     await f.commit();
     expect(f.panel('history')).toBeNull();
@@ -427,8 +443,11 @@ describe('native panel composition', () => {
     const seed = makeConfigStore({}).getState();
     const f = await fixture({
       customPanelState: {
-        ...seed.customPanelState,
-        options: { ...seed.customPanelState.options, disableAnimation: true },
+        ...seed.view.customPanelState,
+        options: {
+          ...seed.view.customPanelState.options,
+          disableAnimation: true,
+        },
       },
     });
     await f.commit();
@@ -519,9 +538,12 @@ describe('native panel composition', () => {
     const seed = makeConfigStore({}).getState();
     const f = await fixture({
       customPanelState: {
-        ...seed.customPanelState,
+        ...seed.view.customPanelState,
         isOpen: true,
-        options: { ...seed.customPanelState.options, disableAnimation: true },
+        options: {
+          ...seed.view.customPanelState.options,
+          disableAnimation: true,
+        },
       },
     });
     await f.commit();
@@ -668,7 +690,7 @@ describe('native panel composition', () => {
       },
     });
     f.store.dispatch(
-      actions.setAppStateValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
+      viewActions.setViewValue('chatWidthBreakpoint', ChatWidthBreakpoint.WIDE)
     );
     await flush(f.view);
     expect(f.view.disclaimerButton()).toBe(button);
@@ -687,9 +709,7 @@ describe('native panel composition', () => {
       f.view as unknown as { renderView(): unknown },
       'renderView'
     );
-    f.store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    f.store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     await flush(f.view);
     expect(render).not.toHaveBeenCalled();
     const target = f.hosts.panelTargetFor('custom-body');

@@ -7,14 +7,18 @@
  *  @license
  */
 
-import actions from '../../../src/shared/store/actions';
 import { PersistableState } from '../../../src/types/config/PersistedStateConfig';
+
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
 } from '../../test_helpers';
+
+import { viewActions } from '../../../src/view/state';
+
+import { joinPersistedState } from '../../../src/view/state';
 
 const HOSTNAME =
   typeof window !== 'undefined' ? window.location.hostname : 'localhost';
@@ -40,7 +44,10 @@ describe('PublicConfig.persistedState', () => {
       };
 
       const { store } = await renderChatAndGetInstanceWithStore(config);
-      const persisted = store.getState().persistedToBrowserStorage;
+      const persisted = joinPersistedState(
+        store.getState().persistedToBrowserStorage,
+        store.getState().view.persistedToBrowserStorage
+      );
 
       expect(persisted.hasSentNonWelcomeMessage).toBe(true);
       expect(persisted.disclaimersAccepted[HOSTNAME]).toBe(true);
@@ -61,7 +68,7 @@ describe('PublicConfig.persistedState', () => {
       const { store } = await renderChatAndGetInstanceWithStore(config);
 
       onStateChange.mockClear();
-      store.dispatch(actions.acceptDisclaimer());
+      store.dispatch(viewActions.acceptDisclaimer());
 
       expect(onStateChange).toHaveBeenCalled();
       const emitted: PersistableState =
@@ -83,7 +90,7 @@ describe('PublicConfig.persistedState', () => {
       // No await between the clear and the assert, so no async boot task can
       // interleave: this isolates the single synchronous dispatch below.
       onStateChange.mockClear();
-      store.dispatch(actions.setAppStateValue('isBrowserPageVisible', false));
+      store.dispatch(viewActions.setViewValue('isBrowserPageVisible', false));
 
       expect(onStateChange).not.toHaveBeenCalled();
     });

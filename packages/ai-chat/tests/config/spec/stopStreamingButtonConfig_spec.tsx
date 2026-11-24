@@ -25,13 +25,11 @@ import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import { CancellationReason } from '../../../src/types/config/MessagingConfig';
-import { AppState } from '../../../src/types/state/AppState';
+import { ConversationState } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { selectStopStreamingButtonVisible } from '../../../src/shared/store/selectors';
-import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   getChatShadowRoot,
   mockCustomSendMessage,
@@ -39,11 +37,14 @@ import {
   setupBeforeEach,
 } from '../../test_helpers';
 
-function stateFor(config: PublicConfig): AppState {
+function stateFor(config: PublicConfig): ConversationState {
   return createInitialState(createAppConfig(config));
 }
 
-function withButtonState(state: AppState, isVisible: boolean): AppState {
+function withButtonState(
+  state: ConversationState,
+  isVisible: boolean
+): ConversationState {
   return {
     ...state,
     assistantInputState: {
@@ -56,7 +57,7 @@ function withButtonState(state: AppState, isVisible: boolean): AppState {
   };
 }
 
-function connectedToHumanAgent(state: AppState): AppState {
+function connectedToHumanAgent(state: ConversationState): ConversationState {
   return {
     ...state,
     persistedToBrowserStorage: {

@@ -16,18 +16,29 @@ import {
   CustomPanelOpenOptions,
   PanelType,
 } from '../../types/instance/apiTypes';
+
 import { BusEventType } from '../../types/events/eventBusTypes';
-import actions from '../store/actions';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS } from '../store/reducerUtils';
-import { ServiceManager } from './ServiceManager';
+
+import { ServiceManager } from '../../shared/services/ServiceManager';
+
 import {
   captureMessageEvent,
   eventLocalItems,
-} from '../utils/messageEventOwnership';
-import { deepFreeze } from '../utils/lang/objectUtils';
-import { consoleError } from '../utils/miscUtils';
+} from '../../shared/utils/messageEventOwnership';
+
+import { deepFreeze } from '../../shared/utils/lang/objectUtils';
+import { consoleError } from '../../shared/utils/miscUtils';
+
 import { Message } from '../../types/messaging/Messages';
+
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
+
+import {
+  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  viewActions,
+} from '../../view/state';
+
+import { chatStore } from './attachChatView';
 
 /**
  * Closes the open workspace so another can open. A close handler that throws is logged, and the workspace closes
@@ -44,7 +55,9 @@ async function closeWorkspaceForNext(
       'A workspace close handler failed while another workspace was opening. The open workspace closes anyway.',
       error
     );
-    serviceManager.store.dispatch(actions.setWorkspaceCustomPanelOpen(false));
+    serviceManager.store.dispatch(
+      viewActions.setWorkspaceCustomPanelOpen(false)
+    );
   }
 }
 
@@ -67,9 +80,9 @@ function createCustomPanelInstance(
   };
 
   function captureWorkspaceEvent() {
-    const { store } = serviceManager;
+    const store = chatStore(serviceManager);
     const { workspaceID, localMessageItem, fullMessage, additionalData } =
-      store.getState().workspacePanelState;
+      store.getState().view.workspacePanelState;
     if (!workspaceValues || workspaceValues.stored !== additionalData) {
       workspaceValues = {
         stored: additionalData,
@@ -117,8 +130,9 @@ function createCustomPanelInstance(
       | BusEventType.WORKSPACE_CLOSE,
     data: ReturnType<typeof captureWorkspaceEvent>
   ) {
-    const { store, restartCount } = serviceManager;
-    const before = store.getState().workspacePanelState;
+    const store = chatStore(serviceManager);
+    const { restartCount } = serviceManager;
+    const before = store.getState().view.workspacePanelState;
     const working = data.additionalData;
     const messages = workspaceMessages;
     let messageEvent: ReturnType<typeof captureMessageEvent>;
@@ -162,7 +176,7 @@ function createCustomPanelInstance(
         serviceManager.instance
       );
     } finally {
-      let current = store.getState().workspacePanelState;
+      let current = store.getState().view.workspacePanelState;
       if (
         messageEvent &&
         store.getState().allMessagesByID[messages.message.id] ===
@@ -191,7 +205,7 @@ function createCustomPanelInstance(
           messages.localItem = committedLocalItem;
         }
       }
-      current = store.getState().workspacePanelState;
+      current = store.getState().view.workspacePanelState;
       if (
         ownsData &&
         restartCount === serviceManager.restartCount &&
@@ -205,7 +219,7 @@ function createCustomPanelInstance(
             (current.fullMessage !== messages.message ||
               current.localMessageItem !== messages.localItem)))
       ) {
-        const action = actions.setWorkspacePanelData({
+        const action = viewActions.setWorkspacePanelData({
           workspaceID: current.workspaceID,
           localMessageItem:
             current.localMessageItem && messages === workspaceMessages
@@ -225,16 +239,16 @@ function createCustomPanelInstance(
 
   const panelActions = {
     [PanelType.WORKSPACE]: {
-      setConfig: actions.setWorkspaceCustomPanelConfigOptions,
-      setOpen: actions.setWorkspaceCustomPanelOpen,
+      setConfig: viewActions.setWorkspaceCustomPanelConfigOptions,
+      setOpen: viewActions.setWorkspaceCustomPanelOpen,
     },
     [PanelType.DEFAULT]: {
-      setConfig: actions.setCustomPanelConfigOptions,
-      setOpen: actions.setCustomPanelOpen,
+      setConfig: viewActions.setCustomPanelConfigOptions,
+      setOpen: viewActions.setCustomPanelOpen,
     },
     [PanelType.HISTORY]: {
-      setConfig: actions.setCustomPanelConfigOptions,
-      setOpen: actions.setHistoryPanelOpen,
+      setConfig: viewActions.setCustomPanelConfigOptions,
+      setOpen: viewActions.setHistoryPanelOpen,
     },
   } as const;
 
@@ -247,7 +261,7 @@ function createCustomPanelInstance(
     ) {
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
-      const { store } = serviceManager;
+      const store = chatStore(serviceManager);
 
       // The history panel only draws with history on, so opening it otherwise would report a panel nobody sees.
       if (
@@ -261,7 +275,7 @@ function createCustomPanelInstance(
       // the ID and data stored below.
       if (
         panelType === PanelType.WORKSPACE &&
-        store.getState().workspacePanelState.isOpen
+        store.getState().view.workspacePanelState.isOpen
       ) {
         await closeWorkspaceForNext(customPanelInstance.close, serviceManager);
       }
@@ -270,7 +284,7 @@ function createCustomPanelInstance(
       if (panelType === PanelType.WORKSPACE && options) {
         const workspaceOptions = options as WorkspaceCustomPanelConfigOptions;
         if (workspaceOptions.workspaceId || workspaceOptions.additionalData) {
-          const action = actions.setWorkspacePanelData({
+          const action = viewActions.setWorkspacePanelData({
             workspaceID: workspaceOptions.workspaceId,
             additionalData: workspaceOptions.additionalData,
           });
@@ -311,7 +325,9 @@ function createCustomPanelInstance(
       }
       // Capture state before closing; only an open workspace fires close events.
       let workspaceEventData;
-      if (store.getState().workspacePanelState.isOpen) {
+      if (
+        chatStore(serviceManager).getState().view.workspacePanelState.isOpen
+      ) {
         workspaceEventData = captureWorkspaceEvent();
         await fireWorkspaceEvent(
           BusEventType.WORKSPACE_PRE_CLOSE,

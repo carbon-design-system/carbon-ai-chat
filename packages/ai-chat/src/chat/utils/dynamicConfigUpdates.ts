@@ -15,12 +15,13 @@ import { messageTimeoutMS } from '../../shared/services/messaging/MessageCoordin
 import actions from '../../shared/store/actions';
 import createHumanAgentService from '../../shared/services/haa/HumanAgentServiceImpl';
 import { consoleDebug, consoleError } from '../../shared/utils/miscUtils';
-import {
-  buildLanguagePack,
-  createAppConfig,
-  reconcileAppConfigReferences,
-} from '../../shared/store/doCreateStore';
+import { buildLanguagePack } from '../../shared/store/doCreateStore';
+import { createAppConfig, reconcileAppConfigReferences } from './appConfig';
 import { isBrowser } from '../../shared/utils/browserUtils';
+import { viewActions } from '../../view/state';
+import { chatStore } from '../services/attachChatView';
+import type { AppStore } from '../../shared/store/appStore';
+import type { AppState } from '../../types/state/AppState';
 
 /**
  * Applies a runtime `PublicConfig` change to an already-booted `ServiceManager`
@@ -57,7 +58,7 @@ export async function applyConfigChangesDynamically(
   newConfig: PublicConfig,
   serviceManager: ServiceManager
 ): Promise<void> {
-  const { store } = serviceManager;
+  const store = chatStore(serviceManager);
 
   const currentState = store.getState();
   const newAppConfig = createAppConfig(newConfig);
@@ -132,7 +133,7 @@ export async function applyConfigChangesDynamically(
       !currentState.config.public.homescreen?.isOn &&
       currentState.assistantMessageState.messageIDs.length === 0
     ) {
-      store.dispatch(actions.setHomeScreenIsOpen(true));
+      store.dispatch(viewActions.setHomeScreenIsOpen(true));
     }
     // Going on -> off (or switching to "splash" with active messages): make sure
     // the homescreen is not left open.
@@ -142,7 +143,7 @@ export async function applyConfigChangesDynamically(
       (newConfig.homescreen?.disableReturn &&
         currentState.assistantMessageState.messageIDs.length > 0)
     ) {
-      store.dispatch(actions.setHomeScreenIsOpen(false));
+      store.dispatch(viewActions.setHomeScreenIsOpen(false));
     }
   }
 
@@ -225,24 +226,7 @@ export async function applyConfigChangesDynamically(
   // acceptance is no longer meaningful, so clear the recorded acceptance for this
   // hostname to force them to accept the new disclaimer again.
   if (!isEqual(prevConfig?.disclaimer, newConfig.disclaimer)) {
-    const hostname = isBrowser() ? window.location.hostname : '';
-    const updatedDisclaimersAccepted = {
-      ...store.getState().persistedToBrowserStorage.disclaimersAccepted,
-    };
-    // Mark this hostname as not-accepted rather than deleting the key: the
-    // changeState reducer deep-merges `persistedToBrowserStorage` via lodash
-    // `merge`, which never removes keys, so a `delete` here would be silently
-    // undone. Acceptance is read as a truthy check, so `false` re-shows it.
-    updatedDisclaimersAccepted[hostname] = false;
-
-    store.dispatch(
-      actions.changeState({
-        persistedToBrowserStorage: {
-          ...store.getState().persistedToBrowserStorage,
-          disclaimersAccepted: updatedDisclaimersAccepted,
-        },
-      })
-    );
+    clearDisclaimerAcceptance(store);
   }
 
   // CONFIG-SEEDED PERSISTED RUNTIME STATE: `showUnreadIndicator` is not pure
@@ -258,10 +242,10 @@ export async function applyConfigChangesDynamically(
     typeof newConfig.launcher?.showUnreadIndicator === 'boolean'
   ) {
     const currentValue =
-      store.getState().persistedToBrowserStorage.showUnreadIndicator;
+      store.getState().view.persistedToBrowserStorage.showUnreadIndicator;
     if (currentValue !== newConfig.launcher.showUnreadIndicator) {
       store.dispatch(
-        actions.setLauncherProperty(
+        viewActions.setLauncherProperty(
           'showUnreadIndicator',
           newConfig.launcher.showUnreadIndicator
         )
@@ -271,14 +255,31 @@ export async function applyConfigChangesDynamically(
 }
 
 /**
+ * Clears this hostname's disclaimer acceptance. It marks the hostname as not
+ * accepted rather than deleting the key, as before. Acceptance is read as a
+ * truthy check, so `false` shows the disclaimer again. An unchanged value saves
+ * nothing, as the old merge didn't.
+ */
+function clearDisclaimerAcceptance(store: AppStore<AppState>) {
+  const hostname = isBrowser() ? window.location.hostname : '';
+  const accepted =
+    store.getState().view.persistedToBrowserStorage.disclaimersAccepted;
+  if (accepted[hostname] !== false) {
+    store.dispatch(
+      viewActions.setLauncherProperty('disclaimersAccepted', {
+        ...accepted,
+        [hostname]: false,
+      })
+    );
+  }
+}
+
+/**
  * True if a human agent chat is currently active (connected or connecting).
  * Used to decide whether a `serviceDeskFactory` change should tear down an
  * existing connection before rebuilding the service.
  */
 function isHumanAgentChatActive(serviceManager: ServiceManager): boolean {
-  const state = serviceManager.store.getState();
-  return (
-    state.persistedToBrowserStorage.humanAgentState.isConnected ||
-    state.humanAgentState.isConnecting
-  );
+  const { humanAgent } = serviceManager.instance.state.get();
+  return humanAgent.isConnected || humanAgent.isConnecting;
 }

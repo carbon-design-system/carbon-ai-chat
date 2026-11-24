@@ -20,14 +20,15 @@ import {
   selectInputIsDisabled,
   selectInputFieldVisible,
 } from '../../../src/shared/store/selectors';
+import { createInitialState } from '../../../src/shared/store/doCreateStore';
+import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
-  createAppConfig,
-  createInitialState,
-} from '../../../src/shared/store/doCreateStore';
-import { AppState, InputState } from '../../../src/types/state/AppState';
+  ConversationState,
+  InputState,
+} from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
-function stateFor(config: PublicConfig): AppState {
+function stateFor(config: PublicConfig): ConversationState {
   return createInitialState(createAppConfig(config));
 }
 
@@ -35,7 +36,7 @@ function stateFor(config: PublicConfig): AppState {
 function connectedState(
   config: PublicConfig,
   agentInput: Partial<InputState>
-): AppState {
+): ConversationState {
   const state = stateFor(config);
   return {
     ...state,
@@ -111,7 +112,7 @@ describe('input flag selectors', () => {
 
       // A subsequent config change to the SAME field must not clear the override:
       // the derive-at-read model always prefers a non-null slice override.
-      const afterConfigChange: AppState = {
+      const afterConfigChange: ConversationState = {
         ...state,
         config: createAppConfig({ isReadonly: false }),
       };

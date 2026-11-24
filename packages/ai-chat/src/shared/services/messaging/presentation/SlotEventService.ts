@@ -16,7 +16,7 @@ import type {
   MessageResponse,
   PartialOrCompleteItemChunk,
 } from '../../../../types/messaging/Messages';
-import type { AppStateMessages } from '../../../../types/state/AppState';
+import type { AppStateMessages } from '../../../../types/state/ChatMessagesState';
 import type { MessageState } from '../../../../types/config/MessagingConfig';
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import type {

@@ -10,6 +10,7 @@
 import { ContextConsumer } from '@lit/context';
 import { LitElement, nothing } from 'lit';
 import type { AppState } from '../../../types/state/AppState';
+import type { PublicChatState } from '../../../types/instance/PublicChatState';
 import type { ServiceManager } from '../../../shared/services/ServiceManager';
 import type {
   ChatViewState,
@@ -99,6 +100,23 @@ abstract class NativeChatView extends LitElement {
     if (store) {
       this.select(
         { getSnapshot: store.getState, subscribe: store.subscribe },
+        selector,
+        onChange,
+        isEqual
+      );
+    }
+  }
+
+  /** Selects from the chat's public state, as an SDK host reads it. */
+  protected selectChat<Value>(
+    selector: (state: PublicChatState) => Value,
+    onChange: (value: Value) => void,
+    isEqual: (left: Value, right: Value) => boolean = Object.is
+  ): void {
+    const state = this.serviceManager?.instance?.state;
+    if (state) {
+      this.select(
+        { getSnapshot: state.get, subscribe: state.subscribe },
         selector,
         onChange,
         isEqual

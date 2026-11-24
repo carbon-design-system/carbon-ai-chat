@@ -9,7 +9,7 @@
 
 import { CustomPanels, ViewState, ViewType } from './apiTypes';
 import { ChatInstanceMessaging } from '../config/MessagingConfig';
-import type { CatastrophicErrorPanelState } from '../state/AppState';
+import type { CatastrophicErrorPanelState } from '../state/panels/CatastrophicErrorPanelState';
 import { MessageRequest } from '../messaging/Messages';
 import type { ServiceManager } from '../../shared/services/ServiceManager';
 import { AutoScrollOptions } from '../utilities/HasDoAutoScroll';

@@ -14,48 +14,6 @@
 import { ServiceManager } from '../services/ServiceManager';
 import isEqual from 'lodash-es/isEqual.js';
 import { refreshLocalization } from '../utils/intlUtils';
-import { toPersistableState } from './persistenceUtils';
-
-/**
- * Persists `persistedToBrowserStorage` whenever it changes. By default this writes to the browser's
- * sessionStorage. When the host owns persistence (`config.persistedState`), the change is reported to
- * its `onStateChange` callback instead, once per change of the persistable values: a new slice with
- * equal values, or a change to bookkeeping alone, isn't reported. Transient changes such as input text
- * never touch the slice.
- */
-function copyToSessionStorage(serviceManager: ServiceManager) {
-  let previousPersistedToBrowserStorage =
-    serviceManager.store.getState().persistedToBrowserStorage;
-  let previousPersistableState = toPersistableState(
-    previousPersistedToBrowserStorage
-  );
-  return () => {
-    const { persistedToBrowserStorage, config } =
-      serviceManager.store.getState();
-    const persistChatSession =
-      previousPersistedToBrowserStorage !== persistedToBrowserStorage;
-
-    if (persistChatSession) {
-      previousPersistedToBrowserStorage = persistedToBrowserStorage;
-
-      const persistedStateConfig = config.public.persistedState;
-      if (
-        persistedStateConfig?.initialState ||
-        persistedStateConfig?.onStateChange
-      ) {
-        const persistableState = toPersistableState(persistedToBrowserStorage);
-        if (!isEqual(previousPersistableState, persistableState)) {
-          previousPersistableState = persistableState;
-          persistedStateConfig.onStateChange?.(persistableState);
-        }
-      } else {
-        serviceManager.userSessionStorageService.persistSession(
-          persistedToBrowserStorage
-        );
-      }
-    }
-  };
-}
 
 /**
  * Rebuilds the i18n formatter whenever the active strings or locale change. The
@@ -90,4 +48,4 @@ function refreshLocalizationOnChange(serviceManager: ServiceManager) {
   };
 }
 
-export { copyToSessionStorage, refreshLocalizationOnChange };
+export { refreshLocalizationOnChange };

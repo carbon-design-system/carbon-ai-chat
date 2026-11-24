@@ -34,6 +34,8 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
+import { viewActions } from '../../../src/view/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 
 const wrappers = [
   ['ChatContainer', ChatContainer],
@@ -717,7 +719,7 @@ describe.each(wrappers)('content re-attach through %s', (_name, Wrapper) => {
     }
     const widget = f.view.querySelector<HTMLElement>('cds-aichat-shell');
     expect(dispatch).toHaveBeenCalledWith(
-      actions.setAppStateValue('chatWidth', widget.offsetWidth)
+      viewActions.setViewValue('chatWidth', widget.offsetWidth)
     );
   });
 
@@ -800,7 +802,7 @@ it('restores the input registration when an Activity boundary hides and shows th
   await shown.view.updateComplete;
   const widget = shown.view.querySelector<HTMLElement>('cds-aichat-shell');
   expect(dispatch).toHaveBeenCalledWith(
-    actions.setAppStateValue('chatWidth', widget.offsetWidth)
+    viewActions.setViewValue('chatWidth', widget.offsetWidth)
   );
   await expectLiveInputRegistration(shown);
 });
@@ -964,9 +966,7 @@ it('updates message content without updating the shell for unrelated typing and 
   const update = jest.spyOn(f.view as any, 'performUpdate');
   const store = f.manager.store;
   act(() => {
-    store.dispatch(
-      actions.setChatMessagesStateProperty('isMessageLoadingCounter', 1)
-    );
+    store.dispatch(viewActions.setViewValue('isMessageLoadingCounter', 1));
     store.dispatch(
       actions.setAppStateValue('humanAgentState', {
         ...store.getState().humanAgentState,
@@ -1059,8 +1059,8 @@ describe('Return to conversation focus', () => {
     const readiness = jest.spyOn(f.view, 'whenReady').mockReturnValue(blocked);
     act(() => home.onToggleHomeScreen());
     expect(
-      f.manager.store.getState().persistedToBrowserStorage.homeScreenState
-        .isHomeScreenOpen
+      chatStore(f.manager).getState().view.persistedToBrowserStorage
+        .homeScreenState.isHomeScreenOpen
     ).toBe(false);
     expect(readiness).toHaveBeenCalled();
     expect(focus).not.toHaveBeenCalled();
@@ -1090,8 +1090,8 @@ describe('Return to conversation focus', () => {
     await f.view.whenReady();
     await flushPromises();
     expect(
-      f.manager.store.getState().persistedToBrowserStorage.homeScreenState
-        .isHomeScreenOpen
+      chatStore(f.manager).getState().view.persistedToBrowserStorage
+        .homeScreenState.isHomeScreenOpen
     ).toBe(false);
     expect(focus).not.toHaveBeenCalled();
   });
