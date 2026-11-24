@@ -8,6 +8,10 @@
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
 
+cds-aichat-hydration-body {
+  display: contents;
+}
+
 .cds-aichat--hydrating-container {
   display: flex;
   overflow: hidden;
