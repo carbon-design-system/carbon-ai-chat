@@ -2,10 +2,8 @@ name: ci-check
 on:
   push:
     branches: [main, release/v*]
+  # Every base branch, so each PR in a stack runs the full check.
   pull_request:
-    branches:
-      - main
-      - release/v*
   merge_group:
     types: [checks_requested]
 
