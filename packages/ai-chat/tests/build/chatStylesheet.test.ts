@@ -64,7 +64,7 @@ const ALLOWED: { pattern: RegExp; reason: string }[] = [
   {
     pattern: /^cds--layout(-constraint)?--/,
     reason:
-      "Carbon's layout utilities, emitted by @carbon/ai-chat-components/scss/common. Removing them is a change to that package.",
+      "@carbon/web-components' overflow menu adds `cds--layout--size-${size}` to its host, which renders inside the chat. These rules come from @carbon/ai-chat-components/scss/common.",
   },
   {
     pattern:
@@ -137,7 +137,9 @@ function classesOf(css: string): Map<string, string> {
       return;
     }
     for (const selector of rule.selectors) {
-      for (const [, name] of withoutSelectorArguments(selector).matchAll(
+      // Attribute values, such as `[href$=".pdf"]`, hold no classes.
+      const bare = withoutSelectorArguments(selector).replace(/\[[^\]]*\]/g, '');
+      for (const [, name] of bare.matchAll(
         /\.(-?[_a-zA-Z][\w-]*)/g
       )) {
         if (!classes.has(name)) {
@@ -169,43 +171,28 @@ function chatStrings(): string {
   };
   walk(join(PACKAGE_ROOT, 'src'));
   const strings: string[] = [];
-  for (const file of files) {
-    const scanner = ts.createScanner(
-      ts.ScriptTarget.Latest,
-      true,
-      file.endsWith('.tsx') ? ts.LanguageVariant.JSX : ts.LanguageVariant.Standard,
-      readFileSync(file, 'utf8')
-    );
-    // Open braces inside each template expression still open, innermost last.
-    const templates: number[] = [];
-    for (let kind = scanner.scan(); kind !== ts.SyntaxKind.EndOfFileToken; ) {
-      if (
-        kind === ts.SyntaxKind.CloseBraceToken &&
-        templates.at(-1) === 0
-      ) {
-        // This `}` ends a template expression, so the template continues.
-        kind = scanner.reScanTemplateToken(false);
-        if (kind === ts.SyntaxKind.TemplateTail) {
-          templates.pop();
-        }
-      } else if (kind === ts.SyntaxKind.OpenBraceToken && templates.length) {
-        templates[templates.length - 1]++;
-      } else if (kind === ts.SyntaxKind.CloseBraceToken && templates.length) {
-        templates[templates.length - 1]--;
-      } else if (kind === ts.SyntaxKind.TemplateHead) {
-        templates.push(0);
-      }
-      if (
-        kind === ts.SyntaxKind.StringLiteral ||
-        kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral ||
-        kind === ts.SyntaxKind.TemplateHead ||
-        kind === ts.SyntaxKind.TemplateMiddle ||
-        kind === ts.SyntaxKind.TemplateTail
-      ) {
-        strings.push(scanner.getTokenValue());
-      }
-      kind = scanner.scan();
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node)
+    ) {
+      strings.push(node.text);
     }
+    ts.forEachChild(node, visit);
+  };
+  for (const file of files) {
+    visit(
+      ts.createSourceFile(
+        file,
+        readFileSync(file, 'utf8'),
+        ts.ScriptTarget.Latest,
+        false,
+        file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+      )
+    );
   }
   return strings.join('\n');
 }
