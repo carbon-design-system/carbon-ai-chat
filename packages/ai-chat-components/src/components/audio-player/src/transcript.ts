@@ -123,7 +123,7 @@ class Transcript extends LitElement {
                   role="region"
                   aria-label="${displayLabel}">
                   <cds-aichat-markdown
-                    markdown=${this.text}
+                    .markdown=${this.text}
                     sanitize-html></cds-aichat-markdown>
                 </div>
               `
