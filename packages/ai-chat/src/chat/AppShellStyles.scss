@@ -13,6 +13,7 @@
 @use '@carbon/styles/scss/themes';
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
+@use '@carbon/styles/scss/components/button/tokens' as button-tokens;
 
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/type';
@@ -76,6 +77,10 @@ Chat custom css properties
    CARBON THEME INTEGRATION
    Carbon Design System theme classes
    ============================================================================ */
+
+// theme.theme() emits only the component tokens registered before it runs. The chat's cds-button
+// elements read the button tokens, so register them here, ahead of the theme classes.
+@include theme.add-component-tokens(button-tokens.$button-tokens);
 
 .cds--white {
   @include theme.theme(themes.$white);
