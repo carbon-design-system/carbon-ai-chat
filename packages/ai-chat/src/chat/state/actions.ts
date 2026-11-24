@@ -15,7 +15,13 @@
 import cloneDeep from 'lodash-es/cloneDeep.js';
 
 import type { AnnounceMessage } from '../../types/state/AnnounceMessage';
-import type { ViewPartitionState } from '../../types/state/ViewPartitionState';
+import type { DerivedConfig } from '../../types/state/AppConfig';
+import type { ThemeState } from '../../types/state/ThemeState';
+import type {
+  ChatPrompt,
+  ViewPartitionState,
+} from '../../types/state/ViewPartitionState';
+import type { MountViewState } from './initialState';
 import type { CatastrophicErrorPanelState } from '../../types/state/panels/CatastrophicErrorPanelState';
 import type { PersistedState } from '../../types/state/PersistedState';
 import type {
@@ -32,6 +38,8 @@ import type {
 } from '../../types/messaging/Messages';
 
 const SET_VIEW_VALUE = 'SET_VIEW_VALUE';
+const SET_DERIVED_CONFIG = 'SET_DERIVED_CONFIG';
+const UPDATE_THEME_STATE = 'UPDATE_THEME_STATE';
 const RESET_IS_LOADING_COUNTER = 'RESET_IS_LOADING_COUNTER';
 const ADD_IS_LOADING_COUNTER = 'ADD_IS_LOADING_COUNTER';
 const RESET_IS_HYDRATING_COUNTER = 'RESET_IS_HYDRATING_COUNTER';
@@ -40,6 +48,8 @@ const UPDATE_CATASTROPHIC_ERROR_PANEL = 'UPDATE_CATASTROPHIC_ERROR_PANEL';
 const SET_VIEW_STATE = 'SET_VIEW_STATE';
 const SET_VIEW_CHANGING = 'SET_VIEW_CHANGING';
 const SET_INITIAL_VIEW_CHANGE_COMPLETE = 'SET_INITIAL_VIEW_CHANGE_COMPLETE';
+const START_NEW_MOUNT = 'START_NEW_MOUNT';
+const SET_PROMPT = 'SET_PROMPT';
 const ANNOUNCE_MESSAGE = 'ANNOUNCE_MESSAGE';
 const ACCEPTED_DISCLAIMER = 'ACCEPTED_DISCLAIMER';
 const SET_HOME_SCREEN_IS_OPEN = 'SET_HOME_SCREEN_IS_OPEN';
@@ -85,6 +95,19 @@ const viewActions = {
     return { type: SET_VIEW_VALUE, key, value };
   },
 
+  /**
+   * Replaces the values derived from the config. Each top-level value equal to
+   * the stored one keeps its reference, so its readers don't rerun.
+   */
+  setDerivedConfig(derivedConfig: DerivedConfig) {
+    return { type: SET_DERIVED_CONFIG, derivedConfig };
+  },
+
+  /** Sets the theme, as the theme watcher resolves an inherited one. */
+  updateThemeState(themeState: ThemeState) {
+    return { type: UPDATE_THEME_STATE, themeState };
+  },
+
   updateCatastrophicErrorPanel(panelState: CatastrophicErrorPanelState) {
     return {
       type: UPDATE_CATASTROPHIC_ERROR_PANEL,
@@ -122,6 +145,18 @@ const viewActions = {
   },
   setInitialViewChangeComplete(changeComplete: boolean) {
     return { type: SET_INITIAL_VIEW_CHANGE_COMPLETE, changeComplete };
+  },
+  /**
+   * Readies a running chat for a new mount, as a saved session readies a new
+   * chat: nothing is drawn yet, the view that was showing becomes the one the
+   * mount's initial view change opens, and the mount's own fields start over.
+   */
+  startNewMount(mountState: MountViewState) {
+    return { type: START_NEW_MOUNT, mountState };
+  },
+  /** Sets the confirmation the panel shows. Only `prompts.ts` dispatches it. */
+  setPrompt(prompt: ChatPrompt | null) {
+    return { type: SET_PROMPT, prompt };
   },
   /**
    * Sets the value of one of the properties of {@link PersistedState}.
@@ -239,6 +274,8 @@ const viewActions = {
 export default viewActions;
 export {
   SET_VIEW_VALUE,
+  SET_DERIVED_CONFIG,
+  UPDATE_THEME_STATE,
   RESET_IS_LOADING_COUNTER,
   ADD_IS_LOADING_COUNTER,
   RESET_IS_HYDRATING_COUNTER,
@@ -247,6 +284,8 @@ export {
   SET_VIEW_STATE,
   SET_VIEW_CHANGING,
   SET_INITIAL_VIEW_CHANGE_COMPLETE,
+  SET_PROMPT,
+  START_NEW_MOUNT,
   ANNOUNCE_MESSAGE,
   ACCEPTED_DISCLAIMER,
   SET_HOME_SCREEN_IS_OPEN,

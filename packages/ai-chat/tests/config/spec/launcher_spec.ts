@@ -19,7 +19,6 @@ import { createBaseTestProps } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
@@ -67,7 +66,7 @@ describe('Config Launcher', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state = store.getState();
-      expect(state.config.derived.launcher.isOn).toBe(true);
+      expect(state.view.derivedConfig.launcher.isOn).toBe(true);
     });
 
     it('should store launcher.isOn: false in Redux state', async () => {
@@ -92,7 +91,7 @@ describe('Config Launcher', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state = store.getState();
-      expect(state.config.derived.launcher.isOn).toBe(false);
+      expect(state.view.derivedConfig.launcher.isOn).toBe(false);
     });
 
     it('should use default launcher.isOn value when not specified', async () => {
@@ -117,7 +116,7 @@ describe('Config Launcher', () => {
 
       const store = (capturedInstance as any).serviceManager.store;
       const state = store.getState();
-      expect(state.config.derived.launcher.isOn).toBe(true); // default value
+      expect(state.view.derivedConfig.launcher.isOn).toBe(true); // default value
     });
 
     it('should set launcher.showUnreadIndicator in persisted state', async () => {
@@ -245,7 +244,7 @@ describe('Config Launcher', () => {
       };
 
       const store = withView(
-        doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
+        doCreateStore({ public: initialConfig }, {} as ServiceManager),
         initialConfig
       );
       serviceManager = {

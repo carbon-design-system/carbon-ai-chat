@@ -48,7 +48,8 @@ class DisclaimerBody extends NativeChatView {
     );
     this.selectStore(
       (state) => {
-        const theme = state.config.derived.themeWithDefaults.derivedCarbonTheme;
+        const theme =
+          state.view.derivedConfig.themeWithDefaults.derivedCarbonTheme;
         return theme === CarbonTheme.G90 || theme === CarbonTheme.G100;
       },
       (isDarkTheme) => {

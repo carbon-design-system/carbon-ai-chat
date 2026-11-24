@@ -101,7 +101,7 @@ The float layout pins the chat to a corner of the page as a launcher button that
 
 {@link CdsAiChatContainerAttributes | cds-aichat-container} renders the floating widget for you — it applies the [float layout classes](./Layout.md#floating-layout) and has no element to size. Reach for it when you want the classic corner launcher and pop-over window with no layout work.
 
-The `cds-aichat-container` component creates the chat instance when it mounts and destroys it when it unmounts. Configuration changes apply in place — the chat watches property changes and updates without recreating the instance.
+The `cds-aichat-container` component creates the chat instance when it mounts and destroys it when it unmounts, unless {@link LifecycleConfig.reuseInstance | lifecycle.reuseInstance} keeps it for a remount ([Keeping a chat through a remount](./Lifecycle.md)). Configuration changes apply in place — the chat watches property changes and updates without recreating the instance.
 
 `onViewChange` and `onViewPreChange` also work on `cds-aichat-container` as opt-in observation hooks — use them for analytics or to mirror the chat's open state into your own UI. Because the float container has no wrapping element to size, it has no default visibility behavior: the callbacks fire when you provide them.
 
@@ -284,4 +284,5 @@ There is no static-slot alternative here. The chat mints the slot name, so marku
 
 ## Related
 
+- [Keeping a chat through a remount](./Lifecycle.md) — keep the conversation when the chat leaves the page and comes back, or start fresh on logout.
 - [UI customization](./Customization.md) — theme the chat, control its layout, and inject your own content into slots, panels, responses, and footers.

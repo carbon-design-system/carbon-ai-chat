@@ -19,7 +19,6 @@
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 import { createAppStore } from '../../../src/sdk/store/appStore';
 import { createInitialState } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import { reducers } from '../../../src/sdk/store/reducers';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { ConversationState } from '../../../src/types/state/AppState';
@@ -36,7 +35,7 @@ jest.mock('../../../src/sdk/services/haa/HumanAgentServiceImpl', () => ({
   })),
 }));
 import createHumanAgentService from '../../../src/sdk/services/haa/HumanAgentServiceImpl';
-import { withPublicState } from '../../test_helpers';
+import { withPublicState, withView } from '../../test_helpers';
 import { endChat } from '../../../src/sdk/store/humanAgentActions';
 import { waitFor } from '@testing-library/react';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
@@ -65,9 +64,9 @@ function setup(
     started?: boolean;
   } = {}
 ) {
-  const initialState = createInitialState(
-    createAppConfig({ serviceDeskFactory: factoryA })
-  );
+  const initialState = createInitialState({
+    public: { serviceDeskFactory: factoryA },
+  });
   if (options.connected) {
     initialState.persistedToBrowserStorage = {
       ...initialState.persistedToBrowserStorage,
@@ -88,7 +87,8 @@ function setup(
   };
 
   const serviceManager = withPublicState({
-    store: createStore(initialState),
+    // The prebuilt chat's store always has its view partition.
+    store: withView(createStore(initialState), initialState.config.public),
     namespace: { suffix: '' },
     messageCoordinator: { timeoutMS: 30000 },
     humanAgentService,

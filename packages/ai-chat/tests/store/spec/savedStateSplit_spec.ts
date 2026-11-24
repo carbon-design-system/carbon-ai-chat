@@ -9,7 +9,6 @@
 
 import actions from '../../../src/sdk/store/actions';
 import { createServiceManager } from '../../../src/sdk/services/loadServices';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import { toPersistableState } from '../../../src/sdk/store/persistenceUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -61,7 +60,7 @@ const agentConnected = {
 /** A chat booted by its services alone, given the SDK's agent config. */
 function sdkChat(humanAgentState: ChatSDKConfig['humanAgentState']) {
   const config = { humanAgentState } as PublicConfig;
-  const serviceManager = createServiceManager(createAppConfig(config));
+  const serviceManager = createServiceManager({ public: config });
   const store = withView(serviceManager.store, config);
   return { serviceManager, store };
 }

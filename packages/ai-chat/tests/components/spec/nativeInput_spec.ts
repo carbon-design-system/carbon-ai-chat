@@ -26,10 +26,10 @@ import type {
   InputFunctions,
   InputProps,
 } from '../../../src/chat/utils/inputTypes';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import { AutocompleteContent } from '../../../src/chat/services/autocompleteContent';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { createIntl } from '../../../src/sdk/utils/i18n';
 import actions from '../../../src/sdk/store/actions';
 import { selectInputState } from '../../../src/sdk/store/selectors';
@@ -45,14 +45,14 @@ import { viewActions } from '../../../src/chat/state';
 
 class InputProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
   }
 }
 customElements.define('test-native-input-provider', InputProvider);
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 const owners = new Set<AutocompleteContent>();
 
 function deferred<Value>() {
@@ -90,7 +90,7 @@ async function fixture(
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const announce = jest.spyOn(state.announcer, 'announce');

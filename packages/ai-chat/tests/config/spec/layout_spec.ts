@@ -20,7 +20,6 @@ import { createBaseTestProps } from '../../test_helpers';
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
 import { doCreateStore } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
@@ -183,7 +182,7 @@ describe('Config Layout', () => {
         };
 
         const store = withView(
-          doCreateStore(createAppConfig(initialConfig), {} as ServiceManager),
+          doCreateStore({ public: initialConfig }, {} as ServiceManager),
           initialConfig
         );
         serviceManager = {
@@ -224,7 +223,7 @@ describe('Config Layout', () => {
         const state = chatStore(serviceManager).getState();
         expect(state.config.public.layout?.showFrame).toBe(false);
         expect(state.config.public.layout?.hasContentMaxWidth).toBe(true);
-        expect(state.config.derived.themeWithDefaults.corners).toEqual({
+        expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
           startStart: CornersType.SQUARE,
           startEnd: CornersType.SQUARE,
           endStart: CornersType.SQUARE,
@@ -258,7 +257,7 @@ describe('Config Layout', () => {
         );
 
         const state = chatStore(serviceManager).getState();
-        expect(state.config.derived.themeWithDefaults.corners).toEqual({
+        expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
           startStart: CornersType.ROUND,
           startEnd: CornersType.SQUARE,
           endStart: CornersType.SQUARE,
@@ -299,7 +298,7 @@ describe('Config Layout', () => {
 
         const state = chatStore(serviceManager).getState();
         // All corners should be forced to square when showFrame is false
-        expect(state.config.derived.themeWithDefaults.corners).toEqual({
+        expect(state.view.derivedConfig.themeWithDefaults.corners).toEqual({
           startStart: CornersType.SQUARE,
           startEnd: CornersType.SQUARE,
           endStart: CornersType.SQUARE,

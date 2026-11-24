@@ -7,6 +7,7 @@ children:
   - ./StructuredData.md
   - ./CustomHistory.md
   - ./StatePersistence.md
+  - ./Lifecycle.md
 ---
 
 ## Overview
@@ -24,6 +25,7 @@ Where you go next depends on what you build:
 - [Structured data](./StructuredData.md) — send typed fields and uploaded files alongside the user's text.
 - [Conversation history](./CustomHistory.md) — load and restore past conversations.
 - [Session state persistence](./StatePersistence.md) — own where the chat's session and UI state is stored.
+- [Keeping a chat through a remount](./Lifecycle.md) — keep the conversation when the chat leaves the page and comes back, or end it for good.
 
 ## Connecting your server
 

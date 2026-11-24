@@ -101,7 +101,7 @@ describe('render hardening', () => {
       return null;
     }
     function HeaderProbe(): ReactElement {
-      useSelector((s: AppState) => s.config.derived.header);
+      useSelector((s: AppState) => s.view.derivedConfig.header);
       headerRenders += 1;
       return null;
     }

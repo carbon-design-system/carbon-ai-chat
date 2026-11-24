@@ -16,8 +16,8 @@
 import { LitElement, nothing } from 'lit';
 import { ContextProvider } from '@lit/context';
 import { NativeChatView } from '../../../src/chat/components/shared/NativeChatView';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { setIsConnecting } from '../../../src/sdk/store/humanAgentActions';
 import { viewActions } from '../../../src/chat/state';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
@@ -25,7 +25,7 @@ import { makeConfigStore, withPublicState } from '../../test_helpers';
 
 class Provider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
@@ -64,7 +64,7 @@ it('renders once with both values current when one action changes both', async (
   const store = makeConfigStore({});
   store.dispatch(viewActions.setViewValue('numUnreadMessages', 2));
   const manager = withPublicState({ store } as unknown as ServiceManager);
-  const viewState = new ChatViewState(manager, { width: 800, height: 600 });
+  const viewState = new ChatMountState(manager, { width: 800, height: 600 });
   viewState.connect();
   const provider = document.createElement(
     'test-state-sources-provider'

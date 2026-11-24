@@ -7,7 +7,7 @@
  *  @license
  */
 
-import type { ChatViewState } from './chatViewState';
+import type { ChatMountState } from './chatMountState';
 
 import type { ViewBindings } from '../../sdk/services/viewBindings';
 
@@ -38,7 +38,7 @@ import { chatStore } from './attachChatView';
  * connects or after it releases. Store-backed members, such as changeView,
  * work as soon as the bindings attach.
  */
-function createViewBindings(viewState: ChatViewState): ViewBindings {
+function createViewBindings(viewState: ChatMountState): ViewBindings {
   const { serviceManager } = viewState;
   const store = chatStore(serviceManager);
   const viewService = new ViewService(serviceManager);

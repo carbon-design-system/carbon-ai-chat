@@ -247,6 +247,9 @@ interface PrepareDemoPageOptions {
    * slots, for instance.
    */
   settings?: Partial<Record<string, string>>;
+
+  /** Config to deep-link into, merged over the demo's defaults. */
+  config?: Record<string, unknown>;
 }
 
 /**
@@ -260,7 +263,7 @@ interface PrepareDemoPageOptions {
  */
 export const prepareDemoPage = async (
   page: Page,
-  { setChatConfig = false, settings }: PrepareDemoPageOptions = {}
+  { setChatConfig = false, settings, config }: PrepareDemoPageOptions = {}
 ) => {
   await page.route(/.*ibm-common\.js$/, (route) => route.abort());
   await installTestCsp(page);
@@ -271,6 +274,9 @@ export const prepareDemoPage = async (
   }
   if (settings) {
     params.set('settings', JSON.stringify(settings));
+  }
+  if (config && !setChatConfig) {
+    params.set('config', JSON.stringify(config));
   }
   const query = params.toString();
   await page.goto(query ? `/?${query}` : '/');

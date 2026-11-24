@@ -13,10 +13,10 @@ import type { AppState } from '../../../types/state/AppState';
 import type { PublicChatState } from '../../../types/instance/PublicChatState';
 import type { ServiceManager } from '../../../sdk/services/ServiceManager';
 import type {
-  ChatViewState,
-  ChatViewStateSnapshot,
-} from '../../services/chatViewState';
-import { chatViewStateContext } from '../../../web-components/shared/chat-view-state-context';
+  ChatMountState,
+  ChatMountStateSnapshot,
+} from '../../services/chatMountState';
+import { chatMountStateContext } from '../../../web-components/shared/chat-mount-state-context';
 import {
   consoleError,
   createDidCatchErrorData,
@@ -24,12 +24,12 @@ import {
 import { subscribeToSelectedValue } from '../../utils/selectedSubscription';
 
 abstract class NativeChatView extends LitElement {
-  protected viewState?: ChatViewState;
+  protected viewState?: ChatMountState;
   private generation = 0;
   protected failed = false;
   private releases: (() => void)[] = [];
   private context = new ContextConsumer(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
     subscribe: true,
     callback: (viewState) => this.bindView(viewState),
   });
@@ -52,7 +52,7 @@ abstract class NativeChatView extends LitElement {
     super.disconnectedCallback();
   }
 
-  protected abstract onViewConnected(viewState: ChatViewState): void;
+  protected abstract onViewConnected(viewState: ChatMountState): void;
 
   protected abstract renderView(): unknown;
 
@@ -125,7 +125,7 @@ abstract class NativeChatView extends LitElement {
   }
 
   protected selectView<Value>(
-    selector: (state: ChatViewStateSnapshot) => Value,
+    selector: (state: ChatMountStateSnapshot) => Value,
     onChange: (value: Value) => void,
     isEqual: (left: Value, right: Value) => boolean = Object.is
   ): void {
@@ -168,7 +168,7 @@ abstract class NativeChatView extends LitElement {
     }
   }
 
-  private bindView(viewState: ChatViewState | undefined): void {
+  private bindView(viewState: ChatMountState | undefined): void {
     if (this.viewState === viewState) {
       return;
     }
@@ -186,7 +186,7 @@ abstract class NativeChatView extends LitElement {
     this.requestUpdate();
   }
 
-  private isCurrent(viewState: ChatViewState, generation: number): boolean {
+  private isCurrent(viewState: ChatMountState, generation: number): boolean {
     return (
       this.isConnected &&
       this.viewState === viewState &&
@@ -209,7 +209,7 @@ abstract class NativeChatView extends LitElement {
 
   private reportError(
     error: unknown,
-    viewState: ChatViewState,
+    viewState: ChatMountState,
     generation: number
   ): void {
     if (!viewState || !this.isCurrent(viewState, generation) || this.failed) {

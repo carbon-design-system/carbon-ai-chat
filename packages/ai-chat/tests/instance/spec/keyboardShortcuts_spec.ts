@@ -138,7 +138,7 @@ describe('Keyboard Shortcuts', () => {
       const { store } = await bootChat('resolve-1');
 
       expect(
-        store.getState().config.derived.keyboardShortcuts.messageFocusToggle
+        store.getState().view.derivedConfig.keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
 
@@ -148,7 +148,7 @@ describe('Keyboard Shortcuts', () => {
       });
 
       expect(
-        store.getState().config.derived.keyboardShortcuts.messageFocusToggle
+        store.getState().view.derivedConfig.keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: true });
     });
 
@@ -158,7 +158,7 @@ describe('Keyboard Shortcuts', () => {
       });
 
       expect(
-        store.getState().config.derived.keyboardShortcuts.messageFocusToggle
+        store.getState().view.derivedConfig.keyboardShortcuts.messageFocusToggle
           .isOn
       ).toBe(false);
     });

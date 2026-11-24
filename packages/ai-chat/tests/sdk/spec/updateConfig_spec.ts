@@ -15,7 +15,6 @@ import { createChatSDK } from '../../../src/sdk';
 import { chatOf } from '../../../src/sdk/handle';
 import * as applyConfigModule from '../../../src/sdk/services/applyConfig';
 import { createServiceManager } from '../../../src/sdk/services/loadServices';
-import { DEFAULT_THEME_STATE } from '../../../src/sdk/store/reducerUtils';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import type {
   ServiceDesk,
@@ -145,10 +144,7 @@ describe('copies of the caller config (#1833 O6–O8)', () => {
       namespace: 'direct',
     };
     const manager = createServiceManager(
-      {
-        public: publicConfig,
-        derived: { themeWithDefaults: DEFAULT_THEME_STATE },
-      },
+      { public: publicConfig },
       { sessionStorage: false }
     );
     publicConfig.messaging.skipWelcome = false;

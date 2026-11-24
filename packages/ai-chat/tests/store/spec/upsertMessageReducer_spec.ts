@@ -10,7 +10,6 @@
 import { createAppStore } from '../../../src/sdk/store/appStore';
 
 import { buildLanguagePack } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import actions from '../../../src/sdk/store/actions';
 import { AppState } from '../../../src/types/state/AppState';
@@ -45,7 +44,7 @@ import { createInitialViewState } from '../../../src/chat/state/initialState';
 import { VIEW_STATE_ALL_CLOSED, viewHalfOf } from '../../../src/chat/state';
 
 function createInitialAppState(): AppState {
-  const config = createAppConfig({});
+  const config: AppState['config'] = { public: {} };
 
   return {
     config,

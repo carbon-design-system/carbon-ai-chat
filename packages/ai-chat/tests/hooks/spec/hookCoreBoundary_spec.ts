@@ -32,7 +32,7 @@ const coreFiles = [
   'src/chat/utils/mobileViewportLayout.ts',
   'src/chat/services/inputCallbacks.ts',
   'src/chat/services/inputExtensions.ts',
-  'src/chat/services/chatViewState.ts',
+  'src/chat/services/chatMountState.ts',
   'src/chat/services/extensionHosts.ts',
   'src/chat/services/lightDomHosts.ts',
   'src/chat/utils/inputNodeSlots.ts',

@@ -14,7 +14,6 @@ import { selectInputIsReadonly } from '../../../src/sdk/store/selectors';
 import { createAppStore } from '../../../src/sdk/store/appStore';
 
 import { createInitialState } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
@@ -45,7 +44,7 @@ const createMockServiceManager = (initialState: AppState): ServiceManager => {
 };
 
 function createInitialAppState(config: PublicConfig = {}): AppState {
-  const appConfig = createAppConfig(config);
+  const appConfig = { public: config };
   return {
     ...createInitialState(appConfig),
     // The same object; restated so the state is typed with the whole config.
@@ -87,8 +86,12 @@ describe('Dynamic Config Updates', () => {
 
       const updatedState = chatStore(serviceManager).getState();
       expect(updatedState.config.public.debug).toBe(true);
-      expect(updatedState.config.derived.header?.title).toBe('Updated Title');
-      expect(updatedState.config.derived.header?.showRestartButton).toBe(false);
+      expect(updatedState.view.derivedConfig.header?.title).toBe(
+        'Updated Title'
+      );
+      expect(updatedState.view.derivedConfig.header?.showRestartButton).toBe(
+        false
+      );
     });
 
     it('should re-merge keyboard shortcut defaults on a runtime config change', async () => {
@@ -101,8 +104,8 @@ describe('Dynamic Config Updates', () => {
       // A partial config inherits the other fields one by one rather than replacing the
       // whole default object.
       expect(
-        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
-          .messageFocusToggle
+        chatStore(serviceManager).getState().view.derivedConfig
+          .keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: false });
     });
 
@@ -115,8 +118,8 @@ describe('Dynamic Config Updates', () => {
 
       // What the demo's keyboard-shortcut switcher dispatches: the toggle alone.
       expect(
-        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
-          .messageFocusToggle
+        chatStore(serviceManager).getState().view.derivedConfig
+          .keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: true });
     });
 
@@ -133,8 +136,8 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
       expect(
-        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
-          .messageFocusToggle
+        chatStore(serviceManager).getState().view.derivedConfig
+          .keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F7', modifiers: {}, isOn: true });
 
       // Retract with an explicit `isOn: false` — the toggle alone, which is what
@@ -145,8 +148,8 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
       expect(
-        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
-          .messageFocusToggle
+        chatStore(serviceManager).getState().view.derivedConfig
+          .keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
 
@@ -162,7 +165,7 @@ describe('Dynamic Config Updates', () => {
       );
 
       // `applyConfigChangesDynamically` passes the new config straight to
-      // `createAppConfig`, so an omitted `keyboardShortcuts` is not "unchanged"
+      // `createDerivedConfig`, so an omitted `keyboardShortcuts` is not "unchanged"
       // — it drops back to the factory default rather than carrying F7 forward.
       await applyConfigChangesDynamically(
         chatStore(serviceManager).getState().config.public,
@@ -170,8 +173,8 @@ describe('Dynamic Config Updates', () => {
         serviceManager
       );
       expect(
-        chatStore(serviceManager).getState().config.derived.keyboardShortcuts
-          .messageFocusToggle
+        chatStore(serviceManager).getState().view.derivedConfig
+          .keyboardShortcuts.messageFocusToggle
       ).toEqual({ key: 'F6', modifiers: {}, isOn: false });
     });
 
@@ -210,7 +213,7 @@ describe('Dynamic Config Updates', () => {
       );
 
       const updatedState = chatStore(serviceManagerWithFullHeader).getState();
-      const header = updatedState.config.derived.header;
+      const header = updatedState.view.derivedConfig.header;
 
       // Property that was updated should be present
       expect(header?.title).toBe('Updated Title');
@@ -237,7 +240,7 @@ describe('Dynamic Config Updates', () => {
       );
 
       const updatedState = chatStore(serviceManager).getState();
-      const header = updatedState.config.derived.header;
+      const header = updatedState.view.derivedConfig.header;
 
       expect(header?.name).toBe('New Assistant');
       expect(header?.title).toBeUndefined();
@@ -386,7 +389,7 @@ describe('Dynamic Config Updates', () => {
       );
 
       const originalDerivedTheme =
-        initialStateWithInherit.config.derived.themeWithDefaults
+        initialStateWithInherit.view.derivedConfig.themeWithDefaults
           .derivedCarbonTheme;
 
       const newConfig: PublicConfig = {
@@ -399,14 +402,14 @@ describe('Dynamic Config Updates', () => {
         serviceManagerWithInherit
       );
 
-      const updatedState = serviceManagerWithInherit.store.getState();
+      const updatedState = chatStore(serviceManagerWithInherit).getState();
 
       // Config should be updated
       expect(updatedState.config.public.debug).toBe(true);
 
       // Derived theme should be preserved since originalCarbonTheme is null
       expect(
-        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme
+        updatedState.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
       ).toBe(originalDerivedTheme);
     });
 
@@ -419,11 +422,12 @@ describe('Dynamic Config Updates', () => {
         createMockServiceManager(initialStateExplicit);
 
       expect(
-        initialStateExplicit.config.derived.themeWithDefaults
+        initialStateExplicit.view.derivedConfig.themeWithDefaults
           .originalCarbonTheme
       ).toBe(CarbonTheme.G90);
       expect(
-        initialStateExplicit.config.derived.themeWithDefaults.derivedCarbonTheme
+        initialStateExplicit.view.derivedConfig.themeWithDefaults
+          .derivedCarbonTheme
       ).toBe(CarbonTheme.G90);
 
       // Transition to inherit mode by setting injectCarbonTheme back to null.
@@ -434,18 +438,18 @@ describe('Dynamic Config Updates', () => {
         serviceManagerExplicit
       );
 
-      const updatedState = serviceManagerExplicit.store.getState();
+      const updatedState = chatStore(serviceManagerExplicit).getState();
 
       // The carry-forward must NOT fire on explicit → inherit, so the previous
       // explicit G90 must not linger as the derived theme. It is the
-      // freshly-built null from createAppConfig; ThemeWatcherService — kicked
+      // freshly-built null from createDerivedConfig; ThemeWatcherService — kicked
       // off by the originalCarbonTheme flip via loadServices.ts — then resolves
       // the actual host theme.
       expect(
-        updatedState.config.derived.themeWithDefaults.originalCarbonTheme
+        updatedState.view.derivedConfig.themeWithDefaults.originalCarbonTheme
       ).toBeNull();
       expect(
-        updatedState.config.derived.themeWithDefaults.derivedCarbonTheme
+        updatedState.view.derivedConfig.themeWithDefaults.derivedCarbonTheme
       ).toBeNull();
     });
 
@@ -501,7 +505,7 @@ describe('Dynamic Config Updates', () => {
       // All changes should be applied
       expect(updatedState.config.public.debug).toBe(true);
       expect(updatedState.config.public.isReadonly).toBe(true);
-      expect(updatedState.config.derived.header?.title).toBe(
+      expect(updatedState.view.derivedConfig.header?.title).toBe(
         'Multi-Change Title'
       );
       expect(updatedState.config.public.homescreen?.isOn).toBe(true);
@@ -592,7 +596,7 @@ describe('Dynamic Config Updates', () => {
         }).not.toThrow();
 
         const updatedState = chatStore(serviceManager).getState();
-        expect(updatedState.config.derived.header).toBeNull();
+        expect(updatedState.view.derivedConfig.header).toBeNull();
       });
     });
   });

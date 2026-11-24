@@ -51,5 +51,6 @@ Store the value verbatim to avoid all of these.
 
 ## Related
 
+- [Keeping a chat through a remount](./Lifecycle.md) — clear saved session state when the chat is removed for good, such as on logout.
 - [Conversation history](./CustomHistory.md) — save and restore the conversation messages, which are separate from session state.
 - [Server communication](./CustomServer.md) — connect the chat to your own backend.

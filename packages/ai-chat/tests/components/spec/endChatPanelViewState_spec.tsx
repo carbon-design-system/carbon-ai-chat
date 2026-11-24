@@ -14,9 +14,11 @@ import { LitElement } from 'lit';
 
 import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import enLanguagePack from '../../../src/languages/en.json';
+import { answerPrompt, openPrompt } from '../../../src/chat/state';
+import { chatStore } from '../../../src/chat/services/attachChatView';
 import {
   createBaseConfig,
   getChatHost,
@@ -24,11 +26,11 @@ import {
 } from '../../test_helpers';
 
 class ViewStateProbe extends LitElement {
-  viewState = new ContextConsumer(this, { context: chatViewStateContext });
+  viewState = new ContextConsumer(this, { context: chatMountStateContext });
 }
 customElements.define('test-end-chat-view-state-probe', ViewStateProbe);
 
-function viewStateOf(host: Element): ChatViewState {
+function viewStateOf(host: Element): ChatMountState {
   const probe = document.createElement(
     'test-end-chat-view-state-probe'
   ) as ViewStateProbe;
@@ -52,7 +54,7 @@ function endChatPanel() {
   return open.map((title) => title.textContent);
 }
 
-it('opens the end-chat panel from the chat view state, and a card confirmation wins', async () => {
+it("opens the end-chat panel from the chat's prompt, and a card's prompt wins", async () => {
   const onAfterRender = jest.fn();
   render(
     <ChatContainer
@@ -68,20 +70,30 @@ it('opens the end-chat panel from the chat view state, and a card confirmation w
   const defaultTitle = enLanguagePack.agent_confirmCancelRequestTitle;
   expect(endChatPanel()).toEqual([]);
 
-  act(() => viewState.showEndChatConfirmation());
+  const store = chatStore(viewState.serviceManager);
+  act(() => {
+    openPrompt(store, { kind: 'endChat' }, { onConfirm: jest.fn() });
+  });
   await waitFor(() => expect(endChatPanel()).toEqual([defaultTitle]));
+  const endChatId = store.getState().view.prompt.id;
 
-  const release = viewState.openConfirmation({
-    title: 'Finish support',
-    message: 'Leave this conversation?',
-    onConfirm: jest.fn(),
-    onCancel: jest.fn(),
+  let release: () => void;
+  act(() => {
+    release = openPrompt(
+      store,
+      {
+        kind: 'humanAgent',
+        title: 'Finish support',
+        message: 'Leave this conversation?',
+      },
+      { onConfirm: jest.fn(), onCancel: jest.fn() }
+    );
   });
   await waitFor(() => expect(endChatPanel()).toEqual(['Finish support']));
 
   act(() => release());
   await waitFor(() => expect(endChatPanel()).toEqual([defaultTitle]));
 
-  act(() => viewState.hideEndChatConfirmation());
+  act(() => answerPrompt(store, endChatId, 'cancel'));
   await waitFor(() => expect(endChatPanel()).toEqual([]));
 }, 20000);

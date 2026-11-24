@@ -10,7 +10,7 @@
 import cx from 'classnames';
 import type { JSONContent } from '@tiptap/core';
 
-import type { ChatViewState } from '../services/chatViewState';
+import type { ChatMountState } from '../services/chatMountState';
 
 import type { AppState, PendingUpload } from '../../types/state/AppState';
 
@@ -126,7 +126,11 @@ import {
 } from '@carbon/ai-chat-components/es/components/shared/dynamic-css-var-sheet.js';
 
 import styles from '../AppShell.scss';
-import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
+import {
+  answerPrompt,
+  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
+  viewActions,
+} from '../state';
 
 import { chatStore } from '../services/attachChatView';
 
@@ -139,7 +143,7 @@ const cssVariableOverrideStylesheet =
   typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
 const SCROLLBAR_WIDTH_ATTR = 'data-cds-aichat-widget-id';
 let scrollbarWidthCounter = 0;
-const announcerOwners = new WeakMap<ChatViewState, ShellLifecycle>();
+const announcerOwners = new WeakMap<ChatMountState, ShellLifecycle>();
 const WIDTH_BREAKPOINT_STANDARD = 'cds-aichat--standard-width';
 const WIDTH_BREAKPOINT_NARROW = 'cds-aichat--narrow-width';
 const WIDTH_BREAKPOINT_WIDE = 'cds-aichat--wide-width';
@@ -201,13 +205,13 @@ export function selectShellChatState(state: PublicChatState) {
 
 export function selectShellState(state: AppState) {
   return {
-    theme: state.config.derived.themeWithDefaults,
-    layout: state.config.derived.layout,
-    launcher: state.config.derived.launcher,
-    cssVariableOverrides: state.config.derived.cssVariableOverrides,
-    header: state.config.derived.header,
+    theme: state.view.derivedConfig.themeWithDefaults,
+    layout: state.view.derivedConfig.layout,
+    launcher: state.view.derivedConfig.launcher,
+    cssVariableOverrides: state.view.derivedConfig.cssVariableOverrides,
+    header: state.view.derivedConfig.header,
     messageFocusToggleShortcut:
-      state.config.derived.keyboardShortcuts.messageFocusToggle,
+      state.view.derivedConfig.keyboardShortcuts.messageFocusToggle,
     publicConfig: state.config.public,
     languagePack: state.languagePack,
     isHydrated: state.isHydrated,
@@ -239,6 +243,7 @@ export function selectShellState(state: AppState) {
     customInputVisible: selectCustomPromptLineVisible(state),
     isStopStreamingButtonVisible: selectStopStreamingButtonVisible(state),
     chatWidthBreakpoint: state.view.chatWidthBreakpoint,
+    prompt: state.view.prompt,
     ...selectInputUploadAndStreamingFields(state),
   };
 }
@@ -285,7 +290,7 @@ export class ShellLifecycle {
   private readonly appWindow: { requestFocus: () => boolean };
 
   constructor(
-    readonly viewState: ChatViewState,
+    readonly viewState: ChatMountState,
     private invalidate: () => void,
     private getMessages: () => MessagesComponentClass | null,
     private whenReady: () => Promise<boolean>,
@@ -329,9 +334,8 @@ export class ShellLifecycle {
       onRestart: this.inputCallbacks.onRestart,
       onToggleHomeScreen: this.inputCallbacks.onToggleHomeScreen,
       onAcceptDisclaimer: this.inputCallbacks.onAcceptDisclaimer,
-      confirmHumanAgentEndChat:
-        this.humanAgentCallbacks.confirmHumanAgentEndChat,
-      hideConfirmEndChat: this.humanAgentCallbacks.hideConfirmEndChat,
+      answerPrompt: (id, choice) =>
+        answerPrompt(chatStore(manager), id, choice),
       fireCustomPanelEvent: (type) => {
         fireUserEvent(manager, { type });
       },
@@ -578,7 +582,7 @@ export class ShellLifecycle {
       layout,
       launcher,
       header,
-    } = state.config.derived;
+    } = state.view.derivedConfig;
     const publicConfig = state.config.public;
     const intl = this.viewState.getSnapshot().intl;
     const namespaceName = serviceManager.namespace.originalName;
@@ -739,10 +743,8 @@ export class ShellLifecycle {
             ],
           }
         : undefined;
-    const view = this.viewState.getSnapshot();
     const nextInputs: PanelViewInputs = {
-      endChatConfirmation: view.humanAgentConfirmation,
-      showEndChatConfirmation: view.endChatConfirmationOpen,
+      prompt: state.view.prompt,
       showScreenShareRequest: state.humanAgentState.showScreenShareRequest,
       isHydratingComplete,
       shouldShowHydrationPanel,
@@ -1074,7 +1076,7 @@ export class ShellLifecycle {
     const styleInputs = [
       container,
       this.options.hostElement,
-      state.config.derived.cssVariableOverrides,
+      state.view.derivedConfig.cssVariableOverrides,
     ];
     if (!this.styleInputs || !shallowEqual(this.styleInputs, styleInputs)) {
       this.styleInputs = styleInputs;
@@ -1082,7 +1084,7 @@ export class ShellLifecycle {
         container,
         hostElement: this.options.hostElement,
         cssVariableOverrideString: convertCSSVariablesToString(
-          state.config.derived.cssVariableOverrides
+          state.view.derivedConfig.cssVariableOverrides
         ),
         appStyles: styles,
         applicationStylesheet,
@@ -1140,7 +1142,7 @@ export class ShellLifecycle {
   private readonly handleKeyDown = (event: KeyboardEvent) => {
     const manager = this.viewState.serviceManager;
     const shortcut =
-      chatStore(manager).getState().config.derived.keyboardShortcuts
+      chatStore(manager).getState().view.derivedConfig.keyboardShortcuts
         .messageFocusToggle;
     if (shortcut.isOn && matchesShortcut(event, shortcut)) {
       let focused = false;

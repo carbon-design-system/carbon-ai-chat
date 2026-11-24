@@ -71,7 +71,7 @@ const launcherButtonId = `cds-aichat-launcher-button-${uuid()}`;
 class LauncherView extends NativeChatView {
   private languagePack: LauncherLanguage;
   private intl: IntlShape;
-  private launcher: AppState['config']['derived']['launcher'];
+  private launcher: AppState['view']['derivedConfig']['launcher'];
   private isLauncherVisible = false;
   private isMainWindowOpen = false;
   private launcherIsExpanded = false;
@@ -105,7 +105,7 @@ class LauncherView extends NativeChatView {
       }
     );
     this.selectStore(
-      (state) => state.config.derived.launcher,
+      (state) => state.view.derivedConfig.launcher,
       (launcher) => {
         this.launcher = launcher;
       }
@@ -136,7 +136,7 @@ class LauncherView extends NativeChatView {
       }
     );
     this.selectStore(
-      (state) => state.config.derived.themeWithDefaults.aiEnabled,
+      (state) => state.view.derivedConfig.themeWithDefaults.aiEnabled,
       (aiEnabled) => {
         this.aiEnabled = aiEnabled;
       }

@@ -11,15 +11,15 @@ import { ThemeWatcherService } from '../../../src/chat/services/ThemeWatcherServ
 import { createAppStore } from '../../../src/sdk/store/appStore';
 import type { AppStore } from '../../../src/sdk/store/appStore';
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
-import type { ConversationState } from '../../../src/types/state/ConversationState';
+import type { AppState } from '../../../src/types/state/AppState';
 
 type ThemeAction = { type: 'theme'; theme: CarbonTheme | null };
 
 /** A store holding only the theme config the watcher reads. */
 function themeStore(theme: CarbonTheme | null) {
   const state = (originalCarbonTheme: CarbonTheme | null) => ({
-    config: {
-      derived: {
+    view: {
+      derivedConfig: {
         themeWithDefaults: {
           originalCarbonTheme,
           derivedCarbonTheme: originalCarbonTheme ?? CarbonTheme.WHITE,
@@ -35,7 +35,7 @@ function themeStore(theme: CarbonTheme | null) {
   const setTheme = (next: CarbonTheme | null) =>
     store.dispatch({ type: 'theme', theme: next });
   return {
-    store: store as unknown as AppStore<ConversationState>,
+    store: store as unknown as AppStore<AppState>,
     setTheme,
   };
 }

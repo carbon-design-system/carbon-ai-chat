@@ -25,12 +25,12 @@ import {
 } from '../../../src/sdk/store/selectors';
 import { createAppStore } from '../../../src/sdk/store/appStore';
 import { createInitialState } from '../../../src/sdk/store/doCreateStore';
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import { reducers } from '../../../src/sdk/store/reducers';
 import actions from '../../../src/sdk/store/actions';
 import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { ConversationState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+import { withView } from '../../test_helpers';
 
 function createStore(initialState: ConversationState) {
   return createAppStore(
@@ -47,14 +47,15 @@ function createStore(initialState: ConversationState) {
 
 function makeServiceManager(initialState: ConversationState): ServiceManager {
   return {
-    store: createStore(initialState),
+    // The prebuilt chat's store always has its view partition.
+    store: withView(createStore(initialState), initialState.config.public),
     namespace: { suffix: '' },
     messageCoordinator: { timeoutMS: 30000 },
   } as any;
 }
 
 function initialAppState(config: PublicConfig): ConversationState {
-  return createInitialState(createAppConfig(config));
+  return createInitialState({ public: config });
 }
 
 describe('config-driven input flags', () => {

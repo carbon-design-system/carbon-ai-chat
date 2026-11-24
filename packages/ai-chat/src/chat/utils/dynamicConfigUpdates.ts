@@ -10,7 +10,7 @@
 import isEqual from 'lodash-es/isEqual.js';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import { ServiceManager } from '../../sdk/services/ServiceManager';
-import { createAppConfig } from './appConfig';
+import { createDerivedConfig } from './appConfig';
 import { applyConversationConfig } from '../../sdk/services/applyConfig';
 import { isBrowser } from '../../sdk/utils/browserUtils';
 import { viewActions } from '../state';
@@ -25,8 +25,9 @@ import type { AppState } from '../../types/state/AppState';
  * The model has two layers:
  *
  * 1. The wholesale config replace is the backbone. The shared update path,
- *    `applyConversationConfig`, writes the freshly recomputed `AppConfig`
- *    (public + derived) into the store, and everything a
+ *    `applyConversationConfig`, writes the new public config into the store,
+ *    and right after it the view partition takes the freshly recomputed
+ *    derived values (`view.derivedConfig`). Everything a
  *    component reads reactively from config then updates on the next render with
  *    no extra work here — header, layout, theme, `assistantName`,
  *    `input.maxInputCharacters`, the input flags (`input.isVisible` /
@@ -58,7 +59,8 @@ export async function applyConfigChangesDynamically(
   const store = chatStore(serviceManager);
 
   const currentState = store.getState();
-  const newAppConfig = createAppConfig(newConfig);
+  const currentTheme = currentState.view.derivedConfig.themeWithDefaults;
+  const derivedConfig = createDerivedConfig(newConfig);
 
   // Theme "inherit" mode (originalCarbonTheme === null) resolves the actual
   // Carbon theme from the host page at boot via ThemeWatcherService. Recomputing
@@ -68,29 +70,31 @@ export async function applyConfigChangesDynamically(
   // which would now be stale; leaving it at the freshly-built null lets the
   // ThemeWatcherService (re-)resolve the host theme. The mounted watcher starts
   // when it sees originalCarbonTheme change to null.
-  const prevInheritMode =
-    currentState.config.derived.themeWithDefaults.originalCarbonTheme === null;
+  const prevInheritMode = currentTheme.originalCarbonTheme === null;
   const nextInheritMode =
-    newAppConfig.derived.themeWithDefaults.originalCarbonTheme === null;
+    derivedConfig.themeWithDefaults.originalCarbonTheme === null;
   if (nextInheritMode && prevInheritMode) {
-    newAppConfig.derived.themeWithDefaults.derivedCarbonTheme =
-      currentState.config.derived.themeWithDefaults.derivedCarbonTheme;
+    derivedConfig.themeWithDefaults.derivedCarbonTheme =
+      currentTheme.derivedCarbonTheme;
   }
 
   // BACKBONE: the shared update path replaces the config, keeping the
   // references of unchanged sub-objects, and pushes the conversation's
   // service mirrors (language pack, namespace, timeout, service desk). The
-  // home screen step runs inside it, right after the config replace and before
-  // the service steps, as before. Steps read `currentState`, from before the
-  // replace.
+  // derived values and the home screen step run inside it, right after the
+  // config replace and before the service steps, as before. Steps read
+  // `currentState`, from before the replace.
   const before: HomeScreenBefore = {
     wasOn: Boolean(currentState.config.public.homescreen?.isOn),
     messageCount: currentState.assistantMessageState.messageIDs.length,
   };
   const conversationUpdate = applyConversationConfig(
     serviceManager,
-    newAppConfig,
-    () => applyHomeScreenToggle(prevConfig, newConfig, before, store)
+    { public: newConfig },
+    () => {
+      store.dispatch(viewActions.setDerivedConfig(derivedConfig));
+      applyHomeScreenToggle(prevConfig, newConfig, before, store);
+    }
   );
 
   // (Custom panel state is driven imperatively by ChatInstance, so there is

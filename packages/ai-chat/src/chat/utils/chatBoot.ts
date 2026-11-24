@@ -14,15 +14,17 @@ import cloneDeep from 'lodash-es/cloneDeep.js';
 import isEqual from 'lodash-es/isEqual.js';
 
 import { createChatSDK } from '../../sdk/createChatSDK';
-import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
+import { chatOf, claimOf, type ChatSDKHandle } from '../../sdk/handle';
+import { ChatNamespaceError, type ChatClaim } from '../../sdk/registry';
 import actions from '../../sdk/store/actions';
 
 import { ServiceManager } from '../../sdk/services/ServiceManager';
-import { createAppConfig } from './appConfig';
+import { createDerivedConfig } from './appConfig';
 import { createCustomPanelManager } from '../services/CustomPanelManager';
 import { attachChatView, chatStore } from '../services/attachChatView';
 import { setIntl } from '../../sdk/utils/intlUtils';
 import {
+  callOnError,
   consoleDebug,
   consoleError,
   consoleWarn,
@@ -30,21 +32,31 @@ import {
 } from '../../sdk/utils/miscUtils';
 import { createConversationInstance } from '../../sdk/services/conversationInstance';
 import { createWriteableElements } from './writeableElements';
+import { dropSubscriptions, mountSubscriptions } from './mountSubscriptions';
+import { applyConfigChangesDynamically } from './dynamicConfigUpdates';
+import { renderAsUserDefinedMessage } from '../../sdk/utils/messageUtils';
 
 import {
+  BusEventType,
   MainWindowOpenReason,
   ViewChangeReason,
+  type BusEventUserDefinedResponse,
 } from '../../types/events/eventBusTypes';
 import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
+import { OnErrorType } from '../../types/config/ErrorConfig';
 import {
   ChatInstance,
   IncreaseOrDecrease,
   SendOptions,
 } from '../../types/instance/ChatInstance';
-import { AddMessageOptions } from '../../types/config/MessagingConfig';
+import {
+  AddMessageOptions,
+  type MessageState,
+} from '../../types/config/MessagingConfig';
 import { loadLocale } from '../../sdk/utils/languageUtils';
 import {
+  Message,
   MessageRequest,
   MessageResponse,
   StreamChunk,
@@ -56,6 +68,7 @@ import {
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
 import { viewActions } from '../state';
+import { createMountViewState } from '../state/initialState';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps
@@ -89,30 +102,63 @@ export function mergePublicConfig(config: Partial<PublicConfig>): PublicConfig {
  * chat has: the view partition, session storage, the formatter's locale, and
  * the full {@link ChatInstance}. History waits for the main window to open.
  *
+ * With `lifecycle.reuseInstance` on, it takes a claim on the namespace: a chat
+ * released there less than a grace window ago is adopted instead of booted
+ * (ADR-0003), and aborting `signal` releases the claim, or destroys the chat
+ * with `lifecycle.onUnmount: 'destroy'`. A namespace another mount holds
+ * rejects with a `ChatNamespaceError`.
+ *
  * This function does not render. Its caller, `cds-aichat-container`, attaches
  * the view and renders the app after the host's `onBeforeRender`.
  */
 export async function bootPrebuiltChat(options: {
   publicConfig: PublicConfig;
+  signal?: AbortSignal;
+  /**
+   * Reads the mount's current `lifecycle.onUnmount`, so a change the chat
+   * hasn't applied yet, such as one during `onBeforeRender`, still counts.
+   * Without it, the chat's own config is read.
+   */
+  onUnmount?: () => PublicConfig['lifecycle']['onUnmount'];
 }): Promise<{
   handle: ChatSDKHandle;
   serviceManager: ServiceManager;
   instance: ChatInstance;
+  /** The chat's claim on its namespace, with reuse on. */
+  claim?: ChatClaim<ServiceManager>;
+  /**
+   * Whether removing the mount destroys the chat, with reuse on. Read it at
+   * removal: it reads the chat's config, so an update counts.
+   */
+  destroysOnUnmount: () => boolean;
 }> {
-  const { publicConfig } = options;
+  const { publicConfig, signal } = options;
+  // The chat once boot creates it or the claim gets it. Before then, the
+  // mount's own config is the one adoption will apply.
+  let chat: ServiceManager | undefined;
+  const onUnmount =
+    options.onUnmount ??
+    (() =>
+      (chat?.store.getState().config.public ?? publicConfig).lifecycle
+        ?.onUnmount);
+  const destroysOnUnmount = () => onUnmount() === 'destroy';
 
   // Extend dayjs with LocalizedFormat plugin once before usage
   dayjs.extend(LocalizedFormat);
   // Before the locale loads, as before, so config warnings print first.
-  const appConfig = createAppConfig(publicConfig);
+  const derivedConfig = createDerivedConfig(publicConfig);
   const localePack = await loadLocale(publicConfig.locale || 'en');
 
   const handle = await createChatSDK(undefined, {
-    appConfig,
+    appConfig: { public: publicConfig },
     sessionStorage: true,
     loadHistory: false,
     onServicesCreated: (serviceManager) => {
-      attachChatView(serviceManager, publicConfig);
+      chat = serviceManager;
+      attachChatView(serviceManager, publicConfig, derivedConfig);
+      if (publicConfig.lifecycle?.reuseInstance === true) {
+        collectSlotlessResponses(serviceManager);
+      }
       // Update Redux with new values for language, locale, and messages
       setIntl(
         serviceManager,
@@ -123,9 +169,86 @@ export async function bootPrebuiltChat(options: {
       dayjs.locale(localePack);
     },
     createInstance: createPrebuiltInstance,
+    reuse: publicConfig.lifecycle?.reuseInstance === true,
+    signal,
+    destroyOnAbort: destroysOnUnmount,
+    adopt: (serviceManager) => adoptPrebuiltChat(serviceManager, publicConfig),
   });
   const serviceManager = chatOf(handle);
-  return { handle, serviceManager, instance: serviceManager.instance };
+  chat = serviceManager;
+  return {
+    handle,
+    serviceManager,
+    instance: serviceManager.instance,
+    claim: claimOf(handle),
+    destroysOnUnmount,
+  };
+}
+
+/**
+ * Handles a boot failure that's part of reuse, and returns whether it did:
+ *
+ * - For the current mount, another chat holding the namespace is reported
+ *   through `onError` and the console, and the mount renders nothing.
+ * - For a mount already gone, its own release or a namespace taken meanwhile
+ *   needs no report: nobody is left to tell.
+ *
+ * Any other failure returns `false`, for the caller to log.
+ */
+export function handleBootFailure(
+  error: unknown,
+  mount: {
+    current: boolean;
+    signal: AbortSignal;
+    config: Pick<PublicConfig, 'onError'>;
+  }
+): boolean {
+  if (!mount.current) {
+    return error === mount.signal.reason || error instanceof ChatNamespaceError;
+  }
+  return reportNamespaceError(error, mount.config);
+}
+
+/**
+ * Reports a namespace another chat holds through `onError` and the console,
+ * as a shell reports one (ADR-0003). Returns `false`, reporting nothing, for
+ * any other error.
+ */
+export function reportNamespaceError(
+  error: unknown,
+  config: Pick<PublicConfig, 'onError'>
+): boolean {
+  if (!(error instanceof ChatNamespaceError)) {
+    return false;
+  }
+  consoleError(error.message);
+  callOnError(config.onError, {
+    errorType: OnErrorType.INTEGRATION_ERROR,
+    message: error.message,
+  });
+  return true;
+}
+
+/**
+ * Hands a running chat to a new mount. Its config is replaced, the view's
+ * half included, as an update would replace it. The mount gets its own
+ * {@link ChatInstance}, which callbacks and events receive from now on. Its
+ * view starts closed and opens to what was showing, as a remount with a
+ * saved session does.
+ */
+async function adoptPrebuiltChat(
+  serviceManager: ServiceManager,
+  publicConfig: PublicConfig
+) {
+  await applyConfigChangesDynamically(
+    serviceManager.store.getState().config.public as PublicConfig,
+    publicConfig,
+    serviceManager
+  );
+  serviceManager.instance = createPrebuiltInstance(serviceManager);
+  serviceManager.store.dispatch(
+    viewActions.startNewMount(createMountViewState(publicConfig))
+  );
 }
 
 /**
@@ -159,6 +282,13 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
   );
   const instance: ChatInstance = {
     ...conversation,
+
+    // A reused chat outlives this mount; what it subscribed goes with it.
+    ...mountSubscriptions(
+      serviceManager.eventBus,
+      conversation.state,
+      () => instance
+    ),
 
     send: (message: MessageRequest | string, options?: SendOptions) => {
       debugLog('Called instance.send', message, options);
@@ -393,8 +523,11 @@ function createPrebuiltInstance(serviceManager: ServiceManager): ChatInstance {
  * Applies the first view transition after boot, deciding between restoring a
  * session or opening the default view. Keeps this sequencing in one place so
  * tests and callers can reason about what happens immediately after boot.
+ * First, it names the slots an adopted chat missed; see
+ * {@link nameSlotsMissedWithoutView}.
  */
 export async function performInitialViewChange(serviceManager: ServiceManager) {
+  nameSlotsMissedWithoutView(serviceManager);
   const initialState = chatStore(serviceManager).getState();
   const { wasLoadedFromBrowser } = initialState.view.persistedToBrowserStorage;
   const { targetViewState } = initialState.view;
@@ -422,3 +555,119 @@ export async function performInitialViewChange(serviceManager: ServiceManager) {
     );
   }
 }
+
+/**
+ * Per reusable chat, each message whose user-defined response last fired with
+ * no slot, and the state that event carried.
+ */
+const slotlessMessages = new WeakMap<
+  ServiceManager,
+  Map<string, MessageState | undefined>
+>();
+
+/**
+ * Notes each message whose user-defined response fired with no slot, which
+ * happens while no view is attached: a released chat in its grace window.
+ */
+function collectSlotlessResponses(serviceManager: ServiceManager) {
+  const missed = new Map<string, MessageState | undefined>();
+  slotlessMessages.set(serviceManager, missed);
+  serviceManager.eventBus.on({
+    type: BusEventType.USER_DEFINED_RESPONSE,
+    handler: ({ data }: BusEventUserDefinedResponse) => {
+      if (!data.slot && !data.message.user_defined?.silent) {
+        missed.set(data.fullMessage.id, data.state);
+      }
+    },
+  });
+}
+
+/**
+ * Fires again, with a slot, the user-defined responses whose last event fired
+ * while no view was attached, so this mount's handlers and extension hosts get
+ * their current content and state. Only a chat adopted from its grace window
+ * has any. It doesn't hold the first view change, and a handler that throws is
+ * logged, as a slow or failing handler doesn't hold a fresh mount either.
+ */
+function nameSlotsMissedWithoutView(serviceManager: ServiceManager) {
+  const missed = slotlessMessages.get(serviceManager);
+  if (!missed?.size) {
+    return;
+  }
+  refireSlotlessResponses(serviceManager, missed).catch((error) =>
+    consoleError(
+      'Failed to show the responses a reused chat got while it waited:',
+      error
+    )
+  );
+}
+
+/**
+ * Fires each missed message's user-defined items with the state it last had.
+ * A message leaves the list once its items fired. If this mount is released
+ * part way, the rest stay for the next one.
+ */
+async function refireSlotlessResponses(
+  serviceManager: ServiceManager,
+  missed: Map<string, MessageState | undefined>
+) {
+  const { instance } = serviceManager;
+  for (const [messageID, state] of [...missed]) {
+    if (serviceManager.instance !== instance) {
+      return;
+    }
+    const { allMessageItemsByID, allMessagesByID } =
+      serviceManager.store.getState();
+    const message = allMessagesByID[messageID];
+    const items = Object.values(allMessageItemsByID).filter(
+      (local) =>
+        local.fullMessageID === messageID &&
+        renderAsUserDefinedMessage(local.item) &&
+        !local.item.user_defined?.silent
+    );
+    for (const local of items) {
+      const currentMessage =
+        serviceManager.store.getState().allMessagesByID[messageID] ?? message;
+      await serviceManager.messageCoordinator.handleUserDefinedResponseItems(
+        local,
+        currentMessage,
+        state
+      );
+    }
+    refireUnnamedReasoning(
+      serviceManager,
+      messageID,
+      serviceManager.store.getState().allMessagesByID[messageID] ?? message
+    );
+    missed.delete(messageID);
+  }
+}
+
+/**
+ * Fires again, through this mount's view, the user-defined items inside a
+ * message's reasoning that fired with no view to name their slots.
+ */
+function refireUnnamedReasoning(
+  serviceManager: ServiceManager,
+  messageID: string,
+  message: Message
+) {
+  const { messageCoordinator, userDefinedElementRegistry } = serviceManager;
+  const isNamed = (itemID: string) => userDefinedElementRegistry.has(itemID);
+  for (const local of Object.values(
+    serviceManager.store.getState().allMessageItemsByID
+  )) {
+    if (
+      local.fullMessageID === messageID &&
+      messageCoordinator.forgetUnnamedReasoning(local.ui_state.id, isNamed)
+    ) {
+      messageCoordinator.notifyMountedReasoning(
+        local.ui_state.id,
+        message,
+        new Set()
+      );
+    }
+  }
+}
+
+export { dropSubscriptions };

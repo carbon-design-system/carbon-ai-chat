@@ -8,19 +8,24 @@
  */
 
 /**
- * Coverage for `reconcileAppConfigReferences`, the structural-sharing pass that
- * runs after `createAppConfig` on a runtime config change. `createAppConfig`
- * always rebuilds the entire `AppConfig` tree, so without reconciliation a
- * single-field change (e.g. toggling `input.isDisabled`) would hand every
- * `config.public.*` / `config.derived.*` sub-object a fresh reference and force
- * every config-reading selector to re-render. These tests assert that
- * value-equal sub-objects keep their previous reference while genuinely-changed
- * ones get a new one.
+ * Coverage for the structural-sharing passes that run on a runtime config
+ * change: `reconcileAppConfigReferences` on the conversation's config, and the
+ * view partition's `setDerivedConfig` on the values derived from it. A config
+ * change rebuilds both trees, so without reconciliation a single-field change
+ * (e.g. toggling `input.isDisabled`) would hand every `config.public.*` /
+ * `view.derivedConfig.*` sub-object a fresh reference and force every
+ * config-reading selector to re-render. These tests assert that value-equal
+ * sub-objects keep their previous reference while genuinely-changed ones get a
+ * new one.
  */
 
-import { createAppConfig } from '../../../src/chat/utils/appConfig';
+import { createDerivedConfig } from '../../../src/chat/utils/appConfig';
+import { viewActions } from '../../../src/chat/state';
+import { createInitialViewState } from '../../../src/chat/state/initialState';
+import { viewReducer } from '../../../src/chat/state/reducer';
 import { reconcileAppConfigReferences } from '../../../src/sdk/utils/reconcileConfig';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
+import type { ConversationState } from '../../../src/types/state/ConversationState';
 
 /**
  * Builds a fully-formed PublicConfig with fresh object references on every call,
@@ -36,6 +41,30 @@ function buildPublicConfig(): PublicConfig {
     assistantName: 'Assistant',
     locale: 'en',
   } as PublicConfig;
+}
+
+/** The conversation's config for `publicConfig`, as a config update builds it. */
+function createAppConfig(publicConfig: PublicConfig) {
+  return { public: publicConfig };
+}
+
+/**
+ * Runs a config change through the view partition: its state starts from
+ * `prevPublic`, then takes the values derived from `nextPublic`.
+ */
+function updateDerived(prevPublic: PublicConfig, nextPublic: PublicConfig) {
+  const before = createInitialViewState(prevPublic, null);
+  const after = viewReducer(
+    before,
+    viewActions.setDerivedConfig(createDerivedConfig(nextPublic)),
+    {} as ConversationState
+  );
+  return {
+    before,
+    after,
+    prev: before.derivedConfig,
+    reconciled: after.derivedConfig,
+  };
 }
 
 describe('reconcileAppConfigReferences', () => {
@@ -54,7 +83,11 @@ describe('reconcileAppConfigReferences', () => {
     // The whole config object is reused.
     expect(reconciled).toBe(prev);
     expect(reconciled.public).toBe(prev.public);
-    expect(reconciled.derived).toBe(prev.derived);
+
+    // So is the view's whole derived tree, and its partition: nothing reruns.
+    const derived = updateDerived(buildPublicConfig(), buildPublicConfig());
+    expect(derived.reconciled).toBe(derived.prev);
+    expect(derived.after).toBe(derived.before);
   });
 
   it('preserves unrelated references when only input.isDisabled changes', () => {
@@ -73,42 +106,36 @@ describe('reconcileAppConfigReferences', () => {
     expect(reconciled.public.input?.isDisabled).toBe(true);
 
     // ...but every other `public.*` sub-object keeps its previous reference,
-    // even though `createAppConfig` rebuilt them.
+    // even though the update rebuilt them.
     expect(reconciled.public.header).toBe(prev.public.header);
     expect(reconciled.public.layout).toBe(prev.public.layout);
     expect(reconciled.public.launcher).toBe(prev.public.launcher);
     expect(reconciled.public.homescreen).toBe(prev.public.homescreen);
 
-    // `derived` does not depend on `input` at all, so the whole derived tree is
-    // reused wholesale.
-    expect(reconciled.derived).toBe(prev.derived);
+    // The derived tree does not depend on `input` at all, so the whole derived
+    // tree is reused wholesale.
+    const derived = updateDerived(buildPublicConfig(), nextPublic);
+    expect(derived.reconciled).toBe(derived.prev);
   });
 
-  it('issues a fresh derived.header (only) when the header config changes', () => {
-    const prev = createAppConfig(buildPublicConfig());
-
+  it('issues a fresh derivedConfig.header (only) when the header config changes', () => {
     const nextPublic = buildPublicConfig();
     nextPublic.header = { ...nextPublic.header, name: 'Changed' };
-    const next = createAppConfig(nextPublic);
 
-    const reconciled = reconcileAppConfigReferences(prev, next);
+    const { prev, reconciled } = updateDerived(buildPublicConfig(), nextPublic);
 
     // The changed derived sub-object gets a new reference...
-    expect(reconciled.derived).not.toBe(prev.derived);
-    expect(reconciled.derived.header).not.toBe(prev.derived.header);
-    expect(reconciled.derived.header.name).toBe('Changed');
+    expect(reconciled).not.toBe(prev);
+    expect(reconciled.header).not.toBe(prev.header);
+    expect(reconciled.header.name).toBe('Changed');
 
     // ...while the unchanged derived siblings are preserved.
-    expect(reconciled.derived.layout).toBe(prev.derived.layout);
-    expect(reconciled.derived.launcher).toBe(prev.derived.launcher);
-    expect(reconciled.derived.themeWithDefaults).toBe(
-      prev.derived.themeWithDefaults
-    );
+    expect(reconciled.layout).toBe(prev.layout);
+    expect(reconciled.launcher).toBe(prev.launcher);
+    expect(reconciled.themeWithDefaults).toBe(prev.themeWithDefaults);
     // MessagesComponent's shallowEqual selector reads this one, so a fresh identity here
     // would re-render the message list on every unrelated config change.
-    expect(reconciled.derived.keyboardShortcuts).toBe(
-      prev.derived.keyboardShortcuts
-    );
+    expect(reconciled.keyboardShortcuts).toBe(prev.keyboardShortcuts);
   });
 
   it('preserves input siblings when only one input field changes', () => {
@@ -178,6 +205,7 @@ describe('reconcileAppConfigReferences', () => {
     // every config consumer.
     expect(reconciled.public.header).toBe(prev.public.header);
     expect(reconciled.public.input).toBe(prev.public.input);
-    expect(reconciled.derived).toBe(prev.derived);
+    const derived = updateDerived(prevPublic, nextPublic);
+    expect(derived.reconciled).toBe(derived.prev);
   });
 });

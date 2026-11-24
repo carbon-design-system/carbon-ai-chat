@@ -8,7 +8,7 @@
  */
 
 import { act } from '@testing-library/react';
-import { ChatViewState } from '../../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../../src/chat/services/chatMountState';
 import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
 import { MessageResponseTypes } from '../../../../src/types/messaging/Messages';
@@ -30,15 +30,15 @@ it.each(['replacement', 'missing'])(
     // The shell publishes the main window handle on the view state; swap what
     // that getter returns, so the real view bindings read the replacement.
     const shellMainWindow = Object.getOwnPropertyDescriptor(
-      ChatViewState.prototype,
+      ChatMountState.prototype,
       'mainWindow'
     )!.get!;
     let replace = (
       handle: MainWindowFunctions | undefined
     ): MainWindowFunctions | undefined => handle;
     const mainWindow = jest
-      .spyOn(ChatViewState.prototype, 'mainWindow', 'get')
-      .mockImplementation(function (this: ChatViewState) {
+      .spyOn(ChatMountState.prototype, 'mainWindow', 'get')
+      .mockImplementation(function (this: ChatMountState) {
         return replace(shellMainWindow.call(this));
       });
     const oldRestore = jest.fn();

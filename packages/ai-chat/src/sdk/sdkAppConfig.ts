@@ -9,7 +9,6 @@
 
 import merge from 'lodash-es/merge.js';
 
-import { DEFAULT_THEME_STATE } from './store/reducerUtils';
 import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 import type {
   ConversationAppConfig,
@@ -35,7 +34,6 @@ function createSDKAppConfig(config: ChatSDKConfig = {}): ConversationAppConfig {
     // Merging into a new object copies plain data and keeps functions and
     // class instances by reference (#1833).
     public: merge({}, DEFAULT_SDK_CONFIG, config) as ConversationConfig,
-    derived: { themeWithDefaults: DEFAULT_THEME_STATE },
   };
 }
 

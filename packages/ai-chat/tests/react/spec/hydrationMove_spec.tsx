@@ -14,7 +14,7 @@ import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import type HydrationBody from '../../../src/chat/components/panels/native/HydrationBody';
-import type { ChatViewState } from '../../../src/chat/services/chatViewState';
+import type { ChatMountState } from '../../../src/chat/services/chatMountState';
 import {
   createBaseConfig,
   getChatShadowRoot,
@@ -66,7 +66,7 @@ it.each([
     await waitFor(() =>
       expect(body.querySelector('cds-loading')).not.toBeNull()
     );
-    const { viewState } = body as unknown as { viewState: ChatViewState };
+    const { viewState } = body as unknown as { viewState: ChatMountState };
     const announce = jest
       .spyOn(viewState.announcer, 'announce')
       .mockImplementation(() => {});

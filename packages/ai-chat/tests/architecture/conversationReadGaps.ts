@@ -277,6 +277,20 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#1833',
   },
   {
+    // Adoption replaces the config the way an update does, from the config
+    // the chat holds now.
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'adoptPrebuiltChat()',
+    count: 1,
+    owner: '#1833',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'applyConfigChangesDynamically()',
+    count: 1,
+    owner: '#1833',
+  },
+  {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'attachChatView()',
     count: 1,
@@ -290,11 +304,45 @@ const conversationReadGaps: ConversationReadGap[] = [
   },
   {
     // Hands the instance builder, which wraps the custom panel read above, to
-    // createChatSDK; it goes when that read does.
+    // createChatSDK, and builds an adopting mount its own; both go when that
+    // read does.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
-    count: 1,
+    count: 2,
     owner: '#2824',
+  },
+  {
+    // An adopting mount fires again the user-defined responses that had no
+    // slot while the chat waited in its grace window; it finds them in the
+    // message slices, which the message model replaces.
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'allMessageItemsByID',
+    count: 2,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'allMessagesByID',
+    count: 3,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'refireSlotlessResponses()',
+    count: 1,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'refireUnnamedReasoning()',
+    count: 1,
+    owner: '#2693',
+  },
+  {
+    file: 'src/chat/utils/chatBoot.ts',
+    read: 'nameSlotsMissedWithoutView()',
+    count: 1,
+    owner: '#2693',
   },
   {
     file: 'src/chat/utils/customPromptLine.ts',

@@ -43,7 +43,7 @@ const createServiceManagerStub = () => {
   const firedEvents: BusEvent[] = [];
 
   const state = {
-    config: { public: {}, derived: {} },
+    config: { public: {} },
     languagePack: {},
     assistantInputState: {
       pendingUploads: [] as unknown[],

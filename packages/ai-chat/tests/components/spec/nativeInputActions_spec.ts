@@ -15,9 +15,9 @@ import {
   connectInputActionsMenu,
   connectInputActionsOverflow,
 } from '../../../src/chat/utils/inputActionsLayout';
-import { ChatViewState } from '../../../src/chat/services/chatViewState';
+import { ChatMountState } from '../../../src/chat/services/chatMountState';
 import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
-import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
+import { chatMountStateContext } from '../../../src/web-components/shared/chat-mount-state-context';
 import { createIntl } from '../../../src/sdk/utils/i18n';
 import type { ToolbarAction } from '../../../src/types/config/HeaderConfig';
 import {
@@ -33,14 +33,14 @@ jest.mock('../../../src/chat/utils/inputActionsLayout', () => ({
 
 class ActionsProvider extends LitElement {
   readonly provider = new ContextProvider(this, {
-    context: chatViewStateContext,
+    context: chatMountStateContext,
   });
   render() {
     return nothing;
   }
 }
 customElements.define('test-native-input-actions-provider', ActionsProvider);
-const states = new Set<ChatViewState>();
+const states = new Set<ChatMountState>();
 const icon = {
   elem: 'svg',
   name: 'test-action',
@@ -57,7 +57,7 @@ async function fixture(actions: ToolbarAction[], expanded = false) {
     intl: createIntl({ locale: 'en', messages: store.getState().languagePack }),
     actions: { errorOccurred },
   } as unknown as ServiceManager;
-  const state = new ChatViewState(manager, { width: 800, height: 600 });
+  const state = new ChatMountState(manager, { width: 800, height: 600 });
   state.connect();
   states.add(state);
   const provider = document.createElement(

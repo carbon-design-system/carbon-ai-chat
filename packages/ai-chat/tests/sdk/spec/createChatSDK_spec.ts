@@ -27,6 +27,15 @@ import {
   type MessageResponse,
 } from '../../../src/types/messaging/Messages';
 import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import { DEFAULT_RELEASE_GRACE_MS } from '../../../src/sdk/registry';
+
+/** Lets a shutdown queued behind promise callbacks start, with timers fake. */
+async function waitForShutdown(manager: ServiceManager) {
+  for (let i = 0; i < 20 && !manager.isShutdown; i += 1) {
+    await Promise.resolve();
+  }
+  expect(manager.isShutdown).toBe(true);
+}
 
 function textResponse(id: string, text: string): MessageResponse {
   return {
@@ -312,20 +321,38 @@ describe('the handle (#1732 O9–O11)', () => {
     chat.destroy();
   });
 
-  it.each(['release', 'destroy'] as const)(
-    '%s shuts the chat down once, and repeats do nothing',
-    async (verb) => {
-      const chat = await createChatSDK({ messaging: { skipWelcome: true } });
-      const manager = chatOf(chat);
-      const stop = jest.spyOn(manager as any, 'stopServices');
-      chat[verb]();
-      // Shutdown starts synchronously, so this is the verb's doing.
-      expect(manager.isShutdown).toBe(true);
+  it('destroy shuts the chat down once, and repeats do nothing', async () => {
+    const chat = await createChatSDK({ messaging: { skipWelcome: true } });
+    const manager = chatOf(chat);
+    const stop = jest.spyOn(manager as any, 'stopServices');
+    chat.destroy();
+    // Shutdown starts synchronously, so this is the verb's doing.
+    expect(manager.isShutdown).toBe(true);
+    expect(stop).toHaveBeenCalledTimes(1);
+    chat.destroy();
+    chat.release();
+    chat.destroy();
+    expect(stop).toHaveBeenCalledTimes(1);
+  });
+
+  it('release shuts the chat down once, after the grace window, and repeats do nothing', async () => {
+    const chat = await createChatSDK({ messaging: { skipWelcome: true } });
+    const manager = chatOf(chat);
+    const stop = jest.spyOn(manager as any, 'stopServices');
+    jest.useFakeTimers();
+    try {
+      chat.release();
+      // The window keeps it running for a create on its namespace.
+      expect(manager.isShutdown).toBe(false);
+      jest.advanceTimersByTime(DEFAULT_RELEASE_GRACE_MS);
+      await waitForShutdown(manager);
       expect(stop).toHaveBeenCalledTimes(1);
-      chat[verb]();
       chat.release();
       chat.destroy();
+      chat.release();
       expect(stop).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
     }
-  );
+  });
 });
