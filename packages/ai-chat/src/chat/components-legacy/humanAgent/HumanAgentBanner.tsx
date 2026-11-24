@@ -20,10 +20,10 @@ import React, {
 } from 'react';
 import { useSelector } from '../../hooks/useSelector';
 import { usePublicChatState } from '../../hooks/usePublicChatState';
-import { shallowEqual } from '../../../shared/store/appStore';
+import { shallowEqual } from '../../../sdk/store/appStore';
 
 import { useServiceManager } from '../../hooks/useServiceManager';
-import { humanAgentDisplayStateOf } from '../../../shared/store/selectors';
+import { humanAgentDisplayStateOf } from '../../../sdk/store/selectors';
 import { AppState } from '../../../types/state/AppState';
 import { HasRequestFocus } from '../../../types/utilities/HasRequestFocus';
 import { doFocusRef } from '../../utils/domUtils';

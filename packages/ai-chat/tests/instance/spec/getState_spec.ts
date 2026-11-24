@@ -15,7 +15,7 @@ import {
 } from '../../test_helpers';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import { ViewType } from '../../../src/types/instance/apiTypes';
-import { joinPersistedState } from '../../../src/view/state';
+import { joinPersistedState } from '../../../src/chat/state';
 
 describe('ChatInstance.getState', () => {
   beforeEach(setupBeforeEach);

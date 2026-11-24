@@ -9,7 +9,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { createValueStore } from '../../../src/shared/store/valueStore';
+import { createValueStore } from '../../../src/sdk/store/valueStore';
 
 // One case per #1741 outcome, O1 to O9.
 describe('createValueStore', () => {
@@ -166,7 +166,7 @@ describe('createValueStore', () => {
 
   it('imports nothing', () => {
     const source = fs.readFileSync(
-      path.resolve(__dirname, '../../../src/shared/store/valueStore.ts'),
+      path.resolve(__dirname, '../../../src/sdk/store/valueStore.ts'),
       'utf8'
     );
     expect(source).not.toMatch(/^\s*import\s/m);

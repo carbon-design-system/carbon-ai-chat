@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { VERSION } from '../../shared/utils/environmentVariables';
+import { VERSION } from '../../sdk/utils/environmentVariables';
 import type { ConversationPersistedState } from '../../types/state/AppState';
 import type { PersistedState } from '../../types/state/PersistedState';
 import type { ViewPersistedState } from '../../types/state/ViewPartitionState';

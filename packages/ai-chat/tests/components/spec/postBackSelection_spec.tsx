@@ -10,7 +10,7 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import { ButtonItemPostBackComponent } from '../../../src/chat/components/responseTypes/button/ButtonItemPostBackComponent';
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
 import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   ButtonItemType,

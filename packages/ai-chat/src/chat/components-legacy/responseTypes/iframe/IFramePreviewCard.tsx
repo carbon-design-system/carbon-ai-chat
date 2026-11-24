@@ -19,14 +19,14 @@ import { useServiceManager } from '../../../hooks/useServiceManager';
 
 import { AppState } from '../../../../types/state/AppState';
 
-import { getURLHostName } from '../../../../shared/utils/browserUtils';
+import { getURLHostName } from '../../../../sdk/utils/browserUtils';
 
 import VisuallyHidden from '../../../components/helpers/VisuallyHidden/VisuallyHidden';
 import { IFrameItem } from '../../../../types/messaging/Messages';
 
 import { Image } from '../image/Image';
 
-import { viewActions } from '../../../../view/state';
+import { viewActions } from '../../../state';
 
 interface IFramePreviewCardComponentProps {
   /**

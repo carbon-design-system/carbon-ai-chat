@@ -16,7 +16,7 @@ import '../../../src/web-components/cds-aichat-container';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { chatViewStateContext } from '../../../src/web-components/shared/chat-view-state-context';
 import type { ChatViewState } from '../../../src/chat/services/chatViewState';
-import enLanguagePack from '../../../src/shared/languages/en.json';
+import enLanguagePack from '../../../src/languages/en.json';
 import {
   createBaseConfig,
   getChatHost,

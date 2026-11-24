@@ -8,20 +8,20 @@
  */
 
 import { makeConfigStore } from '../../test_helpers';
-import { outputItemToLocalItem } from '../../../src/shared/schema/outputItemToLocalItem';
-import { ChatInstanceService } from '../../../src/shared/services/ChatInstanceService';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { HumanAgentsOnlineStatus } from '../../../src/shared/services/haa/HumanAgentService';
-import createHumanAgentService from '../../../src/shared/services/haa/HumanAgentServiceImpl';
-import actions from '../../../src/shared/store/actions';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { outputItemToLocalItem } from '../../../src/sdk/schema/outputItemToLocalItem';
+import { ChatInstanceService } from '../../../src/sdk/services/ChatInstanceService';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { HumanAgentsOnlineStatus } from '../../../src/sdk/services/haa/HumanAgentService';
+import createHumanAgentService from '../../../src/sdk/services/haa/HumanAgentServiceImpl';
+import actions from '../../../src/sdk/store/actions';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
 import { withViewCounters } from '../helpers/viewBindings';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 function createFixture(
   skipConnectHumanAgentCard = true,

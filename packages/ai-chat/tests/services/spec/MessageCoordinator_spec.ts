@@ -7,8 +7,8 @@
  *  @license
  */
 
-import { MessageCoordinator } from '../../../src/shared/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { MessageCoordinator } from '../../../src/sdk/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { OnErrorType } from '../../../src/types/config/ErrorConfig';
 
 /** Error data for a failure a spec creates directly. */

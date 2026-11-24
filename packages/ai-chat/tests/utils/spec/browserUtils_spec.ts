@@ -14,7 +14,7 @@ import {
   IS_MOBILE,
   IS_PHONE,
   IS_PHONE_IN_PORTRAIT_MODE,
-} from '../../../src/shared/utils/browserUtils';
+} from '../../../src/sdk/utils/browserUtils';
 
 // Mock browser environment for testing
 const originalWindow = global.window;

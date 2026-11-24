@@ -8,7 +8,7 @@
  */
 
 import type { ChatViewState } from './chatViewState';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 import type { FileUpload } from '../../types/state/AppState';
 
 export class HumanAgentCallbacks {

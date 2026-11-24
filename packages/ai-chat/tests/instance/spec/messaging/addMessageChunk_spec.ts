@@ -18,8 +18,8 @@ import {
   setupAfterEach,
 } from '../../../test_helpers';
 
-import { UPSERT_MESSAGE } from '../../../../src/shared/store/actions';
-import type { MessageWriteOptions } from '../../../../src/shared/store/messageWriteTypes';
+import { UPSERT_MESSAGE } from '../../../../src/sdk/store/actions';
+import type { MessageWriteOptions } from '../../../../src/sdk/store/messageWriteTypes';
 
 import {
   BusEventChunkUserDefinedResponse,
@@ -47,7 +47,7 @@ import { ChatInstance } from '../../../../src/types/instance/ChatInstance';
 
 import { OnErrorType } from '../../../../src/types/config/ErrorConfig';
 
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 
 import {
   MALFORMED,
@@ -55,7 +55,7 @@ import {
   observeWrite,
 } from '../../../utils/itemDrawabilityFixtures';
 
-import { viewActions } from '../../../../src/view/state';
+import { viewActions } from '../../../../src/chat/state';
 
 describe('ChatInstance.messaging.addMessageChunk', () => {
   beforeEach(setupBeforeEach);

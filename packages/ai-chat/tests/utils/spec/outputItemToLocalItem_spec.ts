@@ -11,8 +11,8 @@ import * as uuidUtils from '@carbon/ai-chat-components/es/globals/utils/uuid.js'
 import {
   createLocalMessageItemsForNestedMessageItems,
   outputItemToLocalItem,
-} from '../../../src/shared/schema/outputItemToLocalItem';
-import * as miscUtils from '../../../src/shared/utils/miscUtils';
+} from '../../../src/sdk/schema/outputItemToLocalItem';
+import * as miscUtils from '../../../src/sdk/utils/miscUtils';
 import type { LocalMessageItem } from '../../../src/types/messaging/LocalMessageItem';
 import {
   type CardItem,

@@ -12,17 +12,17 @@ import {
   requestComposerFocus,
 } from '../../../src/chat/utils/customPromptLine';
 import { getDeepActiveElement } from '../../../src/chat/utils/domUtils';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { WriteableElementName } from '../../../src/types/instance/WriteableElements';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { makeConfigStore } from '../../test_helpers';
 import {
   InputViewPort,
   ViewConnection,
-} from '../../../src/shared/services/viewBindings';
-import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
+} from '../../../src/sdk/services/viewBindings';
+import type { MessagePresentationPort } from '../../../src/sdk/services/messaging/presentationPort';
 import { idleInstancePort } from '../../services/helpers/viewBindings';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 function setup(visible = true) {
   const store = makeConfigStore({ input: { isVisible: visible } });

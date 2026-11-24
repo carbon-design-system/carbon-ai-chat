@@ -14,7 +14,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import {
   PendingUploadStatus,
   type PendingUpload,

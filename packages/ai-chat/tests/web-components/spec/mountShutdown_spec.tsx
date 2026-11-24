@@ -20,8 +20,8 @@ import type ChatElement from '../../../src/web-components/cds-aichat-container/c
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import * as chatBoot from '../../../src/chat/utils/chatBoot';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ChatRenderer } from '../../../src/web-components/shared/react-renderer';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';

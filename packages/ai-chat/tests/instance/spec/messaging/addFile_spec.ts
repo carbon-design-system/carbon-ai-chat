@@ -14,11 +14,11 @@
 
 import { waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
-import createHumanAgentService from '../../../../src/shared/services/haa/HumanAgentServiceImpl';
-import { selectInputState } from '../../../../src/shared/store/selectors';
-import actions from '../../../../src/shared/store/actions';
-import { updateCapabilities } from '../../../../src/shared/store/humanAgentActions';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import createHumanAgentService from '../../../../src/sdk/services/haa/HumanAgentServiceImpl';
+import { selectInputState } from '../../../../src/sdk/store/selectors';
+import actions from '../../../../src/sdk/store/actions';
+import { updateCapabilities } from '../../../../src/sdk/store/humanAgentActions';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import type { PublicConfig } from '../../../../src/types/config/PublicConfig';
 import { CancellationReason } from '../../../../src/types/config/MessagingConfig';
 import type { ServiceDesk } from '../../../../src/types/config/ServiceDeskConfig';

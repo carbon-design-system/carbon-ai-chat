@@ -15,8 +15,8 @@ import { HasRequestFocus } from '../../../../types/utilities/HasRequestFocus';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { useSelector } from '../../../hooks/useSelector';
 import { usePublicChatState } from '../../../hooks/usePublicChatState';
-import { shallowEqual } from '../../../../shared/store/appStore';
-import { humanAgentDisplayStateOf } from '../../../../shared/store/selectors';
+import { shallowEqual } from '../../../../sdk/store/appStore';
+import { humanAgentDisplayStateOf } from '../../../../sdk/store/selectors';
 import { RealConnectToHumanAgent } from './RealConnectToHumanAgent';
 import {
   ConnectToHumanAgentItem,

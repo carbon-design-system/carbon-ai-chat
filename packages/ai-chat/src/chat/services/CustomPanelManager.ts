@@ -12,14 +12,14 @@ import {
   DEFAULT_CUSTOM_PANEL_ID,
   WORKSPACE_CUSTOM_PANEL_ID,
   HISTORY_PANEL_ID,
-} from '../../shared/utils/constants';
+} from '../../sdk/utils/constants';
 
 import {
   createCustomPanelInstance,
   CustomPanelInstance,
 } from './CustomPanelInstance';
-import { ServiceManager } from '../../shared/services/ServiceManager';
-import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../../view/state';
+import { ServiceManager } from '../../sdk/services/ServiceManager';
+import { PANEL_CONFIG_OPTIONS_BY_TYPE } from '../state';
 
 /**
  * This function takes in the service manager to help create a custom panel manager. The panel manager is created

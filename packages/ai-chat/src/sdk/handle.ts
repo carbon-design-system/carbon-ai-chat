@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { createConversationInstance } from '../shared/services/conversationInstance';
-import { applyConversationConfig } from '../shared/services/applyConfig';
-import type { ServiceManager } from '../shared/services/ServiceManager';
+import { createConversationInstance } from './services/conversationInstance';
+import { applyConversationConfig } from './services/applyConfig';
+import type { ServiceManager } from './services/ServiceManager';
 import type { ChatSDKConfig } from '../types/config/ChatSDKConfig';
 import { createSDKAppConfig } from './sdkAppConfig';
 import type { ChatSDKInstance } from '../types/instance/ChatSDKInstance';

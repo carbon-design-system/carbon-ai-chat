@@ -8,15 +8,15 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
-import { MessageCoordinator } from '../../../../src/shared/services/messaging/MessageCoordinator';
-import type { ServiceManager } from '../../../../src/shared/services/ServiceManager';
+import { MessageCoordinator } from '../../../../src/sdk/services/messaging/MessageCoordinator';
+import type { ServiceManager } from '../../../../src/sdk/services/ServiceManager';
 import { MessageState } from '../../../../src/types/config/MessagingConfig';
 import {
   MessageResponse,
   MessageResponseTypes,
 } from '../../../../src/types/messaging/Messages';
 import { BusEventType } from '../../../../src/types/events/eventBusTypes';
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

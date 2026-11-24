@@ -28,16 +28,16 @@ import { getCarbonTheme } from '../../../src/chat/utils/carbonTheme';
 
 import { CarbonTheme } from '../../../src/types/config/CarbonTheme';
 
-import { createAppStore } from '../../../src/shared/store/appStore';
+import { createAppStore } from '../../../src/sdk/store/appStore';
 
 import type {
   AppState,
   PersistedState,
 } from '../../../src/types/state/AppState';
 
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
-jest.mock('../../../src/shared/utils/browserUtils', () => ({
+jest.mock('../../../src/sdk/utils/browserUtils', () => ({
   IS_MOBILE: false,
 }));
 

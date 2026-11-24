@@ -19,24 +19,21 @@ import {
 
 import { BusEventType } from '../../types/events/eventBusTypes';
 
-import { ServiceManager } from '../../shared/services/ServiceManager';
+import { ServiceManager } from '../../sdk/services/ServiceManager';
 
 import {
   captureMessageEvent,
   eventLocalItems,
-} from '../../shared/utils/messageEventOwnership';
+} from '../../sdk/utils/messageEventOwnership';
 
-import { deepFreeze } from '../../shared/utils/lang/objectUtils';
-import { consoleError } from '../../shared/utils/miscUtils';
+import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
+import { consoleError } from '../../sdk/utils/miscUtils';
 
 import { Message } from '../../types/messaging/Messages';
 
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 
-import {
-  DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS,
-  viewActions,
-} from '../../view/state';
+import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 
 import { chatStore } from './attachChatView';
 

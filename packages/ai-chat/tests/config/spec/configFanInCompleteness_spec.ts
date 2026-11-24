@@ -30,7 +30,7 @@ import { FLATTENED_PUBLIC_CONFIG_FIELDS } from '../../../src/web-components/shar
 /**
  * Fields with an explicit out-of-store side effect. Keep in sync with the per-field
  * blocks in `src/chat/utils/dynamicConfigUpdates.ts` and the
- * `refreshLocalizationOnChange` subscription in `src/shared/store/subscriptions.ts`.
+ * `refreshLocalizationOnChange` subscription in `src/sdk/store/subscriptions.ts`.
  */
 const SIDE_EFFECT_FIELDS = new Set<string>([
   'strings', // languagePack slice rebuild + intl via the localization subscription

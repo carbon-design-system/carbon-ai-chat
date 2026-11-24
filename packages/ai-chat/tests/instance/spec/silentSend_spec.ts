@@ -35,7 +35,7 @@ import {
   BusEventType,
   MessageSendSource,
 } from '../../../src/types/events/eventBusTypes';
-import { createMessageRequestForText } from '../../../src/shared/utils/messageUtils';
+import { createMessageRequestForText } from '../../../src/sdk/utils/messageUtils';
 
 describe('silent send', () => {
   beforeEach(setupBeforeEach);

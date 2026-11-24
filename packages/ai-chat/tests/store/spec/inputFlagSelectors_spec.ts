@@ -19,8 +19,8 @@ import {
   selectInputIsReadonly,
   selectInputIsDisabled,
   selectInputFieldVisible,
-} from '../../../src/shared/store/selectors';
-import { createInitialState } from '../../../src/shared/store/doCreateStore';
+} from '../../../src/sdk/store/selectors';
+import { createInitialState } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
 import {
   ConversationState,

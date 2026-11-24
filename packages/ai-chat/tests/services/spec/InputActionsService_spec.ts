@@ -7,14 +7,14 @@
  *  @license
  */
 
-import { InputActionsService } from '../../../src/shared/services/InputActionsService';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { InputActionsService } from '../../../src/sdk/services/InputActionsService';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 import { createBaseConfig, makeConfigStore } from '../../test_helpers';
-import { ViewConnection } from '../../../src/shared/services/viewBindings';
-import actions from '../../../src/shared/store/actions';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { ViewConnection } from '../../../src/sdk/services/viewBindings';
+import actions from '../../../src/sdk/store/actions';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 
 function createService(config: PublicConfig = createBaseConfig()) {
   const store = makeConfigStore(config);

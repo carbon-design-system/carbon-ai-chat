@@ -18,9 +18,9 @@ import {
 import { iconLoader } from '@carbon/web-components/es/globals/internal/icon-loader.js';
 import Restart16 from '@carbon/icons/es/restart/16.js';
 import { NativeChatView } from '../../shared/NativeChatView';
-import { shallowEqual } from '../../../../shared/store/appStore';
+import { shallowEqual } from '../../../../sdk/store/appStore';
 import { getCarbonTheme, selectCarbonTheme } from '../../../utils/carbonTheme';
-import type { IntlShape } from '../../../../shared/utils/i18n';
+import type { IntlShape } from '../../../../sdk/utils/i18n';
 import type { AppState } from '../../../../types/state/AppState';
 import { renderErrorIllustration } from './panelIllustrations';
 import type { PanelBodyContentDetail } from './panelBodyContent';

@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { shallowEqual } from '../../shared/store/appStore';
+import { shallowEqual } from '../../sdk/store/appStore';
 import { selectInputConfig } from '../utils/inputConfig';
 import { useSelector } from './useSelector';
 

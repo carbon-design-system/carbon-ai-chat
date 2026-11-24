@@ -15,8 +15,11 @@ import { conversationReadGaps } from '../conversationReadGaps';
 
 const root = path.resolve(__dirname, '../../..');
 
-/** The prebuilt interface. `src/view/` reacts to conversation state by design. */
+/** The prebuilt interface. */
 const interfaceFolders = ['src/chat', 'src/react', 'src/web-components'];
+
+/** The view partition reacts to conversation state by design. */
+const exemptFolders = ['src/chat/state/'];
 
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -28,11 +31,13 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-const files = interfaceFolders.flatMap((folder) =>
-  sourceFiles(path.join(root, folder)).map((file) =>
-    path.relative(root, file).replaceAll('\\', '/')
+const files = interfaceFolders
+  .flatMap((folder) =>
+    sourceFiles(path.join(root, folder)).map((file) =>
+      path.relative(root, file).replaceAll('\\', '/')
+    )
   )
-);
+  .filter((file) => !exemptFolders.some((folder) => file.startsWith(folder)));
 const { config } = ts.readConfigFile(
   path.join(root, 'tsconfig.json'),
   ts.sys.readFile
@@ -119,7 +124,7 @@ it('reads the agent connection from instance.state', () => {
 describe('planted reads', () => {
   const planted = 'src/chat/utils/plantedRead.ts';
   const header = `import type { AppState } from '../../types/state/AppState';
-import type { ServiceManager } from '../../shared/services/ServiceManager';
+import type { ServiceManager } from '../../sdk/services/ServiceManager';
 `;
 
   it.each([
@@ -155,12 +160,12 @@ import type { ServiceManager } from '../../shared/services/ServiceManager';
     ],
     [
       'a helper that reads through the service manager',
-      "import { captureMessageEvent } from '../../shared/utils/messageEventOwnership';\nexport const read = [captureMessageEvent];",
+      "import { captureMessageEvent } from '../../sdk/utils/messageEventOwnership';\nexport const read = [captureMessageEvent];",
       'captureMessageEvent()',
     ],
     [
       'a shared selector passed by reference',
-      "import { selectIsInputToHumanAgent } from '../../shared/store/selectors';\nexport const read = [selectIsInputToHumanAgent];",
+      "import { selectIsInputToHumanAgent } from '../../sdk/store/selectors';\nexport const read = [selectIsInputToHumanAgent];",
       'selectIsInputToHumanAgent()',
     ],
   ])('fails %s', (_name, line, read) => {
@@ -193,20 +198,20 @@ import type { ServiceManager } from '../../shared/services/ServiceManager';
     const reads = readsWith({
       [planted]:
         header +
-        "import { createConversationInstance } from '../../shared/services/conversationInstance';\nexport const build = (manager: ServiceManager) => createConversationInstance(manager, () => undefined);",
+        "import { createConversationInstance } from '../../sdk/services/conversationInstance';\nexport const build = (manager: ServiceManager) => createConversationInstance(manager, () => undefined);",
     });
     expect([...reads].filter((read) => read.startsWith(planted))).toEqual([]);
   });
 
   it("fails another reader in the SDK instance builder's file", () => {
-    const builder = 'src/shared/services/conversationInstance.ts';
+    const builder = 'src/sdk/services/conversationInstance.ts';
     const reads = readsWith({
       [builder]:
         fs.readFileSync(path.join(root, builder), 'utf8') +
         '\nexport const isSendBlocked = (manager: ServiceManager) => selectInputIsReadonly(manager.store.getState());\n',
       [planted]:
         header +
-        "import { isSendBlocked } from '../../shared/services/conversationInstance';\nexport const read = [isSendBlocked];",
+        "import { isSendBlocked } from '../../sdk/services/conversationInstance';\nexport const read = [isSendBlocked];",
     });
     expect([...reads]).toContain(`${planted}: isSendBlocked()`);
   });

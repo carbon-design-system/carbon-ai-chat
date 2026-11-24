@@ -14,9 +14,9 @@
  */
 
 import { createChatSDK } from '../../../src/sdk';
-import { chatOf } from '../../../src/sdk/internal';
+import { chatOf } from '../../../src/sdk/handle';
 import type { ChatSDKHandle } from '../../../src/sdk/handle';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import type { ChatSDKConfig } from '../../../src/types/config/ChatSDKConfig';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
@@ -30,7 +30,7 @@ import {
   type BusEventPreReset,
 } from '../../../src/types/events/eventBusTypes';
 import type { PersistedHumanAgentState } from '../../../src/types/state/PersistedHumanAgentState';
-import { setIsReconnecting } from '../../../src/shared/store/humanAgentActions';
+import { setIsReconnecting } from '../../../src/sdk/store/humanAgentActions';
 import { ViewType } from '../../../src/types/instance/apiTypes';
 import { waitFor } from '@testing-library/react';
 import {

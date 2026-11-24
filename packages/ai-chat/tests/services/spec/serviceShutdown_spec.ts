@@ -7,7 +7,7 @@
  *  @license
  */
 
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { BusEventType } from '../../../src/types/events/eventBusTypes';
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
@@ -24,8 +24,8 @@ import {
   MessageInputType,
   MessageResponseTypes,
 } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
+import type { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import {
   createBaseConfig,
   renderChatAndGetInstanceWithStore,

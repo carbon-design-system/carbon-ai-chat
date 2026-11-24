@@ -92,7 +92,7 @@ export interface IntlShape {
  *
  * @example
  * ```typescript
- * import enMessages from '../languages/en.json';
+ * import enMessages from '../../languages/en.json';
  * const formatter = createIntl({ locale: 'en', messages: enMessages });
  * const greeting = formatter.formatMessage({ id: 'launcher_desktopGreeting' });
  * ```

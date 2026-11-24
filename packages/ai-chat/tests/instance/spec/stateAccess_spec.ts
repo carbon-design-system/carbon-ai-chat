@@ -8,7 +8,7 @@
  */
 
 import { act } from '@testing-library/react';
-import actions from '../../../src/shared/store/actions';
+import actions from '../../../src/sdk/store/actions';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import {
   MessageResponse,
@@ -25,7 +25,7 @@ import {
   setupAfterEach,
   setupBeforeEach,
 } from '../../test_helpers';
-import { viewActions } from '../../../src/view/state';
+import { viewActions } from '../../../src/chat/state';
 
 describe('ChatInstance.state', () => {
   beforeEach(setupBeforeEach);

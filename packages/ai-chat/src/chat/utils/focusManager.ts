@@ -7,9 +7,9 @@
  *  @license
  */
 
-import { IS_MOBILE } from '../../shared/utils/browserUtils';
+import { IS_MOBILE } from '../../sdk/utils/browserUtils';
 import { doFocus } from './domUtils';
-import { consoleError } from '../../shared/utils/miscUtils';
+import { consoleError } from '../../sdk/utils/miscUtils';
 import type { HasRequestFocus } from '../../types/utilities/HasRequestFocus';
 
 export interface FocusManagerOptions {

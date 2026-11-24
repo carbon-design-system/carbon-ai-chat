@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { IntlShape } from '../../shared/utils/i18n';
+import { IntlShape } from '../../sdk/utils/i18n';
 
 /**
  * A simple interface for objects that have a reference to an injected intl property.

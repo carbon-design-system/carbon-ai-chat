@@ -19,7 +19,7 @@
  */
 
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
-import { reconcileAppConfigReferences } from '../../../src/shared/utils/reconcileConfig';
+import { reconcileAppConfigReferences } from '../../../src/sdk/utils/reconcileConfig';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 
 /**

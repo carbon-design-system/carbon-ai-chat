@@ -20,7 +20,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react';
 
 import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 
 import { BusEventViewPreChange } from '../../../src/types/events/eventBusTypes';
 

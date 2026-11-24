@@ -22,7 +22,7 @@ import {
 
 import { CitationClickableCard } from './CitationClickableCard';
 
-import { viewActions } from '../../../../../view/state';
+import { viewActions } from '../../../../state';
 
 /**
  * Shows a Citation Card that will add an onClick handler to open up content that doesn't fit in the card IF NEEDED.

@@ -15,7 +15,7 @@ import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
 
-import { selectInputIsReadonly } from '../../../../shared/store/selectors';
+import { selectInputIsReadonly } from '../../../../sdk/store/selectors';
 
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 
@@ -23,7 +23,7 @@ import { ButtonItem } from '../../../../types/messaging/Messages';
 
 import { BaseButtonItemComponent } from './BaseButtonItemComponent';
 
-import { viewActions } from '../../../../view/state';
+import { viewActions } from '../../../state';
 
 interface ButtonItemShowPanelComponentProps {
   localMessageItem: LocalMessageItem<ButtonItem>;

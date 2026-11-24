@@ -15,27 +15,27 @@ import isEqual from 'lodash-es/isEqual.js';
 
 import { createChatSDK } from '../../sdk/createChatSDK';
 import { chatOf, type ChatSDKHandle } from '../../sdk/handle';
-import actions from '../../shared/store/actions';
+import actions from '../../sdk/store/actions';
 
-import { ServiceManager } from '../../shared/services/ServiceManager';
+import { ServiceManager } from '../../sdk/services/ServiceManager';
 import { createAppConfig } from './appConfig';
 import { createCustomPanelManager } from '../services/CustomPanelManager';
 import { attachChatView, chatStore } from '../services/attachChatView';
-import { setIntl } from '../../shared/utils/intlUtils';
+import { setIntl } from '../../sdk/utils/intlUtils';
 import {
   consoleDebug,
   consoleError,
   consoleWarn,
   debugLog,
-} from '../../shared/utils/miscUtils';
-import { createConversationInstance } from '../../shared/services/conversationInstance';
+} from '../../sdk/utils/miscUtils';
+import { createConversationInstance } from '../../sdk/services/conversationInstance';
 import { createWriteableElements } from './writeableElements';
 
 import {
   MainWindowOpenReason,
   ViewChangeReason,
 } from '../../types/events/eventBusTypes';
-import { VIEW_STATE_ALL_CLOSED } from '../../shared/store/reducerUtils';
+import { VIEW_STATE_ALL_CLOSED } from '../../sdk/store/reducerUtils';
 import { PublicConfig } from '../../types/config/PublicConfig';
 import {
   ChatInstance,
@@ -43,7 +43,7 @@ import {
   SendOptions,
 } from '../../types/instance/ChatInstance';
 import { AddMessageOptions } from '../../types/config/MessagingConfig';
-import { loadLocale } from '../../shared/utils/languageUtils';
+import { loadLocale } from '../../sdk/utils/languageUtils';
 import {
   MessageRequest,
   MessageResponse,
@@ -55,7 +55,7 @@ import {
   ViewType,
 } from '../../types/state/AppState';
 import { AutoScrollOptions } from '../../types/utilities/HasDoAutoScroll';
-import { viewActions } from '../../view/state';
+import { viewActions } from '../state';
 
 /**
  * Default values applied to the provided `PublicConfig` before boot. This keeps

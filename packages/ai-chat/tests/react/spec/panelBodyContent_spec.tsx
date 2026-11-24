@@ -21,7 +21,7 @@ import { ChatCustomElement } from '../../../src/react/ChatCustomElement';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { ErrorBody } from '../../../src/chat/components/panels/native/ErrorBody';
 import { PanelBodyContentAdapter } from '../../../src/chat/components/panels/PanelBodyContentAdapter';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 import {
   createBaseConfig,
   getChatShadowRoot,

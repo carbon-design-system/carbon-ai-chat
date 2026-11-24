@@ -9,7 +9,7 @@
 
 import { act, waitFor } from '@testing-library/react';
 
-import { resolvablePromise } from '../../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../../src/sdk/utils/resolvablePromise';
 
 import {
   createBaseConfig,
@@ -46,7 +46,7 @@ import {
 
 import { ViewType } from '../../../../src/types/instance/apiTypes';
 
-import { viewActions } from '../../../../src/view/state';
+import { viewActions } from '../../../../src/chat/state';
 
 function textResponse(id: string, text: string): MessageResponse {
   return {

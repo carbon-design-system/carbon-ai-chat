@@ -18,14 +18,14 @@ import { createBaseTestProps } from '../../test_helpers';
 
 import { applyConfigChangesDynamically } from '../../../src/chat/utils/dynamicConfigUpdates';
 
-import { doCreateStore } from '../../../src/shared/store/doCreateStore';
+import { doCreateStore } from '../../../src/sdk/store/doCreateStore';
 import { createAppConfig } from '../../../src/chat/utils/appConfig';
 
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 
-import { NamespaceService } from '../../../src/shared/services/NamespaceService';
+import { NamespaceService } from '../../../src/sdk/services/NamespaceService';
 
-import { UserSessionStorageService } from '../../../src/shared/services/UserSessionStorageService';
+import { UserSessionStorageService } from '../../../src/sdk/services/UserSessionStorageService';
 
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 

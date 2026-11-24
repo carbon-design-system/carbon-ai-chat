@@ -10,7 +10,7 @@
 import ObjectMap from '../../types/utilities/ObjectMap';
 import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { Message } from '../../types/messaging/Messages';
-import { isStandaloneSystemMessage } from '../../shared/utils/messageUtils';
+import { isStandaloneSystemMessage } from '../../sdk/utils/messageUtils';
 
 interface RenderableMessageMetadata {
   fullMessage: Message;

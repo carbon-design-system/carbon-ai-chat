@@ -28,9 +28,9 @@ import { selectMessagesState } from '../../../src/chat/components-legacy/Message
 import {
   selectInputIsDisabled,
   selectInputUploadAndStreamingFields,
-} from '../../../src/shared/store/selectors';
-import actions from '../../../src/shared/store/actions';
-import { shallowEqual } from '../../../src/shared/store/appStore';
+} from '../../../src/sdk/store/selectors';
+import actions from '../../../src/sdk/store/actions';
+import { shallowEqual } from '../../../src/sdk/store/appStore';
 import { AppState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
 import {

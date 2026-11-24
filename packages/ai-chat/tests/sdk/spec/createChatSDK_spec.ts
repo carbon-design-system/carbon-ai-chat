@@ -9,8 +9,8 @@
 
 import { createChatSDK } from '../../../src/sdk';
 import { DEFAULT_SDK_CONFIG } from '../../../src/sdk/sdkAppConfig';
-import { chatOf } from '../../../src/sdk/internal';
-import { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { chatOf } from '../../../src/sdk/handle';
+import { ServiceManager } from '../../../src/sdk/services/ServiceManager';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type {
   ServiceDesk,
@@ -26,7 +26,7 @@ import {
   type MessageRequest,
   type MessageResponse,
 } from '../../../src/types/messaging/Messages';
-import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { resolvablePromise } from '../../../src/sdk/utils/resolvablePromise';
 
 function textResponse(id: string, text: string): MessageResponse {
   return {

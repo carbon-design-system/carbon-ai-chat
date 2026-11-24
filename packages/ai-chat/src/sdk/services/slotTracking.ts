@@ -31,7 +31,7 @@ import {
 import type { ServiceManager } from './ServiceManager';
 
 // The public `RenderUserDefinedState` and `RenderCustomMessageFooterState` live
-// in a types module that imports React, which shared code can't reach. These
+// in a types module that imports React, which SDK code can't reach. These
 // match them field for field; a type test fails if either side changes.
 
 /** One user-defined response slot. Matches `RenderUserDefinedState`. */
