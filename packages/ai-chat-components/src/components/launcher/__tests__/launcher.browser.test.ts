@@ -44,7 +44,7 @@ describe('launcher', function () {
     expect(badge?.textContent?.trim()).to.equal('');
   });
 
-  it('should leave the host out of the tab order, so the inner button is the only tab stop', async () => {
+  it('leaves the host out of the tab order, so the inner button is the only tab stop', async () => {
     const el = await fixture<Launcher>(
       html`<cds-aichat-launcher
         closed-label="Open chat"

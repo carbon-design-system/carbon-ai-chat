@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, waitUntil } from '@open-wc/testing';
 import '../index.js';
 import CdsAiChatHeader from '../src/chat-header.js';
 import type CDSAIChatToolbar from '../../toolbar/src/toolbar.js';
@@ -350,7 +350,7 @@ describe('cds-aichat-chat-header', function () {
   describe('Slots', () => {
     // Waits for the toolbar, then returns the header slot for a name and the
     // toolbar slot it forwards to.
-    async function renderedSlots(el: CdsAiChatHeader, name: string) {
+    async function waitForRenderedSlots(el: CdsAiChatHeader, name: string) {
       const toolbar =
         el.shadowRoot!.querySelector<CDSAIChatToolbar>('cds-aichat-toolbar')!;
       await toolbar.updateComplete;
@@ -369,7 +369,10 @@ describe('cds-aichat-chat-header', function () {
         </cds-aichat-chat-header>`
       );
       const decorator = el.querySelector('#decorator-content')!;
-      const { headerSlot, toolbarSlot } = await renderedSlots(el, 'decorator');
+      const { headerSlot, toolbarSlot } = await waitForRenderedSlots(
+        el,
+        'decorator'
+      );
 
       expect(decorator.assignedSlot).to.equal(headerSlot);
       expect(toolbarSlot.assignedElements({ flatten: true })).to.deep.equal([
@@ -386,7 +389,7 @@ describe('cds-aichat-chat-header', function () {
         </cds-aichat-chat-header>`
       );
       const fixedActions = el.querySelector('#fixed-actions-content')!;
-      const { headerSlot, toolbarSlot } = await renderedSlots(
+      const { headerSlot, toolbarSlot } = await waitForRenderedSlots(
         el,
         'fixed-actions'
       );
@@ -545,10 +548,11 @@ describe('cds-aichat-chat-header', function () {
       await toolbar.updateComplete;
       const action = toolbar.shadowRoot!.querySelector(
         'cds-icon-button:not([disabled])'
-      ) as HTMLElement & { updateComplete: Promise<unknown> };
-      await action.updateComplete;
-      // Carbon buttons finish their own setup after the first update.
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      ) as HTMLElement;
+      await waitUntil(
+        () => action.shadowRoot?.querySelector('button'),
+        'the first action renders its inner button'
+      );
 
       expect(el.requestFocus()).to.be.true;
       expect(composedContains(action, getDeepActiveElement())).to.be.true;
