@@ -356,16 +356,17 @@ describe('how each host mounts the chat', () => {
       );
       const target = renderTargetIn();
       expect(target.querySelectorAll('.cds-aichat--widget')).toHaveLength(1);
+      const shadowRoot = getChatHost().shadowRoot;
       expect(
-        target.querySelectorAll('.cds-aichat--aria-announcer')
+        shadowRoot.querySelectorAll('.cds-aichat--aria-announcer')
       ).toHaveLength(1);
       // The effect replay must leave one connected set of live regions.
       const announcer = '.cds-aichat--aria-announcer';
       expect(
-        target.querySelectorAll(`${announcer} [aria-live="polite"]`)
+        shadowRoot.querySelectorAll(`${announcer} [aria-live="polite"]`)
       ).toHaveLength(3);
       expect(
-        target.querySelectorAll(`${announcer} [aria-live="assertive"]`)
+        shadowRoot.querySelectorAll(`${announcer} [aria-live="assertive"]`)
       ).toHaveLength(2);
     });
 
