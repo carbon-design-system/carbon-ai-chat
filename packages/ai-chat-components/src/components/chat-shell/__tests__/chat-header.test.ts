@@ -441,36 +441,34 @@ describe('cds-aichat-chat-header', function () {
       expect(result).to.be.a('boolean');
     });
 
-    it('should use FOCUSABLE_SELECTORS fallback for Carbon components', async () => {
-      // Create a header with a custom Carbon button in fixed-actions slot
+    it('should focus a cds-button slotted directly into fixed-actions', async () => {
       const el = await fixture<CdsAiChatHeader>(html`
         <cds-aichat-chat-header>
           <cds-button slot="fixed-actions" kind="ghost">Close</cds-button>
         </cds-aichat-chat-header>
       `);
-      await el.updateComplete;
+      const button = el.querySelector<
+        HTMLElement & { updateComplete: Promise<unknown> }
+      >('cds-button[slot="fixed-actions"]')!;
+      await button.updateComplete;
 
-      // Wait for slotted button to be ready
-      const button = el.querySelector('cds-button[slot="fixed-actions"]');
-      if (button && typeof (button as any).updateComplete !== 'undefined') {
-        await (button as any).updateComplete;
-      }
-
-      // Additional wait for Carbon components to be fully ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const result = el.requestFocus();
-      // Should successfully focus the Carbon button
-      expect(result).to.be.a('boolean');
-
-      // If focus succeeded, verify the button exists
-      if (result) {
-        expect(button).to.exist;
-      }
+      expect(el.requestFocus()).to.be.true;
+      expect(document.activeElement).to.equal(button);
     });
 
-    it('should handle custom elements with delegatesFocus in fallback', async () => {
-      // Create a header with only a custom element that might have delegatesFocus
+    it('should focus a native button slotted directly into fixed-actions', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <button slot="fixed-actions" type="button">Close</button>
+        </cds-aichat-chat-header>
+      `);
+      const button = el.querySelector('button[slot="fixed-actions"]');
+
+      expect(el.requestFocus()).to.be.true;
+      expect(document.activeElement).to.equal(button);
+    });
+
+    it('should focus a cds-icon-button slotted directly into fixed-actions', async () => {
       const el = await fixture<CdsAiChatHeader>(html`
         <cds-aichat-chat-header>
           <cds-icon-button slot="fixed-actions" kind="ghost">
@@ -478,26 +476,54 @@ describe('cds-aichat-chat-header', function () {
           </cds-icon-button>
         </cds-aichat-chat-header>
       `);
-      await el.updateComplete;
+      const iconButton = el.querySelector<
+        HTMLElement & { updateComplete: Promise<unknown> }
+      >('cds-icon-button[slot="fixed-actions"]')!;
+      await iconButton.updateComplete;
 
-      // Wait for slotted icon button to be ready
-      const iconButton = el.querySelector(
-        'cds-icon-button[slot="fixed-actions"]'
-      );
-      if (
-        iconButton &&
-        typeof (iconButton as any).updateComplete !== 'undefined'
-      ) {
-        await (iconButton as any).updateComplete;
-      }
+      expect(el.requestFocus()).to.be.true;
+      expect(document.activeElement).to.equal(iconButton);
+    });
 
-      // Additional wait for Carbon components to be fully ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    it('should still focus a button wrapped in a fixed-actions container', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <div slot="fixed-actions">
+            <button type="button">Close</button>
+          </div>
+        </cds-aichat-chat-header>
+      `);
+      const button = el.querySelector('div[slot="fixed-actions"] button');
 
-      const result = el.requestFocus();
-      // The simplified FOCUSABLE_SELECTORS ("*") with tryFocus() validation
-      // should properly handle custom elements with shadow DOM
-      expect(result).to.be.a('boolean');
+      expect(el.requestFocus()).to.be.true;
+      expect(document.activeElement).to.equal(button);
+    });
+
+    it('should fall back to focusable content no other strategy targets', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <a slot="decorator" href="#about">About</a>
+        </cds-aichat-chat-header>
+      `);
+      const link = el.querySelector('a[slot="decorator"]');
+
+      expect(el.requestFocus()).to.be.true;
+      expect(document.activeElement).to.equal(link);
+    });
+
+    it('should return false when the fallback finds only non-focusable content', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header header-title="Title">
+          <div slot="fixed-actions">
+            <button type="button" disabled>Close</button>
+          </div>
+          <span slot="decorator">Label</span>
+        </cds-aichat-chat-header>
+      `);
+      const previous = document.activeElement;
+
+      expect(el.requestFocus()).to.be.false;
+      expect(document.activeElement).to.equal(previous);
     });
   });
 

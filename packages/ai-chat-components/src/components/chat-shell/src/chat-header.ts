@@ -18,7 +18,10 @@ import type { Action } from '../../toolbar/src/toolbar.js';
 import type { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
 import prefix from '../../../globals/settings.js';
 import { PageObjectId } from '../../../testing/PageObjectId.js';
-import { tryFocus } from '../../../globals/utils/focus-utils.js';
+import {
+  tryFocus,
+  walkComposedTree,
+} from '../../../globals/utils/focus-utils.js';
 import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 import styles from './chat-header.scss?lit';
 
@@ -117,7 +120,8 @@ class CdsAiChatChatHeader extends LitElement {
     }
 
     for (const el of slot.assignedElements()) {
-      const button = el.querySelector(selectors);
+      // The assigned element might be the button itself, or a wrapper around it
+      const button = el.matches(selectors) ? el : el.querySelector(selectors);
       if (button instanceof HTMLElement && this.tryFocusElement(button)) {
         return true;
       }
@@ -197,14 +201,22 @@ class CdsAiChatChatHeader extends LitElement {
           this.tryFocusElement(buttons[0])
         );
       },
-      // 4. Try any focusable element as last resort
+      // 4. Try any focusable element as last resort, in composed tree order so
+      // slotted content and nested shadow roots are searched too
       () => {
-        const focusable = this.shadowRoot?.querySelector(
-          CdsAiChatChatHeader.FOCUSABLE_SELECTORS
-        );
-        return (
-          focusable instanceof HTMLElement && this.tryFocusElement(focusable)
-        );
+        if (!this.shadowRoot) {
+          return false;
+        }
+        for (const node of walkComposedTree(this.shadowRoot)) {
+          if (
+            node instanceof HTMLElement &&
+            node.matches(CdsAiChatChatHeader.FOCUSABLE_SELECTORS) &&
+            this.tryFocusElement(node)
+          ) {
+            return true;
+          }
+        }
+        return false;
       },
     ];
 
