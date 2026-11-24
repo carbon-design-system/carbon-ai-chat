@@ -46,7 +46,10 @@ const cspInstalledPages = new WeakSet<Page>();
  * fetched. Idempotent per page so beforeEach + prepareDemoPage callers don't
  * stack duplicate route handlers.
  */
-export const installTestCsp = async (page: Page) => {
+export const installTestCsp = async (
+  page: Page,
+  transformDocument?: (body: string) => string
+) => {
   if (cspInstalledPages.has(page)) {
     return;
   }
@@ -83,7 +86,11 @@ export const installTestCsp = async (page: Page) => {
     if (status >= 300 && status < 400) {
       return route.fulfill({ response });
     }
-    const body = await response.text();
+    // Fixtures can externalize their styles before the unchanged policy applies.
+    const originalBody = await response.text();
+    const body = transformDocument
+      ? transformDocument(originalBody)
+      : originalBody;
     const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${TEST_CSP}">`;
     // Match `<head>` with or without attributes so e.g. `<head data-foo>`
     // doesn't silently no-op the CSP injection.
