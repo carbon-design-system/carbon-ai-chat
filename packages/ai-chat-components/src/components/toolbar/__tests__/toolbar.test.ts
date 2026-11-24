@@ -334,4 +334,25 @@ describe('toolbar', function () {
       }
     });
   });
+
+  describe('hidden slotted content', function () {
+    for (const slotName of ['navigation', 'decorator']) {
+      it(`should not render or focus hidden ${slotName} content`, async () => {
+        const el = await fixture<Toolbar>(html`
+          <cds-aichat-toolbar>
+            <div slot=${slotName} hidden>
+              <button type="button">Hidden</button>
+            </div>
+          </cds-aichat-toolbar>
+        `);
+        const wrapper = el.querySelector<HTMLElement>(`[slot="${slotName}"]`)!;
+        const button = wrapper.querySelector('button')!;
+
+        button.focus();
+
+        expect(getComputedStyle(wrapper).display).to.equal('none');
+        expect(document.activeElement === button).to.be.false;
+      });
+    }
+  });
 });
