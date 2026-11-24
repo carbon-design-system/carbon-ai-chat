@@ -337,7 +337,8 @@ export const AppShellPanels = React.memo(function AppShellPanels({
             )
           );
           onPanelCloseEnd(true);
-        }}>
+        }}
+        data-testid={PageObjectId.CUSTOM_PANEL}>
         <PanelWithFocus
           ref={customPanelRef}
           header={

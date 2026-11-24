@@ -248,8 +248,8 @@ async function settleLeftoverWork(): Promise<void> {
 
 /**
  * Standard cleanup: settle backend calls the test left open, unmount React
- * trees, empty the document, and clear browser storage. The chat saves its
- * open view in session storage, so without the clear the next mount in a file
+ * trees, empty the document, clear browser storage, and restore real timers.
+ * The chat saves its open view in session storage, so without the clear the next mount in a file
  * would start open and send a welcome request.
  */
 export async function contractCleanup(): Promise<void> {
@@ -258,6 +258,7 @@ export async function contractCleanup(): Promise<void> {
   document.body.innerHTML = '';
   window.sessionStorage.clear();
   window.localStorage.clear();
+  jest.useRealTimers();
 }
 
 /**

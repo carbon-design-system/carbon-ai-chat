@@ -370,6 +370,13 @@ export function flatChildren(node: Node): Node[] {
   return Array.from(node.childNodes);
 }
 
+/** Whether a node shows anywhere in the flat tree a user sees. */
+export function isInFlatTree(target: Node): boolean {
+  const visit = (node: Node): boolean =>
+    node === target || flatChildren(node).some(visit);
+  return visit(document.body);
+}
+
 /** The focused element, looking through open shadow roots. */
 export function deepActiveElement(): Element | null {
   let active: Element | null = document.activeElement;

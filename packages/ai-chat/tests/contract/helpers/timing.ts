@@ -29,7 +29,7 @@ export function deferred<T = void>(): Deferred<T> {
 
 /**
  * Moves Jest's fake timers forward, inside `act`. Call `jest.useFakeTimers()`
- * after the mount, and `jest.useRealTimers()` in `afterEach`.
+ * after the mount; `contractCleanup` restores real timers after each test.
  */
 export async function advance(ms: number): Promise<void> {
   await act(async () => {
