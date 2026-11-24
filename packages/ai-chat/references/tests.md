@@ -87,7 +87,7 @@ Put a new shared helper in the `__tests__/helpers/` of the folder whose import r
 | `tests/architecture/` | Folder import rules (tests included), the conversation-read gap list, the SDK surface snapshot, and the messaging import scans |
 | `tests/types/` | Type tests of the public surface |
 | `tests/typedoc/` | Checks for the docs plugins in `docs/typedoc/` |
-| `tests/build/` | Checks that run the built package |
+| `tests/build/` | Checks of the build or its output |
 | `tests/setup/` | Vitest setup: `index.ts` for `node` and `happy-dom`, `browser.ts` for `browser` |
 
 Type errors in tests fail `npm run docs`, which type-checks every file in `tsconfig.json`.
