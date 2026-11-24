@@ -31,10 +31,6 @@ Chat custom css properties
 
 @use '@carbon/colors';
 
-// Import shared tokens from @carbon/ai-chat-components
-// These are the public configurable tokens that are shared across both packages
-@use '@carbon/ai-chat-components/scss/custom-properties' as shared-tokens;
-
 .cds-aichat--container--render {
   box-sizing: border-box;
   block-size: 100%;
