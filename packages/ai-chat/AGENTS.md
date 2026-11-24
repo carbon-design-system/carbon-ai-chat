@@ -7,7 +7,7 @@ Guidance for [this package](.).
 Carbon AI Chat ships as:
 
 - A React component tree rooted at [the React entry](src/aiChatEntry.tsx).
-- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup and mount the React tree for every host. React components render through `cds-aichat-container`.
+- Lit web-component wrappers (`cds-aichat-container`, `cds-aichat-custom-element`) under [src/web-components/](src/web-components) that own startup for every host. `cds-aichat-container` renders the React app. Inside it, private Lit views under `src/chat/components/` render the shell, home screen, header, launcher, input, and panels.
 - [The server entry](src/serverEntry.ts) exports only types and utilities safe for server rendering.
 
 All entries build through [the build task](tasks/rollup.aichat.js). Output goes to `dist/es/` with the `cds--` prefix and `dist/es-custom/` with `cds--custom`. The custom prefix avoids clashes with `@carbon/angular-components`. TypeDoc writes to `dist/docs/`.
@@ -38,10 +38,9 @@ Load only what you need:
   - `events/` — typed pub/sub for the public event API. Event names and payloads are part of the public contract.
   - `schema/` — runtime message/config schema. Keep in sync with types in [src/types/](src/types/).
   - `languages/` — `intl-messageformat` strings in one locale file. [LanguagePack](src/types/config/LanguagePack.ts) is their public type. Adding a key grows the public API. Renaming one breaks it. Hosts translate through `PublicConfig.strings`; word new strings per [UI copy rules](../../.bob/skills/caic-copy-writer/references/ui-strings.md).
-  - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI.
-  - `ai-chat-components/` — React bindings (`@lit/react`) around the sibling package's Lit components.
+  - `components/` and `components-legacy/` — follow [component placement](../../references/code-patterns.md#component-placement) when adding or moving UI. Private Lit views that read chat state extend `components/shared/NativeChatView.ts`.
 - [src/react/](src/react/) — public React wrapper components re-exported from the package root.
-- [src/web-components/](src/web-components/) — Lit hosts. Kept thin: bridge props/events/slots to the React core.
+- [src/web-components/](src/web-components/) — Lit hosts. They own startup, config updates, live regions, and extension hosts. Put new startup work here, not in React.
 - [src/types/](src/types/) — public types. Exports from `aiChatEntry.tsx` are public API. Follow semver when you edit them. TypeDoc output ships as the public docs site.
 
 ## Build, test, lint

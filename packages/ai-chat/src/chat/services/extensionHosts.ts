@@ -58,7 +58,6 @@ type HostKind = SlotKind | 'inputNode';
 
 type PanelTargetName =
   | 'error-body'
-  | 'hydration-body'
   | 'custom-title'
   | 'custom-body'
   | 'response-title'

@@ -323,18 +323,3 @@ Chat custom css properties
 .cds-aichat--widget--max-width {
   --cds-aichat-border-radius: 0;
 }
-
-.cds-aichat--panel-header-content {
-  margin: auto;
-  max-inline-size: chat-theme.$messages-max-width;
-}
-
-.cds-aichat--panel-header {
-  border-block-end: 1px solid theme.$border-subtle-01;
-}
-
-.cds-aichat--panel-header--full-width {
-  .cds-aichat--panel-header-content {
-    max-inline-size: 100%;
-  }
-}

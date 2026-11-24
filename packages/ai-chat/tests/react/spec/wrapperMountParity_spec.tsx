@@ -274,66 +274,102 @@ describe('how each host mounts the chat', () => {
   });
 
   describe('React roots', () => {
-    it('adds no root for a React wrapper, across config and renderer updates', async () => {
-      const before = createRoot.mock.calls.length;
-      let instance: ChatInstance | null = null;
-      const onBeforeRender = (chat: ChatInstance) => {
-        instance = chat;
-      };
-      const view = render(
-        <ChatContainer
-          {...createBaseConfig()}
-          onBeforeRender={onBeforeRender}
-        />
-      );
-      // Testing Library creates the host's own root.
-      expect(createRoot.mock.calls.length).toBe(before + 1);
-      await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
+    it.each([
+      ['ChatContainer', ChatContainer],
+      ['ChatCustomElement', ChatCustomElement],
+    ] as const)(
+      'adds no root for %s across updates and slot mounting and clearing',
+      async (_name, Wrapper) => {
+        const before = createRoot.mock.calls.length;
+        let instance: ChatInstance | null = null;
+        const onBeforeRender = (chat: ChatInstance) => {
+          instance = chat;
+        };
+        const config = { ...createBaseConfig(), openChatByDefault: true };
+        const view = render(
+          <Wrapper
+            {...config}
+            className="root-probe-chat"
+            onBeforeRender={onBeforeRender}
+          />
+        );
+        // Testing Library creates the host's own root.
+        expect(createRoot.mock.calls.length).toBe(before + 1);
+        await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
 
-      view.rerender(
-        <ChatContainer
-          {...createBaseConfig()}
-          assistantName="Updated"
-          onBeforeRender={onBeforeRender}
-          renderUserDefinedResponse={() => <p>content</p>}
-        />
-      );
-      await waitFor(() =>
-        expect(
-          instance.serviceManager.store.getState().config.public.assistantName
-        ).toBe('Updated')
-      );
+        view.rerender(
+          <Wrapper
+            {...config}
+            className="root-probe-chat"
+            assistantName="Updated"
+            onBeforeRender={onBeforeRender}
+            renderUserDefinedResponse={() => <p data-root-probe>content</p>}
+          />
+        );
+        await waitFor(() =>
+          expect(
+            instance.serviceManager.store.getState().config.public.assistantName
+          ).toBe('Updated')
+        );
 
-      expect(createRoot.mock.calls.length).toBe(before + 1);
-    });
+        expect(createRoot.mock.calls.length).toBe(before + 1);
 
-    it('gives a plain web component one root, reused across updates and unmounted after removal', async () => {
-      const before = createRoot.mock.calls.length;
-      const { element, instances, onAfterRender } = createElementChat(
-        'cds-aichat-container'
-      );
-      document.body.appendChild(element);
-      await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
-        timeout: 5000,
-      });
-      expect(createRoot.mock.calls.length).toBe(before + 1);
+        await addUserDefinedResponse(instance, 'root-counted-response');
+        await waitFor(() =>
+          expect(document.querySelector('[data-root-probe]')?.textContent).toBe(
+            'content'
+          )
+        );
+        expect(createRoot.mock.calls.length).toBe(before + 1);
 
-      element.config = { ...element.config, assistantName: 'Updated' };
-      element.renderUserDefinedResponse = () => document.createElement('p');
-      await element.updateComplete;
-      await waitFor(() =>
-        expect(
-          instances[0].serviceManager.store.getState().config.public
-            .assistantName
-        ).toBe('Updated')
-      );
-      expect(createRoot.mock.calls.length).toBe(before + 1);
+        await act(() => instance.messaging.restartConversation());
+        await waitFor(() =>
+          expect(document.querySelector('[data-root-probe]')).toBeNull()
+        );
+        expect(createRoot.mock.calls.length).toBe(before + 1);
+      }
+    );
 
-      const root = createRoot.mock.results[before].value;
-      element.remove();
-      await settle();
-      expect(root.unmount).toHaveBeenCalledTimes(1);
-    });
+    it.each(['cds-aichat-container', 'cds-aichat-custom-element'])(
+      'gives %s one root through updates, slot mounting and clearing, and removal',
+      async (tag) => {
+        const before = createRoot.mock.calls.length;
+        const { element, instances, onAfterRender } = createElementChat(tag, {
+          openChatByDefault: true,
+        });
+        document.body.appendChild(element);
+        await waitFor(() => expect(onAfterRender).toHaveBeenCalled(), {
+          timeout: 5000,
+        });
+        expect(createRoot.mock.calls.length).toBe(before + 1);
+
+        element.config = { ...element.config, assistantName: 'Updated' };
+        const content = document.createElement('p');
+        content.textContent = 'content';
+        element.renderUserDefinedResponse = () => content;
+        await element.updateComplete;
+        await waitFor(() =>
+          expect(
+            instances[0].serviceManager.store.getState().config.public
+              .assistantName
+          ).toBe('Updated')
+        );
+        expect(createRoot.mock.calls.length).toBe(before + 1);
+
+        await addUserDefinedResponse(instances[0], 'root-counted-response');
+        await waitFor(() => expect(content.isConnected).toBe(true));
+        expect(createRoot.mock.calls.length).toBe(before + 1);
+
+        await act(() => instances[0].messaging.restartConversation());
+        await waitFor(() => expect(content.isConnected).toBe(false));
+        expect(createRoot.mock.calls.length).toBe(before + 1);
+
+        const root = createRoot.mock.results[before].value;
+        element.remove();
+        await settle();
+        expect(root.unmount).toHaveBeenCalledTimes(1);
+      }
+    );
   });
 
   describe('fresh mounts', () => {
