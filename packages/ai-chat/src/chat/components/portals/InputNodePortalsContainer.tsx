@@ -14,7 +14,10 @@ import {
   RendererReport,
   SlotHostPortal,
 } from './SlotHostPortal';
-import { useExtensionHosts } from '../../hooks/useExtensionHosts';
+import {
+  useExtensionHosts,
+  useInputNodePlaced,
+} from '../../hooks/useExtensionHosts';
 import type {
   ExtensionHosts,
   ExtensionHostsSnapshot,
@@ -67,6 +70,7 @@ function InputNodePortal({
 }: InputNodePortalsContainerProps & { entry: InputNodeSlotEntry }) {
   const host = hosts.inputNodeHostFor(entry);
   const { slotKey, state } = entry;
+  const placed = useInputNodePlaced(hosts, slotKey);
   // `state` is stable per slot until its message changes, so the renderer is
   // not called again on every message-store update.
   const content = useMemo(
@@ -80,6 +84,10 @@ function InputNodePortal({
     content === ''
   );
 
+  // An inline host waits for its bubble target. The bubble puts that target's
+  // paragraph on the page later in the same commit, before this re-renders,
+  // so the content mounts connected. That holds only while the paragraph
+  // mounts synchronously.
   return hasContent ? (
     <>
       <ContentReport
@@ -88,7 +96,7 @@ function InputNodePortal({
         slot={slotKey}
         host={host}
       />
-      <SlotHostPortal hostElement={host}>{content}</SlotHostPortal>
+      {placed && <SlotHostPortal hostElement={host}>{content}</SlotHostPortal>}
     </>
   ) : null;
 }

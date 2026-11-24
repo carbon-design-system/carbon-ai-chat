@@ -15,7 +15,13 @@
  * fallback content shows.
  */
 
-import React, { StrictMode, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  StrictMode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { deepQuerySelector } from '@carbon/ai-chat-components/es/globals/utils/dom-utils.js';
 import { LIGHT_DOM_PORTAL_EVENT } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
@@ -1135,8 +1141,7 @@ describe('extension hosts outside React', () => {
     });
     await addUserDefinedResponse(instance, 'measured');
     await addFooterMessage(instance, 'measured-footer');
-    // A block node: an inline node's target sits in a paragraph that the
-    // markdown element projects asynchronously, after this commit.
+    // A block node. The inline case is the next test.
     await sendRequest(instance, {
       id: 'measured-block',
       input: {
@@ -1163,6 +1168,85 @@ describe('extension hosts outside React', () => {
       request: true,
       node: true,
     });
+  });
+
+  it('puts inline input-node content on the page before its mount effects run', async () => {
+    const seen: Record<string, boolean> = {};
+    function Inline() {
+      const ref = useRef<HTMLElement>(null);
+      useLayoutEffect(() => {
+        const target = ref.current.closest('[data-aichat-input-node-slot]');
+        seen.layout = ref.current.isConnected;
+        seen.fallbackHidden =
+          (target?.firstElementChild as HTMLElement)?.hidden === true;
+      }, []);
+      useEffect(() => {
+        seen.passive = ref.current.isConnected;
+      }, []);
+      return <b ref={ref}>custom</b>;
+    }
+    const { instance } = await boot({
+      renderUserDefinedInputNode: () => <Inline />,
+    });
+
+    await sendTaskCard(instance, 'inline-measured');
+
+    await waitFor(() => expect(seen.passive).toBeDefined());
+    expect(seen).toEqual({ layout: true, fallbackHidden: true, passive: true });
+    const slotName = 'inline-measured::0.0';
+    expect(inputHost(getChatHost(), slotName).textContent).toBe('custom');
+  });
+
+  it('keeps the inline fallback until content renders when the renderer arrives late', async () => {
+    type InputNodeRenderer = ChatContainerProps['renderUserDefinedInputNode'];
+    let setRenderer: (next: InputNodeRenderer) => void;
+    let instance: ChatInstance | null = null;
+    function LateRenderer() {
+      const [renderer, setState] = useState<InputNodeRenderer>();
+      setRenderer = (next) => setState(() => next);
+      return (
+        <ChatContainer
+          {...config}
+          onBeforeRender={(chat) => {
+            instance = chat;
+          }}
+          renderUserDefinedInputNode={renderer}
+        />
+      );
+    }
+    render(<LateRenderer />);
+    await waitFor(() => expect(instance).not.toBeNull(), { timeout: 5000 });
+    await sendTaskCard(instance, 'late-inline');
+    const slotName = 'late-inline::0.0';
+    await waitFor(() =>
+      expect(inputFallback(getChatHost(), slotName)).toBeTruthy()
+    );
+    const target = inputTarget(getChatHost(), slotName);
+    const fallback = inputFallback(getChatHost(), slotName);
+    const blank: boolean[] = [];
+    const observer = new MutationObserver(() => {
+      blank.push(fallback.hidden && !probe('late-inline'));
+    });
+    observer.observe(target, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+
+    // Outside act, as on a page: React runs passive effects in a later task.
+    const actEnvironment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+    const wasActEnvironment = actEnvironment.IS_REACT_ACT_ENVIRONMENT;
+    actEnvironment.IS_REACT_ACT_ENVIRONMENT = false;
+    try {
+      setTimeout(() => setRenderer(() => <b data-probe="late-inline">late</b>));
+      await waitFor(() => expect(probe('late-inline')).not.toBeNull());
+    } finally {
+      actEnvironment.IS_REACT_ACT_ENVIRONMENT = wasActEnvironment;
+      observer.disconnect();
+    }
+
+    expect(fallback.hidden).toBe(true);
+    expect(blank).not.toContain(true);
   });
 
   it('keeps hosts and React state across new render-prop identities and unrelated updates', async () => {
