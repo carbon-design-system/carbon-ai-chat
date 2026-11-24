@@ -372,6 +372,15 @@ export class ShellLifecycle {
     };
   }
 
+  /**
+   * The home screen's Return to conversation. Its button leaves with the home
+   * screen, so focus moves the way a reopen moves it once the shell is ready.
+   * The header shares the plain toggle and keeps its own focus.
+   */
+  private readonly returnToConversation = () => {
+    this.inputCallbacks.onToggleHomeScreen();
+    this.requestReadyFocus();
+  };
   readonly requestReadyFocus = () => {
     const generation = this.generation;
     void this.whenReady().then((ready) => {
@@ -877,7 +886,11 @@ export class ShellLifecycle {
             }
           : undefined,
       showHomeScreen,
-      home: { isHydrated: true, onSendInput, onToggleHomeScreen },
+      home: {
+        isHydrated: true,
+        onSendInput,
+        onToggleHomeScreen: this.returnToConversation,
+      },
       input: !customPromptLinePresent
         ? {
             inputProps,

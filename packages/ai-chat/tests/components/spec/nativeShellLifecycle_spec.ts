@@ -1021,6 +1021,79 @@ it('waits for native readiness before automatic composer focus on reopen', async
   await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
 });
 
+describe('Return to conversation focus', () => {
+  const flushPromises = () =>
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+  async function bootHome(shouldTakeFocusIfOpensAutomatically: boolean) {
+    const f = await boot(ChatContainer, {
+      shouldTakeFocusIfOpensAutomatically,
+      homescreen: { isOn: true, greeting: 'Welcome' },
+    });
+    const home = await waitFor(() => {
+      const found = f.view.querySelector('cds-aichat-home-screen');
+      expect(found).not.toBeNull();
+      return found as unknown as { onToggleHomeScreen: () => void };
+    });
+    const focus = jest.spyOn(f.manager.inputComponent, 'requestFocus');
+    let release: (ready: boolean) => void;
+    const blocked = new Promise<boolean>((resolve) => {
+      release = resolve;
+    });
+    return {
+      f,
+      home,
+      focus,
+      blocked,
+      release: (ready = true) => release(ready),
+    };
+  }
+
+  it('waits for native readiness, then focuses the composer once', async () => {
+    const { f, home, focus, blocked, release } = await bootHome(true);
+    const readiness = jest.spyOn(f.view, 'whenReady').mockReturnValue(blocked);
+    act(() => home.onToggleHomeScreen());
+    expect(
+      f.manager.store.getState().persistedToBrowserStorage.homeScreenState
+        .isHomeScreenOpen
+    ).toBe(false);
+    expect(readiness).toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+    await act(async () => {
+      release();
+      await blocked;
+    });
+    await waitFor(() => expect(focus).toHaveBeenCalledTimes(1));
+  });
+
+  it('skips the focus when the shell detaches before it is ready', async () => {
+    const { f, home, focus, blocked, release } = await bootHome(true);
+    jest.spyOn(f.view, 'whenReady').mockReturnValue(blocked);
+    act(() => home.onToggleHomeScreen());
+    f.mounted.unmount();
+    await act(async () => {
+      release();
+      await blocked;
+    });
+    await flushPromises();
+    expect(focus).not.toHaveBeenCalled();
+  });
+
+  it('honors shouldTakeFocusIfOpensAutomatically', async () => {
+    const { f, home, focus } = await bootHome(false);
+    act(() => home.onToggleHomeScreen());
+    await f.view.whenReady();
+    await flushPromises();
+    expect(
+      f.manager.store.getState().persistedToBrowserStorage.homeScreenState
+        .isHomeScreenOpen
+    ).toBe(false);
+    expect(focus).not.toHaveBeenCalled();
+  });
+});
+
 it('finishes receive callbacks while native input readiness is still pending', async () => {
   const f = await boot();
   const input = f.view.querySelector<ChatInput>('cds-aichat-chat-input');

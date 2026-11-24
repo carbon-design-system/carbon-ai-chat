@@ -27,28 +27,35 @@ export interface FocusManagerOptions {
   input: HasRequestFocus | null;
 }
 
-/** Moves focus to the window's current target, and returns whether it found one to focus. */
+/**
+ * Focuses the best place in the open chat.
+ *
+ * @returns Whether it found a place to focus. A target may finish taking focus
+ * a frame later, as the rich editor does.
+ */
 export function requestFocus(options: FocusManagerOptions): boolean {
   try {
     if (!options.shouldAutoFocus || IS_MOBILE) {
       return false;
     }
     if (options.showDisclaimer) {
+      // True only when focus lands on the accept button, so false while it's
+      // disabled.
       return doFocus(options.disclaimer);
     }
+    let target: HasRequestFocus | null;
     if (options.iFramePanelIsOpen) {
-      return Boolean(options.iframePanel?.requestFocus());
+      target = options.iframePanel;
+    } else if (options.viewSourcePanelIsOpen) {
+      target = options.viewSourcePanel;
+    } else if (options.customPanelIsOpen) {
+      target = options.customPanel;
+    } else if (options.responsePanelIsOpen) {
+      target = options.responsePanel;
+    } else {
+      target = options.input;
     }
-    if (options.viewSourcePanelIsOpen) {
-      return Boolean(options.viewSourcePanel?.requestFocus());
-    }
-    if (options.customPanelIsOpen) {
-      return Boolean(options.customPanel?.requestFocus());
-    }
-    if (options.responsePanelIsOpen) {
-      return Boolean(options.responsePanel?.requestFocus());
-    }
-    return Boolean(options.input?.requestFocus());
+    return target?.requestFocus() === true;
   } catch (error) {
     consoleError('An error occurred in MainWindow.requestFocus', error);
     return false;
