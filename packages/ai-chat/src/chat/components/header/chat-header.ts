@@ -203,9 +203,10 @@ class HeaderView extends NativeChatView implements HeaderProps {
         restartButtonLabel: this.languagePack.buttons_restart,
       }).map((action) => ({
         ...action,
-        icon: this.transformIcon
-          ? this.transformIcon(action.icon)
-          : (action.icon as CarbonIcon),
+        icon:
+          action.icon && this.transformIcon
+            ? this.transformIcon(action.icon)
+            : (action.icon as CarbonIcon),
       }));
     }
     return this.actions;
