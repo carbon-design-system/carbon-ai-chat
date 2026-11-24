@@ -22,7 +22,7 @@ import { subscribeToSelectedValue } from '../../utils/selectedSubscription';
 abstract class NativeChatView extends LitElement {
   protected viewState?: ChatViewState;
   private generation = 0;
-  private failed = false;
+  protected failed = false;
   private releases: (() => void)[] = [];
   private context = new ContextConsumer(this, {
     context: chatViewStateContext,
@@ -52,8 +52,15 @@ abstract class NativeChatView extends LitElement {
 
   protected abstract renderView(): unknown;
 
+  protected renderFailedView(): unknown {
+    return nothing;
+  }
+
   protected render() {
-    return this.viewState && !this.failed ? this.renderView() : nothing;
+    if (!this.viewState) {
+      return nothing;
+    }
+    return this.failed ? this.renderFailedView() : this.renderView();
   }
 
   protected performUpdate() {
