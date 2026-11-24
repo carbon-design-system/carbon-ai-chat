@@ -76,29 +76,29 @@ The launcher that opens the floating window has its own configuration and stylin
 
 ## Rounded corners
 
-AI Chat components share a rounded-modifier system that keeps corners consistent across slotted content. You can use it two ways:
+Want your own slotted content to match the chat's corners? Read the corner tokens in your CSS. They follow the chat's corner settings in every layout. See [Corner CSS custom properties](#corner-css-custom-properties).
 
-1. Read the rounded modifier tokens in your own CSS.
-2. Add `data-rounded` (and `data-stacked` when needed) so the system applies rounding for you.
+> **Deprecated:** `data-rounded` and `data-stacked` on your own content are deprecated, and 2.0.0 removes them. They work until then. Read the corner tokens in your CSS instead, as shown in [Round a group with the corner tokens](#round-a-group-with-the-corner-tokens).
 
-Built-in components already carry these attributes. Add `data-rounded` and `data-stacked` yourself only on your own slotted content.
+Built-in components also set them on their own markup. That markup is private, so you have nothing to change there.
 
 **Quick guide**
 
-| Goal | Use | Why |
-| --- | --- | --- |
-| Style one surface (single element, single box) | Read tokens in CSS | You control the exact CSS and just need the value |
-| Round the first/last item in a group | `data-rounded` on the wrapper | The system applies the correct corners for you |
-| The children are stacked vertically | `data-rounded` + `data-stacked` | "Top" and "bottom" map to first and last in the stack |
-| You need both automatic rounding and custom CSS | `data-rounded` for the group + tokens in your own CSS | Keeps everything aligned |
+| Goal | Read the tokens on |
+| --- | --- |
+| Round one surface | The surface itself |
+| Round the first and last item in a row | The row's `:first-child` and `:last-child` |
+| Round the top or bottom of a vertical stack | A column flex container's `:first-child` or `:last-child` |
 
-Supported values for `data-rounded`:
+#### The deprecated attributes
+
+Until 2.0.0, both attributes work on your own slotted content. `data-rounded` takes these values:
 
 - `""` (empty string) for all corners
 - `top`, `top-left`, `top-right`
 - `bottom`, `bottom-left`, `bottom-right`
 
-Use `data-stacked` when children stack vertically. Without `data-stacked`, `data-rounded="top"` and `data-rounded="bottom"` round the first and last child in a horizontal row.
+`data-stacked` lays the children out in a column. Then `top` rounds the first child, and `bottom` the last. Without it, `top` and `bottom` round the first and last child in a row.
 
 ### Per-corner configuration
 
@@ -192,9 +192,39 @@ Apply them with the matching logical `border-*-radius` properties using the fall
 }
 ```
 
-Or let the system apply rounding for you with `data-rounded`. Render this into a footer slot. It then inherits the correct rounding for the current layout:
+### Round a group with the corner tokens
+
+To round the bottom of a stack, lay it out as a flex column. Then give its last child the two bottom-corner tokens. Put this in a footer slot, and its last button matches the chat's bottom corners:
 
 ```html
+<div class="my-footer-actions">
+  <button type="button">Cancel</button>
+  <button type="button">Save</button>
+</div>
+```
+
+```css
+.my-footer-actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-footer-actions > :last-child {
+  border-end-start-radius: var(
+    --cds-aichat-border-radius-end-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-end-radius: var(
+    --cds-aichat-border-radius-end-end,
+    var(--cds-aichat-border-radius)
+  );
+}
+```
+
+This replaces the deprecated attribute form, which 2.0.0 removes:
+
+```html
+<!-- Deprecated: removed in 2.0.0. Use the CSS above instead. -->
 <div class="my-footer-actions" data-rounded="bottom" data-stacked>
   <button type="button">Cancel</button>
   <button type="button">Save</button>

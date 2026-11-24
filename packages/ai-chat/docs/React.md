@@ -191,7 +191,7 @@ The renderer can also read your app's state, or drive streaming. Wrap the prop i
 
 ## Slots
 
-The chat has several elements you can add content to with a slot. The {@link ChatContainerProps.renderWriteableElements | renderWriteableElements} prop is an object whose key is the area to render into and whose value is the component to render there. See [Slots](./WriteableElements.md) for the available slots and the corner-alignment attributes (`data-rounded`/`data-stacked`).
+The chat has several elements you can add content to with a slot. The {@link ChatContainerProps.renderWriteableElements | renderWriteableElements} prop is an object whose key is the area to render into and whose value is the component to render there. See [Slots](./WriteableElements.md) for the available slots and how to match the chat's corners.
 
 Like `renderUserDefinedResponse`, this object is re-created on every render if you define it inside your component. To avoid that, wrap `renderWriteableElements` in `useMemo` or define it outside your component. With `useMemo`, you can also pass values from your component into the slots.
 

@@ -45,7 +45,9 @@ The panel renders its content through the {@link WriteableElementName.CUSTOM_PAN
 
 ### Align rounded corners in a panel
 
-Custom panel content can use `data-rounded` attributes to match the panel's corner rounding.
+To match the panel's corners, read the corner tokens in your panel content's CSS.
+
+> **Deprecated:** `data-rounded` and `data-stacked` on your own content are deprecated, and 2.0.0 removes them. They work until then. Read the corner tokens in your CSS instead, as shown here. See [Rounded corners](./Layout.md#rounded-corners).
 
 ```ts
 const panelElement =
@@ -53,13 +55,13 @@ const panelElement =
 if (panelElement) {
   panelElement.innerHTML = `
     <div class="my-panel-content">
-      <div class="panel-section" data-rounded="top">
+      <div class="panel-section panel-title">
         <h3>Form Title</h3>
       </div>
       <div class="panel-section">
         <input type="text" placeholder="Enter data" />
       </div>
-      <div class="panel-actions" data-rounded="bottom" data-stacked>
+      <div class="panel-actions">
         <button type="button">Cancel</button>
         <button type="button">Submit</button>
       </div>
@@ -68,11 +70,39 @@ if (panelElement) {
 }
 ```
 
-See [Rounded corners](./Layout.md#rounded-corners).
+```css
+/* Round the title's top corners and the last button's bottom corners. */
+.panel-title {
+  border-start-start-radius: var(
+    --cds-aichat-border-radius-start-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-start-end-radius: var(
+    --cds-aichat-border-radius-start-end,
+    var(--cds-aichat-border-radius)
+  );
+}
+
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-actions > :last-child {
+  border-end-start-radius: var(
+    --cds-aichat-border-radius-end-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-end-radius: var(
+    --cds-aichat-border-radius-end-end,
+    var(--cds-aichat-border-radius)
+  );
+}
+```
 
 ## Related
 
 - [Slots](./WriteableElements.md) — the {@link WriteableElementName.CUSTOM_PANEL_ELEMENT | custom panel slot} a panel renders through.
-- [Layout](./Layout.md) — corner-rounding tokens `data-rounded` uses.
+- [Layout](./Layout.md) — the corner tokens that round panel content.
 - [Using with React](./React.md) — get the {@link ChatInstance} in a React app.
 - [Using as a Web component](./WebComponent.md) — get the {@link ChatInstance} with the web component.

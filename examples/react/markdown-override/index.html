@@ -21,6 +21,39 @@
         height: 100vh;
         width: 100vw;
       }
+      /* Round the code snippets this example renders to match the chat's
+         corners, by reading the corner tokens. Each corner falls back to the
+         base radius, less 1px to sit inside the border. */
+      cds-aichat-code-snippet {
+        border-start-start-radius: calc(
+          var(
+              --cds-aichat-border-radius-start-start,
+              var(--cds-aichat-border-radius)
+            ) -
+            1px
+        );
+        border-start-end-radius: calc(
+          var(
+              --cds-aichat-border-radius-start-end,
+              var(--cds-aichat-border-radius)
+            ) -
+            1px
+        );
+        border-end-start-radius: calc(
+          var(
+              --cds-aichat-border-radius-end-start,
+              var(--cds-aichat-border-radius)
+            ) -
+            1px
+        );
+        border-end-end-radius: calc(
+          var(
+              --cds-aichat-border-radius-end-end,
+              var(--cds-aichat-border-radius)
+            ) -
+            1px
+        );
+      }
     </style>
   </head>
   <body>

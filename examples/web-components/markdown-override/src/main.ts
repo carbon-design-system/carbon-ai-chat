@@ -77,7 +77,6 @@ const MARKDOWN_CONFIG: WCMarkdown = {
         const wrap = document.createElement('div');
         wrap.setAttribute('slot', 'body');
         snippet = document.createElement('cds-aichat-code-snippet');
-        snippet.setAttribute('data-rounded', '');
         wrap.appendChild(snippet);
         card.appendChild(wrap);
         codeBlockHosts.set(slotName, card);
