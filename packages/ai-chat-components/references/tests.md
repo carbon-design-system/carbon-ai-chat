@@ -76,7 +76,7 @@ The rules are in [writing-tests.md](../../../references/writing-tests.md#waits-w
 - **After a change, await `updateComplete`.** When children render too, also await each child's `updateComplete`; Lit's doesn't wait for them.
 - **Wait for an event with `oneEvent`, and for a condition with `waitUntil`,** both from `@open-wc/testing`.
 - **`fixture` removes what it mounts after each case.** It registers that cleanup only while Vitest globals are on, so keep `globals: true`.
-- **Render real Carbon and child elements.** In the browser project, spy on a module with `vi.mock(path, { spy: true })`.
+- **Render real Carbon and child elements.** In the browser project, spy on a module with `vi.mock(path, { spy: true })`, then read it with `vi.mocked(fn)`.
 
 ```ts
 shell.open = true;

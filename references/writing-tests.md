@@ -77,7 +77,7 @@ beforeEach(async () => {
 
 - **A spy keeps the real code.** `vi.spyOn(object, 'method')` records each call and still runs the method. Reach for it first.
 - **A fake at a public seam keeps the code under test real,** such as a host callback or ai-chat's service desk. Prefer it to a stub inside the code under test.
-- **A stub replaces the code.** `mockImplementation()` and `mockReturnValue()` choose the answer, so the test stops proving what the replaced code does. Stub only what you must, and say in a comment what the stub stops the test from proving. Never assert a value the stub itself returned.
+- **A stub replaces the code.** `mockImplementation()` and `mockReturnValue()` choose the answer, so the test stops proving what the replaced code does. Stub only what you must, and say in a comment what the stub stops the test from proving. That includes a minimal stand-in for a collaborator, such as a stub `ServiceManager` holding only what the unit reads. Never assert a value the stub itself returned.
 
 ```ts
 // The stub stops this test from proving how a real reply is parsed.
