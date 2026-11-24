@@ -34,6 +34,10 @@ export interface PublicConfigMessaging extends ChatSDKConfigMessaging<ChatInstan
    * If no response arrives in this window, the chat shows an error and sends an abort signal to
    * {@link PublicConfigMessaging.customSendMessage}. Calling {@link ChatInstanceMessaging.addMessage},
    * {@link ChatInstanceMessaging.addMessageChunk}, or {@link ChatInstanceMessaging.upsertMessage} ends this timeout window.
+   *
+   * @deprecated Unchanged on 1.x. In 2.0.0 the chat no longer times out a request, and this setting is removed. Time
+   * the request in your {@link PublicConfigMessaging.customSendMessage} and reject its promise. To switch now, set this
+   * to `0`.
    */
   messageTimeoutSecs?: number;
 
@@ -70,6 +74,10 @@ export interface PublicConfigMessaging extends ChatSDKConfigMessaging<ChatInstan
    * {@link ChatInstanceMessaging.addMessage} or {@link ChatInstanceMessaging.addMessageChunk} being called after this
    * message was sent. If neither of those methods are called with in the window defined here, the loading indicator
    * will be shown.
+   *
+   * @deprecated Unchanged on 1.x. In 2.0.0 the chat no longer shows the loading indicator on its own, and this setting
+   * is removed. Drive the indicator with {@link ChatInstance.updateIsMessageLoadingCounter}, or read
+   * `instance.state.get().status`, which is `'submitted'` while the chat waits for a reply.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 

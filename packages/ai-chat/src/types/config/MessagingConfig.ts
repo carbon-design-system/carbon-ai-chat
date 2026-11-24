@@ -86,6 +86,9 @@ export enum CancellationReason {
 
   /**
    * Message request exceeded the configured timeout duration.
+   *
+   * @deprecated Unchanged on 1.x. Removed in 2.0.0, where the chat no longer times out a request. Time the request in
+   * your {@link PublicConfigMessaging.customSendMessage} instead.
    */
   TIMEOUT = 'Request timeout',
 
