@@ -7,7 +7,7 @@
 
 @use '@carbon/layout';
 @use '@carbon/styles/scss/theme';
-@use '@carbon/styles/scss/components/button' as button;
+@use '@carbon/styles/scss/components/button/vars' as button;
 
 .cds-aichat--response-user-avatar img {
   block-size: 100%;

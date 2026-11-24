@@ -9,9 +9,14 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/type';
-@use '@carbon/styles/scss/components/button';
+@use '@carbon/styles/scss/components/button/tokens' as button;
+@use '@carbon/styles/scss/components/button/vars' as button-vars;
 @use '../../../globals/scss/chat-launcher-layout';
 @use '@carbon/ai-chat-components/scss/utilities' as chat-config;
+
+// Registers the button tokens in the Carbon theme classes, as the full button module did. The chat's
+// cds-button elements read them, so the dark themes keep their button colors.
+@include theme.add-component-tokens(button.$button-tokens);
 
 cds-aichat-launcher-view {
   display: contents;
@@ -111,8 +116,8 @@ cds-button.cds-aichat--launcher__button {
     }
 
     &:focus {
-      border-width: button.$button-border-width;
-      box-shadow: inset 0 0 0 button.$button-border-width
+      border-width: button-vars.$button-border-width;
+      box-shadow: inset 0 0 0 button-vars.$button-border-width
         $launcher-color-focus-border;
     }
   }
