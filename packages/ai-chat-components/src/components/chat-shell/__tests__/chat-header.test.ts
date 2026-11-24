@@ -164,17 +164,6 @@ describe('cds-aichat-chat-header', function () {
       expect(toolbarContent).to.include('title');
       expect(toolbarContent).to.include('name');
     });
-
-    it('should use custom title slot when provided', async () => {
-      const el = await fixture<CdsAiChatHeader>(
-        html`<cds-aichat-chat-header header-title="Default Title">
-          <div slot="title" id="custom-title">Custom Title Content</div>
-        </cds-aichat-chat-header>`
-      );
-      const customTitle = el.querySelector('#custom-title');
-      expect(customTitle).to.exist;
-      expect(customTitle!.textContent).to.equal('Custom Title Content');
-    });
   });
 
   // ========== Actions Tests ==========
@@ -219,8 +208,11 @@ describe('cds-aichat-chat-header', function () {
         html`<cds-aichat-chat-header
           navigation-type="none"></cds-aichat-chat-header>`
       );
-      const navContent = el.shadowRoot!.querySelector('div[slot="navigation"]');
-      expect(navContent === null).to.be.true;
+      const toolbar = el.shadowRoot!.querySelector('cds-aichat-toolbar')!;
+      const navChildren = Array.from(
+        toolbar.querySelectorAll(':scope > [slot="navigation"]')
+      );
+      expect(navChildren.every((child) => child.tagName === 'SLOT')).to.be.true;
     });
 
     it('should render back button when navigationType is back', async () => {
@@ -305,15 +297,21 @@ describe('cds-aichat-chat-header', function () {
       }
     });
 
-    it('should use custom navigation slot when provided', async () => {
+    it('should keep navigation-type over a slotted navigation', async () => {
       const el = await fixture<CdsAiChatHeader>(
-        html`<cds-aichat-chat-header navigation-type="back">
+        html`<cds-aichat-chat-header
+          navigation-type="back"
+          .navigationBackIcon=${{ name: 'arrow--left', size: 16 }}>
           <div slot="navigation" id="custom-nav">Custom Navigation</div>
         </cds-aichat-chat-header>`
       );
-      const customNav = el.querySelector('#custom-nav');
-      expect(customNav).to.exist;
-      expect(customNav!.textContent).to.equal('Custom Navigation');
+      const customNav = el.querySelector<HTMLElement>('#custom-nav')!;
+      const backButton = el.shadowRoot!.querySelector(
+        'div[slot="navigation"] cds-icon-button'
+      );
+
+      expect(customNav.assignedSlot === null).to.be.true;
+      expect(backButton !== null).to.be.true;
     });
   });
 
@@ -565,6 +563,20 @@ describe('cds-aichat-chat-header', function () {
 
       expect(el.requestFocus()).to.be.true;
       expect(document.activeElement).to.equal(link);
+    });
+
+    it('should skip content under an aria-hidden ancestor in the fallback', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <div slot="decorator" aria-hidden="true">
+            <a href="#about">About</a>
+          </div>
+        </cds-aichat-chat-header>
+      `);
+      const previous = document.activeElement;
+
+      expect(el.requestFocus()).to.be.false;
+      expect(document.activeElement === previous).to.be.true;
     });
 
     it('should return false when the fallback finds only non-focusable content', async () => {

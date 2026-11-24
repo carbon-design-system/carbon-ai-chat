@@ -38,8 +38,8 @@ export type NavigationOverflowItem = BaseOverflowMenuItem;
  * navigation, title, actions, and decorators (like AI labels).
  *
  * @element cds-aichat-chat-header
- * @slot navigation - Navigation controls (e.g., back button, overflow menu)
- * @slot title - Title and name content (can also use title/name properties)
+ * @slot navigation - Navigation controls (e.g., back button, overflow menu). Ignored when `navigation-type` is `back` or `overflow`.
+ * @slot title - Title and name content. Ignored when `header-title` or `header-name` is set.
  * @slot decorator - Decorative elements like AI labels
  * @slot fixed-actions - Actions that never overflow (allows passing custom components)
  */
@@ -61,11 +61,12 @@ class CdsAiChatChatHeader extends LitElement {
    * - NAV_BUTTON_SELECTORS: Used for navigation slot. Includes overflow menu for navigation patterns.
    * - TOOLBAR_ACTION_SELECTOR: Specifically targets toolbar icon buttons (most common action type).
    * - FOCUSABLE_SELECTORS: Fallback selector for any focusable element. Uses "*" because the
-   *   tryFocus() utility already performs comprehensive validation including:
-   *   - Visibility checks (display, visibility, hidden, inert, aria-hidden)
+   *   tryFocus() utility already validates each candidate:
+   *   - Visibility checks on the element itself (display, visibility, hidden, inert, aria-hidden)
    *   - Focusability validation (handles standard elements and custom elements with delegatesFocus)
    *   - Actual focus verification (checks if document.activeElement changed)
-   *   This approach avoids duplicating validation logic and properly handles Carbon components.
+   *   tryFocus() doesn't check ancestors, so the fallback walk skips hidden, inert, and
+   *   aria-hidden subtrees itself (HIDDEN_SUBTREE_SELECTOR).
    */
   private static readonly BUTTON_SELECTORS =
     'cds-button, cds-icon-button, button';
@@ -74,6 +75,9 @@ class CdsAiChatChatHeader extends LitElement {
     'cds-button, cds-icon-button, cds-overflow-menu, button';
 
   private static readonly FOCUSABLE_SELECTORS = '*';
+
+  private static readonly HIDDEN_SUBTREE_SELECTOR =
+    '[aria-hidden="true"], [inert], [hidden]';
 
   private static readonly TOOLBAR_ACTION_SELECTOR =
     'cds-icon-button:not([disabled])';
@@ -207,7 +211,15 @@ class CdsAiChatChatHeader extends LitElement {
         if (!this.shadowRoot) {
           return false;
         }
-        for (const node of walkComposedTree(this.shadowRoot)) {
+        const isHiddenSubtree = (node: Node) =>
+          node instanceof Element &&
+          node.matches(CdsAiChatChatHeader.HIDDEN_SUBTREE_SELECTOR);
+        for (const node of walkComposedTree(
+          this.shadowRoot,
+          0,
+          undefined,
+          isHiddenSubtree
+        )) {
           if (
             node instanceof HTMLElement &&
             node.matches(CdsAiChatChatHeader.FOCUSABLE_SELECTORS) &&
