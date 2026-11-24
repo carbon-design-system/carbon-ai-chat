@@ -679,7 +679,9 @@ describe('ChatInstance.messaging.upsertMessage', () => {
         .mockImplementation(() => undefined);
 
       try {
-        await expect(instance.send('start')).rejects.toEqual(new Error('{}'));
+        await expect(instance.send('start')).rejects.toEqual(
+          new Error('upsert send failed')
+        );
 
         expect(onError).toHaveBeenCalledTimes(1);
         expect(

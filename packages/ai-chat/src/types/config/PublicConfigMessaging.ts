@@ -36,10 +36,11 @@ export interface PublicConfigMessaging {
   messageTimeoutSecs?: number;
 
   /**
-   * Controls how long AI chat should wait before showing the loading indicator. If set to 0, the chat will never show
-   * the loading indicator on its own. This is tied to either {@link ChatInstanceMessaging.addMessage} or
-   * {@link ChatInstanceMessaging.addMessageChunk} being called after this message was sent. If neither of those methods
-   * are called with in the window defined here, the loading indicator will be shown.
+   * Controls how long AI chat should wait before showing the loading indicator, in seconds. The default is 4 seconds.
+   * If set to 0, the chat will never show the loading indicator on its own. This is tied to either
+   * {@link ChatInstanceMessaging.addMessage} or {@link ChatInstanceMessaging.addMessageChunk} being called after this
+   * message was sent. If neither of those methods are called with in the window defined here, the loading indicator
+   * will be shown.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 

@@ -240,6 +240,35 @@ describe('chatBoot utils', () => {
       );
       expect(bySlot).toEqual({});
     });
+
+    it('ignores user-defined response and chunk events with no slot', () => {
+      const eventBus = new EventBus();
+      const instance = eventBus as unknown as ChatInstance;
+
+      let bySlot: any = {};
+      const setBySlot = (updater: any) => {
+        bySlot = typeof updater === 'function' ? updater(bySlot) : updater;
+      };
+
+      attachUserDefinedResponseHandlers(instance, setBySlot as any);
+
+      eventBus.fireSync(
+        {
+          type: BusEventType.USER_DEFINED_RESPONSE,
+          data: { fullMessage: { id: 'm1' }, message: { id: 'i1' } },
+        },
+        instance
+      );
+      eventBus.fireSync(
+        {
+          type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
+          data: { chunk: { partial_item: { t: 'p1' } } },
+        },
+        instance
+      );
+
+      expect(bySlot).toEqual({});
+    });
   });
   describe('attachCustomFooterHandler', () => {
     it('updates state on custom footer slot events', () => {
