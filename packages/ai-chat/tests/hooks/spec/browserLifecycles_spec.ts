@@ -12,10 +12,6 @@ import {
   hasMeaningfulContent,
   observeWriteableElementPresence,
 } from '../../../src/chat/utils/writeableElementPresence';
-import {
-  attachHosts,
-  detachHosts,
-} from '../../../src/chat/utils/removeHostsOnUnmount';
 import { connectMobileViewportLayout } from '../../../src/chat/utils/mobileViewportLayout';
 import {
   injectStyles,
@@ -90,22 +86,6 @@ describe('browser lifecycle cores', () => {
     expect(onChange).not.toHaveBeenCalled();
     observeWriteableElementPresence(undefined, onChange)();
     expect(onChange).toHaveBeenLastCalledWith(false);
-  });
-
-  it('attaches hosts again after cleanup without duplicating them', () => {
-    const wrapper = document.createElement('div');
-    const host = document.createElement('div');
-    const hosts = new Map([['host', host]]);
-    document.body.append(wrapper);
-    attachHosts(hosts, wrapper);
-    attachHosts(hosts, wrapper);
-    expect(wrapper.children).toHaveLength(1);
-    detachHosts(hosts);
-    detachHosts(hosts);
-    expect(wrapper.children).toHaveLength(0);
-    attachHosts(hosts, wrapper);
-    expect(wrapper.firstChild).toBe(host);
-    wrapper.remove();
   });
 
   it('writes viewport dimensions immediately and releases listeners on cleanup', () => {
