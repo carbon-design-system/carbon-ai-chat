@@ -18,7 +18,10 @@ import type { Action } from '../../toolbar/src/toolbar.js';
 import type { BaseOverflowMenuItem } from '../../../typings/overflow-menu.js';
 import prefix from '../../../globals/settings.js';
 import { PageObjectId } from '../../../testing/PageObjectId.js';
-import { tryFocus } from '../../../globals/utils/focus-utils.js';
+import {
+  tryFocus,
+  walkComposedTree,
+} from '../../../globals/utils/focus-utils.js';
 import { isDirectionRTL } from '../../../globals/utils/rtl-utils.js';
 import styles from './chat-header.scss?lit';
 
@@ -35,8 +38,8 @@ export type NavigationOverflowItem = BaseOverflowMenuItem;
  * navigation, title, actions, and decorators (like AI labels).
  *
  * @element cds-aichat-chat-header
- * @slot navigation - Navigation controls (e.g., back button, overflow menu)
- * @slot title - Title and name content (can also use title/name properties)
+ * @slot navigation - Navigation controls (e.g., back button, overflow menu). Ignored when `navigation-type` is `back` or `overflow`.
+ * @slot title - Title and name content. Ignored when `header-title` or `header-name` is set.
  * @slot decorator - Decorative elements like AI labels
  * @slot fixed-actions - Actions that never overflow (allows passing custom components)
  */
@@ -58,11 +61,12 @@ class CdsAiChatChatHeader extends LitElement {
    * - NAV_BUTTON_SELECTORS: Used for navigation slot. Includes overflow menu for navigation patterns.
    * - TOOLBAR_ACTION_SELECTOR: Specifically targets toolbar icon buttons (most common action type).
    * - FOCUSABLE_SELECTORS: Fallback selector for any focusable element. Uses "*" because the
-   *   tryFocus() utility already performs comprehensive validation including:
-   *   - Visibility checks (display, visibility, hidden, inert, aria-hidden)
+   *   tryFocus() utility already validates each candidate:
+   *   - Visibility checks on the element itself (display, visibility, hidden, inert, aria-hidden)
    *   - Focusability validation (handles standard elements and custom elements with delegatesFocus)
    *   - Actual focus verification (checks if document.activeElement changed)
-   *   This approach avoids duplicating validation logic and properly handles Carbon components.
+   *   tryFocus() doesn't check ancestors, so the fallback walk skips hidden, inert, and
+   *   aria-hidden subtrees itself (HIDDEN_SUBTREE_SELECTOR).
    */
   private static readonly BUTTON_SELECTORS =
     'cds-button, cds-icon-button, button';
@@ -71,6 +75,9 @@ class CdsAiChatChatHeader extends LitElement {
     'cds-button, cds-icon-button, cds-overflow-menu, button';
 
   private static readonly FOCUSABLE_SELECTORS = '*';
+
+  private static readonly HIDDEN_SUBTREE_SELECTOR =
+    '[aria-hidden="true"], [inert], [hidden]';
 
   private static readonly TOOLBAR_ACTION_SELECTOR =
     'cds-icon-button:not([disabled])';
@@ -117,7 +124,8 @@ class CdsAiChatChatHeader extends LitElement {
     }
 
     for (const el of slot.assignedElements()) {
-      const button = el.querySelector(selectors);
+      // The assigned element might be the button itself, or a wrapper around it
+      const button = el.matches(selectors) ? el : el.querySelector(selectors);
       if (button instanceof HTMLElement && this.tryFocusElement(button)) {
         return true;
       }
@@ -197,14 +205,30 @@ class CdsAiChatChatHeader extends LitElement {
           this.tryFocusElement(buttons[0])
         );
       },
-      // 4. Try any focusable element as last resort
+      // 4. Try any focusable element as last resort, in composed tree order so
+      // slotted content and nested shadow roots are searched too
       () => {
-        const focusable = this.shadowRoot?.querySelector(
-          CdsAiChatChatHeader.FOCUSABLE_SELECTORS
-        );
-        return (
-          focusable instanceof HTMLElement && this.tryFocusElement(focusable)
-        );
+        if (!this.shadowRoot) {
+          return false;
+        }
+        const isHiddenSubtree = (node: Node) =>
+          node instanceof Element &&
+          node.matches(CdsAiChatChatHeader.HIDDEN_SUBTREE_SELECTOR);
+        for (const node of walkComposedTree(
+          this.shadowRoot,
+          0,
+          undefined,
+          isHiddenSubtree
+        )) {
+          if (
+            node instanceof HTMLElement &&
+            node.matches(CdsAiChatChatHeader.FOCUSABLE_SELECTORS) &&
+            this.tryFocusElement(node)
+          ) {
+            return true;
+          }
+        }
+        return false;
       },
     ];
 
@@ -427,7 +451,7 @@ class CdsAiChatChatHeader extends LitElement {
     const hasTitle = this.headerTitle || this.headerName;
 
     if (!hasTitle) {
-      return html`<slot name="title"></slot>`;
+      return html`<slot name="title" slot="title"></slot>`;
     }
 
     return html`
@@ -468,7 +492,7 @@ class CdsAiChatChatHeader extends LitElement {
       this.navigationType && this.navigationType !== 'none';
     const navigationContent = hasNavigationProps
       ? this.renderNavigation()
-      : html`<slot name="navigation"></slot>`;
+      : html`<slot name="navigation" slot="navigation"></slot>`;
 
     return html`
       <cds-aichat-toolbar

@@ -108,4 +108,9 @@ $block-class: #{$prefix}-toolbar;
     min-block-size: layout.$spacing-08;
     min-inline-size: layout.$spacing-08;
   }
+
+  // The display rules above would otherwise override the hidden attribute
+  ::slotted([hidden]) {
+    display: none;
+  }
 }
