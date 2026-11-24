@@ -22,9 +22,9 @@
  * boot must still get footers.
  */
 
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 
 import '../../../src/web-components/cds-aichat-container';
 import '../../../src/web-components/cds-aichat-custom-element';
@@ -37,6 +37,7 @@ import {
 import { createBaseConfig, createBaseTestProps } from '../../test_helpers';
 
 const FOOTER_SELECTOR = 'div[slot^="request-footer-"]';
+const roots = new Set<Root>();
 
 /**
  * One booted surface: the instance to send through, and the element whose
@@ -111,7 +112,9 @@ async function bootReact(
   const mount = document.createElement('div');
   document.body.appendChild(mount);
 
-  createRoot(mount).render(
+  const root = createRoot(mount);
+  roots.add(root);
+  root.render(
     React.createElement(ChatContainer, {
       ...createBaseTestProps(),
       onBeforeRender: (chatInstance: ChatInstance) => {
@@ -133,6 +136,15 @@ async function bootReact(
 }
 
 describe('custom request footer across host surfaces', () => {
+  afterEach(async () => {
+    await act(async () => {
+      roots.forEach((root) => root.unmount());
+      roots.clear();
+      document.body.replaceChildren();
+      await Promise.resolve();
+    });
+  });
+
   it('renders a footer under a user message on every surface', async () => {
     const caches = [new Map<string, HTMLElement>(), new Map()];
 

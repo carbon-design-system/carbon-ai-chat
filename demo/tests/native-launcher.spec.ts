@@ -130,8 +130,10 @@ for (const framework of ['react', 'web-component']) {
       await expect(launcher).toBeFocused();
       await page.keyboard.press('Enter');
       await expect(page.getByTestId(PageObjectId.MAIN_PANEL)).toBeVisible();
-      // The parent launcher also leaves page focus after reopening.
-      await expect(page.locator('body')).toBeFocused();
+      // Reopening now moves automatic focus to the editor once the shell is
+      // ready. Main asks for that focus on every open, but its request runs
+      // before the window renders, so focus stayed on the page body there.
+      await expect(editor).toBeFocused();
       await page.evaluate(() => window.chatInstance.requestFocus());
       await expect(editor).toBeFocused();
     });

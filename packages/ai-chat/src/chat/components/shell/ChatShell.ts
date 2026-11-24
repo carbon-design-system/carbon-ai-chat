@@ -7,7 +7,7 @@
  *  @license
  */
 
-import { nothing, type LitElement, type PropertyValues } from 'lit';
+import { nothing, type LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { carbonElement } from '@carbon/ai-chat-components/es/globals/decorators/index.js';
 import type CDSAIChatShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
@@ -15,9 +15,19 @@ import { NativeChatView } from '../shared/NativeChatView';
 import type { ChatViewState } from '../../services/chatViewState';
 import type NativePanels from '../panels/NativePanels';
 import type ChatInput from '../input/ChatInput';
+import type { MessagesComponentClass } from '../../components-legacy/MessagesComponent';
+import {
+  ShellLifecycle,
+  selectShellState,
+  type ShellOptions,
+  type ShellInputConfig,
+  type ShellContentState,
+} from '../../utils/shellLifecycle';
+import { shallowEqual } from '../../store/appStore';
+import { subscribeToSelectedValue } from '../../utils/selectedSubscription';
+
 import {
   renderShellLayout,
-  type ShellLayoutBindings,
   type ShellLayoutInputs,
   type ShellLayoutRefs,
   type ShellLayoutTargets,
@@ -25,8 +35,20 @@ import {
 
 @carbonElement('cds-aichat-chat-shell')
 class ChatShell extends NativeChatView {
-  @property({ attribute: false }) layout?: ShellLayoutInputs;
-  @property({ attribute: false }) bindings?: ShellLayoutBindings;
+  @property({ attribute: false }) options?: ShellOptions;
+  @property({ attribute: false }) inputConfig?: ShellInputConfig;
+  @property({ attribute: false })
+  transformIcon?: ShellLayoutInputs['header']['transformIcon'];
+  @property({ attribute: false }) contentRevision?: object;
+  @property({ attribute: false })
+  getMessages?: () => MessagesComponentClass | null;
+  @property({ attribute: false }) onContentState?: (
+    content: ShellContentState
+  ) => void;
+  private layout?: ShellLayoutInputs;
+  private lifecycle?: ShellLifecycle;
+  private releaseErrorView?: () => void;
+  private internalInput?: ChatInput;
   @property({ attribute: false })
   onTargetsReady?: (targets: ShellLayoutTargets | undefined) => void;
 
@@ -42,11 +64,9 @@ class ChatShell extends NativeChatView {
   private targets?: ShellLayoutTargets;
   private committedMessages?: { target: HTMLElement; generation: number };
   private publishedInput?: ChatInput;
-  private publishedPanels?: NativePanels;
-  private inputBinding?: ShellLayoutBindings['setInputElement'];
-  private panelBinding?: ShellLayoutBindings['setPanelElement'];
   private targetCallback?: ChatShell['onTargetsReady'];
   private waiters = new Set<() => void>();
+  private contentConnected = true;
   private readonly refs: ShellLayoutRefs = {
     container: (element) => {
       if (element) {
@@ -61,7 +81,6 @@ class ChatShell extends NativeChatView {
     panels: (element) => {
       if (element) {
         this.panels = element as NativePanels;
-        this.publishBindings();
       }
     },
     input: (element) => {
@@ -71,8 +90,13 @@ class ChatShell extends NativeChatView {
       }
     },
     onInputHandleChange: (event) => {
-      if (event.currentTarget === this.input) {
-        this.bindings?.onInputHandleChange(event);
+      if (
+        event.currentTarget === this.input &&
+        event.currentTarget === this.internalInput &&
+        event.target === this.internalInput &&
+        event.detail === (this.internalInput?.inputFunctions ?? null)
+      ) {
+        this.lifecycle?.setInputHandle(event.detail);
       }
     },
   };
@@ -80,6 +104,26 @@ class ChatShell extends NativeChatView {
   connectedCallback() {
     super.connectedCallback();
     this.signal();
+  }
+
+  setContentConnected(connected: boolean): void {
+    this.contentConnected = connected;
+    if (!connected) {
+      this.lifecycle?.disconnect();
+      return;
+    }
+    // React dropped the targets and content handed over while detached,
+    // including a failed shell's error-view content. Forget both, failed or
+    // not, so the next update hands the current ones over again.
+    this.targetCallback = undefined;
+    this.lifecycle?.forgetContent();
+    if (this.viewState && this.isConnected && !this.failed) {
+      this.ensureLifecycle(this.viewState);
+      this.lifecycle.publishHandles();
+      // The detach also cleared the input registration.
+      this.publishedInput = undefined;
+    }
+    this.requestUpdate();
   }
 
   disconnectedCallback() {
@@ -101,12 +145,98 @@ class ChatShell extends NativeChatView {
     this.owner = viewState;
     if (this.ownerFailed) {
       this.failed = true;
+      return;
     }
+    this.ensureLifecycle(viewState);
+    const lifecycle = this.lifecycle;
+    if (this.contentConnected) {
+      lifecycle.publishHandles();
+    }
+    this.selectStore(
+      selectShellState,
+      () => {
+        lifecycle.update();
+      },
+      shallowEqual
+    );
+    this.selectView(
+      (snapshot) => ({
+        intl: snapshot.intl,
+        endChatConfirmationOpen: snapshot.endChatConfirmationOpen,
+        humanAgentConfirmation: snapshot.humanAgentConfirmation,
+      }),
+      () => {},
+      shallowEqual
+    );
+    this.own(
+      subscribeToSelectedValue(
+        {
+          getSnapshot: viewState.serviceManager.instance.state.get,
+          subscribe: viewState.serviceManager.instance.state.subscribe,
+        },
+        (state) => state.isHydratingCounter,
+        () => this.requestUpdate(),
+        { onError: this.captureErrorReporter() }
+      )
+    );
+    // A render failure releases this owner's handles at once; the error view
+    // keeps its styles and window state. A real detach or an owner change
+    // releases the rest through retire().
+    this.own(() => {
+      if (this.failed) {
+        lifecycle.releaseForFailure();
+      }
+    });
   }
 
-  protected willUpdate(changes: PropertyValues) {
-    if (changes.has('bindings')) {
-      this.publishBindings();
+  private ensureLifecycle(viewState: ChatViewState): void {
+    if (this.lifecycle) {
+      return;
+    }
+    this.owner = viewState;
+    this.lifecycle = new ShellLifecycle(
+      viewState,
+      () => this.requestUpdate(),
+      () => this.getMessages?.() ?? null,
+      () => this.whenReady(),
+      (content) => this.onContentState?.(content),
+      () => {
+        this.lifecycle?.markPanelsReady();
+        this.signal();
+      }
+    );
+  }
+
+  protected willUpdate() {
+    if (this.failed && this.viewState) {
+      this.ensureLifecycle(this.viewState);
+    }
+    if (this.options && this.inputConfig && this.lifecycle) {
+      this.lifecycle.configure(
+        this.options,
+        this.inputConfig,
+        this.contentRevision,
+        this.transformIcon
+      );
+      if (
+        !this.failed &&
+        this.isConnected &&
+        this.viewState &&
+        this.contentConnected
+      ) {
+        this.lifecycle.connect();
+        this.lifecycle.update();
+      } else if (
+        this.failed &&
+        this.isConnected &&
+        this.viewState &&
+        this.contentConnected
+      ) {
+        // The error view still follows window state and keeps its styles.
+        this.lifecycle.connect(false);
+        this.lifecycle.update();
+      }
+      this.layout = this.lifecycle.createLayout();
     }
   }
 
@@ -133,6 +263,29 @@ class ChatShell extends NativeChatView {
 
   protected renderFailedView() {
     this.ownerFailed = true;
+    if (!this.releaseErrorView && this.owner) {
+      const owner = this.owner;
+      this.releaseErrorView = subscribeToSelectedValue(
+        {
+          getSnapshot: owner.serviceManager.store.getState,
+          subscribe: owner.serviceManager.store.subscribe,
+        },
+        (state) => ({
+          panel: state.catastrophicErrorPanelState,
+          shell: selectShellState(state),
+        }),
+        () => {
+          if (this.isConnected && this.owner === owner) {
+            this.requestUpdate();
+          }
+        },
+        {
+          isEqual: (left, right) =>
+            left.panel === right.panel && shallowEqual(left.shell, right.shell),
+          onError: this.captureErrorReporter(),
+        }
+      );
+    }
     this.messageTarget = undefined;
     return this.layout
       ? renderShellLayout(this.layout, this.refs, undefined, true)
@@ -149,6 +302,9 @@ class ChatShell extends NativeChatView {
       undefined;
     this.publishBindings();
     this.publishTargets();
+    if (this.targets) {
+      this.lifecycle?.attach(this.targets);
+    }
     this.signal();
   }
 
@@ -258,33 +414,19 @@ class ChatShell extends NativeChatView {
     );
   }
 
+  private setInputElement(input: ChatInput | null): void {
+    this.internalInput = input ?? undefined;
+    this.lifecycle?.setInputHandle(input?.inputFunctions ?? null);
+  }
+
   private publishBindings(): void {
-    const inputBinding = this.bindings?.setInputElement;
-    if (
-      this.inputBinding !== inputBinding ||
-      this.publishedInput !== this.input
-    ) {
+    if (this.publishedInput !== this.input) {
       if (this.publishedInput) {
-        this.inputBinding?.(null);
+        this.setInputElement(null);
       }
-      this.inputBinding = inputBinding;
       this.publishedInput = this.input;
       if (this.input) {
-        inputBinding?.(this.input);
-      }
-    }
-    const panelBinding = this.bindings?.setPanelElement;
-    if (
-      this.panelBinding !== panelBinding ||
-      this.publishedPanels !== this.panels
-    ) {
-      if (this.publishedPanels) {
-        this.panelBinding?.(null);
-      }
-      this.panelBinding = panelBinding;
-      this.publishedPanels = this.panels;
-      if (this.panels) {
-        panelBinding?.(this.panels);
+        this.setInputElement(this.input);
       }
     }
   }
@@ -322,6 +464,10 @@ class ChatShell extends NativeChatView {
   }
 
   private retire(): void {
+    this.releaseErrorView?.();
+    this.releaseErrorView = undefined;
+    this.lifecycle?.disconnect();
+    this.lifecycle = undefined;
     this.lifetime += 1;
     this.owner = undefined;
     this.ownerFailed = false;
@@ -366,5 +512,5 @@ declare global {
   }
 }
 
-export type { ShellLayoutInputs, ShellLayoutBindings, ShellLayoutTargets };
+export type { ShellLayoutTargets };
 export default ChatShell;
