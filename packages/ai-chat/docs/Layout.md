@@ -90,7 +90,7 @@ Built-in components also set them on their own markup. That markup is private, s
 | Round the first and last item in a row | The row's `:first-child` and `:last-child` |
 | Round the top or bottom of a vertical stack | A column flex container's `:first-child` or `:last-child` |
 
-#### The deprecated attributes
+### The deprecated attributes
 
 Until 2.0.0, both attributes work on your own slotted content. `data-rounded` takes these values:
 
@@ -221,7 +221,7 @@ To round the bottom of a stack, lay it out as a flex column. Then give its last 
 }
 ```
 
-This replaces the deprecated attribute form, which 2.0.0 removes:
+It does the same job as the deprecated attribute form below, which 2.0.0 removes. If the last child is a Carbon button, also put both declarations on `.my-footer-actions > :last-child::part(button)`, so the button's own corners match.
 
 ```html
 <!-- Deprecated: removed in 2.0.0. Use the CSS above instead. -->

@@ -492,8 +492,8 @@ enum MessageResponseTypes {
   /**
    * Asks the user to provide a date. This may result in a date picker being presented to the user.
    *
-   * @deprecated Removed in 2.0.0. To ask for a date, send a {@link MessageResponseTypes.USER_DEFINED} response
-   * with your own date input, or an {@link MessageResponseTypes.OPTION} response with date choices.
+   * @deprecated Removed in 2.0.0. To ask for a date, send a {@link MessageResponseTypes.USER_DEFINED | user_defined}
+   * response with your own date input, or an {@link MessageResponseTypes.OPTION | option} response with date choices.
    */
   DATE = 'date',
 
@@ -2111,8 +2111,8 @@ interface GridItem<TUserDefinedType = Record<string, unknown>>
  * This is the response item that represents a request for a date which should prompt the client to use a date picker or
  * similar control to provide a date. There are currently no additional properties of the response.
  *
- * @deprecated Removed in 2.0.0. To ask for a date, send a {@link MessageResponseTypes.USER_DEFINED} response
- * with your own date input, or an {@link MessageResponseTypes.OPTION} response with date choices.
+ * @deprecated Removed in 2.0.0. To ask for a date, send a {@link MessageResponseTypes.USER_DEFINED | user_defined}
+ * response with your own date input, or an {@link MessageResponseTypes.OPTION | option} response with date choices.
  * @category Messaging
  * @category SDK
  */

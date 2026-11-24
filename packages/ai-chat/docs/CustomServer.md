@@ -128,7 +128,7 @@ export const config: PublicConfig = {
 };
 ```
 
-The chat's timer ends at the first message, chunk, or upsert. Yours covers the whole request, because reading the body also stops when the signal aborts.
+The chat's timer ends at the first message, chunk, or upsert. Yours covers the whole request, because reading the body also stops when the signal aborts. `AbortSignal.any` needs Safari 17.4 or Firefox 124 or later. For older browsers, abort your own `AbortController` from a timer and from the chat's signal.
 
 ## Cancelling request (stop streaming)
 

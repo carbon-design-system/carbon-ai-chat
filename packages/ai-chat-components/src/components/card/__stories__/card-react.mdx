@@ -17,9 +17,7 @@ The `<Card>` component wraps the `cds-aichat-card` web component and exposes a R
 
 ## Customization
 
-> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead, as [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) shows.
-
-> ** For detailed information about the modifier system (`data-rounded`, `data-stacked`) and CSS custom properties, see [Styling & Modifiers](/docs/introduction-styling-modifiers--overview).**
+> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead. [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) covers the tokens and the modifier system.
 
 ### Padding Control
 
@@ -55,8 +53,6 @@ By default, the card preserves the tile's default padding. Use `isFlush={true}` 
 | `data-flush="bottom"` | Removes bottom and horizontal padding |
 
 ### Slotted Content Rounding
-
-> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead, as [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) shows.
 
 Use `data-rounded` with slotted content for automatic first/last child rounding:
 
@@ -97,6 +93,8 @@ function CardExample() {
 ```
 
 ## Examples
+
+> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead. [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) covers the tokens and the modifier system.
 
 ### Card with Footer Actions
 
@@ -140,8 +138,6 @@ function CardWithFooter() {
 
 ### Card with Image
 
-> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead, as [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) shows.
-
 Display media content with proper corner rounding using the `media` slot and `data-rounded` attribute.
 
 ```jsx
@@ -182,8 +178,6 @@ function CardWithImage() {
 ```
 
 ### Card with Flush Padding
-
-> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead, as [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) shows.
 
 Remove the default tile padding using `isFlush={true}` for full-width content like images or custom layouts.
 
@@ -312,8 +306,6 @@ function CardWithSteps() {
 - `ICON_INDICATOR_KIND.FAILED` - Failed step
 
 ### Image-Only Card
-
-> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Read the corner tokens in your own CSS instead, as [Styling & Modifiers](/docs/introduction-styling-modifiers--overview) shows.
 
 ```jsx
 import { Card } from '@carbon/ai-chat-components/es/react/card.js';

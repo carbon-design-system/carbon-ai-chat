@@ -77,7 +77,8 @@ export interface PublicConfigMessaging extends ChatSDKConfigMessaging<ChatInstan
    *
    * @deprecated Unchanged on 1.x. In 2.0.0 the chat no longer shows the loading indicator on its own, and this setting
    * is removed. Drive the indicator with {@link ChatInstance.updateIsMessageLoadingCounter}, or read
-   * `instance.state.get().status`, which is `'submitted'` while the chat waits for a reply.
+   * `instance.state.get().status`, which is `'submitted'` while the chat waits for a reply. To switch now, set this
+   * to `0`.
    */
   messageLoadingIndicatorTimeoutSecs?: number;
 
