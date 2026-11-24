@@ -28,7 +28,7 @@ import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 
 import { ViewType } from '../../../src/types/instance/apiTypes';
 
-import { createBaseTestProps } from '../../test_helpers';
+import { createBaseTestProps, getChatShadowRoot } from '../../test_helpers';
 
 import { enLanguagePack } from '../../../src/types/config/LanguagePack';
 
@@ -107,7 +107,12 @@ describe('ChatCustomElement prop forwarding', () => {
 
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(onClick.mock.results[0].value).toBe(host);
-    expect(capturedInstance.serviceManager.customHostElement).toBe(host);
+    // The chat renders into the host element instead of floating.
+    expect(
+      getChatShadowRoot()
+        ?.querySelector('.cds-aichat--react-app')
+        ?.classList.contains('cds-aichat--boot-container--filled')
+    ).toBe(true);
   });
 
   it.each([

@@ -7,18 +7,23 @@
  *  @license
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { EventBus } from '../../../src/shared/events/EventBus';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { createChatSDK } from '../../../src/sdk';
+import { chatOf } from '../../../src/sdk/internal';
 import {
   attachSlotTracking,
+  collectRequestFooters,
+  slotSource,
   type CustomFooterSlotState,
+  type CustomRequestFooterSlotState,
+  type SlotStores,
   type UserDefinedSlotState,
 } from '../../../src/shared/services/slotTracking';
 import type {
   RenderCustomMessageFooterState,
+  RenderCustomRequestFooterState,
   RenderUserDefinedState,
 } from '../../../src/types/component/ChatContainer';
 import {
@@ -47,6 +52,10 @@ const footerMatches: Exactly<
   CustomFooterSlotState,
   RenderCustomMessageFooterState
 > = true;
+const requestFooterMatches: Exactly<
+  CustomRequestFooterSlotState,
+  RenderCustomRequestFooterState
+> = true;
 
 const item = (text: string): GenericItem => ({
   response_type: MessageResponseTypes.USER_DEFINED,
@@ -68,7 +77,11 @@ function createChat() {
 
 describe('attachSlotTracking', () => {
   it('restates the public slot-state types exactly', () => {
-    expect([userDefinedMatches, footerMatches]).toEqual([true, true]);
+    expect([userDefinedMatches, footerMatches, requestFooterMatches]).toEqual([
+      true,
+      true,
+      true,
+    ]);
   });
 
   it('makes a user-defined response readable from the response store (O10)', async () => {
@@ -217,19 +230,18 @@ describe('attachSlotTracking', () => {
     expect(Object.isFrozen(stores)).toBe(true);
   });
 
-  it('builds the same records as the view extension hosts, event by event', () => {
+  it('serves the view extension hosts its records, with no copies (#1732 O17)', () => {
     const eventBus = new EventBus();
     const instance = eventBus as unknown as ChatInstance;
+    const chat = { eventBus } as unknown as ServiceManager;
+    const stores = attachSlotTracking(chat);
     const hosts = new ExtensionHosts(
-      instance,
+      slotSource(chat),
       document.createElement('div'),
       { getState: () => ({ allMessagesByID: {} }), subscribe: () => () => {} },
       () => true
     );
     hosts.connect();
-    const stores = attachSlotTracking({
-      eventBus,
-    } as unknown as ServiceManager);
     const sequence = [
       {
         type: BusEventType.USER_DEFINED_RESPONSE,
@@ -286,28 +298,59 @@ describe('attachSlotTracking', () => {
     sequence.forEach((event) => {
       eventBus.fireSync(event as never, instance);
       const snapshot = hosts.getSnapshot();
-      expect(stores.userDefinedResponse.get()).toStrictEqual(
-        snapshot.userDefinedResponse
+      expect(snapshot.userDefinedResponse).toBe(
+        stores.userDefinedResponse.get()
       );
-      expect(stores.customFooter.get()).toStrictEqual(snapshot.customFooter);
+      expect(snapshot.customFooter).toBe(stores.customFooter.get());
+      expect(snapshot.customRequestFooter).toBe(
+        stores.customRequestFooter.get()
+      );
     });
     hosts.disconnect();
   });
 
-  it('lands inert: only tests call it (O15)', () => {
-    const src = path.resolve(__dirname, '../../../src');
-    const callers = (function walk(dir: string): string[] {
-      return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-        const file = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          return walk(file);
-        }
-        return /\.tsx?$/.test(file) &&
-          fs.readFileSync(file, 'utf8').includes('attachSlotTracking')
-          ? [path.relative(src, file)]
-          : [];
-      });
-    })(src);
-    expect(callers).toEqual(['shared/services/slotTracking.ts']);
+  it('collects request footers only while a view gate says so', async () => {
+    const { serviceManager, fire } = createChat();
+    const stores = attachSlotTracking(serviceManager);
+    const footer = (slotName: string) =>
+      ({
+        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
+        data: { slotName, message: { id: slotName, input: { text: 'hi' } } },
+      }) as BusEvent;
+
+    await fire(footer('none'));
+    expect(stores.customRequestFooter.get()).toEqual({});
+
+    let enabled = false;
+    const stop = collectRequestFooters(serviceManager, () => enabled);
+    await fire(footer('disabled'));
+    expect(stores.customRequestFooter.get()).toEqual({});
+    enabled = true;
+    await fire(footer('kept'));
+    expect(Object.keys(stores.customRequestFooter.get())).toEqual(['kept']);
+
+    stop();
+    await fire(footer('after'));
+    expect(Object.keys(stores.customRequestFooter.get())).toEqual(['kept']);
+
+    await fire({ type: BusEventType.RESTART_CONVERSATION } as BusEvent);
+    expect(stores.customRequestFooter.get()).toEqual({});
+  });
+
+  it('is attached once per chat, at boot (#1732 O17)', async () => {
+    const chat = await createChatSDK({ messaging: { skipWelcome: true } });
+    const manager = chatOf(chat);
+    // A slot event before any view exists still lands in the chat's stores.
+    await manager.fire({
+      type: BusEventType.USER_DEFINED_RESPONSE,
+      data: { slot: 'before-view', message: item('a'), fullMessage: message },
+    } as BusEvent);
+    const stores: SlotStores = attachSlotTracking(manager);
+    expect(Object.keys(stores.userDefinedResponse.get())).toEqual([
+      'before-view',
+    ]);
+    // Attaching again gives the same stores.
+    expect(attachSlotTracking(manager)).toBe(stores);
+    chat.destroy();
   });
 });

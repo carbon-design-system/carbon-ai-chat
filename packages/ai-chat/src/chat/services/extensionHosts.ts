@@ -7,13 +7,6 @@
  *  @license
  */
 
-import {
-  BusEventType,
-  type BusEventChunkUserDefinedResponse,
-  type BusEventCustomFooterSlot,
-  type BusEventCustomRequestFooterSlot,
-  type BusEventUserDefinedResponse,
-} from '../../types/events/eventBusTypes';
 import prefix from '@carbon/ai-chat-components/es/globals/settings.js';
 import {
   mountHost,
@@ -27,8 +20,10 @@ import {
 import { LightDomHosts, type LightDomEntry } from './lightDomHosts';
 import { placeHosts } from '../utils/removeHostsOnUnmount';
 import type { AppState } from '../../types/state/AppState';
-import type { ChatInstance } from '../../types/instance/ChatInstance';
-import type { TypeAndHandler } from '../../types/instance/EventHandlers';
+import {
+  EMPTY_SLOT_RECORDS,
+  type SlotSource,
+} from '../../shared/services/slotTracking';
 import type { PanelName } from '../utils/panelComposition';
 import { AutocompleteContent } from './autocompleteContent';
 import type {
@@ -112,10 +107,12 @@ interface InputNodeHost extends SlotHost {
   placed: boolean;
 }
 
+// The slot stores' own empty records, so connecting to empty stores notifies
+// nobody.
 const EMPTY_SNAPSHOT: ExtensionHostsSnapshot = {
-  userDefinedResponse: {},
-  customFooter: {},
-  customRequestFooter: {},
+  userDefinedResponse: EMPTY_SLOT_RECORDS,
+  customFooter: EMPTY_SLOT_RECORDS,
+  customRequestFooter: EMPTY_SLOT_RECORDS,
   inputNode: [],
   lightDom: [],
 };
@@ -126,12 +123,16 @@ function isTokenNode(entry: InputNodeSlotEntry): boolean {
 }
 
 /**
- * Owns one chat's extension content outside React: the render records for
+ * Serves one mount's extension content outside React: the render records for
  * user-defined responses, message footers, request footers, sent input
  * nodes, and editor light-DOM content, and the light-DOM host each record
- * renders into. Editor light-DOM hosts live in `LightDomHosts`, which this
- * service connects. Each kind's records stay the same object until that kind
- * changes, so a view that renders one kind re-renders only for it.
+ * renders into. The slot records are the chat's slot stores' own objects
+ * (#1741), read while connected; this service keeps no copy, so responses
+ * and message footers collected while no view was connected show on the next
+ * connect. Request footers are collected only while a view is connected. Editor
+ * light-DOM hosts live in `LightDomHosts`, which this service connects. Each
+ * kind's records stay the same object until that kind changes, so a view that
+ * renders one kind re-renders only for it.
  *
  * A host's identity is separate from its attachment. `hostFor` creates one
  * detached host per slot and keeps it, so a view can ask for it while it
@@ -146,7 +147,8 @@ function isTokenNode(entry: InputNodeSlotEntry): boolean {
 class ExtensionHosts {
   private snapshot = EMPTY_SNAPSHOT;
   private listeners = new Set<() => void>();
-  private handlers: TypeAndHandler[] | null = null;
+  /** Stops reading the slot stores and the footer gate; set while connected. */
+  private disconnectSlots: (() => void) | null = null;
   private renderers = new Set<HostKind>();
   private hosts: Record<SlotKind, Map<string, SlotHost>> = {
     userDefinedResponse: new Map(),
@@ -166,12 +168,14 @@ class ExtensionHosts {
   private panelGeneration = 0;
 
   /**
-   * `isRequestFooterEnabled` is asked on each request-footer event, so a
-   * callback set after boot still collects footers. That event fires for
-   * every user message, so a chat without the callback keeps none.
+   * The slot records come from the chat's slot stores (`slots`); this service
+   * keeps none of its own. `isRequestFooterEnabled` is asked on each
+   * request-footer event, so a callback set after boot still collects
+   * footers. That event fires for every user message, so a chat without the
+   * callback keeps none.
    */
   constructor(
-    private readonly instance: ChatInstance,
+    private readonly slots: SlotSource,
     private readonly chatWrapper: HTMLElement | undefined,
     private readonly store: MessagesStore,
     private readonly isRequestFooterEnabled: () => boolean
@@ -194,26 +198,24 @@ class ExtensionHosts {
    * attached, as after a StrictMode effect replay. Repeat-safe.
    */
   connect(): void {
-    if (this.handlers) {
+    if (this.disconnectSlots) {
       return;
     }
-    this.handlers = [
-      {
-        type: BusEventType.USER_DEFINED_RESPONSE,
-        handler: this.onUserDefinedResponse,
-      },
-      {
-        type: BusEventType.CHUNK_USER_DEFINED_RESPONSE,
-        handler: this.onUserDefinedChunk,
-      },
-      { type: BusEventType.CUSTOM_FOOTER_SLOT, handler: this.onCustomFooter },
-      {
-        type: BusEventType.CUSTOM_REQUEST_FOOTER_SLOT,
-        handler: this.onCustomRequestFooter,
-      },
-      { type: BusEventType.RESTART_CONVERSATION, handler: this.onRestart },
-    ];
-    this.instance.on(this.handlers);
+    const { stores } = this.slots;
+    const unsubscribe = SLOT_KINDS.map((kind) =>
+      stores[kind].subscribe(() => this.onSlotsChange(kind))
+    );
+    const stopFooters = this.slots.collectRequestFooters(
+      () =>
+        this.renderers.has('customRequestFooter') ||
+        this.isRequestFooterEnabled()
+    );
+    this.disconnectSlots = () => {
+      unsubscribe.forEach((stop) => stop());
+      stopFooters();
+    };
+    // Records collected while disconnected, or emptied by a restart then.
+    SLOT_KINDS.forEach((kind) => this.onSlotsChange(kind));
     this.unsubscribeStore = this.store.subscribe(this.onMessagesChange);
     this.onMessagesChange();
     this.lightDom.connect();
@@ -226,10 +228,8 @@ class ExtensionHosts {
    * stay, so a later connect restores them. Repeat-safe.
    */
   disconnect(): void {
-    if (this.handlers) {
-      this.instance.off(this.handlers);
-      this.handlers = null;
-    }
+    this.disconnectSlots?.();
+    this.disconnectSlots = null;
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.lightDom.disconnect();
@@ -437,69 +437,16 @@ class ExtensionHosts {
     }
   }
 
-  private onUserDefinedResponse = (event: BusEventUserDefinedResponse) => {
-    if (!event.data.slot) {
+  /** Takes one kind's records from its slot store, and releases hosts whose record left. */
+  private onSlotsChange(kind: SlotKind): void {
+    const records = this.slots.stores[kind].get();
+    if (records === this.snapshot[kind]) {
       return;
     }
-    this.setRecord('userDefinedResponse', event.data.slot, {
-      fullMessage: event.data.fullMessage,
-      messageItem: event.data.message,
-      state: event.data.state,
-    });
-  };
-
-  private onUserDefinedChunk = (event: BusEventChunkUserDefinedResponse) => {
-    const { slot, chunk } = event.data;
-    if (!slot) {
-      return;
-    }
-    if ('complete_item' in chunk) {
-      this.setRecord('userDefinedResponse', slot, {
-        messageItem: chunk.complete_item,
-      });
-    } else if ('partial_item' in chunk) {
-      const partialItems =
-        this.snapshot.userDefinedResponse[slot]?.partialItems ?? [];
-      this.setRecord('userDefinedResponse', slot, {
-        partialItems: [...partialItems, chunk.partial_item],
-      });
-    }
-  };
-
-  private onCustomFooter = (event: BusEventCustomFooterSlot) => {
-    const { slotName, message, messageItem, additionalData } = event.data;
-    this.setRecord('customFooter', slotName, {
-      slotName,
-      message,
-      messageItem,
-      additionalData: additionalData as Record<string, unknown> | undefined,
-    });
-  };
-
-  private onCustomRequestFooter = (event: BusEventCustomRequestFooterSlot) => {
-    if (
-      !this.renderers.has('customRequestFooter') &&
-      !this.isRequestFooterEnabled()
-    ) {
-      return;
-    }
-    const { slotName, message } = event.data;
-    this.setRecord('customRequestFooter', slotName, { slotName, message });
-  };
-
-  private onRestart = () => {
-    if (
-      SLOT_KINDS.some((kind) => this.snapshot[kind] !== EMPTY_SNAPSHOT[kind])
-    ) {
-      this.snapshot = {
-        ...EMPTY_SNAPSHOT,
-        inputNode: this.snapshot.inputNode,
-        lightDom: this.snapshot.lightDom,
-      };
-      SLOT_KINDS.forEach((kind) => this.releaseExpired(kind));
-      this.notify();
-    }
-  };
+    this.snapshot = { ...this.snapshot, [kind]: records };
+    this.releaseExpired(kind);
+    this.notify();
+  }
 
   /**
    * Recomputes the input-node entries when the messages change. Entries are
@@ -577,7 +524,7 @@ class ExtensionHosts {
    */
   private syncInput(key: string, host: InputNodeHost): void {
     const shouldAttach =
-      this.handlers !== null &&
+      this.disconnectSlots !== null &&
       this.renderers.has('inputNode') &&
       host.hasContent &&
       this.inputKeys.has(key) &&
@@ -606,7 +553,7 @@ class ExtensionHosts {
 
   private sync(kind: SlotKind, slot: string, host: SlotHost): void {
     const shouldAttach =
-      this.handlers !== null &&
+      this.disconnectSlots !== null &&
       this.renderers.has(kind) &&
       host.hasContent &&
       slot in this.snapshot[kind];
@@ -628,18 +575,6 @@ class ExtensionHosts {
     if (this.chatWrapper && element.parentNode === this.chatWrapper) {
       element.remove();
     }
-  }
-
-  private setRecord<K extends SlotKind>(
-    kind: K,
-    slot: string,
-    record: ExtensionHostsSnapshot[K][string]
-  ): void {
-    this.snapshot = {
-      ...this.snapshot,
-      [kind]: { ...this.snapshot[kind], [slot]: record },
-    };
-    this.notify();
   }
 
   private notify(): void {

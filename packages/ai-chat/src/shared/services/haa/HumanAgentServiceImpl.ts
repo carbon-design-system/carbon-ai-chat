@@ -171,6 +171,9 @@ class HumanAgentServiceImpl implements HumanAgentService {
    */
   hasInitialized = false;
 
+  /** The factory this service's desk came from; see {@link HumanAgentService}. */
+  serviceDeskFactory: unknown;
+
   /**
    * Indicates if a chat has started (the startChat function has been called). It does not necessarily mean that an
    * agent has joined and a full chat is in progress.
@@ -261,6 +264,7 @@ class HumanAgentServiceImpl implements HumanAgentService {
       this
     );
 
+    this.serviceDeskFactory = config.public.serviceDeskFactory;
     if (config.public.serviceDeskFactory) {
       // A custom service desk factory was provided so use that to create the service desk.
       const parameters: ServiceDeskFactoryParameters = {

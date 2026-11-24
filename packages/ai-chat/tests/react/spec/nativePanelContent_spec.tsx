@@ -39,6 +39,7 @@ import {
   makeConfigStore,
   setupAfterEach,
   setupBeforeEach,
+  slotSourceOf,
 } from '../../test_helpers';
 
 import { viewActions } from '../../../src/view/state';
@@ -110,7 +111,7 @@ it('keeps the last committed payload while native requests lag behind the curren
   const shadow = host.attachShadow({ mode: 'open' });
   document.body.appendChild(host);
   const hosts = new ExtensionHosts(
-    {} as ChatInstance,
+    slotSourceOf({}),
     host,
     makeConfigStore({}),
     () => false

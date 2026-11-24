@@ -40,6 +40,18 @@ interface HumanAgentService {
   hasInitialized: boolean;
 
   /**
+   * The factory this service's desk came from, set when it initializes. A new
+   * factory replaces the service only once no agent chat is live (#2353).
+   */
+  readonly serviceDeskFactory?: unknown;
+
+  /**
+   * True from the moment a chat starts, including while its `pre:startChat`
+   * handlers run and before the store says it's connecting, until it ends.
+   */
+  readonly chatStarted?: boolean;
+
+  /**
    * If a custom service desk is configured, returns the name.
    */
   getCustomServiceDeskName(): string;

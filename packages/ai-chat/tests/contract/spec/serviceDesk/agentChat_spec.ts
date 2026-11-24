@@ -23,6 +23,7 @@ import {
   PageObjectId,
   PublicConfig,
   ServiceDeskFactoryParameters,
+  ViewType,
 } from '../../../../src/aiChatEntry';
 import {
   ContractMount,
@@ -33,6 +34,7 @@ import {
   HUMAN_AGENT_EVENTS,
   addConnect,
   byRole,
+  changeView,
   click,
   contractChat,
   contractSetup,
@@ -365,8 +367,14 @@ describe('reloading during an agent chat', () => {
 describe('a new serviceDeskFactory during an agent chat', () => {
   contractSetup();
 
-  it('ends the chat with the old desk and builds the new one', async () => {
-    const first = fakeDesk();
+  // `main` ends a live agent chat as soon as the factory changes. The
+  // approved rule (documented on `serviceDeskFactory` and in
+  // CustomServiceDesks.md) is that a new factory never cuts a live agent
+  // chat: the running desk stays, and the new factory takes over once that
+  // chat ends.
+
+  /** A joined agent chat on `first`, then a rerender with `second`'s factory. */
+  async function swapDuringChat(first: FakeDesk, second: FakeDesk) {
     const backend = fakeBackend({ autoResolve: true });
     const props = (desk: FakeDesk) => ({
       serviceDeskFactory: desk.factory,
@@ -380,8 +388,37 @@ describe('a new serviceDeskFactory during an agent chat', () => {
       BusEventType.HUMAN_AGENT_PRE_END_CHAT,
       BusEventType.HUMAN_AGENT_END_CHAT,
     ]);
-    const second = fakeDesk();
     await rerender(props(second));
+    // A short wait to show no end and no new desk follow.
+    await pause();
+    return { instance, events };
+  }
+
+  it('keeps the live chat on the old desk', async () => {
+    const first = fakeDesk();
+    const second = fakeDesk();
+    const { instance, events } = await swapDuringChat(first, second);
+    expect(second.factory).not.toHaveBeenCalled();
+    expect(first.desk.endChat).not.toHaveBeenCalled();
+    expect(events.types()).toEqual([]);
+    expect(humanAgent(instance).isConnected).toBe(true);
+    await changeView(instance, ViewType.MAIN_WINDOW);
+    await typeAndSend('still here');
+    await waitFor(() =>
+      expect(first.desk.sendMessageToAgent).toHaveBeenCalledTimes(1)
+    );
+    expect(first.desk.sendMessageToAgent.mock.calls[0][0].input.text).toBe(
+      'still here'
+    );
+    expect(second.desk.sendMessageToAgent).not.toHaveBeenCalled();
+  });
+
+  // @covers instance.serviceDesk.endConversation
+  it('builds the new desk once the live chat ends', async () => {
+    const first = fakeDesk();
+    const second = fakeDesk();
+    const { instance, events } = await swapDuringChat(first, second);
+    await act(() => instance.serviceDesk.endConversation());
     await waitFor(() => expect(second.factory).toHaveBeenCalledTimes(1));
     expect(first.desk.endChat).toHaveBeenCalledTimes(1);
     expect(events.types()).toEqual([

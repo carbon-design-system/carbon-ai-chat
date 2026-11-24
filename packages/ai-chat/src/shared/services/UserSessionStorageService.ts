@@ -20,9 +20,19 @@ import mockStorage from './mockStorage';
 import { ServiceManager } from './ServiceManager';
 
 // We use sessionStorage instead of localStorage to not have to have a public cookie policy that must be accepted in EU.
-const storage: Storage = IS_SESSION_STORAGE()
-  ? window.sessionStorage
-  : mockStorage;
+let storage: Storage | undefined;
+
+/**
+ * The storage to use, probed on first use rather than when this module loads,
+ * so importing it touches no storage. A chat `createChatSDK` starts never
+ * creates this service, so it never probes.
+ */
+function sessionStore(): Storage {
+  if (!storage) {
+    storage = IS_SESSION_STORAGE() ? window.sessionStorage : mockStorage;
+  }
+  return storage;
+}
 
 class UserSessionStorageService {
   private serviceManager: ServiceManager;
@@ -36,7 +46,7 @@ class UserSessionStorageService {
    */
   loadSession(): PersistedState | null {
     try {
-      const sessionString = storage.getItem(this.getSessionKey());
+      const sessionString = sessionStore().getItem(this.getSessionKey());
       const session: PersistedState = sessionString
         ? JSON.parse(sessionString)
         : null;
@@ -60,7 +70,7 @@ class UserSessionStorageService {
    */
   persistSession(session: PersistedState) {
     try {
-      storage.setItem(this.getSessionKey(), JSON.stringify(session));
+      sessionStore().setItem(this.getSessionKey(), JSON.stringify(session));
     } catch (error) {
       consoleError('Error in persistSession', error);
     }
@@ -71,7 +81,7 @@ class UserSessionStorageService {
    */
   clearSession() {
     try {
-      storage.removeItem(this.getSessionKey());
+      sessionStore().removeItem(this.getSessionKey());
     } catch (error) {
       consoleError('Error in clearSession', error);
     }

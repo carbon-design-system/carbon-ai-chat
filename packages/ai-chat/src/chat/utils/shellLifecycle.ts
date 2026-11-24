@@ -136,6 +136,7 @@ import {
 import { chatStore } from '../services/attachChatView';
 
 import { joinPersistedState } from '../../view/state';
+import { writeableElementsOf } from './writeableElements';
 
 const applicationStylesheet =
   typeof CSSStyleSheet !== 'undefined' ? new CSSStyleSheet() : null;
@@ -400,7 +401,7 @@ export class ShellLifecycle {
     // `options.customPromptLinePresent`; only the header is observed here.
     this.releases.push(
       observeWriteableElementPresence(
-        manager.writeableElements[WriteableElementName.CUSTOM_HEADER],
+        writeableElementsOf(manager)[WriteableElementName.CUSTOM_HEADER],
         (present) => {
           const previous = this.customHeaderPresent;
           this.customHeaderPresent = present;
@@ -588,7 +589,7 @@ export class ShellLifecycle {
     const customHeaderPresent =
       this.customHeaderPresent ??
       hasMeaningfulContent(
-        serviceManager.writeableElements[WriteableElementName.CUSTOM_HEADER]
+        writeableElementsOf(serviceManager)[WriteableElementName.CUSTOM_HEADER]
       );
     if (customPromptLinePresent) {
       this.restoreDraft = true;

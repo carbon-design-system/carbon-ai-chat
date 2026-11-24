@@ -168,7 +168,7 @@ function ChatAppEntry({
       <AppShell
         serviceManager={serviceManager}
         hosts={hosts}
-        hostElement={serviceManager.customHostElement}
+        hostElement={viewState.customHostElement}
         writeableElementsPresentKeys={writeableElementsPresentKeys}
       />
 

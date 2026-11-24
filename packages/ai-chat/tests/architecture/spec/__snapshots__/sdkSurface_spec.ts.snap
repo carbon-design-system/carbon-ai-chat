@@ -257,6 +257,17 @@ interface ChatSDKErrorData (src/types/config/ChatSDKErrorData.ts)
   message: string
   otherData?: unknown
 
+interface ChatSDKHandle (src/sdk/handle.ts)
+  destroy: () => void
+  messaging: import(".").ChatSDKInstanceMessaging
+  off: (handlers: import(".").ChatSDKHandlers) => ChatSDKHandle
+  on: (handlers: import(".").ChatSDKHandlers) => ChatSDKHandle
+  once: (handlers: import(".").ChatSDKHandlers) => ChatSDKHandle
+  release: () => void
+  serviceDesk: import("../types/instance/ChatInstanceServiceDeskActions").ChatInstanceServiceDeskActions
+  state: import(".").ChatSDKStateAccess<import(".").ChatSDKState>
+  updateConfig: (next: ChatSDKConfig) => Promise<void>
+
 interface ChatSDKInstance (src/types/instance/ChatSDKInstance.ts)
   messaging: ChatSDKInstanceMessaging
   off: (handlers: ChatSDKHandlers) => ChatSDKInstance
@@ -490,7 +501,7 @@ interface MessageRequest (src/types/messaging/Messages.ts)
 
 interface MessageRequestHistory (src/types/messaging/Messages.ts)
   error_state?: MessageErrorState
-  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/types.js").FileStatusValue
+  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js").FileStatusValue
   is_choice_request?: boolean
   is_welcome_request?: boolean
   label?: string
@@ -512,7 +523,7 @@ interface MessageResponse (src/types/messaging/Messages.ts)
 interface MessageResponseHistory (src/types/messaging/Messages.ts)
   error_state?: MessageErrorState
   feedback?: { [feedbackID: string]: MessageHistoryFeedback; }
-  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/types.js").FileStatusValue
+  file_upload_status?: import("@carbon/ai-chat-components/es/components/prompt-line/src/file-upload-types.js").FileStatusValue
   silent?: boolean
   timestamp?: number
 

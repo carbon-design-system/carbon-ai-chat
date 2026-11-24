@@ -20,7 +20,11 @@ import { collectInputNodeSlots } from '../../../src/chat/utils/inputNodeSlots';
 import { ExtensionHosts } from '../../../src/chat/services/extensionHosts';
 import actions from '../../../src/shared/store/actions';
 import type { ChatInstance } from '../../../src/types/instance/ChatInstance';
-import { makeConfigStore, TestChatContext } from '../../test_helpers';
+import {
+  makeConfigStore,
+  TestChatContext,
+  slotSourceOf,
+} from '../../test_helpers';
 
 jest.mock('../../../src/chat/hooks/useIntl', () => ({
   useIntl: () => ({ formatMessage: () => '' }),
@@ -324,7 +328,12 @@ describe('structured paragraph projection', () => {
         on: jest.fn(),
         off: jest.fn(),
       } as unknown as ChatInstance;
-      const hosts = new ExtensionHosts(instance, host, store, () => false);
+      const hosts = new ExtensionHosts(
+        slotSourceOf(instance),
+        host,
+        store,
+        () => false
+      );
       hosts.connect();
       const view = (custom: boolean) => {
         const portal = (
