@@ -9,11 +9,12 @@
 
 /**
  * Guards the prebuilt chat's stylesheet against dead CSS. It compiles
- * `src/chat/AppShell.scss` the way `tasks/rollup.aichat.js` does (legacy Sass
- * with the same include paths, then autoprefixer and comment removal), so the
- * size and the selectors are what ships. `@carbon/ai-chat-components/scss`
- * resolves to that package's built `scss/` folder, so a local run needs a fresh
- * components build. CI builds it first.
+ * `src/chat/AppShell.scss` the way `tasks/rollup.aichat.js` does, so the size
+ * and the selectors are what ships. That build runs rollup-plugin-postcss,
+ * which calls Sass's legacy `render` API, so this calls the legacy API too,
+ * with the same include paths, then autoprefixer and comment removal.
+ * `@carbon/ai-chat-components/scss` resolves to that package's built `scss/`
+ * folder, so a local run needs a fresh components build. CI builds it first.
  */
 
 import { readdirSync, readFileSync } from 'fs';
@@ -21,18 +22,18 @@ import { join, resolve } from 'path';
 import autoprefixer from 'autoprefixer';
 import postcss from 'postcss';
 import comments from 'postcss-discard-comments';
-import selectorParser from 'postcss-selector-parser';
 import * as sass from 'sass';
+import ts from 'typescript';
 
 const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 const ENTRY = join(PACKAGE_ROOT, 'src/chat/AppShell.scss');
 
-/** The compiled stylesheet may grow to this many bytes. It was 268,427 before the dead CSS went. */
+/** The most bytes the compiled stylesheet may take. Raise it only for styles the chat renders. */
 const SIZE_BUDGET = 185_000;
 
 /**
- * Classes the source never spells out whole, each with the line that produces
- * it. A pattern matches the whole class name.
+ * Classes the source never spells out whole, each with the reason it stays.
+ * A pattern matches the whole class name.
  */
 const ALLOWED: { pattern: RegExp; reason: string }[] = [
   {
@@ -51,11 +52,6 @@ const ALLOWED: { pattern: RegExp; reason: string }[] = [
       "@carbon/ai-chat-components' inline-markdown.ts renders it inside the chat.",
   },
   {
-    pattern: /^(cds-aichat-explainability-popover.*|cds--list--ordered|cds--list__item)$/,
-    reason:
-      'The public src/globals explainability popover styles, which hosts load for their own markup.',
-  },
-  {
     pattern: /^carousel__/,
     reason:
       "@carbon/utilities' initCarousel adds these to the carousel's slides, which render inside the chat.",
@@ -70,16 +66,26 @@ const ALLOWED: { pattern: RegExp; reason: string }[] = [
     reason:
       "Carbon's layout utilities, emitted by @carbon/ai-chat-components/scss/common. Removing them is a change to that package.",
   },
+  {
+    pattern:
+      /^(cds-aichat-explainability-popover.*|cds--list--ordered|cds--list__item)$/,
+    reason:
+      "src/globals' explainability popover styles. The chat renders none of them, but they come from the public globals, which this check leaves alone.",
+  },
 ];
 
 /**
- * Carbon's carousel module pairs each `.carousel__…` selector with a `:host(.carousel__…)` one. Under the chat's
- * `:host`, the second can't match, but it shares a rule with the live first one.
+ * Carbon's carousel module pairs each `.carousel__…` selector with a
+ * `:host(.carousel__…)` one. Under the chat's `:host`, the second can't match,
+ * but it shares a rule with the live first one.
  */
 const ALLOWED_IMPOSSIBLE = /^:host\s+:host\(\.carousel__/;
 
+/** A selector the chat's `:host` wrapper makes impossible to match. */
+const IMPOSSIBLE = /:host\s+(:host\b|:root\b|html\b|body\b)/;
+
 /** Classes inside these pseudo-classes don't decide whether a rule can match. */
-const SELECTOR_ARGUMENTS = new Set([':not', ':is', ':where', ':has']);
+const SELECTOR_ARGUMENTS = /:(not|is|where|has)\(/g;
 
 async function compileChatStylesheet(): Promise<string> {
   const result = sass.renderSync({
@@ -100,31 +106,54 @@ async function compileChatStylesheet(): Promise<string> {
   return processed.css;
 }
 
-/** Every class in a rule's selectors, outside selector arguments. */
+/** A selector with the arguments of `:not()`, `:is()`, `:where()`, and `:has()` cut out. */
+function withoutSelectorArguments(selector: string): string {
+  let result = '';
+  let index = 0;
+  for (const match of selector.matchAll(SELECTOR_ARGUMENTS)) {
+    if (match.index < index) {
+      continue;
+    }
+    result += selector.slice(index, match.index);
+    let depth = 1;
+    let end = match.index + match[0].length;
+    for (; end < selector.length && depth > 0; end++) {
+      if (selector[end] === '(') {
+        depth++;
+      } else if (selector[end] === ')') {
+        depth--;
+      }
+    }
+    index = end;
+  }
+  return result + selector.slice(index);
+}
+
+/** Every class in a rule's selectors, outside selector arguments, with a selector that uses it. */
 function classesOf(css: string): Map<string, string> {
   const classes = new Map<string, string>();
   postcss.parse(css).walkRules((rule) => {
-    selectorParser((selectors) => {
-      selectors.walkClasses((node) => {
-        for (let parent = node.parent; parent; parent = parent.parent) {
-          if (
-            parent.type === 'pseudo' &&
-            SELECTOR_ARGUMENTS.has(parent.value)
-          ) {
-            return;
-          }
+    if (rule.parent?.type === 'atrule' && /keyframes$/.test(rule.parent.name)) {
+      return;
+    }
+    for (const selector of rule.selectors) {
+      for (const [, name] of withoutSelectorArguments(selector).matchAll(
+        /\.(-?[_a-zA-Z][\w-]*)/g
+      )) {
+        if (!classes.has(name)) {
+          classes.set(name, selector);
         }
-        if (!classes.has(node.value)) {
-          classes.set(node.value, rule.selector);
-        }
-      });
-    }).processSync(rule.selector);
+      }
+    }
   });
   return classes;
 }
 
-/** The chat's runtime source with comments removed, so a class named only in a comment doesn't count. */
-function chatSource(): string {
+/**
+ * The text of every string literal and template in the chat's runtime source.
+ * A class named only in a comment, a type, or an identifier doesn't count.
+ */
+function chatStrings(): string {
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -139,13 +168,46 @@ function chatSource(): string {
     }
   };
   walk(join(PACKAGE_ROOT, 'src'));
-  return files
-    .map((file) =>
+  const strings: string[] = [];
+  for (const file of files) {
+    const scanner = ts.createScanner(
+      ts.ScriptTarget.Latest,
+      true,
+      file.endsWith('.tsx') ? ts.LanguageVariant.JSX : ts.LanguageVariant.Standard,
       readFileSync(file, 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/^\s*\/\/.*$/gm, '')
-    )
-    .join('\n');
+    );
+    // Open braces inside each template expression still open, innermost last.
+    const templates: number[] = [];
+    for (let kind = scanner.scan(); kind !== ts.SyntaxKind.EndOfFileToken; ) {
+      if (
+        kind === ts.SyntaxKind.CloseBraceToken &&
+        templates.at(-1) === 0
+      ) {
+        // This `}` ends a template expression, so the template continues.
+        kind = scanner.reScanTemplateToken(false);
+        if (kind === ts.SyntaxKind.TemplateTail) {
+          templates.pop();
+        }
+      } else if (kind === ts.SyntaxKind.OpenBraceToken && templates.length) {
+        templates[templates.length - 1]++;
+      } else if (kind === ts.SyntaxKind.CloseBraceToken && templates.length) {
+        templates[templates.length - 1]--;
+      } else if (kind === ts.SyntaxKind.TemplateHead) {
+        templates.push(0);
+      }
+      if (
+        kind === ts.SyntaxKind.StringLiteral ||
+        kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral ||
+        kind === ts.SyntaxKind.TemplateHead ||
+        kind === ts.SyntaxKind.TemplateMiddle ||
+        kind === ts.SyntaxKind.TemplateTail
+      ) {
+        strings.push(scanner.getTokenValue());
+      }
+      kind = scanner.scan();
+    }
+  }
+  return strings.join('\n');
 }
 
 describe('the prebuilt chat stylesheet', () => {
@@ -155,12 +217,12 @@ describe('the prebuilt chat stylesheet', () => {
   }, 60_000);
 
   it('styles only classes the chat renders', () => {
-    const source = chatSource();
+    const strings = chatStrings();
     const unrendered = [...classesOf(css)]
       .filter(([name]) => !ALLOWED.some(({ pattern }) => pattern.test(name)))
       .filter(([name]) => {
         const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return !new RegExp(`(?<![\\w-])${escaped}(?![\\w-])`).test(source);
+        return !new RegExp(`(?<![\\w-])${escaped}(?![\\w-])`).test(strings);
       })
       .map(([name, selector]) => `${name} (in ${selector})`);
     expect(unrendered).toEqual([]);
@@ -170,10 +232,7 @@ describe('the prebuilt chat stylesheet', () => {
     const impossible: string[] = [];
     postcss.parse(css).walkRules((rule) => {
       for (const selector of rule.selectors) {
-        if (
-          /:host\s+:host\(|:host\s+:root/.test(selector) &&
-          !ALLOWED_IMPOSSIBLE.test(selector)
-        ) {
+        if (IMPOSSIBLE.test(selector) && !ALLOWED_IMPOSSIBLE.test(selector)) {
           impossible.push(selector);
         }
       }
@@ -185,9 +244,16 @@ describe('the prebuilt chat stylesheet', () => {
     expect(css).not.toMatch(/\.cds--btn\b/);
   });
 
-  it('keeps the Carbon theme classes', () => {
+  it('keeps the Carbon theme classes, with the button tokens', () => {
+    const themes = new Map<string, string>();
+    postcss.parse(css).walkRules((rule) => {
+      const match = /^:host \.cds--(white|g10|g90|g100)$/.exec(rule.selector);
+      if (match) {
+        themes.set(match[1], (themes.get(match[1]) ?? '') + rule.toString());
+      }
+    });
     for (const theme of ['white', 'g10', 'g90', 'g100']) {
-      expect(css).toMatch(new RegExp(`\\.cds--${theme}\\s*\\{`));
+      expect(themes.get(theme)).toContain('--cds-button-primary:');
     }
   });
 
