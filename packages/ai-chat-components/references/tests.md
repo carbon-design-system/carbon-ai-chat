@@ -9,9 +9,10 @@ A test lives with the code that owns the behavior ([ai-chat's rule](../../ai-cha
 - **Beside the module.** Put the test in the `__tests__/` next to the code, named for it. A sub-component's tests go in its own `__tests__/`. Every Lit element gets tests there. Every new or changed React wrapper gets a spec in `src/react/__tests__/`.
 - **A Lit element's behavior is a browser test,** named `<name>.browser.test.ts`. happy-dom is for plain modules, React wrappers, and the Storybook tests. If a test renders only to reach logic, move the logic to a plain module and test it in happy-dom.
 - **Focus needs the browser project.** That covers `activeElement`, `:focus-within`, tab order, and `tabbable` results. A React test may check that a prop sets `tabIndex` or `inert`, but that doesn't prove what's tabbable.
-- **A browser-only API gets a browser test with no stub:** `ElementInternals`, `adoptedStyleSheets`, layout, and selection. If a stub stands in for the behavior under test, move the test to the browser project without the stub.
+- **A browser-only API gets a browser test with no stub:** `ElementInternals`, `adoptedStyleSheets`, `ResizeObserver` (a no-op in happy-dom), layout, and selection. If a stub stands in for the behavior under test, move the test to the browser project without the stub.
 - **Test a behavior once, on the element.** A React wrapper test checks only the mapping: props to properties or attributes, `on*` callbacks to events, and children to slots.
 - **Helpers.** A helper every browser test may use goes in `src/__tests__/browser/`. Any other helper stays in its component's `__tests__/`.
+- **Elements that work together.** Read [integration-tests.md](integration-tests.md) when you add a child to a family, a slot, a cross-element event, or a coordinator's reaction to a child's state.
 
 ## Which project runs a file
 
@@ -32,6 +33,7 @@ Carbon's tests import `es/` because web-test-runner has no compile step. This pa
 The surface is what `custom-elements.json` lists (properties, attributes, events, slots, CSS parts), plus the accessibility tree. Set inputs through attributes, properties, slotted children, and real input. Assert events, reflected attributes, slot assignment, parts, and role, name, and state. You may query the shadow root to reach a control.
 
 - **Check rendered structure with explicit assertions on that surface.** This package keeps no DOM snapshots, unlike Carbon, on purpose: Chromatic checks how each story looks, on both Storybooks.
+- **Test a reflected attribute from the property:** set the property, await the update, then read the attribute. **Test a slot through assignment:** read `assignedSlot` or `assignedElements()`, never only the child you slotted.
 - **Check state through ARIA, not class names:** `aria-activedescendant` or `aria-selected` for the active option, `disabled` or `aria-disabled` for a disabled control. Check a class only when the class is the behavior, such as a documented style hook.
 - **Assert role, name, and state on what a user reaches,** read as [Assertion style](#assertion-style) shows.
 - **Say why when a test reaches past the surface.** A `_private` call or a read of internal markup gets a comment: what the check protects, and why the surface can't show it cheaply.
@@ -41,7 +43,7 @@ The surface is what `custom-elements.json` lists (properties, attributes, events
 const next = list._nextFocusTarget(deleted);
 ```
 
-This package has no contract tier: no `.contract` suffix and no manifest row. Test host-facing behavior through the surface above; if a refactor breaks such a test, stop for review. Public API changes follow the [manifest and wrapper workflow](component-authoring.md#manifest-and-react-wrappers), where `test:manifest` and the root `test:manifest-consumer` check packaging and the manifest.
+This package has no contract tier: no `.contract` suffix and no manifest row. Test host-facing behavior through the surface above. Public API changes follow the [manifest and wrapper workflow](component-authoring.md#manifest-and-react-wrappers), where `test:manifest` and the root `test:manifest-consumer` check packaging and the manifest.
 
 ## Events
 
@@ -55,9 +57,10 @@ const { detail, bubbles, composed } = await toggled;
 
 ## Keyboard and focus
 
-- **Use real input:** `sendKeys` and `sendMouse` from `src/__tests__/browser/input.ts`. A synthetic `KeyboardEvent` is only for a handler path real keys can't reach, with a comment that says so. Carbon mixes the two; this package uses real keys on purpose, because a dispatched event skips the browser's default actions, focus, and composition.
+- **Use real input:** `sendKeys` and `sendMouse` from `src/__tests__/browser/input.ts`. A synthetic `KeyboardEvent` is only for a handler path real keys can't reach, with a comment that says so. One comment at the top of the file or `describe` can cover its synthetic events. Carbon mixes the two; this package uses real keys on purpose, because a dispatched event skips the browser's default actions, focus, and composition.
 - **Cover the keys the [APG pattern](https://www.w3.org/WAI/ARIA/apg/patterns/) lists for the widget,** plus focus on entry, Escape and return, and focus after a removal. Name the pattern in the `describe` or a comment.
-- **Read focus through shadow roots,** with `shadowRoot.activeElement` or `:focus-within`. `document.activeElement` stops at the host.
+- **Read focus through shadow roots,** with `shadowRoot.activeElement` or `:focus-within`, as [accessibility.md](../../../references/accessibility.md#testing-accessibility) allows. `document.activeElement` stops at the host.
+- **In WebKit, Tab skips a native button with no `tabindex`.** A Tab test that lands on one needs a different target in WebKit, such as a text input.
 
 ```ts
 // APG menu button pattern
@@ -81,29 +84,11 @@ await shell.updateComplete;
 await panel.updateComplete; // a child that renders too
 ```
 
-## Integration between elements
-
-An element that coordinates others through slots, events that cross element boundaries, focus that moves between elements, or a shared manager needs integration tests. Add one when you add a child to a family, a slot, a cross-element event, or a coordinator's reaction to a child's state.
-
-- **Test or story.** An outcome a host can observe in code gets a test: slot assignment, an event at the coordinator's host, a focus target, a reflected attribute, or `inert`. How the composition looks (spacing, corners, responsive layout) gets a story, which Chromatic checks. Stories don't assert: the package has no play functions.
-- **Where.** In the `__tests__/` of the element that reacts. A shared manager's test goes in the manager's folder. It's always a browser test, named `<coordinator>-<behavior>-integration.browser.test.ts`, as in `chat-shell/__tests__/panel-focus-integration.browser.test.ts`.
-- **Keep it small:** one coordinator, its direct children, and one crossing per case. Mount the smallest ancestor. Assert on public surfaces, never inside a child's shadow root. Use no ai-chat import, store, config, or network. A multi-step user journey belongs to an ai-chat cross-module test or the demo.
-- **Cover the web-component cases:** a child added or removed after first render (`slotchange`), a child upgraded after its parent, an optional child that's absent, and `bubbles` and `composed` where a host listens.
-- **Use real children,** in the markup a host writes, as the stories do. A stub child needs a reason comment. A fixture two or more files share goes in that family's `__tests__/helpers/`.
-- **The boundary with ai-chat.** Composition inside this package is tested here. How chat config drives the shell is an ai-chat cross-module test.
-
-```ts
-const shell = await fixture(html`
-  <cds-aichat-shell>
-    <button slot="messages">Open panel</button>
-    <div slot="panels"><cds-aichat-panel></cds-aichat-panel></div>
-  </cds-aichat-shell>
-`);
-```
-
 ## Assertion style
 
-A Lit element test uses open-wc's `fixture`, `html`, and `oneEvent`, with its chai `expect`. Read role, name, and state from attributes. Keep one assertion library per file, so chai's `expect` and Vitest's never mix.
+A Lit element test uses open-wc's `fixture`, `html`, and `oneEvent`, with its chai `expect`, as Carbon's tests do. Don't switch to Vitest's locators: their `toHaveFocus` can't see focus inside a shadow root. Keep one assertion library per file, so chai's `expect` and Vitest's never mix.
+
+chai can't compute an accessible name, so read role, name, and state from attributes and text. For a Carbon child, assert its public attributes, such as `cds-button`'s `disabled`. Reading its inner role needs a reason comment.
 
 ```ts
 import { expect, fixture, html } from '@open-wc/testing';
@@ -157,7 +142,6 @@ npm test -- src/components/card/__tests__/card.browser.test.ts
 | A Lit element in a React test never wires its events | A dependency loaded its Node build | Add the package to `test.server.deps.inline` in `vitest.config.ts`, so it resolves with the `browser` condition |
 | A test passes in happy-dom but can't show the behavior | It needs real layout, focus, selection or input | Name it `*.browser.test.ts` so the `browser` project runs it |
 | A React wrapper test fails against code that is correct in `src/` | It imports the built `es/` or `es-custom/`, and that output is stale | Rebuild first; see the [build preflight](../../../references/commands.md#build-preflight) |
-| `vi.spyOn` on an imported module throws in a browser test | Browser mode serves sealed ES modules | `vi.mock('<path>', { spy: true })`, then `vi.mocked(fn)` |
 | A selection case fails only in Firefox | Firefox resets the selection anchor across slots | Check for a known Firefox skip, as in `inline-markdown-selection.browser.test.ts` |
 | Hover or pointer state leaks into the next case | The mouse stays where the last case left it | Call `resetMouse()` in `afterEach` |
 

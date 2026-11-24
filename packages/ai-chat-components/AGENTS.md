@@ -11,6 +11,7 @@ Load only what you need:
 - Component file layout, the custom-elements manifest, React wrappers, naming, public API & deprecation → [component-authoring.md](references/component-authoring.md)
 - Authoring or editing a Storybook story or Overview MDX → [storybook.md](references/storybook.md)
 - Writing or running a test (Vitest: browser for Lit, happy-dom for React wrappers) → [tests.md](references/tests.md)
+- Testing elements that work together (slots, cross-element events, focus between them) → [integration-tests.md](references/integration-tests.md)
 - Shipping any UI change (WCAG 2.1 AA) → [root accessibility.md](../../references/accessibility.md)
 
 ## Build, test, Storybook
