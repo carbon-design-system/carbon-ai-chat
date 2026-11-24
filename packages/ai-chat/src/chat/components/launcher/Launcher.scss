@@ -10,7 +10,8 @@
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/type';
 // Loads Carbon's utilities before the other modules that use them. Sass emits a module's CSS where it's
-// first loaded, so this fixes where their styles land in the stylesheet.
+// first loaded, and rules of equal specificity cascade by order, so this keeps Carbon's utility rules ahead of
+// the chat's own.
 @use '@carbon/styles/scss/utilities';
 @use '@carbon/styles/scss/components/button/tokens' as button;
 @use '@carbon/styles/scss/components/button/vars' as button-vars;
