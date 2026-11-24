@@ -219,8 +219,8 @@ describe('cds-aichat-chat-header', function () {
         html`<cds-aichat-chat-header
           navigation-type="none"></cds-aichat-chat-header>`
       );
-      const navSlot = el.shadowRoot!.querySelector('[slot="navigation"]');
-      expect(navSlot).to.not.exist;
+      const navContent = el.shadowRoot!.querySelector('div[slot="navigation"]');
+      expect(navContent === null).to.be.true;
     });
 
     it('should render back button when navigationType is back', async () => {
@@ -343,6 +343,48 @@ describe('cds-aichat-chat-header', function () {
       expect(fixedActions!.textContent).to.include('Fixed Actions');
     });
 
+    it('should render a slotted title in the toolbar when no title property is set', async () => {
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header>
+          <div slot="title" id="custom-title">Custom Title</div>
+        </cds-aichat-chat-header>`
+      );
+      const toolbar = el.shadowRoot!.querySelector('cds-aichat-toolbar')!;
+      const title = el.querySelector<HTMLElement>('#custom-title')!;
+
+      const toolbarSlot =
+        toolbar.shadowRoot!.querySelector('slot[name="title"]');
+      expect(title.assignedSlot?.assignedSlot === toolbarSlot).to.be.true;
+      expect(title.getBoundingClientRect().width).to.be.greaterThan(0);
+    });
+
+    it('should keep header-title over a slotted title', async () => {
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header header-title="Default Title">
+          <div slot="title" id="custom-title">Custom Title</div>
+        </cds-aichat-chat-header>`
+      );
+      const title = el.querySelector<HTMLElement>('#custom-title')!;
+
+      expect(title.assignedSlot === null).to.be.true;
+    });
+
+    it('should render a slotted navigation when navigation-type is not set', async () => {
+      const el = await fixture<CdsAiChatHeader>(
+        html`<cds-aichat-chat-header>
+          <div slot="navigation" id="custom-nav">Custom Navigation</div>
+        </cds-aichat-chat-header>`
+      );
+      const toolbar = el.shadowRoot!.querySelector('cds-aichat-toolbar')!;
+      const nav = el.querySelector<HTMLElement>('#custom-nav')!;
+
+      const toolbarSlot = toolbar.shadowRoot!.querySelector(
+        'slot[name="navigation"]'
+      );
+      expect(nav.assignedSlot?.assignedSlot === toolbarSlot).to.be.true;
+      expect(nav.getBoundingClientRect().width).to.be.greaterThan(0);
+    });
+
     it('should pass all slots to toolbar', async () => {
       const el = await fixture<CdsAiChatHeader>(
         html`<cds-aichat-chat-header>
@@ -439,6 +481,20 @@ describe('cds-aichat-chat-header', function () {
       // Verify that requestFocus delegates to toolbar
       const result = el.requestFocus();
       expect(result).to.be.a('boolean');
+    });
+
+    it('should focus a button slotted into navigation', async () => {
+      const el = await fixture<CdsAiChatHeader>(html`
+        <cds-aichat-chat-header>
+          <div slot="navigation">
+            <button type="button">Back</button>
+          </div>
+        </cds-aichat-chat-header>
+      `);
+      const button = el.querySelector('div[slot="navigation"] button');
+
+      expect(el.requestFocus()).to.be.true;
+      expect(document.activeElement).to.equal(button);
     });
 
     it('should focus a cds-button slotted directly into fixed-actions', async () => {

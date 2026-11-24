@@ -439,7 +439,7 @@ class CdsAiChatChatHeader extends LitElement {
     const hasTitle = this.headerTitle || this.headerName;
 
     if (!hasTitle) {
-      return html`<slot name="title"></slot>`;
+      return html`<slot name="title" slot="title"></slot>`;
     }
 
     return html`
@@ -480,7 +480,7 @@ class CdsAiChatChatHeader extends LitElement {
       this.navigationType && this.navigationType !== 'none';
     const navigationContent = hasNavigationProps
       ? this.renderNavigation()
-      : html`<slot name="navigation"></slot>`;
+      : html`<slot name="navigation" slot="navigation"></slot>`;
 
     return html`
       <cds-aichat-toolbar
