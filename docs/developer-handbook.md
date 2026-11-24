@@ -21,6 +21,7 @@
   - [Continuous integration and deployment](#continuous-integration-and-deployment)
   - [Publishing](#publishing)
   - [Automated dependency updates](#automated-dependency-updates)
+  - [Security rotation](#security-rotation)
 
 <!-- prettier-ignore-end -->
 
@@ -355,3 +356,7 @@ Publishing of packages (both to NPM and CDN artifacts) are done within GitHub Ac
 ### Automated dependency updates
 
 Both Dependabot and Renovate are configured and used to automatically check for updates in the project dependencies and detect security vulnerabilities. PRs with the dependency updates are automatically opened against `main`. Ensure there are no introduced issues with the dependency update before merging in.
+
+### Security rotation
+
+One maintainer a month owns the CVE records assigned to this repo in the ServiceNow portal. See [security-rotation.md](security-rotation.md) for the rotation and the steps to close out a CVE.
