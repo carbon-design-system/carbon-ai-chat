@@ -32,7 +32,7 @@ New-file length comes from the selected source; neighbors come from `<base>`, ex
 
 **Blind spots.** Importers use `git grep -lw`; common words over-count. Comment ratios measure lines, not value. A clean run proves shape, not correctness or the need for a change.
 
-The advisory `contract` row lists changed runtime lines and branch arms missed by contract tests. Missing or stale coverage is unverified. No runtime source diff skips the producer. Read the [coverage workflow](../packages/ai-chat/references/tests.md#check-contract-execution) for source matching, report reuse, and planted proof.
+The advisory `contract` row lists changed runtime lines and branch arms missed by contract tests. Missing or stale coverage is unverified. No runtime source diff skips the producer. Read the [coverage workflow](../packages/ai-chat/references/contract-manifest.md#check-contract-execution) for source matching, report reuse, and planted proof.
 
 ## Measuring PR size
 

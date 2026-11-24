@@ -23,7 +23,7 @@ Coordinate builds under the [watcher rule](commands.md#with-a-watcher-running).
 
 Any code change also runs `npm run measure -- --changed <base>` on the working tree mid-change. At submission, run `npm run measure -- --changed <PR base> --source head`; use the parent branch for a stacked layer. In the PR, report size and flagged rows only by exception, per [caic-pr](../.bob/skills/caic-pr/SKILL.md). A clean run proves shape, not correctness — see [measuring.md](measuring.md).
 
-For each new runtime branch, name the contract test that fails when it breaks. In isolated scratch, show a clean pass, a narrow source break that fails the test, and a restored pass. Use the advisory contract coverage row to find gaps; executed lines alone do not prove assertions. Record a specific no-public-effect reason where a branch has none. Follow the [contract stop rule and manifest workflow](../packages/ai-chat/references/tests.md#contract-tests-pin-host-behavior).
+For each new runtime branch, name the contract test that fails when it breaks. In isolated scratch, show a clean pass, a narrow source break that fails the test, and a restored pass. Use the advisory contract coverage row to find gaps; executed lines alone do not prove assertions. Record a specific no-public-effect reason where a branch has none. Follow the [contract stop rule](../packages/ai-chat/references/tests.md#contract-tests-pin-host-behavior) and the [manifest workflow](../packages/ai-chat/references/contract-manifest.md).
 
 Always run `npm run lint` + `npm run lint:license` before opening a PR if you touched more than one file.
 

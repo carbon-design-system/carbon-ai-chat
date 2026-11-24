@@ -12,7 +12,7 @@ Use the cheapest test that can show the behavior. Answer in order, and stop at t
 
 1. **One module owns the behavior.** Write a unit test in `__tests__/` beside that module. Build only what it needs: a stub, a test store, or one rendered component. Don't mount the chat to reach a service or the store.
 2. **Several modules work together.** Write a cross-module test in the `__tests__/` of the entry it drives (table below). Boot the least you need (see [Helpers](#helpers)).
-3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. So is a test that reads `activeElement` or what's tabbable. A test whose stub stands in for the geometry, focus or slotting the behavior depends on, such as a `getClientRects` stub so tabbable sees every element, belongs here without the stub. A unit fed its input stays put: a scroll controller fed element sizes may stub the sizes, and logic that picks a focus target from a fixed list needs no browser. Contract tests stay in their project; only scripts edit them. A real browser alone is no reason to use the demo.
+3. **It needs real focus, layout, scrolling, slotting, or a browser API happy-dom lacks.** Name it `<name>.browser.test.ts(x)`, in the folder step 1 or 2 chose. A test that reads `activeElement` or what's tabbable is a browser test too. A test whose stub stands in for the geometry, focus or slotting the behavior depends on, such as a `getClientRects` stub so tabbable sees every element, belongs here without the stub. A unit fed its input stays put: a scroll controller fed element sizes may stub the sizes, and logic that picks a focus target from a fixed list needs no browser. A focus contract test, which must run in `node` or `happy-dom`, asserts what happy-dom can show, such as `requestFocus()`'s return value, and a `.browser.test` beside it checks where focus lands. A real browser alone is no reason to use the demo.
 4. **It needs the built demo:** the production build, which a strict-CSP check needs, a demo toggle, the host-compatibility pages, or the demo's response corpus. Only then add a spec to [demo/tests/](../../../demo/tests/), whose `npm test` [builds only the demo](../../../demo/AGENTS.md#build-run-test). Add it only if [no example's spec covers it](../../../examples/references/playwright.md#which-specs-run-against-which-example); examples cover host integrations.
 
 Check one behavior at one level. When a cheaper test shows it, delete the costlier copy, unless the costlier copy is a contract test.
@@ -26,13 +26,13 @@ Check one behavior at one level. When a cheaper test shows it, delete the costli
 
 Tests follow their folder's [import rules](../AGENTS.md#source-boundaries). A test under `src/sdk/` can import a framework's types but never its values: no React, Lit, Testing Library, or `src/chat/`, including through `vi.mock` or `vi.importActual`. If its assertions need them, it's a `chat/` test.
 
-**A test lives with the code that owns the behavior,** not where it shows up. [Components](../../ai-chat-components/references/tests.md) owns rendering, tokens, HTML, keyboard handling, and traversal and focus inside an element. This package owns chat state, config, messaging, their wiring, and which target gets focus after a chat action (open, close, send, a panel), in a cross-module `.browser.test`. If both test an element behavior, keep the components test and one wiring case here. Code copied into both is tested in each. A test here that inspects an element's markup likely belongs there.
+**A test lives with the code that owns the behavior,** not where it shows up. [Components](../../ai-chat-components/references/tests.md) owns rendering, tokens, HTML, keyboard handling, and traversal and focus inside an element. This package owns chat state, config, messaging, their wiring, and which target gets focus after a chat action (open, close, send, a panel), in a cross-module `.browser.test`. If both test an element behavior, keep the components test and one wiring case here. Code copied into both is tested in each. A test here that inspects an element's markup likely belongs there. Drive and read a components or Carbon element through its public properties, attributes, events, and slots. Its shadow root, classes, and `es/**/src` modules are internal, apart from [reading where focus landed](../../../references/accessibility.md#testing-accessibility).
 
 ## Prefer public behavior
 
 Aim each behavior test at a public boundary: the `ChatInstance`, a host's props, attributes, slots, and events, or the SDK handle. Calling an internal class's exported methods doesn't make a test external.
 
-Keep an internal-only test when it shows something public tests can't reach cheaply, such as a large input matrix or a structural-sharing check. Say why in a comment: what it protects, why public tests don't cover it, and why it's worth keeping. Reducer tests, today in `src/chat/state/__tests__/`, need no comment: public tests can't cheaply reach their transition logic over many inputs.
+Keep an internal-only test when it shows something public tests can't reach cheaply, such as a large input matrix or a structural-sharing check. Say why in a comment: what it protects, why public tests don't cover it, and why it's worth keeping. Reducer tests, today in `src/chat/state/__tests__/`, need no comment: public tests can't cheaply reach their transition logic over many inputs. Nor does a unit test beside its own module that imports only that module.
 
 To remove a test as a duplicate, show the surviving test covers it. Plant a narrow source break the old test catches, and show the survivor fails on it too.
 
@@ -48,25 +48,7 @@ Find DOM through exported test IDs, slots, parts, roles and accessible names. Th
 
 **If an existing contract test fails during a refactor, stop and report the failure. Never edit its expectations to make the refactor pass.** A contract test changes only for a deliberate public behavior change. Record that choice and put the `behavior-change` label on its PR.
 
-### Guard contract edits with the manifest
-
-After the [build preflight](../../../references/commands.md#build-preflight), run from the repo root:
-
-```bash
-npm run contract:manifest
-npm run contract:manifest:check
-npm run test:contract-manifest
-```
-
-Commit `tests/contract/MANIFEST.tsv` with the tests. Generation discovers every expanded case through Vitest. It hashes test bodies, helper files, and shared context such as fixtures, hooks, and parameter data. A check reads without writing and fails on stale rows. Run `npm run format:write` before generating, so formatting can't make a row stale.
-
-CI compares the PR's exact base and head manifests. Added rows pass. Changed or removed rows require `behavior-change`. A rename removes an old row. Changing a shared parameter table or a hashed helper can require the label even when it adds cases. A base without a manifest starts with an empty baseline.
-
-### Check contract execution
-
-Run `npm run measure -- --changed <base>`. Its advisory `contract` row lists changed runtime source lines no contract test executes, from Vitest's V8 coverage of the `*.contract.test.*` files. The selected `--source worktree|index|head` must match the source on disk. To reuse a report, set `CONTRACT_COVERAGE_REPORT` to its absolute path; its `.meta.json` fingerprint must match. Keep reports uncommitted.
-
-Executed lines do not prove assertions. For each new runtime branch, name the contract test that fails on a narrow source break. Plant it in a scratch copy, then show a clean pass, the failure, and a restored pass. Give a specific reason for a branch with no public effect.
+Read [contract-manifest.md](contract-manifest.md) when you add, change, or remove a contract test: it holds the manifest commands, which edits need the label, and how to check contract execution.
 
 ## Which project runs a file
 
@@ -90,9 +72,13 @@ Under `src/sdk/`, add `// @vitest-environment happy-dom` only to prove the SDK l
 | One component with chat context | `TestChatContext`, `makeConfigStore` | `src/chat/__tests__/helpers/` |
 | Assertions on the rendered chat | `renderChatAndGetInstance()` | `src/chat/__tests__/helpers/render.ts` |
 | A wait on a real event or call | `untilCalled()`, `untilDom()` | `src/chat/__tests__/helpers/waits.ts` |
+| Gates, deferreds, and bounded waits, in any test | `gate()`, `deferred()`, `bounded()`, `nextTurn()`, `controlTimeouts()` | `src/sdk/__tests__/helpers/lifecycleControl.ts` |
+| An element by role and accessible name | `byRole()`, `allByRole()` | `src/chat/__tests__/helpers/contract/dom.ts` |
 | A page that prefers reduced motion, in a browser test | `emulateReducedMotion()` | `src/chat/__tests__/helpers/browserMedia.ts` |
 
 Put a new shared helper in the `__tests__/helpers/` of the folder whose import rules it fits. Call `shutdownBootedChats()`, from `helpers/boot.ts`, after each test that boots. The `browser` project loads the same helpers; browser tests already use `createBaseConfig()`, `setupBeforeEach()`, `setupAfterEach()` and the waits.
+
+`tests/setup/` replaces the `console` methods with shared `vi.fn()` mocks, so their calls build up across a file, and a `vi.spyOn(console, …)` returns the same mock ([cleanup](../../../references/writing-tests.md#cleanup-config-restores-spies-you-restore-the-rest)). Before a check that `console` wasn't called, call `mockClear()` after the mount, or match the case's own message.
 
 ## Checks with no module
 
