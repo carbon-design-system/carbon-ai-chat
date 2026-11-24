@@ -41,6 +41,11 @@ function manager(instance: TestInstance): ServiceManager {
   ).serviceManager;
 }
 
+/** The input's one handle, as the attached view reports it. */
+function inputHandle(instance: TestInstance) {
+  return manager(instance).view.current?.instance.input() ?? null;
+}
+
 async function boot(
   host: string,
   content: React.ReactNode = <input aria-label="Custom message" />,
@@ -106,8 +111,7 @@ describe.each(['React', 'web component'])(
           expect(
             instance.writeableElements[customSlot].querySelector('input')
           ).not.toBeNull();
-          expect(manager(instance).inputComponent).toBeFalsy();
-          expect(manager(instance).getInputFunctionsRef()).toBeNull();
+          expect(inputHandle(instance)).toBeNull();
         });
         await act(async () => {
           await instance.messaging.addMessage({
@@ -145,8 +149,7 @@ describe.each(['React', 'web component'])(
       });
       await waitFor(() => {
         expect(prompt()).not.toBeNull();
-        expect(manager(instance).inputComponent).not.toBeNull();
-        expect(manager(instance).getInputFunctionsRef()).not.toBeNull();
+        expect(inputHandle(instance)).not.toBeNull();
       });
     });
 
@@ -168,7 +171,7 @@ describe.each(['React', 'web component'])(
       });
       await waitFor(() => expect(outlet(customSlot)).toBeNull());
       expect(wrapper.querySelector('input')).toBe(input);
-      expect(manager(instance).getInputFunctionsRef()).toBeNull();
+      expect(inputHandle(instance)).toBeNull();
     });
 
     it('uses the active human-agent visibility override above the config baseline', async () => {

@@ -19,6 +19,7 @@ import { PendingUploadStatus } from '../../../src/types/state/AppState';
 import type { MessageRequest } from '../../../src/types/messaging/Messages';
 import { MessageSendSource } from '../../../src/types/events/eventBusTypes';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { withMessagingView } from '../helpers/viewBindings';
 
 function harness(
   presentation?:
@@ -36,8 +37,10 @@ function harness(
     messageCoordinator: { enqueueMessage: send },
   } as unknown as ServiceManager;
   const sender = new MessageCoordinator(
-    manager,
-    typeof presentation === 'function' ? presentation(manager) : presentation
+    withMessagingView(
+      manager,
+      typeof presentation === 'function' ? presentation(manager) : presentation
+    )
   );
   manager.messageCoordinator = sender;
   jest.spyOn(sender, 'enqueueMessage').mockImplementation(send);

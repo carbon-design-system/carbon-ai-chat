@@ -241,12 +241,11 @@ describe('native shell failure surface', () => {
     const f = await boot({ onError });
     expect(onError).toHaveBeenCalledTimes(1);
     // The failed shell's error view connects without publishing handles.
-    const manager = (f.view as unknown as { viewState: ChatViewState })
-      .viewState.serviceManager;
-    expect(manager.mainWindow).toBeUndefined();
-    expect(manager.appWindow).toBeUndefined();
-    expect(manager.ariaAnnouncer).toBeUndefined();
-    expect(manager.inputComponent).toBeFalsy();
+    const { viewState } = f.view as unknown as { viewState: ChatViewState };
+    expect(viewState.mainWindow).toBeUndefined();
+    expect(viewState.appWindow).toBeUndefined();
+    expect(viewState.ariaAnnouncer).toBeUndefined();
+    expect(viewState.inputComponent).toBeFalsy();
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({
         errorType: OnErrorType.RENDER,

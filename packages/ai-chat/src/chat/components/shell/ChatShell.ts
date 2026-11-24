@@ -109,7 +109,7 @@ class ChatShell extends NativeChatView {
   setContentConnected(connected: boolean): void {
     this.contentConnected = connected;
     if (!connected) {
-      this.lifecycle?.disconnect();
+      this.lifecycle?.disconnect(true);
       return;
     }
     // React dropped the targets and content handed over while detached,

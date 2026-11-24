@@ -67,6 +67,8 @@ async function bootMode(
     .serviceManager as ServiceManager;
   if (!withAdapter) {
     cleanup();
+    // The boot coordinator goes headless once cleanup detaches the view; retire it.
+    manager.messageCoordinator.disposeReasoningObserver();
     manager.messageCoordinator = new MessageCoordinator(manager);
     manager.messageCoordinator.configureMessageTimeout(config);
     manager.messageCoordinator.onInstanceReady();

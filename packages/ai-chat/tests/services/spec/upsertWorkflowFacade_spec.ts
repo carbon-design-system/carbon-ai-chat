@@ -13,10 +13,13 @@ import type { ServiceManager } from '../../../src/shared/services/ServiceManager
 import type { MessagePresentationPort } from '../../../src/shared/services/messaging/presentationPort';
 import { MessageState } from '../../../src/types/config/MessagingConfig';
 import type { MessageResponse } from '../../../src/types/messaging/Messages';
+import { withMessagingView } from '../helpers/viewBindings';
 
 it('returns the existing workflow Promise and reuses one private workflow', () => {
   const manager = { restartCount: 0 } as ServiceManager;
-  const core = new MessageCoordinator(manager, {} as MessagePresentationPort);
+  const core = new MessageCoordinator(
+    withMessagingView(manager, {} as MessagePresentationPort)
+  );
   manager.messageCoordinator = core;
   const result = Promise.resolve();
   const upsert = jest
@@ -44,7 +47,9 @@ it('returns the existing workflow Promise and reuses one private workflow', () =
 
 it('retains asynchronous validation rejection through the public core entry', async () => {
   const manager = { restartCount: 0 } as ServiceManager;
-  const core = new MessageCoordinator(manager, {} as MessagePresentationPort);
+  const core = new MessageCoordinator(
+    withMessagingView(manager, {} as MessagePresentationPort)
+  );
   manager.messageCoordinator = core;
   let result: Promise<void>;
   expect(() => {

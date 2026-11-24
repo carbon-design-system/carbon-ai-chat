@@ -11,8 +11,8 @@ import React, { StrictMode, useEffect } from 'react';
 import { render, waitFor } from '@testing-library/react';
 
 import '../../../src/web-components/cds-aichat-container';
-import { useServiceManager } from '../../../src/chat/hooks/useServiceManager';
-import type { ServiceManager } from '../../../src/shared/services/ServiceManager';
+import { useChatViewStateInstance } from '../../../src/chat/hooks/useChatViewState';
+import type { ChatViewState } from '../../../src/chat/services/chatViewState';
 import { ChatContainer } from '../../../src/react/ChatContainer';
 import { ChatInstance } from '../../../src/types/instance/ChatInstance';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
@@ -30,21 +30,22 @@ describe('public APIs in extension content first effects', () => {
     'delegates before consumer passive effects and releases handles on unmount (StrictMode: %s)',
     async (strict) => {
       let instance: ChatInstance;
-      let manager: ServiceManager;
+      let handles: ChatViewState;
       const calls: Record<string, unknown[]> = { response: [], writeable: [] };
       function Consumer({ id }: { id: string }) {
-        const serviceManager = useServiceManager();
+        // The shell publishes its handles to the mount's view state.
+        const viewState = useChatViewStateInstance();
         useEffect(() => {
-          manager = serviceManager;
+          handles = viewState;
           const scroll =
-            serviceManager.mainWindow &&
-            jest.spyOn(serviceManager.mainWindow, 'doScrollToMessage');
+            viewState.mainWindow &&
+            jest.spyOn(viewState.mainWindow, 'doScrollToMessage');
           const autoScroll =
-            serviceManager.mainWindow &&
-            jest.spyOn(serviceManager.mainWindow, 'doAutoScroll');
+            viewState.mainWindow &&
+            jest.spyOn(viewState.mainWindow, 'doAutoScroll');
           const focus =
-            serviceManager.appWindow &&
-            jest.spyOn(serviceManager.appWindow, 'requestFocus');
+            viewState.appWindow &&
+            jest.spyOn(viewState.appWindow, 'requestFocus');
           instance.scrollToMessage('restored', false);
           instance.doAutoScroll();
           instance.requestFocus();
@@ -52,12 +53,12 @@ describe('public APIs in extension content first effects', () => {
             scroll: scroll?.mock.calls.length ?? 0,
             autoScroll: autoScroll?.mock.calls.length ?? 0,
             focus: focus?.mock.calls.length ?? 0,
-            announcer: typeof serviceManager.ariaAnnouncer,
+            announcer: typeof viewState.ariaAnnouncer,
           });
           scroll?.mockRestore();
           autoScroll?.mockRestore();
           focus?.mockRestore();
-        }, [id, serviceManager]);
+        }, [id, viewState]);
         return <span />;
       }
       const Wrapper = strict ? StrictMode : React.Fragment;
@@ -112,9 +113,9 @@ describe('public APIs in extension content first effects', () => {
 
       view.unmount();
       await waitFor(() => {
-        expect(manager.mainWindow).toBeUndefined();
-        expect(manager.appWindow).toBeUndefined();
-        expect(manager.ariaAnnouncer).toBeUndefined();
+        expect(handles.mainWindow).toBeUndefined();
+        expect(handles.appWindow).toBeUndefined();
+        expect(handles.ariaAnnouncer).toBeUndefined();
       });
     }
   );

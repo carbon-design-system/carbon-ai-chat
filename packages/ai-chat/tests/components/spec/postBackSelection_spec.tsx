@@ -17,6 +17,7 @@ import {
   MessageResponseTypes,
   SelectionDisplay,
 } from '../../../src/types/messaging/Messages';
+import { withMessagingView } from '../../services/helpers/viewBindings';
 
 type ButtonHost = HTMLElement & { updateComplete: Promise<unknown> };
 
@@ -42,14 +43,16 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
     store: { ...configStore, dispatch },
     actions: { sendWithCatch },
   } as any;
-  serviceManager.messageCoordinator = new MessageCoordinator(serviceManager, {
-    hasCustomPromptLine: () => false,
-    announceSending: () => undefined,
-    requestComposerFocus: () => undefined,
-    closeHomeScreenIfOpen: () => undefined,
-    closeResponsePanelIfOpen: () => undefined,
-    closeHomeScreen: () => undefined,
-  });
+  serviceManager.messageCoordinator = new MessageCoordinator(
+    withMessagingView(serviceManager, {
+      hasCustomPromptLine: () => false,
+      announceSending: () => undefined,
+      requestComposerFocus: () => undefined,
+      closeHomeScreenIfOpen: () => undefined,
+      closeResponsePanelIfOpen: () => undefined,
+      closeHomeScreen: () => undefined,
+    })
+  );
   const localMessageItem = {
     item: {
       response_type: MessageResponseTypes.BUTTON,

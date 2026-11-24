@@ -12,13 +12,15 @@ import type { ServiceManager } from '../../../src/shared/services/ServiceManager
 import type { PublicConfig } from '../../../src/types/config/PublicConfig';
 import type { StructuredData } from '../../../src/types/messaging/Messages';
 import { createBaseConfig, makeConfigStore } from '../../test_helpers';
+import { ViewConnection } from '../../../src/shared/services/viewBindings';
 
 function createService(config: PublicConfig = createBaseConfig()) {
   const store = makeConfigStore(config);
+  // No view is attached, so there's no rendered input.
   const serviceManager = {
     store,
-    getInputFunctionsRef: () => null,
-  } as ServiceManager;
+    view: new ViewConnection(),
+  } as unknown as ServiceManager;
   return { service: new InputActionsService(serviceManager), store };
 }
 

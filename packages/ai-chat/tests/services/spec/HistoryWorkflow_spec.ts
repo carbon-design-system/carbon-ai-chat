@@ -15,6 +15,7 @@ import type { LoadedHistory } from '../../../src/shared/schema/historyToMessages
 import type { AppStateMessages } from '../../../src/types/state/AppState';
 import { MessageResponseTypes } from '../../../src/types/messaging/Messages';
 import { resolvablePromise } from '../../../src/shared/utils/resolvablePromise';
+import { withMessagingView } from '../helpers/viewBindings';
 
 function messages(): AppStateMessages {
   return {
@@ -162,8 +163,7 @@ it('returns the exact history workflow promises through core', () => {
     .mockReturnValue(result);
   try {
     const core = new MessageCoordinator(
-      {} as ServiceManager,
-      {} as MessagePresentationPort
+      withMessagingView({} as ServiceManager, {} as MessagePresentationPort)
     );
     expect(core.insertHistory([])).toBe(result);
     expect(

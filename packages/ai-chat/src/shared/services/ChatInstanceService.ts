@@ -280,7 +280,10 @@ class ChatInstanceService {
 
   // updateLanguagePack removed; use top-level `strings` prop on components.
 
-  /** @see ViewService.changeView */
+  /**
+   * Changes the view through the attached view. With no view attached it does
+   * nothing and resolves with the current view state.
+   */
   async changeView(
     newView: ViewType | Partial<ViewState>,
     reason: {
@@ -291,7 +294,12 @@ class ChatInstanceService {
     tryHydrating = true,
     forceViewChange = false
   ): Promise<ViewState> {
-    return this.serviceManager.viewService.changeView(
+    const view = this.serviceManager.view.current;
+    if (!view) {
+      return this.serviceManager.store.getState().persistedToBrowserStorage
+        .viewState;
+    }
+    return view.instance.changeView(
       newView,
       reason,
       tryHydrating,
