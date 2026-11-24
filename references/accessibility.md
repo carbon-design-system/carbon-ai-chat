@@ -46,8 +46,9 @@ Only when the centralized announcer doesn't fit the use case (e.g. a dedicated s
 Assert what assistive technology reads: roles and accessible names, focus targets, and announcement text and politeness. How a components test reads them through shadow roots is in [components tests.md](../packages/ai-chat-components/references/tests.md).
 
 - **Focus.** Where a focus test goes, and which package owns it, is in [ai-chat's tests.md](../packages/ai-chat/references/tests.md#where-a-test-goes).
+- **Read focus through any shadow root.** A test in either package may read `activeElement` and `:focus` or `:focus-within` through any shadow root, a child's or a Carbon element's included, to find where focus landed. Every other query follows its package guide's public-surface rule.
 - **Announcements follow the owner split above.** A component's tests cover its regions and its own transitions: the regions render even when empty, each message lands in the right channel, and nothing lands in the other one. `@carbon/ai-chat`'s tests cover what the chat announces, and when.
-- **Wait past the announcer's 250 ms debounce.** Use fake timers and advance past it. A check that nothing was announced advances first, or it passes before the announcer runs.
+- **Pick the seam, then wait for it.** A test of what the chat asks to announce may assert on its announce call, which runs before the announcer's 250 ms debounce. A test of the whole path reads the live region's text, so it waits past the debounce: use fake timers and advance past it. When fake timers are awkward for a check that nothing was announced, follow [Show that something didn't happen](writing-tests.md#show-that-something-didnt-happen).
 
   ```ts
   afterEach(() => vi.useRealTimers());
