@@ -127,7 +127,8 @@ interface ChatActions {
   /**
    * Moves focus into the chat. The chat decides where focus belongs, such as the input or an open panel. Returns
    * true when it moved focus there, and false when it found nothing to focus, such as while the main window is
-   * closed.
+   * closed. Returns false when {@link PublicConfig.shouldTakeFocusIfOpensAutomatically} is false.
+   * On a phone the chat never moves focus, so this moves nothing and returns false.
    *
    * @example Move focus into the chat
    * ```ts
@@ -157,6 +158,10 @@ interface ChatActions {
    * delivery is handled asynchronously by `customSendMessage` itself; use
    * `{@link EventHandlers.on}` with the `receive` event to react to incoming
    * messages.
+   *
+   * A send made while the chat loads waits until every `chat:ready` handler
+   * settles. A handler that never settles holds those sends, so they never
+   * reach `customSendMessage`. Sends made after `chat:ready` fires don't wait.
    *
    * @param message The message to send.
    * @param options Options for the message sent.
@@ -362,6 +367,8 @@ interface ChatActions {
 
   /**
    * Remove any record of the current session from the browser's SessionStorage.
+   * It also cancels each file upload still in progress: the upload's abort signal
+   * fires and its attachment leaves the input.
    *
    * @param keepOpenState If we are destroying the session to restart the chat this can be used to preserve if the web
    * chat is open.

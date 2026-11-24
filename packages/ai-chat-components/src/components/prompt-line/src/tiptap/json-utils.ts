@@ -90,8 +90,7 @@ function walkAll(node: JSONContent, visit: (node: JSONContent) => void): void {
 }
 
 /**
- * Project a JSONContent doc to a plain-text string. Mirrors today's `rawValue`
- * projection from the legacy serializer:
+ * Project a JSONContent doc to the legacy plain-text string:
  *
  * - Text nodes contribute their `text`.
  * - `mention` / `command` nodes (and any other `attrs.value`-bearing atom)
@@ -167,10 +166,9 @@ export function projectRawValue(editor: Editor): string {
 }
 
 /**
- * Build a paragraph-per-line JSONContent doc from a plain-text string — the
- * inverse of {@link getRawText} for plain text (`getRawText(textToDoc(s)) === s`).
- * Used to seed the rich editor losslessly from the textarea's value when the
- * prompt-line upgrades from textarea to Tiptap mode.
+ * Build one paragraph per line, including empty lines. This round-trips
+ * through getRawText; the rich editor's getText uses two newlines between
+ * paragraphs instead.
  */
 export function textToDoc(text: string): JSONContent {
   return {
@@ -188,9 +186,8 @@ export function textToDoc(text: string): JSONContent {
 /**
  * Map a plain-text offset into a ProseMirror position inside the doc
  * {@link textToDoc} builds from the same text. Lives here because it encodes
- * that function's shape: one paragraph per line, so a position costs +1 for the
- * doc/first-paragraph start plus +1 for every newline before it, each of which
- * opens another paragraph. Change `textToDoc` and this has to change with it.
+ * that function's shape: one for the first paragraph's start, plus one extra
+ * position for each newline that opens another paragraph.
  */
 export function textOffsetToDocPos(text: string, offset: number): number {
   return offset + 1 + (text.slice(0, offset).split('\n').length - 1);

@@ -371,6 +371,11 @@ class OutboundMessageCoordinator {
       }
 
       this.registerRequestGeneration(message.id, current.restartGeneration);
+      if (!customSendMessage) {
+        throw new Error(
+          "The chat can't send this message because messaging.customSendMessage isn't set. Set it to send messages to your assistant."
+        );
+      }
       await Promise.resolve(
         customSendMessage(
           customSendMessageRequest,

@@ -176,10 +176,10 @@ export const mapNodes = _mapNodes;
 export const findNodesByType = _findNodesByType;
 
 /**
- * Project a Tiptap `JSONContent` doc to a plain-text string. Mirrors the
- * `rawValue` projection: text nodes contribute their text, mention/command
- * nodes contribute `attrs.value || attrs.label`, paragraph boundaries
- * become `"\n"`, and `hardBreak` nodes contribute `"\n"`.
+ * Project a Tiptap `JSONContent` doc to the legacy plain-text string: text nodes contribute
+ * their text, mention/command nodes contribute `attrs.value || attrs.label`,
+ * paragraph boundaries and `hardBreak` nodes each contribute `"\n"`.
+ * The rich editor's `rawValue` uses two newlines between paragraphs, so it can differ from this projection.
  *
  * @function
  * @category Utilities
@@ -187,12 +187,13 @@ export const findNodesByType = _findNodesByType;
 export const getRawText = _getRawText;
 
 /**
- * Build a Tiptap `JSONContent` doc from a plain-text string — one paragraph
- * per line. The inverse of {@link getRawText} for plain text, so
+ * Build a Tiptap `JSONContent` doc with one paragraph per line, including empty lines.
+ * The inverse of {@link getRawText} for plain text, so
  * `getRawText(textToDoc(s)) === s`. Useful when migrating from the deprecated
  * {@link ChatInstanceInput.updateRawValue} to
  * {@link ChatInstanceInput.updateContent}:
  * `updateContent((prev) => textToDoc(updater(getRawText(prev))))`.
+ * In a rich editor, each paragraph boundary reads as two newlines in `rawValue`.
  *
  * @function
  * @category Utilities

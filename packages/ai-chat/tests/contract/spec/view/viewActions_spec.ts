@@ -21,31 +21,15 @@ import {
   click,
   contractChat,
   contractSetup,
+  deepActiveElement,
   fakeBackend,
   finishSend,
+  focusHostButton,
   instanceSender,
   isShownWithin,
   pause,
   startSend,
 } from '../../helpers';
-
-/** The focused element, looking through open shadow roots. */
-function deepActiveElement(): Element | null {
-  let active: Element | null = document.activeElement;
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
-  }
-  return active;
-}
-
-/** A focusable element of the host page, outside the chat. */
-function focusHostButton(): HTMLButtonElement {
-  const button = document.createElement('button');
-  document.body.appendChild(button);
-  button.focus();
-  expect(deepActiveElement()).toBe(button);
-  return button;
-}
 
 // @covers instance.requestFocus
 describe('requestFocus', () => {
