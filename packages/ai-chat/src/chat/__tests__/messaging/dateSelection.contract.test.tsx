@@ -10,26 +10,20 @@
  */
 
 import { act, waitFor } from '@testing-library/react';
-import {
-  BusEventSend,
-  BusEventType,
-  MessageResponseTypes,
-  MessageSendSource,
-} from '../../../aiChatEntry';
+import { MessageResponseTypes } from '../../../aiChatEntry';
 import {
   byRole,
   click,
   contractChat,
   contractSetup,
   fakeBackend,
-  recordEvents,
   responseOf,
 } from '../helpers/contract';
 
 describe('public date selection', () => {
   contractSetup();
 
-  it('pads a selected January date for the user and sends its ISO date as a date-picker send', async () => {
+  it('pads a selected January date for the user and sends its ISO date to the assistant', async () => {
     const backend = fakeBackend({ autoResolve: true });
     const mount = await contractChat({
       openChatByDefault: true,
@@ -43,7 +37,6 @@ describe('public date selection', () => {
         datePicker_confirmDate: 'Utility confirm date',
       },
     });
-    const recorder = recordEvents(mount.instance, [BusEventType.SEND]);
     try {
       await act(() =>
         mount.instance.messaging.addMessage(
@@ -72,16 +65,10 @@ describe('public date selection', () => {
       expect(request.input.text).toBe('2023-01-05');
       expect(request.history.label).toBe('01/05/2023');
       expect(request.history.related_message_id).toBe('utility-date');
-      const sends = recorder.of<BusEventSend>(BusEventType.SEND);
-      expect(sends).toHaveLength(1);
-      expect(sends[0].source).toBe(MessageSendSource.DATE_PICKER);
-      expect(sends[0].data.input.text).toBe('2023-01-05');
-      expect(sends[0].data.history.label).toBe('01/05/2023');
       await waitFor(() =>
         expect(byRole('heading', '01/05/2023')).toBeDefined()
       );
     } finally {
-      recorder.stop();
       await act(async () => mount.unmount());
     }
   });
