@@ -14,6 +14,7 @@ import React, { useCallback } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 
 import { useServiceManager } from '../../../hooks/useServiceManager';
+import { fireUserEvent } from '../../../services/fireUserEvent';
 import { selectInputIsReadonly } from '../../../store/selectors';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import {
@@ -44,7 +45,7 @@ function ButtonItemCustomEventComponent({
   const TouchInteraction = carbonIconToReact(TouchInteraction16);
 
   const onClickHandler = useCallback(async () => {
-    await serviceManager.fire({
+    await fireUserEvent(serviceManager, {
       type: BusEventType.MESSAGE_ITEM_CUSTOM,
       messageItem,
       fullMessage,

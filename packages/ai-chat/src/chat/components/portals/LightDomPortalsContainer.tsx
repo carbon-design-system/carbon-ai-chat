@@ -15,6 +15,8 @@ import {
   type LightDomPortalEventDetail,
 } from '@carbon/ai-chat-components/es/components/prompt-line/src/tiptap/render-in-light-dom.js';
 
+import { placeHosts } from '../../utils/removeHostsOnUnmount';
+
 /**
  * Tracked state for a single light-DOM portal.
  */
@@ -87,7 +89,7 @@ function LightDomPortalsContainer({
       //    Page-level CSS applies here.
       const hostEl = document.createElement(hostTag ?? 'span');
       hostEl.setAttribute('slot', slotName);
-      chatWrapper.appendChild(hostEl);
+      placeHosts(chatWrapper, [hostEl]);
 
       // 3. For HTMLElements, append directly — no React portal needed.
       //    For React nodes, track the entry so createPortal renders into hostEl.

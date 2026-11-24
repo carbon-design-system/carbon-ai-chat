@@ -22,7 +22,6 @@
 import React, { ReactElement } from 'react';
 import { render, act } from '@testing-library/react';
 
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
 import { useSelector } from '../../../src/chat/hooks/useSelector';
 import { useShouldSanitizeHTML } from '../../../src/chat/hooks/useShouldSanitizeHTML';
 import { selectMessagesState } from '../../../src/chat/components-legacy/MessagesComponent';
@@ -34,7 +33,11 @@ import actions from '../../../src/chat/store/actions';
 import { shallowEqual } from '../../../src/chat/store/appStore';
 import { AppState } from '../../../src/types/state/AppState';
 import { PublicConfig } from '../../../src/types/config/PublicConfig';
-import { makeConfigStore, applyConfigChange } from '../../test_helpers';
+import {
+  makeConfigStore,
+  applyConfigChange,
+  TestChatContext,
+} from '../../test_helpers';
 
 /** Build a store seeded from config, using the shared harness. */
 const makeStore = makeConfigStore;
@@ -79,12 +82,12 @@ describe('config-change re-render counts', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <HeaderProbe />
         <LanguagePackProbe />
         <SanitizeProbe />
         <InputDisabledProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     // Baseline: each probe rendered once on mount.
@@ -141,12 +144,12 @@ describe('config-change re-render counts', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <HeaderProbe />
         <LanguagePackProbe />
         <SanitizeProbe />
         <InputDisabledProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     expect(counts).toEqual({
@@ -190,11 +193,11 @@ describe('config-change re-render counts', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <HeaderProbe />
         <LanguagePackProbe />
         <InputDisabledProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
 
     applyConfigChange(store, {
@@ -222,9 +225,9 @@ describe('config-change re-render counts', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <SingleStringConsumer />
-      </StoreProvider>
+      </TestChatContext>
     );
     expect(consumerRenders).toBe(1);
 
@@ -276,9 +279,9 @@ describe('config-change re-render counts', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <MessagesBagProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
     expect(messagesBagRenders).toBe(1);
 
@@ -325,9 +328,9 @@ describe('config-change re-render counts', () => {
     }
 
     render(
-      <StoreProvider store={store}>
+      <TestChatContext store={store}>
         <UploadFieldsProbe />
-      </StoreProvider>
+      </TestChatContext>
     );
     expect(uploadProbeRenders).toBe(1);
 

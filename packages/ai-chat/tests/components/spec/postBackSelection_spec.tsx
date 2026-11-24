@@ -10,9 +10,7 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import { ButtonItemPostBackComponent } from '../../../src/chat/components/responseTypes/button/ButtonItemPostBackComponent';
-import { ServiceManagerContext } from '../../../src/chat/contexts/ServiceManagerContext';
-import { StoreProvider } from '../../../src/chat/providers/StoreProvider';
-import { makeConfigStore } from '../../test_helpers';
+import { makeConfigStore, TestChatContext } from '../../test_helpers';
 import {
   ButtonItemType,
   MessageResponseTypes,
@@ -38,8 +36,9 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
   const dispatch = jest.fn();
   const sendWithCatch = jest.fn();
   const requestFocus = jest.fn();
+  // useSelector reads the real store; dispatches go to the mock.
   const serviceManager = {
-    store: { dispatch },
+    store: { ...configStore, dispatch },
     actions: { sendWithCatch },
   } as any;
   const localMessageItem = {
@@ -55,15 +54,13 @@ function renderPostBack(overrides: Record<string, unknown> = {}) {
   } as any;
 
   const renderComponent = () => (
-    <StoreProvider store={configStore}>
-      <ServiceManagerContext.Provider value={serviceManager}>
-        <ButtonItemPostBackComponent
-          localMessageItem={localMessageItem}
-          isMessageForInput={true}
-          requestFocus={requestFocus}
-        />
-      </ServiceManagerContext.Provider>
-    </StoreProvider>
+    <TestChatContext serviceManager={serviceManager}>
+      <ButtonItemPostBackComponent
+        localMessageItem={localMessageItem}
+        isMessageForInput={true}
+        requestFocus={requestFocus}
+      />
+    </TestChatContext>
   );
   const view = render(renderComponent());
   return {
@@ -139,15 +136,13 @@ describe('post-back selected state', () => {
   it('keeps disabled and selected states separate', async () => {
     const { container, localMessageItem, rerender } = renderPostBack();
     rerender(
-      <StoreProvider store={makeConfigStore({})}>
-        <ServiceManagerContext.Provider value={{} as any}>
-          <ButtonItemPostBackComponent
-            localMessageItem={localMessageItem}
-            isMessageForInput={false}
-            requestFocus={jest.fn()}
-          />
-        </ServiceManagerContext.Provider>
-      </StoreProvider>
+      <TestChatContext store={makeConfigStore({})}>
+        <ButtonItemPostBackComponent
+          localMessageItem={localMessageItem}
+          isMessageForInput={false}
+          requestFocus={jest.fn()}
+        />
+      </TestChatContext>
     );
 
     const { host, button } = await getFocusableButton(container);

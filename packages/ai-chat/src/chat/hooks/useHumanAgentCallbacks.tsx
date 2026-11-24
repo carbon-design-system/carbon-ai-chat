@@ -8,13 +8,15 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 import { HumanAgentCallbacks } from '../services/humanAgentCallbacks';
-import type { ServiceManager } from '../services/ServiceManager';
+import type { ChatViewStateSnapshot } from '../services/chatViewState';
 import type { FileUpload } from '../../types/state/AppState';
+import { useChatViewState, useChatViewStateInstance } from './useChatViewState';
+
+const selectEndChatConfirmationOpen = (snapshot: ChatViewStateSnapshot) =>
+  snapshot.endChatConfirmationOpen;
 
 interface UseHumanAgentCallbacksProps {
-  serviceManager: ServiceManager;
   isConnectingOrConnected: boolean;
   allowMultipleFileUploads: boolean;
   requestInputFocus: () => void;
@@ -33,19 +35,17 @@ interface UseHumanAgentCallbacksReturn {
  * Custom hook to manage human agent related callbacks
  */
 export function useHumanAgentCallbacks({
-  serviceManager,
   isConnectingOrConnected,
   allowMultipleFileUploads,
   requestInputFocus,
 }: UseHumanAgentCallbacksProps): UseHumanAgentCallbacksReturn {
+  const viewState = useChatViewStateInstance();
   const controller = useMemo(
-    () => new HumanAgentCallbacks(serviceManager),
-    [serviceManager]
+    () => new HumanAgentCallbacks(viewState),
+    [viewState]
   );
-  const showEndChatConfirmation = useSyncExternalStore(
-    controller.subscribe,
-    controller.getSnapshot,
-    controller.getSnapshot
+  const showEndChatConfirmation = useChatViewState(
+    selectEndChatConfirmationOpen
   );
   const onFilesSelectedForUpload = useCallback(
     (uploads: FileUpload[]) =>

@@ -8,6 +8,7 @@
  */
 
 import { HumanAgentCallbacks } from '../../../src/chat/services/humanAgentCallbacks';
+import { ChatViewState } from '../../../src/chat/services/chatViewState';
 import type { ServiceManager } from '../../../src/chat/services/ServiceManager';
 
 function setup() {
@@ -24,25 +25,28 @@ function setup() {
     humanAgentService: service,
   } as unknown as ServiceManager;
   const focus = jest.fn();
+  const viewState = new ChatViewState(manager, { width: 0, height: 0 });
   return {
     state,
     service,
     focus,
-    controller: new HumanAgentCallbacks(manager),
+    viewState,
+    controller: new HumanAgentCallbacks(viewState),
   };
 }
 
-it('owns confirmation state', () => {
-  const { controller, service } = setup();
+it('keeps the end-chat prompt state in the view state', () => {
+  const { controller, service, viewState } = setup();
+  const isOpen = () => viewState.getSnapshot().endChatConfirmationOpen;
   const listener = jest.fn();
-  const unsubscribe = controller.subscribe(listener);
-  expect(controller.getSnapshot()).toBe(false);
+  const unsubscribe = viewState.subscribe(listener);
+  expect(isOpen()).toBe(false);
   controller.showConfirmEndChat();
   controller.showConfirmEndChat();
-  expect(controller.getSnapshot()).toBe(true);
+  expect(isOpen()).toBe(true);
   expect(listener).toHaveBeenCalledTimes(1);
   controller.confirmHumanAgentEndChat();
-  expect(controller.getSnapshot()).toBe(false);
+  expect(isOpen()).toBe(false);
   expect(service.endChat).toHaveBeenCalledWith(true);
   unsubscribe();
   controller.showConfirmEndChat();
