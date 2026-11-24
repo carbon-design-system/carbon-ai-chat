@@ -142,33 +142,37 @@ describe('cds-aichat-shell', function () {
 
     it('should reflect workspace-location attribute with start value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell workspace-location="start"></cds-aichat-shell>`
+        html`<cds-aichat-shell workspace-location="end"></cds-aichat-shell>`
       );
-      expect(el.workspaceLocation).to.equal('start');
+      el.workspaceLocation = 'start';
+      await el.updateComplete;
       expect(el.getAttribute('workspace-location')).to.equal('start');
     });
 
     it('should reflect workspace-location attribute with end value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell workspace-location="end"></cds-aichat-shell>`
+        html`<cds-aichat-shell></cds-aichat-shell>`
       );
-      expect(el.workspaceLocation).to.equal('end');
+      el.workspaceLocation = 'end';
+      await el.updateComplete;
       expect(el.getAttribute('workspace-location')).to.equal('end');
     });
 
     it('should reflect history-location attribute with start value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell history-location="start"></cds-aichat-shell>`
+        html`<cds-aichat-shell history-location="end"></cds-aichat-shell>`
       );
-      expect(el.historyLocation).to.equal('start');
+      el.historyLocation = 'start';
+      await el.updateComplete;
       expect(el.getAttribute('history-location')).to.equal('start');
     });
 
     it('should reflect history-location attribute with end value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell history-location="end"></cds-aichat-shell>`
+        html`<cds-aichat-shell></cds-aichat-shell>`
       );
-      expect(el.historyLocation).to.equal('end');
+      el.historyLocation = 'end';
+      await el.updateComplete;
       expect(el.getAttribute('history-location')).to.equal('end');
     });
   });

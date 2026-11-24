@@ -533,15 +533,6 @@ describe('cds-aichat-panel', function () {
       expect(el.classList.contains('panel--full-width')).to.be.true;
     });
 
-    it('should apply rounded corners when panel width is less than messages max width', async () => {
-      const el = await fixture<CDSAIChatPanel>(
-        html`<cds-aichat-panel></cds-aichat-panel>`
-      );
-      // The panel--with-less-than-messages-max-width class is applied by ResizeObserver
-      // We can verify the class exists in the component's logic
-      expect(el.classList.contains('panel')).to.be.true;
-    });
-
     it('should handle rounded corners with show-chat-header', async () => {
       const el = await fixture<CDSAIChatPanel>(
         html`<cds-aichat-panel full-width show-chat-header></cds-aichat-panel>`
