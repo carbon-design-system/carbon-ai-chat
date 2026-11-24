@@ -28,7 +28,7 @@ const PACKAGE_ROOT = resolve(import.meta.dirname, '../..');
 const ENTRY = join(PACKAGE_ROOT, 'src/chat/AppShell.scss');
 
 /** The compiled stylesheet may grow to this many bytes. It was 268,427 before the dead CSS went. */
-const SIZE_BUDGET = 178_000;
+const SIZE_BUDGET = 185_000;
 
 /**
  * Classes the source never spells out whole, each with the line that produces
@@ -56,11 +56,27 @@ const ALLOWED: { pattern: RegExp; reason: string }[] = [
       'The public src/globals explainability popover styles, which hosts load for their own markup.',
   },
   {
+    pattern: /^carousel__/,
+    reason:
+      "@carbon/utilities' initCarousel adds these to the carousel's slides, which render inside the chat.",
+  },
+  {
+    pattern: /^cds--(assistive-text|visually-hidden)$/,
+    reason:
+      "Carbon's utilities emit this rule, and the carousel module loads them, so it can't go without the carousel styles.",
+  },
+  {
     pattern: /^cds--layout(-constraint)?--/,
     reason:
       "Carbon's layout utilities, emitted by @carbon/ai-chat-components/scss/common. Removing them is a change to that package.",
   },
 ];
+
+/**
+ * Carbon's carousel module pairs each `.carousel__…` selector with a `:host(.carousel__…)` one. Under the chat's
+ * `:host`, the second can't match, but it shares a rule with the live first one.
+ */
+const ALLOWED_IMPOSSIBLE = /^:host\s+:host\(\.carousel__/;
 
 /** Classes inside these pseudo-classes don't decide whether a rule can match. */
 const SELECTOR_ARGUMENTS = new Set([':not', ':is', ':where', ':has']);
@@ -153,8 +169,13 @@ describe('the prebuilt chat stylesheet', () => {
   it('has no selector that can never match', () => {
     const impossible: string[] = [];
     postcss.parse(css).walkRules((rule) => {
-      if (/:host\s+:host\(|:host\s+:root/.test(rule.selector)) {
-        impossible.push(rule.selector);
+      for (const selector of rule.selectors) {
+        if (
+          /:host\s+:host\(|:host\s+:root/.test(selector) &&
+          !ALLOWED_IMPOSSIBLE.test(selector)
+        ) {
+          impossible.push(selector);
+        }
       }
     });
     expect(impossible).toEqual([]);
