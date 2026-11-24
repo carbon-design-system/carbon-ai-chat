@@ -148,7 +148,9 @@ export const setHostOriginMeta = _setHostOriginMeta;
 
 /**
  * Return a new Tiptap `JSONContent` tree with every node whose `type` matches
- * one of `types` removed. Marks on text nodes are preserved.
+ * one of `types` removed. Marks on text nodes are preserved. A node left with
+ * no children, such as a paragraph that held only mentions, keeps an empty
+ * `content` array.
  *
  * @function
  * @category Utilities
@@ -159,7 +161,8 @@ export const removeNodesByType = _removeNodesByType;
  * Map every node in a Tiptap `JSONContent` tree through `fn`. Returning
  * `null` removes the node from its parent's `content`; returning a node
  * replaces it. The walk is post-order — children are visited before their
- * parents.
+ * parents. If `fn` returns `null` for the root, you get an empty doc,
+ * `{ type: 'doc', content: [{ type: 'paragraph' }] }`.
  *
  * @function
  * @category Utilities

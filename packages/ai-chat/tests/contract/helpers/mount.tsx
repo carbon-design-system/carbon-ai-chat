@@ -35,7 +35,7 @@ import '../../../src/web-components/cds-aichat-custom-element/index';
 export interface ContractMount {
   /** The instance the host handed to `onBeforeRender`. */
   instance: ChatInstance;
-  /** The `cds-aichat-container` (or custom element) the host rendered. */
+  /** The `cds-aichat-container` element the React host rendered. */
   host: HTMLElement;
   /** Renders the same host again with new props. */
   rerender: (props: Partial<ChatContainerProps>) => Promise<void>;
@@ -44,6 +44,13 @@ export interface ContractMount {
 }
 
 const MOUNT_TIMEOUT = 10000;
+
+/**
+ * Each test's timeout in a file that calls `contractSetup`. It sits above the
+ * mount wait, so a slow mount on a loaded machine fails as the mount's own
+ * error, or passes, rather than timing out the test around it.
+ */
+const TEST_TIMEOUT = 2 * MOUNT_TIMEOUT;
 
 /** How long a describe block's warm-up may take, under a loaded machine. */
 const WARM_UP_TIMEOUT = 120_000;
@@ -122,13 +129,25 @@ async function mountChatContainer(
   };
 }
 
+/** What `contractCustomElementChat` gives a test. */
+export interface ContractCustomElementMount extends Omit<
+  ContractMount,
+  'rerender'
+> {
+  /** The element `ChatCustomElement` renders the chat into. */
+  wrapper: HTMLElement;
+  /** Renders the same host again with new props. */
+  rerender: (props: Partial<ChatCustomElementProps>) => Promise<void>;
+}
+
 /**
  * Renders `ChatCustomElement` (the React wrapper for a host-owned element)
- * and waits for its first render.
+ * and waits for its first render. Throws when the wrapper or the
+ * `cds-aichat-container` inside it is missing.
  */
 export async function contractCustomElementChat(
   props: Partial<ChatCustomElementProps> = {}
-): Promise<ContractMount> {
+): Promise<ContractCustomElementMount> {
   await warmUp();
   let instance: ChatInstance | null = null;
   let rendered = false;
@@ -154,14 +173,18 @@ export async function contractCustomElementChat(
   });
   await waitForMount(() => instance !== null && rendered);
 
+  const wrapper = result.container.firstElementChild as HTMLElement | null;
+  const host = wrapper?.querySelector<HTMLElement>('cds-aichat-container');
+  if (!wrapper || !host) {
+    throw new Error('ChatCustomElement rendered no wrapper or no container');
+  }
   return {
     instance,
-    host: result.container.querySelector('cds-aichat-custom-element'),
+    host,
+    wrapper,
     rerender: async (next) => {
       await act(async () => {
-        result.rerender(
-          <ChatCustomElement {...wrap(next as ChatCustomElementProps)} />
-        );
+        result.rerender(<ChatCustomElement {...wrap(next)} />);
       });
     },
     unmount: () => result.unmount(),
@@ -171,6 +194,12 @@ export async function contractCustomElementChat(
 /** The two custom-element hosts. */
 export type ContractElementTag =
   'cds-aichat-container' | 'cds-aichat-custom-element';
+
+/** Both custom-element hosts, for `describe.each`. */
+export const ELEMENT_TAGS: ContractElementTag[] = [
+  'cds-aichat-container',
+  'cds-aichat-custom-element',
+];
 
 /** What `contractElement` gives a test. */
 export interface ContractElementMount {
@@ -233,6 +262,24 @@ export async function contractElement(
 const realSetTimeout = globalThis.setTimeout;
 
 /**
+ * Connects an element that opens its main window at mount
+ * (`openChatByDefault`) with no welcome request. A `messaging` in
+ * `properties` is merged over `skipWelcome`.
+ */
+export function openElement(
+  tag: ContractElementTag,
+  properties: Record<string, unknown> = {}
+): Promise<ContractElementMount> {
+  return contractElement(tag, {
+    properties: {
+      ...properties,
+      openChatByDefault: true,
+      messaging: { skipWelcome: true, ...(properties.messaging as object) },
+    },
+  });
+}
+
+/**
  * Settles every fake-backend call the last test left open, and gives the chat
  * a turn to finish what each one releases. A test that ends (or times out)
  * with a call open, such as a welcome request no one answered, can leave the
@@ -264,11 +311,13 @@ export async function contractCleanup(): Promise<void> {
 /**
  * Registers a describe block's setup. Before its first test it loads the lazy
  * chunks and mounts one throwaway chat, under a long timeout, so a cold start
- * doesn't count against the first test's own timeout. After each test it runs
+ * doesn't count against the first test's own timeout. It raises the file's
+ * test timeout above the mount wait. After each test it runs
  * `contractCleanup`. `describeShared` calls it; call it first in every other
  * describe block that mounts a chat.
  */
 export function contractSetup(): void {
+  jest.setTimeout(TEST_TIMEOUT);
   beforeAll(async () => {
     await mountChatContainer({}, WARM_UP_TIMEOUT);
     await contractCleanup();
