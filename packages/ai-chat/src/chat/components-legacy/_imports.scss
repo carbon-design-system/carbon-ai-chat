@@ -10,3 +10,6 @@
 @use 'responseTypes/imports' as responseTypes;
 @use 'MessageComponent';
 @use 'MessagesComponent';
+// Carbon's carousel styles. initCarousel puts these classes on the slides inside the chat, so they
+// are live even though nothing here reads the namespace.
+@use '@carbon/styles/scss/carbon-utilities' as carousel;

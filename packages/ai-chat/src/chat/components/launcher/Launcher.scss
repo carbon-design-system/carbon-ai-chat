@@ -9,6 +9,9 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/type';
+// Loads Carbon's utilities here, where the full button module used to, so their styles keep their place in the
+// stylesheet's order.
+@use '@carbon/styles/scss/utilities';
 @use '@carbon/styles/scss/components/button/tokens' as button;
 @use '@carbon/styles/scss/components/button/vars' as button-vars;
 @use '../../../globals/scss/chat-launcher-layout';
