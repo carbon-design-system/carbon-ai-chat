@@ -18,6 +18,7 @@ import { MessageRequest, MessageResponse } from './Messages';
  * A single interaction in the Session History.
  *
  * @category Messaging
+ * @category SDK
  */
 export interface HistoryItem {
   /**

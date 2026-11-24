@@ -38,6 +38,7 @@ import type { CarbonIcon } from '@carbon/web-components/es/globals/internal/icon
  * you use it.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
   /**
@@ -92,6 +93,7 @@ interface MessageRequest<TInputType extends BaseMessageInput = MessageInput> {
  * The set of possible message input types in a request.
  *
  * @category Messaging
+ * @category SDK
  */
 enum MessageInputType {
   /**
@@ -116,6 +118,7 @@ enum InternalMessageRequestType {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface BaseMessageInput {
   /**
@@ -128,6 +131,7 @@ interface BaseMessageInput {
  * Base interface for an event message that can be used to send control, updates, or action information to the back-end.
  *
  * @category Messaging
+ * @category SDK
  */
 interface EventInput<
   TEventInputType = EventInputData,
@@ -150,6 +154,7 @@ interface EventInput<
  * specific string in order to create type safety ensuring each event has the right name (e.g. "typeof MY_EVENT_NAME").
  *
  * @category Messaging
+ * @category SDK
  */
 interface EventInputData<TNameType extends string = string> {
   /**
@@ -174,6 +179,7 @@ interface EventInputData<TNameType extends string = string> {
  * backend already names it.
  *
  * @category Messaging
+ * @category SDK
  */
 type StructuredFieldType =
   | 'file'
@@ -258,6 +264,7 @@ type FileFieldValue = InlineFile | ExternalFileReference;
  * A single field within a {@link StructuredData} payload.
  *
  * @category Messaging
+ * @category SDK
  */
 interface StructuredField {
   /**
@@ -294,6 +301,7 @@ interface StructuredField {
  * escape hatch for arbitrary host-defined data.
  *
  * @category Messaging
+ * @category SDK
  */
 interface StructuredData {
   /**
@@ -313,6 +321,7 @@ interface StructuredData {
  * input.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageInput extends BaseMessageInput {
   /**
@@ -358,6 +367,7 @@ interface MessageInput extends BaseMessageInput {
  * your fields, so check that a field is there before you use it.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageResponse<TGenericType = GenericItem[]> {
   /**
@@ -416,6 +426,7 @@ interface MessageResponse<TGenericType = GenericItem[]> {
  * The output context for a message response from an assistant.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageOutput<TGenericType = GenericItem[]> {
   /**
@@ -428,6 +439,7 @@ interface MessageOutput<TGenericType = GenericItem[]> {
  * The set of possible message types in a response.
  *
  * @category Messaging
+ * @category SDK
  */
 enum MessageResponseTypes {
   /**
@@ -555,6 +567,7 @@ enum MessageResponseTypes {
  * These are the human agent specific message types.
  *
  * @category Service desk
+ * @category SDK
  */
 export enum HumanAgentMessageType {
   /**
@@ -652,12 +665,14 @@ export enum HumanAgentMessageType {
  * A general type to indicate any message.
  *
  * @category Messaging
+ * @category SDK
  */
 export type Message =
   MessageRequest<MessageInput> | MessageRequest<EventInput> | MessageResponse;
 
 /**
  * @category Messaging
+ * @category SDK
  */
 export interface ItemStreamingMetadata {
   /**
@@ -698,6 +713,7 @@ export interface ItemStreamingMetadata {
  * in the chain-of-thought view; when omitted, the UI assumes success.
  *
  * @category Messaging
+ * @category SDK
  */
 export const ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
 export type ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
@@ -707,6 +723,7 @@ export type ChainOfThoughtStepStatus = _ChainOfThoughtStepStatus;
  * to reach its final answer.
  *
  * @category Messaging
+ * @category SDK
  */
 export interface ChainOfThoughtStep {
   /**
@@ -759,6 +776,7 @@ export interface ChainOfThoughtStep {
  * Options that control additional features available for a message item.
  *
  * @category Messaging
+ * @category SDK
  */
 export interface GenericItemMessageOptions {
   /**
@@ -778,6 +796,7 @@ export interface GenericItemMessageOptions {
  * You may not provide one of the arrays. e.g. you want negative categories but don't care about positive categories.
  *
  * @category Messaging
+ * @category SDK
  */
 export interface GenericItemMessageFeedbackCategories {
   /**
@@ -795,6 +814,7 @@ export interface GenericItemMessageFeedbackCategories {
  * Controls the display of a feedback options (thumbs up/down) for a message item.
  *
  * @category Messaging
+ * @category SDK
  */
 export interface GenericItemMessageFeedbackOptions {
   /**
@@ -874,6 +894,7 @@ export interface GenericItemMessageFeedbackOptions {
  * Options that control the custom content in a message footer.
  *
  * @category Messaging
+ * @category SDK
  */
 export interface GenericItemCustomFooterSlotOptions {
   /**
@@ -913,6 +934,7 @@ export type PartialOrCompleteItemChunk = PartialItemChunk | CompleteItemChunk;
  * shared by all item types.
  *
  * @category Messaging
+ * @category SDK
  */
 interface BaseGenericItem<TUserDefinedType = Record<string, unknown>> {
   /**
@@ -947,6 +969,7 @@ interface BaseGenericItem<TUserDefinedType = Record<string, unknown>> {
  * in the {@link MessageOutput.generic} array.
  *
  * @category Messaging
+ * @category SDK
  */
 type GenericItem<TUserDefinedType = Record<string, unknown>> =
   | TextItem<TUserDefinedType>
@@ -972,6 +995,7 @@ type GenericItem<TUserDefinedType = Record<string, unknown>> =
  * A user defined item returned in a message response from an assistant.
  *
  * @category Messaging
+ * @category SDK
  */
 interface UserDefinedItem<
   TUserDefinedType = Record<string, unknown>,
@@ -986,6 +1010,7 @@ interface UserDefinedItem<
  * This message item represents a preview card that can trigger a workflow view.
  *
  * @category Messaging
+ * @category SDK
  */
 interface PreviewCardItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1086,6 +1111,7 @@ interface PreviewCardItem<
  * responses to make adding support for channels that do not support HTML easier.
  *
  * @category Messaging
+ * @category SDK
  */
 interface TextItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1100,6 +1126,7 @@ interface TextItem<
  * Visual layout for a {@link SystemMessageItem}.
  *
  * @category Messaging
+ * @category SDK
  */
 export type SystemMessageVariant =
   | 'default'
@@ -1123,6 +1150,7 @@ export type SystemMessageVariant =
  * If mixed with other response types, system messages render inline within the message bubble.
  *
  * @category Messaging
+ * @category SDK
  */
 interface SystemMessageItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1152,6 +1180,7 @@ interface SystemMessageItem<
  * indicates that a user's conversation should be escalated to a human agent.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ConnectToHumanAgentItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1187,6 +1216,7 @@ interface ConnectToHumanAgentItem<
  * Additional information as part of a {@link ConnectToHumanAgentItem} that may be needed to perform a transfer to an agent.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ConnectToHumanAgentItemTransferInfo {
   /**
@@ -1208,6 +1238,7 @@ interface ConnectToHumanAgentItemTransferInfo {
  * displaying additional response items.
  *
  * @category Messaging
+ * @category SDK
  */
 interface PauseItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1229,6 +1260,7 @@ interface PauseItem<
  * drop-down or as a list of buttons.
  *
  * @category Messaging
+ * @category SDK
  */
 interface OptionItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1258,6 +1290,7 @@ interface OptionItem<
  * The set of possible response preferences for an options response.
  *
  * @category Messaging
+ * @category SDK
  */
 enum OptionItemPreference {
   /**
@@ -1276,6 +1309,7 @@ enum OptionItemPreference {
  * {@link MessageRequest.history}, even when {@link SingleOption.silent} or {@link ButtonItem.silent} hides the message.
  *
  * @category Messaging
+ * @category SDK
  */
 enum SelectionDisplay {
   /**
@@ -1293,6 +1327,7 @@ enum SelectionDisplay {
  * Represents an individual option that is part of an "options" response.
  *
  * @category Messaging
+ * @category SDK
  */
 interface SingleOption {
   /**
@@ -1326,6 +1361,7 @@ interface SingleOption {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface IFrameItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1363,6 +1399,7 @@ interface IFrameItem<
  * Dimension information for displaying a media item.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MediaItemDimensions {
   /**
@@ -1378,6 +1415,7 @@ interface MediaItemDimensions {
  * Uses WebVTT format for accessibility. Rendered as native HTML5 track elements.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MediaSubtitleTrack {
   /**
@@ -1417,6 +1455,7 @@ interface MediaSubtitleTrack {
  * Displayed as readable text below the audio player for accessibility.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MediaTranscript {
   /**
@@ -1444,6 +1483,7 @@ interface MediaTranscript {
  * rely on the platform's built-in accessibility features instead.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MediaFileAccessibility {
   /**
@@ -1463,6 +1503,7 @@ interface MediaFileAccessibility {
  * The different ways an iframe item may be displayed.
  *
  * @category Messaging
+ * @category SDK
  */
 enum IFrameItemDisplayOption {
   /**
@@ -1481,6 +1522,7 @@ enum IFrameItemDisplayOption {
  * accessibility purposes. This is used by the Audio, Video and Image response types.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MediaItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1526,6 +1568,7 @@ interface MediaItem<
  * Citations for text generated by an AI to provide the user with relevant source information and context.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ConversationalSearchItemCitation {
   /**
@@ -1564,6 +1607,7 @@ interface ConversationalSearchItemCitation {
  * A text response generated by AI with an optional list of citations for where the information came from.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ConversationalSearchItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1591,6 +1635,7 @@ interface ConversationalSearchItem<
  * An inline error response generated by a conversational skill provider with a user-friendly text and developer debug info.
  *
  * @category Messaging
+ * @category SDK
  */
 interface InlineErrorItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1629,6 +1674,7 @@ interface InlineErrorItem<
  * The image response type definition. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
+ * @category SDK
  */
 type ImageItem<TUserDefinedType = Record<string, unknown>> =
   MediaItem<TUserDefinedType>;
@@ -1637,6 +1683,7 @@ type ImageItem<TUserDefinedType = Record<string, unknown>> =
  * The video response type definition for future reuse. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
+ * @category SDK
  */
 type VideoItem<TUserDefinedType = Record<string, unknown>> =
   MediaItem<TUserDefinedType>;
@@ -1645,12 +1692,14 @@ type VideoItem<TUserDefinedType = Record<string, unknown>> =
  * The audio response type definition for future reuse. This is currently the same as {@link MediaItem}.
  *
  * @category Messaging
+ * @category SDK
  */
 type AudioItem<TUserDefinedType = Record<string, unknown>> =
   MediaItem<TUserDefinedType>;
 
 /**
  * @category Messaging
+ * @category SDK
  */
 enum ButtonItemType {
   /**
@@ -1676,6 +1725,7 @@ enum ButtonItemType {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 enum WidthOptions {
   /**
@@ -1696,6 +1746,7 @@ enum WidthOptions {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface WithWidthOptions {
   /**
@@ -1707,6 +1758,7 @@ interface WithWidthOptions {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface WithBodyAndFooter {
   /**
@@ -1722,6 +1774,7 @@ interface WithBodyAndFooter {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface MessageItemPanelInfo extends WithBodyAndFooter {
   /**
@@ -1807,6 +1860,7 @@ enum ButtonItemKind {
  * by the chat.
  *
  * @category Messaging
+ * @category SDK
  */
 export const CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
 export type CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
@@ -1816,6 +1870,7 @@ export type CHAT_BUTTON_KIND = _CHAT_BUTTON_KIND;
  * height and padding scale for buttons rendered by the chat.
  *
  * @category Messaging
+ * @category SDK
  */
 export const CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
 export type CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
@@ -1824,6 +1879,7 @@ export type CHAT_BUTTON_SIZE = _CHAT_BUTTON_SIZE;
  * This message item represents a button that can perform various actions such as sending messages, opening URLs, or showing panels.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ButtonItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1968,12 +2024,14 @@ interface ButtonItem<
 
 /**
  * @category Messaging
+ * @category SDK
  */
 type CardItem<TUserDefinedType = Record<string, unknown>> =
   BaseGenericItem<TUserDefinedType> & WithBodyAndFooter & WithWidthOptions;
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface CarouselItem<
   TUserDefinedType = Record<string, unknown>,
@@ -1985,6 +2043,7 @@ interface CarouselItem<
  * Horizontal alignment values for items in a grid response.
  *
  * @category Messaging
+ * @category SDK
  */
 type HorizontalCellAlignment = 'left' | 'center' | 'right';
 
@@ -1992,11 +2051,13 @@ type HorizontalCellAlignment = 'left' | 'center' | 'right';
  * Vertical alignment values for items in a grid response.
  *
  * @category Messaging
+ * @category SDK
  */
 type VerticalCellAlignment = 'top' | 'center' | 'bottom';
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface GridItem<TUserDefinedType = Record<string, unknown>>
   extends BaseGenericItem<TUserDefinedType>, WithWidthOptions {
@@ -2048,6 +2109,7 @@ interface GridItem<TUserDefinedType = Record<string, unknown>>
  * similar control to provide a date. There are currently no additional properties of the response.
  *
  * @category Messaging
+ * @category SDK
  */
 type DateItem<TUserDefinedType = Record<string, unknown>> =
   BaseGenericItem<TUserDefinedType>;
@@ -2113,6 +2175,7 @@ export interface MessageUIStateInternal {
  * If a user elects to open/close the user action will override what is provided here.
  *
  * @category Messaging
+ * @category SDK
  */
 enum ReasoningStepOpenState {
   OPEN = 'open',
@@ -2124,6 +2187,7 @@ enum ReasoningStepOpenState {
  * An individual reasoning step.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ReasoningStep {
   /**
@@ -2156,6 +2220,7 @@ interface ReasoningStep {
  * The interface describing how to pass reasoning steps to the UI.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ReasoningSteps {
   /**
@@ -2189,6 +2254,7 @@ interface ReasoningSteps {
  * This interface contains options for a {@link MessageResponse}.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageResponseOptions {
   /**
@@ -2226,6 +2292,7 @@ interface MessageResponseOptions {
  * saved your history store.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageResponseHistory {
   /**
@@ -2266,6 +2333,7 @@ interface MessageResponseHistory {
  * saved your history store.
  *
  * @category Messaging
+ * @category SDK
  */
 interface MessageRequestHistory {
   /**
@@ -2363,6 +2431,7 @@ interface MessageRequestHistory {
 
 /**
  * @category Messaging
+ * @category SDK
  */
 interface MessageHistoryFeedback {
   /**
@@ -2472,6 +2541,7 @@ type StreamChunk = PartialItemChunk | CompleteItemChunk | FinalResponseChunk;
  * Types of users we accept messages from.
  *
  * @category Messaging
+ * @category SDK
  */
 enum UserType {
   /**
@@ -2497,6 +2567,7 @@ enum UserType {
  * represent a human agent or a virtual assistant agent.
  *
  * @category Messaging
+ * @category SDK
  */
 interface ResponseUserProfile {
   /**
@@ -2525,6 +2596,7 @@ interface ResponseUserProfile {
  * Identifies the sender displayed for a user request.
  *
  * @category Messaging
+ * @category SDK
  */
 interface RequestUserProfile {
   /**
@@ -2548,6 +2620,7 @@ interface RequestUserProfile {
  * A single search result.
  *
  * @category Messaging
+ * @category SDK
  */
 interface SearchResult {
   /**

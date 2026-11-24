@@ -14,6 +14,9 @@ import { createFlattenedConfigPlugin } from './tasks/cem-flattened-config.js';
 
 const tablePath = 'src/web-components/shared/flattenedPublicConfig.ts';
 const publicConfigPath = 'src/types/config/PublicConfig.ts';
+const configBases = [
+  { name: 'ChatSDKConfig', source: 'src/types/config/ChatSDKConfig.ts' },
+];
 const basePath = 'src/web-components/shared/FlattenedConfigElement.ts';
 const hosts = [
   {
@@ -40,6 +43,7 @@ export default {
   globs: [
     tablePath,
     publicConfigPath,
+    ...configBases.map(({ source }) => source),
     basePath,
     ...hosts.map(({ source }) => source),
     ...hosts.map(({ attributesInterface }) => attributesInterface.source),
@@ -54,6 +58,7 @@ export default {
     createFlattenedConfigPlugin({
       tablePath,
       publicConfigPath,
+      configBases,
       basePath,
       hosts,
       typeModule: 'dist/types/aiChatEntry.d.ts',
