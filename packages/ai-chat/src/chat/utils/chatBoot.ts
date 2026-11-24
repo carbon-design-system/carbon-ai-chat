@@ -319,9 +319,7 @@ export async function initServiceManagerAndInstance(options: {
       serviceManager.mainWindow?.doScrollToMessage(messageID, animate);
     },
 
-    updateCatastrophicErrorPanel: (
-      panelState: Partial<CatastrophicErrorPanelState>
-    ) => {
+    updateCatastrophicErrorPanel: (panelState: CatastrophicErrorPanelState) => {
       debugLog('Called instance.updateCatastrophicPanel');
 
       if (
@@ -479,7 +477,7 @@ export async function initServiceManagerAndInstance(options: {
 
     requestFocus: () => {
       debugLog('Called instance.requestFocus');
-      serviceManager.appWindow?.requestFocus();
+      return Boolean(serviceManager.appWindow?.requestFocus());
     },
 
     serviceDesk: {

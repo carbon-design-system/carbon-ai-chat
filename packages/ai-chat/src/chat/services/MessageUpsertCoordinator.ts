@@ -261,7 +261,11 @@ class MessageUpsertCoordinator {
     for (const messageID of this.streamingIDs) {
       const requestID = lifecycle.responseRequestID(messageID);
       if (requestID) {
-        lifecycle.requestStopped(requestID);
+        lifecycle.requestStopped(
+          requestID,
+          undefined,
+          reason === CancellationReason.STOP_STREAMING
+        );
       }
       this.endStreamingMessage(messageID);
     }

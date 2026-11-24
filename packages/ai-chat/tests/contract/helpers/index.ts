@@ -12,6 +12,7 @@
  * import the internal test helpers (plan D6).
  */
 
+export * from './actions';
 export * from './backend';
 export * from './dom';
 export * from './driver';
