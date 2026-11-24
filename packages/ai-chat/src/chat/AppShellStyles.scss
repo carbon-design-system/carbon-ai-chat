@@ -48,14 +48,9 @@ Chat custom css properties
    * setting the matching --cds-aichat-* property. A value declared on this
    * wrapper would shadow the inherited host value and silently win.
    *
-   * Contextual overrides are the deliberate exception: the phone and
-   * rounded-corner blocks below still declare tokens so those modes win over a
-   * host value.
+   * Contextual overrides are the deliberate exception: the phone block below
+   * still declares tokens so that mode wins over a host value.
    */
-}
-
-.cds-aichat--container--render .cds-aichat--widget--rounded {
-  --cds-aichat-border-radius: #{layout.$spacing-03};
 }
 
 .cds-aichat--container--render.cds-aichat--is-phone {
@@ -265,27 +260,6 @@ Chat custom css properties
 @include chat-float-layout.float-positioning;
 
 /* ============================================================================
-   CHAT CONTAINER
-   Main inner chat container and theme variants
-   ============================================================================ */
-
-.cds-aichat {
-  display: flex;
-  box-sizing: border-box;
-  flex: 1;
-  flex-direction: column;
-  align-content: stretch;
-  align-items: stretch;
-  border-radius: 0;
-  margin: 0;
-  background-color: theme.$chat-shell-background;
-  block-size: 100%;
-  color: theme.$text-primary;
-  inline-size: 100%;
-  text-align: start;
-}
-
-/* ============================================================================
    RTL & INTERNATIONALIZATION
    Right-to-left language support and icon handling
    ============================================================================ */
@@ -294,12 +268,6 @@ Chat custom css properties
   .cds-aichat--direction-has-reversible-svg
   svg {
   transform: scaleX(-1);
-}
-
-.cds-aichat--container--render[dir='rtl']
-  .cds-aichat--direction-has-reversible-svg.cds-aichat--reverse-icon
-  svg {
-  transform: scaleX(1);
 }
 
 /* ============================================================================

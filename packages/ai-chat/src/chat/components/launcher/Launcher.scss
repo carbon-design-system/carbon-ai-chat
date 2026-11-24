@@ -350,10 +350,6 @@ cds-button.cds-aichat--launcher-extended__close-button {
 }
 
 [dir='rtl'] .cds-aichat-launcher {
-  .cds-aichat--launcher-extended__wrapper {
-    inset-inline: 0 unset;
-  }
-
   .cds-aichat--launcher-extended__text-holder {
     padding: layout.$spacing-04 layout.$spacing-04 layout.$spacing-04 0;
   }

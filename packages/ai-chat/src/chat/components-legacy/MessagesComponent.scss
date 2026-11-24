@@ -129,9 +129,3 @@
   margin-block-start: calc(-1 * layout.$spacing-07);
   transform: translateX(-50%);
 }
-
-.cds-aichat__scroll-to-bottom-button {
-  &--hidden {
-    display: none;
-  }
-}

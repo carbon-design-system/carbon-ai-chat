@@ -24,7 +24,6 @@
   padding-block-end: layout.$spacing-06;
 }
 
-.cds-aichat--connect-to-agent__text p,
 .cds-aichat--connect-to-human-agent__request-button svg {
   margin-inline-start: layout.$spacing-07;
 }
@@ -34,11 +33,6 @@
   svg {
   margin-inline: 0 layout.$spacing-07;
   transform: scaleX(-1);
-}
-
-.cds-aichat--message .cds-aichat--connect-to-human-agent__warning a,
-.cds-aichat--message .cds-aichat--connect-to-human-agent__warning a:visited {
-  color: theme.$link-inverse;
 }
 
 .cds-aichat--connect-to-human-agent__suspended-warning {
