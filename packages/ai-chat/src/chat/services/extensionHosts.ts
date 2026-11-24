@@ -30,6 +30,7 @@ import type { AppState } from '../../types/state/AppState';
 import type { ChatInstance } from '../../types/instance/ChatInstance';
 import type { TypeAndHandler } from '../../types/instance/EventHandlers';
 import type { PanelName } from '../utils/panelComposition';
+import { AutocompleteContent } from './autocompleteContent';
 import type {
   RenderCustomMessageFooterState,
   RenderCustomRequestFooterState,
@@ -158,6 +159,7 @@ class ExtensionHosts {
   private messages: AppState['allMessagesByID'] | undefined;
   private unsubscribeStore: (() => void) | null = null;
   private readonly lightDom: LightDomHosts;
+  readonly autocompleteContent: AutocompleteContent;
   private panelTargets = new Map<PanelTargetName, HTMLElement>();
   private panelContent = new Map<PanelName, PanelContentEntry>();
   private panelSnapshot: readonly PanelContentRequest[] = Object.freeze([]);
@@ -176,6 +178,7 @@ class ExtensionHosts {
     private readonly isRequestFooterEnabled: () => boolean
   ) {
     this.lightDom = new LightDomHosts(chatWrapper, this.onLightDomChange);
+    this.autocompleteContent = new AutocompleteContent(chatWrapper);
   }
 
   getSnapshot = (): ExtensionHostsSnapshot => this.snapshot;
@@ -215,6 +218,7 @@ class ExtensionHosts {
     this.unsubscribeStore = this.store.subscribe(this.onMessagesChange);
     this.onMessagesChange();
     this.lightDom.connect();
+    this.autocompleteContent.connect();
     this.syncAll();
   }
 
@@ -230,6 +234,7 @@ class ExtensionHosts {
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.lightDom.disconnect();
+    this.autocompleteContent.disconnect();
     this.retireAllPanelContent();
     this.syncAll();
   }
