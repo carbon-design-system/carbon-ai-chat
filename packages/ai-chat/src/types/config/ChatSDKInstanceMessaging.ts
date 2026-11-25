@@ -278,8 +278,9 @@ export interface ChatSDKInstanceMessaging {
    *   and the message isn't stored.
    * @remarks A STREAMING sequence whose host simply stops calling `upsertMessage` without
    *   sending a terminal COMPLETE or ERROR write will leave `streamingState.isDone` as
-   *   `false` indefinitely. The host is responsible for sending a terminal write, or for
-   *   calling `cancelCurrentMessageRequest` (or restarting the conversation) to settle it.
+   *   `false` indefinitely. To settle it, write the message with {@link MessageState.COMPLETE}
+   *   or {@link MessageState.ERROR}. You can also call {@link ChatSDKInstanceMessaging.stop} or
+   *   {@link ChatSDKInstanceMessaging.failTurn}, or restart the conversation.
    *
    * @example Insert a complete message
    * ```ts

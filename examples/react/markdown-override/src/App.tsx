@@ -90,7 +90,6 @@ function App() {
                 highlight
                 detectLanguage={false}
                 code={code}
-                data-rounded
               />
             </div>
           </Card>

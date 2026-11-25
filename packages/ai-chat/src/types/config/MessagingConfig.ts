@@ -86,6 +86,9 @@ export enum CancellationReason {
 
   /**
    * Message request exceeded the configured timeout duration.
+   *
+   * @deprecated Unchanged on 1.x. Removed in 2.0.0, where the chat no longer times out a request. Time the request in
+   * your {@link PublicConfigMessaging.customSendMessage} instead.
    */
   TIMEOUT = 'Request timeout',
 
@@ -136,11 +139,12 @@ export interface ChatInstanceMessaging extends ChatSDKInstanceMessaging {
    * shapes. Nothing stops you from mixing the two flows, but it isn't recommended or fully tested.
    *
    * A chunk stream whose `customSendMessage` throws, or that is canceled before a
-   * `final_response` chunk arrives, will have its `streamingState.isDone` settled to
-   * `true` on the items streamed so far. The host is responsible for calling
-   * `cancelCurrentMessageRequest` (or letting the chat cancel on restart) to settle
-   * the stream; simply stopping calls to `addMessageChunk` without canceling leaves
-   * `streamingState.isDone` as `false` indefinitely.
+   * `final_response` chunk arrives, has `streamingState.isDone` settled to `true` on the
+   * items streamed so far. If you just stop calling `addMessageChunk`, `streamingState.isDone`
+   * stays `false`. To settle a stream, send its `final_response` chunk. To end it early, call
+   * {@link ChatSDKInstanceMessaging.stop}. If the stream breaks, reject the `customSendMessage`
+   * promise, or call {@link ChatSDKInstanceMessaging.failTurn} once that promise has resolved.
+   * A restart of the conversation also settles it.
    */
   addMessageChunk: (chunk: StreamChunk) => Promise<void>;
 
@@ -230,7 +234,8 @@ export interface CustomSendMessageOptions {
    *   — an option-response control.
    * - {@link MessageSendSource.POST_BACK_BUTTON} — a post-back button in a
    *   response.
-   * - {@link MessageSendSource.DATE_PICKER} — a date-picker response.
+   * - {@link MessageSendSource.DATE_PICKER} — a date-picker response. Deprecated, and removed in
+   *   2.0.0 with the date response type.
    * - {@link MessageSendSource.INSTANCE_SEND} — a programmatic call to
    *   {@link ChatInstanceMessaging.send}, or to the deprecated {@link ChatInstance.send}.
    * - {@link MessageSendSource.WELCOME_REQUEST} — the internally generated

@@ -14,7 +14,9 @@ Some slots are layout-specific: {@link WriteableElementName.PROMPT_LINE_ACTIONS_
 
 ### Align rounded corners
 
-Slotted content can use the `data-rounded` and `data-stacked` attributes to align with the chat's corner rounding, which is especially useful for footer actions, custom headers, or any content that integrates with the chat shell.
+To align slotted content with the chat's corners, read the corner tokens in your CSS. This helps most with footer actions, custom headers, and other content that meets the chat shell's edge.
+
+> **Deprecated:** `data-rounded` and `data-stacked` on your own content are deprecated, and 2.0.0 removes them. They work until then. Read the corner tokens in your CSS instead, as shown here. See [Rounded corners](./Layout.md#rounded-corners).
 
 Example (footer slot):
 
@@ -24,7 +26,7 @@ import { WriteableElementName } from '@carbon/ai-chat';
 const footer = instance.writeableElements[WriteableElementName.FOOTER_ELEMENT];
 if (footer) {
   footer.innerHTML = `
-    <div class="my-footer-actions" data-rounded="bottom" data-stacked>
+    <div class="my-footer-actions">
       <button type="button">Cancel</button>
       <button type="button">Save</button>
     </div>
@@ -32,7 +34,24 @@ if (footer) {
 }
 ```
 
-`data-rounded="bottom"` inherits the bottom corner rounding, and `data-stacked` stacks the buttons vertically. See [Rounded corners](./Layout.md#rounded-corners).
+```css
+/* Stack the buttons, and round the last one's bottom corners to match the chat. */
+.my-footer-actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.my-footer-actions > :last-child {
+  border-end-start-radius: var(
+    --cds-aichat-border-radius-end-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-end-end-radius: var(
+    --cds-aichat-border-radius-end-end,
+    var(--cds-aichat-border-radius)
+  );
+}
+```
 
 ## Custom header (CUSTOM_HEADER)
 
@@ -93,6 +112,6 @@ Your application owns the controls and uploads. See [Replace the prompt line](./
 ## Related
 
 - [Custom panels](./CustomPanels.md) — render your own content in an overlay panel through {@link WriteableElementName.CUSTOM_PANEL_ELEMENT | the custom panel slot}.
-- [Layout](./Layout.md) — corner-rounding tokens used by `data-rounded`.
+- [Layout](./Layout.md) — the corner tokens that round slotted content.
 - [Using with React](./React.md) — get the {@link ChatInstance} and render slots in a React app.
 - [Using as a Web component](./WebComponent.md) — get the {@link ChatInstance} and render slots with the web component.

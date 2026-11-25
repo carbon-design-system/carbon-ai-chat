@@ -37,6 +37,10 @@ export interface ChatSDKConfigMessaging<
    * {@link ChatSDKConfigMessaging.customSendMessage} fires. The default is 150 seconds. Set it to 0 to
    * turn the timeout off. A call to {@link ChatSDKInstanceMessaging.upsertMessage} for the turn ends
    * the wait.
+   *
+   * @deprecated Unchanged on 1.x. In 2.0.0 the chat no longer times out a request, and this
+   * setting is removed. Time the request in your {@link ChatSDKConfigMessaging.customSendMessage}
+   * and reject its promise. To switch now, set this to `0`.
    */
   messageTimeoutSecs?: number;
 

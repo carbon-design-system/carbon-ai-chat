@@ -43,7 +43,7 @@ The function can return nothing, or it can return a promise. If you return a pro
 
 1. Set up a message queue, passing the next message to your function only after the current one completes.
 2. Show a loading indicator if the message takes a while to return (or to return its first chunk if streaming).
-3. Throw a visible error and pass an abort signal if the wait exceeds the `messaging.messageTimeoutSecs` timeout, which you set in your {@link PublicConfig} with {@link PublicConfigMessaging.messageTimeoutSecs | messageTimeoutSecs}.
+3. Throw a visible error and pass an abort signal if the wait exceeds the `messaging.messageTimeoutSecs` timeout, which you set in your {@link PublicConfig} with {@link PublicConfigMessaging.messageTimeoutSecs | messageTimeoutSecs}. The default is 150 seconds. This timeout is deprecated, and 2.0.0 removes it. See [Time the request yourself](#time-the-request-yourself).
 
 If you do not return a promise, the chat does not queue your messages, and it skips the loading indicator when no first chunk comes back.
 
@@ -94,6 +94,41 @@ For streaming, include the request ID on **every delivery**, starting with the f
 - Upserts: set `request_id` on each message the updater returns.
 
 Omitted or unknown request IDs keep the prior behavior; they do not provide this protection. A welcome or background message with no request can still omit the field. Use the chat's generated request ID, and never reuse it across conversations. The chat remembers these IDs for the life of the instance; this tracking does not persist when you create a new instance.
+
+## Time the request yourself
+
+> **Deprecated:** {@link PublicConfigMessaging.messageTimeoutSecs | messageTimeoutSecs} and {@link CancellationReason.TIMEOUT} are deprecated, and 2.0.0 removes them. On 1.x they work as before: by default, the chat cancels a send that gets no reply in 150 seconds. In 2.0.0 the chat runs no timer on a request.
+
+To switch now, set `messageTimeoutSecs` to `0` and time the request in `customSendMessage`. Combine the chat's abort signal with your own timeout, and pass both to `fetch`. A timeout rejects your promise, and the turn fails.
+
+```typescript
+import type { MessageResponse, PublicConfig } from '@carbon/ai-chat';
+
+export const config: PublicConfig = {
+  messaging: {
+    messageTimeoutSecs: 0, // Turns off the chat's own timer on 1.x.
+    customSendMessage: async (request, options, instance) => {
+      const result = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+        // Aborts on Stop, restart, or removal, or after 150 seconds.
+        signal: AbortSignal.any([options.signal, AbortSignal.timeout(150_000)]),
+      });
+      if (!result.ok) {
+        throw new Error(`Chat request failed: ${result.status}`);
+      }
+      const response: MessageResponse = await result.json();
+      await instance.messaging.addMessage({
+        ...response,
+        request_id: request.id,
+      });
+    },
+  },
+};
+```
+
+The chat's timer ends at the first message, chunk, or upsert. Yours covers the whole request, because reading the body also stops when the signal aborts. `AbortSignal.any` needs Safari 17.4 or Firefox 124 or later. For older browsers, abort your own `AbortController` from a timer and from the chat's signal.
 
 ## Cancelling request (stop streaming)
 
@@ -197,7 +232,7 @@ The {@link CustomSendMessageOptions.signal | abort signal} fires when a message 
 
 - {@link CancellationReason.STOP_STREAMING} (`"Stop streaming"`) - the user clicked the stop streaming button
 - {@link CancellationReason.CONVERSATION_RESTARTED} (`"Conversation restarted"`) - the user restarted or cleared the conversation
-- {@link CancellationReason.TIMEOUT} (`"Request timeout"`) - the request exceeded the configured timeout
+- {@link CancellationReason.TIMEOUT} (`"Request timeout"`) - the request exceeded the configured timeout. Deprecated, and 2.0.0 removes it with the timeout. See [Time the request yourself](#time-the-request-yourself).
 - {@link CancellationReason.CHAT_REMOVED} (`"Chat removed"`) - the chat was removed from the page. Its saved session stays, so the next chat on the page can resume the conversation. Don't end the conversation on your server for this reason.
 
 Check whether the request was cancelled with `signal.aborted`, or by listening for the "abort" event, and read the reason from `signal.reason`. The abort signal handles every cancellation the same way.
@@ -325,7 +360,7 @@ await instance.messaging.upsertMessage(
 - Listen for the abort signal and stop your streaming logic. After the stop button, deliver the final state. After restart or clear, skip it.
 - The abort signal also fires on conversation restarts and clears ({@link CancellationReason.CONVERSATION_RESTARTED}), on timeouts ({@link CancellationReason.TIMEOUT}), and when the chat is removed from the page ({@link CancellationReason.CHAT_REMOVED}).
 - With {@link ChatInstanceMessaging.addMessageChunk | addMessageChunk}, the button stays visible but disabled until a {@link FinalResponseChunk | final response chunk} arrives. With {@link ChatInstanceMessaging.upsertMessage | upsertMessage}, it hides when the message reaches {@link MessageState.COMPLETE | complete} (or {@link MessageState.ERROR | error}).
-- If a {@link CancellationReason.TIMEOUT | timeout} cancels the message, the UI marks it as errored.
+- If a {@link CancellationReason.TIMEOUT | timeout} cancels the message, the UI marks it as errored. The timeout is deprecated; see [Time the request yourself](#time-the-request-yourself).
 
 ### Show the button for work outside a request
 
@@ -368,7 +403,11 @@ To send your own welcome message, set {@link PublicConfigMessaging.skipWelcome |
 
 ## Message loading indicators
 
-By default, the chat shows a loading indicator if no chunk or message arrives before your {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs | loading-indicator timeout} expires. To turn off this auto-show, set {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs | that timeout} to 0. If your message streams slowly, has many thinking steps, or makes long-running API calls, turn the loading indicator on yourself with {@link ChatInstance.updateIsChatLoadingCounter | updateIsChatLoadingCounter}.
+By default, the chat shows a loading indicator if no chunk or message arrives before your {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs | loading-indicator timeout} expires. The default is 4 seconds. To turn off this auto-show, set {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs | that timeout} to 0.
+
+> **Deprecated:** {@link PublicConfigMessaging.messageLoadingIndicatorTimeoutSecs | messageLoadingIndicatorTimeoutSecs} is deprecated, and 2.0.0 removes it. On 1.x it works as before. In 2.0.0 the chat no longer shows the loading indicator on its own.
+
+To drive the indicator yourself, set the timeout to 0. Then call {@link ChatInstance.updateIsMessageLoadingCounter | updateIsMessageLoadingCounter} with `"increase"` when your work starts and `"decrease"` when it ends. Do the same if your message streams slowly, has many thinking steps, or makes long-running API calls. If you show your own loading UI, read `instance.state.get().status` instead. It's `'submitted'` while the chat waits for a reply.
 
 ## Related
 

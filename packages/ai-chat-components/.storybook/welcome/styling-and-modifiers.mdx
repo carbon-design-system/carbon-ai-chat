@@ -16,6 +16,26 @@ AI Chat Components use a consistent system of **data attribute modifiers** and *
 
 ## Data Attribute Modifiers
 
+> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Instead, read the corner tokens in your own CSS, as shown under **Using the Properties in Your CSS** below. The components' own use of these attributes on their internal markup is private and doesn't change.
+
+For example, this CSS does the job of `data-rounded="top"` on a card's media slot. It rounds the wrapper's top corners to match the card:
+
+```css
+.my-card-media {
+  overflow: hidden; /* Clips the image to the rounded corners. */
+  border-start-start-radius: var(
+    --cds-aichat-border-radius-start-start,
+    var(--cds-aichat-border-radius)
+  );
+  border-start-end-radius: var(
+    --cds-aichat-border-radius-start-end,
+    var(--cds-aichat-border-radius)
+  );
+}
+```
+
+`data-flush` isn't deprecated.
+
 ### `data-rounded`
 
 Controls corner rounding. Behavior depends on whether a value is provided:
@@ -234,6 +254,8 @@ Reference these custom properties in your own components using the two-tier fall
 
 If you're building custom components with SCSS, use the provided mixins from `@carbon/ai-chat-components/scss/modifiers`.
 
+> **Deprecated:** Where these mixins respond to `data-rounded` and `data-stacked`, they serve attributes that 2.0.0 removes from content you write. For your own components, apply the corner tokens directly, or use `rounded-self` and the `radius()` helper.
+
 ### `rounded-self`
 
 **Purpose:** Applies border radius directly to the current element using all four corner custom properties.
@@ -429,6 +451,8 @@ This means you can:
 ---
 
 ## Using Modifiers with `@carbon/ai-chat`
+
+> **Deprecated:** `data-rounded` and `data-stacked` on content you write are deprecated, and 2.0.0 removes them. They keep working until then. Instead, read the corner tokens in your own CSS, as shown under **Using the Properties in Your CSS** above. The components' own use of these attributes on their internal markup is private and doesn't change.
 
 These modifiers are used directly in `@carbon/ai-chat`'s built-in response types. The same patterns apply when authoring a custom response type or rendering slotted content inside a panel.
 
