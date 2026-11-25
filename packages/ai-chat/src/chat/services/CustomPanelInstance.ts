@@ -24,6 +24,7 @@ import { ServiceManager } from '../../sdk/services/ServiceManager';
 import {
   captureMessageEvent,
   eventLocalItems,
+  watchPayloadEdits,
 } from '../../sdk/utils/messageEventOwnership';
 
 import { deepFreeze } from '../../sdk/utils/lang/objectUtils';
@@ -36,6 +37,30 @@ import { LocalMessageItem } from '../../types/messaging/LocalMessageItem';
 import { DEFAULT_CUSTOM_PANEL_CONFIG_OPTIONS, viewActions } from '../state';
 
 import { chatStore } from './attachChatView';
+
+/**
+ * The preview card each chat is about to open its workspace from, until that open takes it.
+ * Keyed by the chat's store, which every holder of the chat's service manager shares.
+ */
+const cardSources = new WeakMap<
+  object,
+  { messageID: string; localItemID: string }
+>();
+
+/**
+ * Names the preview card that the next workspace open comes from. The card calls this just
+ * before it opens the workspace, so only that open, and none from code, carries its IDs.
+ */
+function setWorkspaceCardSource(
+  serviceManager: ServiceManager,
+  fullMessage: Message,
+  localMessageItem: LocalMessageItem
+) {
+  cardSources.set(serviceManager.store, {
+    messageID: fullMessage.id,
+    localItemID: localMessageItem.ui_state.id,
+  });
+}
 
 /**
  * Closes the open workspace so another can open. A close handler that throws is logged, and the workspace closes
@@ -75,6 +100,38 @@ function createCustomPanelInstance(
     localItem: LocalMessageItem;
     working: { message: Message; localItems: Record<string, LocalMessageItem> };
   };
+  // The IDs of the card that opened the workspace, until it closes or the conversation restarts.
+  let workspaceSource: {
+    messageID: string;
+    itemID?: string;
+    restartCount: number;
+  };
+
+  /** Takes the card that named itself for this open, if any, with its public item ID. */
+  function takeCardSource() {
+    const card = cardSources.get(serviceManager.store);
+    cardSources.delete(serviceManager.store);
+    if (!card) {
+      return undefined;
+    }
+    const itemID = serviceManager.publicStateService.messageItemIDOf(
+      card.localItemID
+    );
+    return {
+      messageID: card.messageID,
+      ...(itemID && { itemID }),
+      restartCount: serviceManager.restartCount,
+    };
+  }
+
+  /** The workspace's card IDs for an event, unless a restart has removed that card. */
+  function sourceIDs() {
+    if (workspaceSource?.restartCount !== serviceManager.restartCount) {
+      return undefined;
+    }
+    const { messageID, itemID } = workspaceSource;
+    return itemID ? { messageID, itemID } : { messageID };
+  }
 
   function captureWorkspaceEvent() {
     const store = chatStore(serviceManager);
@@ -116,6 +173,7 @@ function createCustomPanelInstance(
         workspaceMessages?.working.localItems[localMessageItem.ui_state.id]
           ?.item,
       fullMessage: fullMessage && workspaceMessages?.working.message,
+      ...sourceIDs(),
     };
   }
 
@@ -167,12 +225,14 @@ function createCustomPanelInstance(
     const ownsData =
       workspaceValues?.working === working &&
       workspaceValues?.stored === before.additionalData;
+    const checkEdits = watchPayloadEdits(serviceManager, type, data);
     try {
       await serviceManager.eventBus.fire(
         { type, data },
         serviceManager.instance
       );
     } finally {
+      checkEdits();
       let current = store.getState().view.workspacePanelState;
       if (
         messageEvent &&
@@ -244,29 +304,37 @@ function createCustomPanelInstance(
       setOpen: viewActions.setCustomPanelOpen,
     },
     [PanelType.HISTORY]: {
-      setConfig: viewActions.setCustomPanelConfigOptions,
       setOpen: viewActions.setHistoryPanelOpen,
     },
   } as const;
 
-  const { setConfig, setOpen } =
+  const { setOpen } =
     panelActions[panelType] ?? panelActions[PanelType.DEFAULT];
+  // The history panel's `open` returns before it would set options.
+  const { setConfig } =
+    panelType === PanelType.WORKSPACE
+      ? panelActions[PanelType.WORKSPACE]
+      : panelActions[PanelType.DEFAULT];
 
   const customPanelInstance: CustomPanelInstance = {
     async open(
       options?: CustomPanelOpenOptions | WorkspaceCustomPanelConfigOptions
     ) {
+      // The history panel has no options to show, so it ignores them. It only draws with history on, so opening it
+      // otherwise would report a panel nobody sees.
+      if (panelType === PanelType.HISTORY) {
+        const historyStore = chatStore(serviceManager);
+        if (historyStore.getState().config.public.history?.isOn) {
+          historyStore.dispatch(viewActions.setHistoryPanelOpen(true));
+        }
+        return;
+      }
+
       const resolvedOptions = (options ??
         defaultPanelOptions) as CustomPanelConfigOptions;
       const store = chatStore(serviceManager);
-
-      // The history panel only draws with history on, so opening it otherwise would report a panel nobody sees.
-      if (
-        panelType === PanelType.HISTORY &&
-        !store.getState().config.public.history?.isOn
-      ) {
-        return;
-      }
+      const source =
+        panelType === PanelType.WORKSPACE ? takeCardSource() : undefined;
 
       // Finish closing the open workspace first: its close resets the workspace state, which would otherwise wipe
       // the ID and data stored below.
@@ -295,6 +363,7 @@ function createCustomPanelInstance(
 
       // Fire pre-open event for workspace panel
       if (panelType === PanelType.WORKSPACE) {
+        workspaceSource = source;
         await fireWorkspaceEvent(
           BusEventType.WORKSPACE_PRE_OPEN,
           captureWorkspaceEvent()
@@ -322,6 +391,7 @@ function createCustomPanelInstance(
       }
       // Capture state before closing; only an open workspace fires close events.
       let workspaceEventData;
+      const closingSource = workspaceSource;
       if (
         chatStore(serviceManager).getState().view.workspacePanelState.isOpen
       ) {
@@ -333,6 +403,10 @@ function createCustomPanelInstance(
       }
 
       store.dispatch(setOpen(false));
+      // An open that started while this close waited has its own source.
+      if (workspaceSource === closingSource) {
+        workspaceSource = undefined;
+      }
 
       if (workspaceEventData) {
         await fireWorkspaceEvent(
@@ -354,4 +428,5 @@ export {
   closeWorkspaceForNext,
   createCustomPanelInstance,
   CustomPanelInstance,
+  setWorkspaceCardSource,
 };

@@ -31,7 +31,10 @@ import {
 } from '../../../../types/messaging/Messages';
 
 import { viewActions } from '../../../state';
-import { closeWorkspaceForNext } from '../../../services/CustomPanelInstance';
+import {
+  closeWorkspaceForNext,
+  setWorkspaceCardSource,
+} from '../../../services/CustomPanelInstance';
 import { chatStore } from '../../../services/attachChatView';
 import { consoleError } from '../../../../sdk/utils/miscUtils';
 
@@ -81,6 +84,8 @@ function PreviewCardComponent(props: PreviewCardComponentProps) {
       })
     );
 
+    // Name this card as the workspace's source, so its events carry the card's IDs.
+    setWorkspaceCardSource(serviceManager, fullMessage, localMessageItem);
     // Open the panel - it will fire WORKSPACE_PRE_OPEN and WORKSPACE_OPEN events. Nothing awaits the click, so a
     // workspace handler that throws is logged here.
     panel

@@ -19,20 +19,28 @@
  * an alias, fails the spec until the entry changes.
  *
  * Owners:
- * - #2693: the reads of messages and message items outside the message list:
- *   the panels, boot, config updates, and the shell.
- * - #2707: the message list's lookup of the chat's own local item and message
- *   behind each entry of `messageItems`, and each component that gets them
- *   from its hooks. The list draws the entries, but hands the chat's own
- *   objects to host events, the workspace panel, and the agent service, where
- *   a host can keep or edit them, and writes back by local item ID. Once those
- *   payloads are read-only, the list can hand the entries.
+ * - #2707: the list and nested renderers join public entries to local items
+ *   and messages. Renderers still need local IDs and internal flags for
+ *   events and panels. Writable workspace, slot, and human-agent receive
+ *   paths use working values, then commit permitted edits to conversation
+ *   state. Frozen payloads stay read-only. The list can pass public entries
+ *   after the read-only event and rendering contracts settle.
+ * - #2825: the response panel's message, which the app shell's panel hook
+ *   looks up in the chat's own messages and hands to the panel.
+ * - #2969: the custom panels' workspace events, and, for a reused chat, the
+ *   slot events fired again for responses that came while the chat had no
+ *   view. Both hand a host copies of the chat's own message and items, then
+ *   write the host's edits back onto them. Boot builds the panel manager
+ *   through `createPrebuiltInstance`, and the manager builds the panels.
+ *   Once those payloads are read-only, these reads can use the SDK's entries.
  * - #2824: everything else the prebuilt chat reads from the conversation
  *   partition in 1.x:
  *   - view state the partition still holds: which connect card is
  *     connecting, and the screen-share request the modal shows;
  *   - read-only state, the history load trigger, and attaching the view;
- *   - the shell's home screen and loading decisions;
+ *   - the shell's home screen and loading decisions, including the message
+ *     count a config update checks before it shows the home screen;
+ *   - the shell's check that the response panel's message still exists;
  *   - the input slice, its routing to the agent, and its flags, including
  *     when the Stop button shows. Hosts tell whether a turn can be stopped
  *     from `status` (#2693 O8, amended November 10);
@@ -59,7 +67,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/AppShell.tsx',
     read: 'useAppShellPanels()',
     count: 1,
-    owner: '#2693',
+    owner: '#2825',
   },
   {
     file: 'src/chat/AppShell.tsx',
@@ -101,7 +109,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/AppShellPanels.tsx',
     read: 'allMessagesByID',
     count: 1,
-    owner: '#2693',
+    owner: '#2825',
   },
   {
     file: 'src/chat/components-legacy/MessagesComponent.tsx',
@@ -239,25 +247,25 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/services/CustomPanelInstance.ts',
     read: 'allMessageItemsByID',
     count: 2,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/services/CustomPanelInstance.ts',
     read: 'allMessagesByID',
     count: 3,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/services/CustomPanelInstance.ts',
     read: 'captureMessageEvent()',
     count: 2,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/services/CustomPanelManager.ts',
     read: 'createCustomPanelInstance()',
     count: 3,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/services/extensionHosts.ts',
@@ -313,49 +321,50 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createCustomPanelManager()',
     count: 1,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
-    // Hands the instance builder, which wraps the custom panel read above, to
-    // createChatSDK, and builds an adopting mount its own; both go when that
-    // read does.
+    // Boot passes this builder to createChatSDK and calls it for a mount that
+    // adopts a running chat. Its only read listed here comes from
+    // createCustomPanelManager(), so both entries leave this list together.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'createPrebuiltInstance()',
     count: 2,
-    owner: '#2824',
+    owner: '#2969',
   },
   {
-    // An adopting mount fires again the user-defined responses that had no
-    // slot while the chat waited in its grace window; it finds them in the
-    // message slices, which the message model replaces.
+    // An adopting mount fires again the user-defined responses, and the
+    // user-defined items inside reasoning, that had no slot while the chat
+    // waited in its grace window. It finds them in the chat's own messages
+    // and items.
     file: 'src/chat/utils/chatBoot.ts',
     read: 'allMessageItemsByID',
     count: 2,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'allMessagesByID',
     count: 3,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'refireSlotlessResponses()',
     count: 1,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'refireUnnamedReasoning()',
     count: 1,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/utils/chatBoot.ts',
     read: 'nameSlotsMissedWithoutView()',
     count: 1,
-    owner: '#2693',
+    owner: '#2969',
   },
   {
     file: 'src/chat/utils/customPromptLine.ts',
@@ -373,7 +382,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/dynamicConfigUpdates.ts',
     read: 'assistantMessageState.messageIDs',
     count: 1,
-    owner: '#2693',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/restoreInputDraft.ts',
@@ -391,7 +400,7 @@ const conversationReadGaps: ConversationReadGap[] = [
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'allMessagesByID',
     count: 3,
-    owner: '#2693',
+    owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
