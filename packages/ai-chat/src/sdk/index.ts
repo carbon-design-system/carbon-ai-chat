@@ -37,6 +37,7 @@ export type {
   ChatSDKInstance,
 } from '../types/instance/ChatSDKInstance';
 export type {
+  ChatSDKMessageItem,
   ChatSDKPendingUpload,
   ChatSDKState,
   ChatSDKStateAccess,

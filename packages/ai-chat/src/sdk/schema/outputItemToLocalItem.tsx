@@ -200,7 +200,7 @@ function createLocalMessageItemsForNestedType(
   isSupported: (nestedMessageItem: GenericItem) => boolean,
   allowFooter: boolean
 ) {
-  items.forEach((nestedMessageItem) => {
+  items.forEach((nestedMessageItem, sourceIndex) => {
     if (isSupported(nestedMessageItem)) {
       const nestedLocalMessageItem = outputItemToLocalItem(
         nestedMessageItem,
@@ -208,6 +208,7 @@ function createLocalMessageItemsForNestedType(
         false
       );
 
+      nestedLocalMessageItem.ui_state.nestedSourceIndex = sourceIndex;
       nestedMessageItemIDs.push(nestedLocalMessageItem.ui_state.id);
       nestedLocalMessageItems.push(nestedLocalMessageItem);
 

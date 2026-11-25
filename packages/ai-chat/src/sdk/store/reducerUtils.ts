@@ -53,6 +53,7 @@ import {
   isResponseWithNestedItems,
   streamItemID,
 } from '../utils/messageUtils';
+import { withChangedKeys } from '../utils/messageChanges';
 
 import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 
@@ -278,7 +279,7 @@ function canReuseLocalItem(
 
 /**
  * Sets the upsert-owned parts of a freshly built local item's UI state: its streaming
- * state, the marks the chat recorded on the item it replaces, and whether to announce it.
+ * state and the marks the chat recorded on the item it replaces.
  */
 function applyUpsertUIState(
   localItem: LocalMessageItem,
@@ -290,16 +291,9 @@ function applyUpsertUIState(
   // which is a chunk-flow rule, and upserted cards and tables have always rendered
   // mid-stream (D2).
   uiState.streamingState = { chunks: [], isDone: !isStreaming };
-  if (matchedPrev?.ui_state.wasAnnounced) {
-    uiState.wasAnnounced = true;
-  }
   if (matchedPrev?.ui_state.connectToAgentHandled) {
     uiState.connectToAgentHandled = true;
   }
-  // Announce an item once, when it first shows settled. Announcing mid-stream would
-  // read partial content, and again on every later rebuild.
-  uiState.needsAnnouncement =
-    uiState.needsAnnouncement && !isStreaming && !uiState.wasAnnounced;
 }
 
 /**
@@ -343,7 +337,7 @@ function addNestedLocalItems(
 /**
  * Builds a fresh {@link LocalMessageItem} for an upserted item under `localID`, and adds
  * local items for anything nested in it to `newLocalItemsByID`. An item the chat can't
- * draw is marked `cannotDraw` and gets no nested local items, since building them would
+ * draw ({@link findDrawIssues}) gets no nested local items, since building them would
  * throw.
  */
 function buildUpsertedLocalItem(
@@ -353,15 +347,13 @@ function buildUpsertedLocalItem(
   matchedPrev: LocalMessageItem | undefined,
   isStreaming: boolean,
   newLocalItemsByID: ObjectMap<LocalMessageItem>
-): LocalMessageItem {
+): { localItem: LocalMessageItem; canDraw: boolean } {
   const localItem = outputItemToLocalItem(item, message, false);
   localItem.ui_state.id = localID;
   localItem.fullMessageID = message.id;
   applyUpsertUIState(localItem, matchedPrev, isStreaming);
-  const missing = findDrawIssues(item);
-  if (missing.length) {
-    localItem.ui_state.cannotDraw = { missing };
-    return localItem;
+  if (findDrawIssues(item).length) {
+    return { localItem, canDraw: false };
   }
   addNestedLocalItems(
     localItem,
@@ -370,7 +362,7 @@ function buildUpsertedLocalItem(
     !isStreaming,
     newLocalItemsByID
   );
-  return localItem;
+  return { localItem, canDraw: true };
 }
 
 /**
@@ -378,17 +370,29 @@ function buildUpsertedLocalItem(
  * of the same item before it. A host that streams partial JSON often sends a grid whose
  * newest cell has no `items` yet; hiding the grid on each such snapshot would make it
  * flicker. A previous version of another type isn't the same item, so it isn't kept.
+ *
+ * The previous version counts as drawn unless an upsert built it undrawable. Other
+ * writes never check, so a version they built counts as drawn.
  */
 function keepsLastDrawn(
   localItem: LocalMessageItem,
   matchedPrev: LocalMessageItem | undefined
 ): boolean {
   return Boolean(
-    localItem.ui_state.cannotDraw &&
     matchedPrev &&
-    !matchedPrev.ui_state.cannotDraw &&
-    matchedPrev.item.response_type === localItem.item.response_type
+    matchedPrev.item.response_type === localItem.item.response_type &&
+    (!isUpsertBuilt(matchedPrev) || !findDrawIssues(matchedPrev.item).length)
   );
+}
+
+/**
+ * Whether `upsertMessage` built a top-level local item. Only its builder gives one a
+ * streaming state without the chunk flow's `isIntermediateStreaming` mark; `addMessage`
+ * and history give none.
+ */
+function isUpsertBuilt(localItem: LocalMessageItem): boolean {
+  const { streamingState, isIntermediateStreaming } = localItem.ui_state;
+  return Boolean(streamingState) && isIntermediateStreaming === undefined;
 }
 
 /**
@@ -472,19 +476,25 @@ function rebuildLocalItemsForUpsert(
 
   shownItems.forEach(({ item, matchedPrev }) => {
     const streamId = streamItemID(messageID, item);
-    let localItem = canReuseLocalItem(matchedPrev, item, isStreaming)
-      ? matchedPrev
-      : buildUpsertedLocalItem(
-          item,
-          message,
-          // Keep the resolved ID so React keys and slot names stay stable.
-          matchedPrev?.ui_state.id ?? streamId ?? uuid(),
-          matchedPrev,
-          isStreaming,
-          newLocalItemsByID
-        );
-    if (isStreaming && keepsLastDrawn(localItem, matchedPrev)) {
+    let localItem: LocalMessageItem;
+    if (canReuseLocalItem(matchedPrev, item, isStreaming)) {
       localItem = matchedPrev;
+    } else {
+      const built = buildUpsertedLocalItem(
+        item,
+        message,
+        // Keep the resolved ID so React keys and slot names stay stable.
+        matchedPrev?.ui_state.id ?? streamId ?? uuid(),
+        matchedPrev,
+        isStreaming,
+        newLocalItemsByID
+      );
+      localItem =
+        isStreaming &&
+        !built.canDraw &&
+        keepsLastDrawn(built.localItem, matchedPrev)
+          ? matchedPrev
+          : built.localItem;
     }
 
     newLocalIDsForMessage.push(localItem.ui_state.id);
@@ -663,10 +673,9 @@ function applyFullMessageWithIdentity(
   // Add the original message to the global map.
   const newState = {
     ...state,
-    allMessagesByID: {
-      ...state.allMessagesByID,
+    allMessagesByID: withChangedKeys(state.allMessagesByID, {
       [(messageID = message.id)]: message,
-    },
+    }),
   };
 
   // Now add the full message ID to the specific ChatMessagesState but only if it's a new message.
@@ -697,7 +706,6 @@ function newChunkLocalItem(
   isStopped = false
 ): LocalMessageItem {
   const localItem = outputItemToLocalItem(chunkItem as GenericItem, message);
-  localItem.ui_state.needsAnnouncement = false;
   localItem.ui_state.isIntermediateStreaming = true;
   localItem.ui_state.streamingState =
     isComplete || isStopped
@@ -814,7 +822,9 @@ function applyChunkWriteWithIdentity(
   const { localMessageIDs } = state.assistantMessageState;
   const nextState = {
     ...withMessage,
-    allMessageItemsByID: { ...state.allMessageItemsByID, [localID]: localItem },
+    allMessageItemsByID: withChangedKeys(state.allMessageItemsByID, {
+      [localID]: localItem,
+    }),
     assistantMessageState: {
       ...withMessage.assistantMessageState,
       localMessageIDs: existing
@@ -825,7 +835,36 @@ function applyChunkWriteWithIdentity(
   return { state: nextState, messageID: full.messageID };
 }
 
+/** Keeps native upsert status on local items without changing the public message. */
+function applyUpsertErrorState(
+  state: ConversationState,
+  messageID: string,
+  isError: boolean
+): ConversationState {
+  let items = state.allMessageItemsByID;
+  for (const id of state.assistantMessageState.localMessageIDs) {
+    const local = items[id];
+    if (
+      local?.fullMessageID !== messageID ||
+      Boolean(local.ui_state.upsertError) === isError
+    ) {
+      continue;
+    }
+    if (items === state.allMessageItemsByID) {
+      items = { ...items };
+    }
+    items[id] = {
+      ...local,
+      ui_state: { ...local.ui_state, upsertError: isError },
+    };
+  }
+  return items === state.allMessageItemsByID
+    ? state
+    : { ...state, allMessageItemsByID: items };
+}
+
 export {
+  applyUpsertErrorState,
   DEFAULT_MESSAGE_STATE,
   DEFAULT_CHAT_MESSAGES_STATE,
   DEFAULT_PERSISTED_TO_BROWSER,

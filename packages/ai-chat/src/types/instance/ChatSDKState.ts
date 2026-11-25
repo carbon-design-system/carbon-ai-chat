@@ -8,9 +8,16 @@
  */
 
 import type { PersistedHumanAgentState } from '../state/PersistedHumanAgentState';
-import type { Message, StructuredData } from '../messaging/Messages';
+import type {
+  GenericItem,
+  Message,
+  StructuredData,
+} from '../messaging/Messages';
 import type { ChatSDKErrorData } from '../config/ChatSDKErrorData';
-import type { AgentAvailability } from '../config/ServiceDeskConfig';
+import type {
+  AgentAvailability,
+  HumanAgentsOnlineStatus,
+} from '../config/ServiceDeskConfig';
 
 /**
  * The current phase of conversation work, exposed as `status` on {@link PublicChatState}.
@@ -56,6 +63,92 @@ export interface ChatSDKPendingUpload {
    * a file staged for a service desk, the message the desk reported.
    */
   readonly errorMessage?: string;
+}
+
+/**
+ * One item the message list draws: a request, one item of a response, an item nested inside another
+ * one, or a note. {@link ChatSDKState.messageItems} lists them in the order the list shows them.
+ *
+ * Each entry is frozen. An entry that didn't change keeps its object from one snapshot to the next.
+ *
+ * @category SDK
+ */
+export interface ChatSDKMessageItem {
+  /**
+   * A stable ID for this item, built from its message's ID:
+   *
+   * - `<messageID>:s:<streamID>` when the item has a `streaming_metadata.id`;
+   * - otherwise `<messageID>:i:<index>`, where the index is the item's position in `output.generic`, or
+   *   `0` for a request. A second item of the same message with the same `streaming_metadata.id` also
+   *   gets this form, so keep stream IDs unique within a message.
+   *
+   * An item nested in another one adds to its parent's ID: `<parentID>:i:<index>` for a carousel item
+   * or a body item, `<parentID>:f:<index>` for a footer item, and `<parentID>:i:<row>.<column>.<index>`
+   * for an item in a grid cell. A nested index is the child's position in its parent's raw source
+   * array, including positions occupied by children the list doesn't draw.
+   *
+   * The same messages give the same IDs after a reload or a history replay, as long as the messages
+   * have IDs. The chat gives a message without one a new ID each time it loads, so give your messages
+   * IDs if you keep item IDs across reloads. If you reorder items that have no `streaming_metadata.id`
+   * between upserts, give them one, or their IDs follow their position.
+   *
+   * Treat an ID as opaque: read it from this state rather than building it. Only the `:s:` form is tied
+   * to the item itself. An `:i:` ID follows the item's position, so it can change when items move.
+   */
+  readonly id: string;
+
+  /** The ID of the message in {@link ChatSDKState.messages} this item belongs to. */
+  readonly messageID: string;
+
+  /**
+   * What the item is:
+   *
+   * - `request`: what the user sent.
+   * - `response`: an item of an assistant's or a human agent's response.
+   * - `system`: a note, such as "Request cancelled" or a human agent joining or leaving. A response
+   *   counts as a note when each of its items is a `system` or `inline_error` item, or a human agent
+   *   status message. That includes a response you add yourself, so one made only of those items is a
+   *   `system` entry too.
+   */
+  readonly kind: 'request' | 'response' | 'system';
+
+  /** For an item nested in another one, such as a carousel item or a grid cell item, the parent's `id`. */
+  readonly parentID?: string;
+
+  /**
+   * The item as the list draws it. While it streams, this is the content so far. For a request, it's a
+   * `text` item with the text the user's message shows. As in `messages`, functions, classes, and other
+   * values the chat can't copy pass through by reference, and the snapshot doesn't freeze them.
+   * As in {@link ChatSDKState.messages}, copied non-empty typed arrays remain mutable.
+   */
+  readonly item: Readonly<GenericItem>;
+
+  /**
+   * - `streaming`: more of the item is on its way.
+   * - `complete`: the item is done.
+   * - `error`: its request failed, its response failed while streaming, or the latest upsert used
+   *   {@link MessageState.ERROR}.
+   */
+  readonly status: 'streaming' | 'complete' | 'error';
+
+  /**
+   * `history` when the item's message came from history, such as through `customLoadHistory` or
+   * {@link ChatSDKInstanceMessaging.insertHistory}, and `live` when it arrived in this conversation.
+   */
+  readonly origin: 'history' | 'live';
+
+  /**
+   * On a `connect_to_agent` item only: what the chat found when it got the item.
+   */
+  readonly humanAgent?: Readonly<{
+    /**
+     * Whether agents were online when the chat checked. `null` means it checked and got no answer.
+     */
+    onlineStatus?: HumanAgentsOnlineStatus | null;
+
+    /** `true` when no service desk was set up. */
+    noServiceDesk?: boolean;
+  }>;
 }
 
 /**
@@ -128,9 +221,24 @@ export interface ChatSDKState {
   /**
    * Conversation messages, oldest first, or `[]` when empty. Partial
    * streaming content is included as it arrives. The array and its message
-   * values are immutable snapshots, and internal UI state is omitted.
+   * containers are frozen snapshots, and internal UI state is omitted.
+   * Non-empty typed-array copies remain mutable.
+   * Functions, classes, and other values the chat can't copy are the host's
+   * own objects. They pass through by reference, and the snapshot doesn't
+   * freeze them.
    */
   readonly messages: readonly Readonly<Message>[];
+
+  /**
+   * One entry per item the message list draws, in the order it shows them, with items nested in
+   * another one right after it. Each entry's `messageID` is in `messages`. Silent requests, pauses, and
+   * items marked `user_defined.silent` aren't listed, whether they arrive live or through history.
+   * It changes in the same update as `messages`. The array and its entries
+   * are frozen, and the array keeps its object until an entry changes. See {@link ChatSDKMessageItem}.
+   *
+   * Optional in 1.x so that objects typed as this state still compile; the chat always sets it.
+   */
+  readonly messageItems?: readonly Readonly<ChatSDKMessageItem>[];
 
   /** The current conversation phase. See {@link ConversationStatus} for each value and its precedence. */
   readonly status: ConversationStatus;

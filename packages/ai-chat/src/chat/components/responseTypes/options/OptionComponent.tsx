@@ -24,12 +24,14 @@ import {
 import SelectComponent from './SelectComponent';
 import {
   Message,
+  MessageRequest,
   OptionItem,
   SingleOption,
 } from '../../../../types/messaging/Messages';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 import { TextBlock } from '../../../components/helpers/TextBlock/TextBlock';
 import { consoleError } from '../../../../sdk/utils/miscUtils';
+import { useMessageItemFlags } from '../../../hooks/useMessageItemFlags';
 
 interface OnChangeData<ItemType> {
   selectedItem: ItemType | null;
@@ -62,6 +64,12 @@ interface OptionProps extends HasServiceManager {
    * This is used to sanitize data coming from a human agent.
    */
   removeHTML?: boolean;
+
+  /**
+   * The request the user's chosen option sent, from the item's view flags. Unset while nothing is chosen.
+   * {@link OptionItemComponent} reads it.
+   */
+  optionSelected?: MessageRequest;
 }
 
 class OptionComponent extends Component<OptionProps> {
@@ -112,10 +120,14 @@ class OptionComponent extends Component<OptionProps> {
   };
 
   render() {
-    const { localMessage, disableUserInputs, serviceManager, removeHTML } =
-      this.props;
+    const {
+      localMessage,
+      disableUserInputs,
+      serviceManager,
+      removeHTML,
+      optionSelected,
+    } = this.props;
     const { options, title, description, preference } = localMessage.item;
-    const { optionSelected } = localMessage.ui_state;
     const validOptions = options.filter((option) => {
       if (resolveChoiceText(option).controlText) {
         return true;
@@ -182,4 +194,14 @@ class OptionComponent extends Component<OptionProps> {
   }
 }
 
-export { OptionComponent };
+/**
+ * Draws an option item with the choice its view flags record.
+ */
+function OptionItemComponent(props: Omit<OptionProps, 'optionSelected'>) {
+  const optionSelected = useMessageItemFlags(
+    props.localMessage.ui_state.id
+  )?.optionSelected;
+  return <OptionComponent {...props} optionSelected={optionSelected} />;
+}
+
+export { OptionComponent, OptionItemComponent };

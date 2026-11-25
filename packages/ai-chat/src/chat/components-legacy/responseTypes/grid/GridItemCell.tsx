@@ -10,8 +10,8 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { useSelector } from '../../../hooks/useSelector';
 import { useServiceManager } from '../../../hooks/useServiceManager';
+import { useNestedMessageItems } from '../../../hooks/useDrawnMessageItems';
 import { selectInputIsReadonly } from '../../../../sdk/store/selectors';
-import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 import { THROW_ERROR } from '../../../../sdk/utils/constants';
 import {
@@ -28,7 +28,6 @@ import {
 import { MessageTypeComponentProps } from '../../MessageTypeComponentProps';
 
 function GridItemCell({
-  cell,
   cellData,
   columnIndex,
   columnWidthString,
@@ -38,7 +37,6 @@ function GridItemCell({
   renderMessageComponent,
   rowIndex,
 }: {
-  cell: string[];
   cellData: {
     horizontal_alignment?: HorizontalCellAlignment;
     vertical_alignment?: VerticalCellAlignment;
@@ -54,9 +52,10 @@ function GridItemCell({
 }) {
   const serviceManager = useServiceManager();
   const isInputReadonly = useSelector(selectInputIsReadonly);
-  const allMessageItemsByID = useSelector(
-    (state: AppState) => state.allMessageItemsByID
-  );
+  const nestedItems = useNestedMessageItems(localMessageItem.ui_state.id, {
+    row: rowIndex,
+    column: columnIndex,
+  });
 
   const { horizontal_alignment, vertical_alignment } = localMessageItem.item;
 
@@ -95,8 +94,7 @@ function GridItemCell({
 
   return (
     <div className="cds-aichat--grid__cell" ref={cellRef}>
-      {cell.map((localMessageItemID, itemIndex) => {
-        const message = allMessageItemsByID[localMessageItemID];
+      {nestedItems.map(({ localMessageItem: message }, itemIndex) => {
         return (
           <React.Fragment key={`item-${rowIndex}-${columnIndex}-${itemIndex}`}>
             {renderMessageComponent({

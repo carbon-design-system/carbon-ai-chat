@@ -45,7 +45,7 @@ import InlineError from '@carbon/ai-chat-components/es/react/inline-error.js';
 import { GridItemComponent } from './responseTypes/grid/GridItemComponent';
 import { IFrameMessage } from './responseTypes/iframe/IFrameMessage';
 import { Image } from './responseTypes/image/Image';
-import { OptionComponent } from '../components/responseTypes/options/OptionComponent';
+import { OptionItemComponent } from '../components/responseTypes/options/OptionComponent';
 import { MarkdownWithErrorHandling } from '../components/helpers/MarkdownWithErrorHandling/MarkdownWithErrorHandling';
 import { VideoComponent } from '../components/responseTypes/media/VideoComponent';
 import { useSelector } from '../hooks/useSelector';
@@ -438,7 +438,7 @@ function MessageTypeComponent(props: MessageTypeComponentProps) {
     const withHumanAgent = Boolean(message.item.agent_message_type);
 
     return (
-      <OptionComponent
+      <OptionItemComponent
         localMessage={message}
         originalMessage={originalMessage}
         disableUserInputs={disableUserInputs || !isMessageForInput}

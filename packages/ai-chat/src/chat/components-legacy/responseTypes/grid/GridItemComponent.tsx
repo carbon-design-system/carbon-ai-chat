@@ -47,7 +47,7 @@ function GridItemComponent({
       {localMessageItem.ui_state.gridLocalMessageItemIDs.map(
         (row, rowIndex) => (
           <div key={`row-${rowIndex}`} className="cds-aichat--grid__row">
-            {row.map((cell, columnIndex) => {
+            {row.map((_cell, columnIndex) => {
               const cellData =
                 localMessageItem.item.rows[rowIndex]?.cells[columnIndex];
               let columnWidthString =
@@ -65,7 +65,6 @@ function GridItemComponent({
                 <GridItemCell
                   localMessageItem={localMessageItem}
                   renderMessageComponent={renderMessageComponent}
-                  cell={cell}
                   originalMessage={originalMessage}
                   cellData={cellData}
                   columnWidthString={columnWidthString}

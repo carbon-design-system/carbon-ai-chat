@@ -85,6 +85,7 @@ function createInitialViewState(
         : VIEW_STATE_LAUNCHER_OPEN,
     isBrowserPageVisible: true,
     prompt: null,
+    messageItemFlags: {},
 
     // Set from the `markdown` prop; `undefined` when the host omits it.
     markdownConfig: undefined,

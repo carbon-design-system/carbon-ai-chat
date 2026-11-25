@@ -15,6 +15,8 @@ import {
   renderChatAndGetInstanceWithStore,
   setupBeforeEach,
   setupAfterEach,
+  cannotDrawOf,
+  itemFlagsFor,
 } from '../../test_helpers';
 import {
   MessageResponse,
@@ -477,8 +479,11 @@ describe('a still-broken message item', () => {
     expect(renderErrors(onError)).toHaveLength(1);
     const localID = firstLocalID(store, 'no-retry');
     // componentDidMount's announcement write has run by now.
-    expect(store.getState().allMessageItemsByID[localID].ui_state).toEqual(
-      expect.objectContaining({ needsAnnouncement: false })
+    expect(itemFlagsFor(store.getState(), localID)).toEqual(
+      expect.objectContaining({ wasAnnounced: true })
+    );
+    expect(itemFlagsFor(store.getState(), localID).needsAnnouncement).toBe(
+      undefined
     );
 
     await instance.messaging.addMessage(
@@ -597,9 +602,7 @@ describe('renderer exceptions in upserted message items', () => {
     await settle();
 
     const localID = firstLocalID(store, 'renderer-recovery');
-    expect(
-      store.getState().allMessageItemsByID[localID].ui_state.cannotDraw
-    ).toBeUndefined();
+    expect(cannotDrawOf(store.getState(), localID)).toBeUndefined();
     expect(chatText()).not.toContain(ERROR_TEXT);
     expect(onError).not.toHaveBeenCalled();
 
@@ -785,8 +788,10 @@ describe('render errors in response panel content', () => {
       expect(deepText(responsePanelBody())).toContain('Body two')
     );
 
-    // The open panel still lists the nested id this upsert prunes.
-    await upsertPanelMessage(instance, { body: [panelText('Body one')] });
+    // The open panel draws the live nested items, and this update's second one throws.
+    await upsertPanelMessage(instance, {
+      body: [panelText('Body one'), throwingImage],
+    });
     await settle();
 
     expect(store.getState().view.catastrophicErrorType).toBeUndefined();
@@ -796,12 +801,66 @@ describe('render errors in response panel content', () => {
     expect(onError.mock.calls[0][0].catastrophicErrorType).toBeUndefined();
 
     await closePanel(store);
+    await upsertPanelMessage(instance, { body: [panelText('Body one')] });
+    await settle();
     await openPanel();
     await waitFor(() =>
       expect(deepText(responsePanelBody())).toContain('Body one')
     );
     expect(panelError('body')).toBeFalsy();
     expect(deepText(responsePanelBody())).not.toContain('Body two');
+  });
+
+  it('skips a removed nested item from the opening panel membership', async () => {
+    const { instance, store, onError } = await renderOpenChat();
+    await upsertPanelMessage(instance, {
+      body: [panelText('Body one'), panelText('Body two')],
+    });
+    await settle();
+    await openPanel();
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).toContain('Body two')
+    );
+
+    // The open panel still lists the nested id this upsert prunes.
+    await upsertPanelMessage(instance, { body: [panelText('Body one')] });
+    await settle();
+
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).not.toContain('Body two')
+    );
+    expect(deepText(responsePanelBody())).toContain('Body one');
+    expect(panelError('body')).toBeFalsy();
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  it('keeps the opening nested membership when an update adds an item', async () => {
+    const { instance, store, onError } = await renderOpenChat();
+    await upsertPanelMessage(instance, {
+      body: [panelText('Body one'), panelText('Body two')],
+    });
+    await settle();
+    await openPanel();
+    await waitFor(() =>
+      expect(deepText(responsePanelBody())).toContain('Body two')
+    );
+
+    await upsertPanelMessage(instance, {
+      body: [
+        panelText('Body one'),
+        panelText('Body two'),
+        panelText('Body three'),
+      ],
+    });
+    await settle();
+
+    expect(deepText(responsePanelBody())).toContain('Body two');
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(deepText(responsePanelBody())).not.toContain('Body three');
+    expect(panelError('body')).toBeFalsy();
+    expect(onError).not.toHaveBeenCalled();
+    expect(store.getState().view.catastrophicErrorType).toBeUndefined();
   });
 
   it('leaves the chat usable after a panel fails', async () => {

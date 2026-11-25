@@ -15,6 +15,7 @@ import isPlainObject from 'lodash-es/isPlainObject.js';
 import merge from 'lodash-es/merge.js';
 import { DeepPartial } from '../../types/utilities/DeepPartial';
 
+import { MessageState } from '../../types/config/MessagingConfig';
 import { ConversationState } from '../../types/state/ConversationState';
 import {
   AppStateMessages,
@@ -46,7 +47,6 @@ import {
   HYDRATE_CHAT,
   HYDRATE_MESSAGE_HISTORY,
   MERGE_HISTORY,
-  MESSAGE_SET_OPTION_SELECTED,
   REMOVE_INPUT_FILE,
   REMOVE_LOCAL_MESSAGE_ITEM,
   REMOVE_MESSAGES,
@@ -56,7 +56,6 @@ import {
   SET_MESSAGE_RESPONSE_HISTORY_PROPERTY,
   SET_MESSAGE_UI_STATE_INTERNAL_PROPERTY,
   SET_MESSAGE_UI_PROPERTY,
-  SET_MESSAGE_WAS_ANNOUNCED,
   SET_STOP_STREAMING_BUTTON_DISABLED,
   SET_STOP_STREAMING_BUTTON_METADATA_DISABLED,
   SET_STOP_STREAMING_BUTTON_VISIBLE,
@@ -86,6 +85,7 @@ import type {
 import { humanAgentReducers } from './humanAgentReducers';
 
 import {
+  applyUpsertErrorState,
   applyAssistantMessageState,
   applyChunkWriteWithIdentity,
   applyFullMessageWithIdentity,
@@ -100,7 +100,6 @@ import {
 
 import {
   Message,
-  MessageRequest,
   MessageResponse,
   MessageUIStateInternal,
   MessageResponseHistory,
@@ -508,27 +507,6 @@ const stateReducers: { [key: string]: ReducerType } = {
     return { ...state, allMessageItemsByID: newLocalItems };
   },
 
-  [MESSAGE_SET_OPTION_SELECTED]: (
-    state: ConversationState,
-    action: { sentMessage: MessageRequest; messageID: string }
-  ): ConversationState => {
-    const newMessagesByID = {
-      ...state.allMessageItemsByID,
-    };
-    newMessagesByID[action.messageID] = {
-      ...state.allMessageItemsByID[action.messageID],
-      ui_state: {
-        ...state.allMessageItemsByID[action.messageID].ui_state,
-        optionSelected: action.sentMessage,
-      },
-    };
-
-    return {
-      ...state,
-      allMessageItemsByID: newMessagesByID,
-    };
-  },
-
   [SET_APP_STATE_VALUE]: (
     state: ConversationState,
     action: { key: keyof ConversationState; value: any }
@@ -606,26 +584,6 @@ const stateReducers: { [key: string]: ReducerType } = {
       action.localMessageID,
       action.propertyName,
       action.propertyValue
-    );
-  },
-
-  [SET_MESSAGE_WAS_ANNOUNCED]: (
-    state: ConversationState,
-    action: { localMessageID: string }
-  ): ConversationState => {
-    // `wasAnnounced` outlives the clear, so an upsert that rebuilds the item knows not
-    // to announce it again.
-    const { localMessageID } = action;
-    return applyLocalMessageUIState(
-      applyLocalMessageUIState(
-        state,
-        localMessageID,
-        'needsAnnouncement',
-        false
-      ),
-      localMessageID,
-      'wasAnnounced',
-      true
     );
   },
 
@@ -1174,14 +1132,25 @@ const ownershipReducers: {
     if (options?.origin === 'chunk' && isStreaming) {
       const result = applyChunkWriteWithIdentity(state, message, options.chunk);
       return {
-        state: result.state,
+        state: applyUpsertErrorState(result.state, result.messageID, false),
         ownership: { kind: 'upsert', messageID: result.messageID },
       };
     }
 
     // A message from `addMessage` or `final_response` keeps the rules it has always had.
     if (options?.received) {
-      return applyReceivedWrite(state, message, options.received, messageID);
+      const result = applyReceivedWrite(
+        state,
+        message,
+        options.received,
+        messageID
+      );
+      return result.state === state
+        ? result
+        : {
+            ...result,
+            state: applyUpsertErrorState(result.state, messageID, false),
+          };
     }
 
     const messageResponse = keepPriorUIStateInternal(
@@ -1238,7 +1207,14 @@ const ownershipReducers: {
       },
     };
 
-    return { state: newState, ownership };
+    return {
+      state: applyUpsertErrorState(
+        newState,
+        messageID,
+        options?.nativeMessageState === MessageState.ERROR
+      ),
+      ownership,
+    };
   },
   [ADD_MESSAGE]: (
     state: ConversationState,

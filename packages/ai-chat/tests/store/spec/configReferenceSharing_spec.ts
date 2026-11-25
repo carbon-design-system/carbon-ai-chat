@@ -57,6 +57,7 @@ function updateDerived(prevPublic: PublicConfig, nextPublic: PublicConfig) {
   const after = viewReducer(
     before,
     viewActions.setDerivedConfig(createDerivedConfig(nextPublic)),
+    {} as ConversationState,
     {} as ConversationState
   );
   return {

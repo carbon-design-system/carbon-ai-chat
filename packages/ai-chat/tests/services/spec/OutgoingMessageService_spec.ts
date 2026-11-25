@@ -88,7 +88,6 @@ describe('OutgoingMessageService', () => {
     expect(local.ui_state).toEqual({
       id: 'local-id',
       originalUserText: 'visible text',
-      needsAnnouncement: false,
     });
     expect(local.item).toMatchObject({ text: 'transport text' });
     expect(local.item).not.toBe(accepted.input);
@@ -177,7 +176,7 @@ describe('OutgoingMessageService', () => {
       cancelled,
       'local'
     );
-    expect(local.ui_state).toEqual({ id: 'local', needsAnnouncement: true });
+    expect(local.ui_state).toEqual({ id: 'local' });
     expect(local.item).toBe(cancelled.output.generic[0]);
     const error = outgoing.prepareInlineError(
       'Failed',

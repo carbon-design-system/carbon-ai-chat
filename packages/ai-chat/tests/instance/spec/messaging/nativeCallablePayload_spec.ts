@@ -211,3 +211,37 @@ it('keeps response and receive callbacks on the existing shared-buffer path', as
     Array.from(stored.output.generic[0].user_defined.bytes as Uint8Array)
   ).toEqual([1, 2, 3, 4]);
 });
+
+it('leaves a host class unfrozen when state lists its message', async () => {
+  const { instance } =
+    await renderChatAndGetInstanceWithStore(createBaseConfig());
+  class Widget {}
+  const source = Object.assign(Widget, { settings: { value: 'before' } });
+  await instance.messaging.upsertMessage(
+    'listed',
+    MessageState.COMPLETE,
+    () => ({
+      id: 'listed',
+      output: {
+        generic: [
+          {
+            response_type: MessageResponseTypes.USER_DEFINED,
+            user_defined: { Widget: source },
+          },
+        ],
+      },
+    })
+  );
+  const state = instance.getState();
+  const message = state.messages.find(
+    (entry) => entry.id === 'listed'
+  ) as MessageResponse;
+  const item = state.messageItems.find((entry) => entry.messageID === 'listed');
+  expect(Object.isFrozen(message.output.generic[0])).toBe(true);
+  expect(message.output.generic[0].user_defined.Widget).toBe(source);
+  expect(Object.isFrozen(item.item)).toBe(true);
+  expect(item.item.user_defined.Widget).toBe(source);
+  expect(Object.isFrozen(source)).toBe(false);
+  source.settings.value = 'changed';
+  expect(source.settings.value).toBe('changed');
+});

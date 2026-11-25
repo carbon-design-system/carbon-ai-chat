@@ -28,6 +28,7 @@ import {
 import { ScrollElementIntoViewFunction } from '../../../components-legacy/MessagesComponent';
 import { useOnMount } from '../../../hooks/useOnMount';
 import { useServiceManager } from '../../../hooks/useServiceManager';
+import { useMessageItem } from '../../../hooks/useDrawnMessageItems';
 import { AppState } from '../../../../types/state/AppState';
 import { LocalMessageItem } from '../../../../types/messaging/LocalMessageItem';
 
@@ -41,10 +42,7 @@ import { uuid } from '@carbon/ai-chat-components/es/globals/utils/uuid.js';
 import { loadDayjsLocale } from '../../../../sdk/utils/languageUtils';
 import { createMessageRequestForDate } from '../../../../sdk/utils/messageUtils';
 import { consoleError } from '../../../../sdk/utils/miscUtils';
-import {
-  DateItem,
-  MessageResponse,
-} from '../../../../types/messaging/Messages';
+import { DateItem } from '../../../../types/messaging/Messages';
 import { MessageSendSource } from '../../../../types/events/eventBusTypes';
 
 const Checkmark = carbonIconToReact(Checkmark32);
@@ -77,9 +75,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   const webChatLocale = useSelector(
     (state: AppState) => state.config.public.locale || 'en'
   );
-  const originalMessage = useSelector(
-    (state: AppState) => state.allMessagesByID[localMessage.fullMessageID]
-  ) as MessageResponse;
+  const messageItem = useMessageItem(localMessage.ui_state.id);
   const uuidRef = useRef(uuid());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [userDisplayValue, setUserDisplayValue] = useState<string>();
@@ -207,7 +203,7 @@ function DatePickerComponent(props: DatePickerComponentProps) {
   useOnMount(() => {
     const localeFromMessage = webChatLocale;
     const { originalUserText } = localMessage.ui_state;
-    const fromHistory = originalMessage.ui_state_internal?.from_history;
+    const fromHistory = messageItem?.origin === 'history';
 
     // If this message is from history and a user has made a previous selection, set the value in the input.
     if (fromHistory && originalUserText) {

@@ -34,7 +34,7 @@ Read before editing this custom Redux-style store. Package rules: [ai-chat/AGENT
 
 ## Partitions
 
-Another layer adds its own part of the state with `attachStorePartition` from `attachStorePartition.ts` in this folder. A partition's reducer runs after the store's own reducer on every action and receives the store state after it, so one dispatch updates both and notifies once. Attaching a key the store already has a partition for does nothing. A partition reducer returns the same object when nothing changed, or every dispatch notifies. If it throws, the whole dispatch fails.
+Another layer adds its own part of the state with `attachStorePartition` from `attachStorePartition.ts` in this folder. A partition's reducer runs after the store's own reducer on every action and receives the store state after it, and the state before it, so one dispatch updates both and notifies once. Attaching a key the store already has a partition for does nothing. A partition reducer returns the same object when nothing changed, or every dispatch notifies. If it throws, the whole dispatch fails.
 
 Saved state is split the same way. The conversation saves `hasSentNonWelcomeMessage` and the agent connection; the SDK's `humanAgentState` config saves and restores only the connection (`humanAgentStatePersistence.ts`). The shell joins both halves for `persistedState` and session storage.
 

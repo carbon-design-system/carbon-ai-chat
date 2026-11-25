@@ -57,9 +57,10 @@ function ImageWithFallback({
 }
 import { HasAriaAnnouncer, withAriaAnnouncer } from '../hocs/withAriaAnnouncer';
 import { HasServiceManager } from '../hocs/withServiceManager';
-import actions from '../../sdk/store/actions';
+import viewActions from '../state/actions';
 import { HasClassName } from '../../types/utilities/HasClassName';
 import HasIntl from '../../types/utilities/HasIntl';
+import { useMessageItemFlags } from '../hooks/useMessageItemFlags';
 import { useSelector } from '../hooks/useSelector';
 import { shallowEqual } from '../../sdk/store/appStore';
 import { useIntl } from '../hooks/useIntl';
@@ -69,6 +70,7 @@ import {
   LocalMessageItem,
   MessageErrorState,
 } from '../../types/messaging/LocalMessageItem';
+import type { ChatSDKMessageItem } from '../../types/instance/ChatSDKState';
 import { FileStatusValue } from '../../sdk/utils/constants';
 import { doFocusRef } from '../utils/domUtils';
 import {
@@ -186,6 +188,24 @@ interface MessageProps
    * The local message item that is part of the original message.
    */
   localMessageItem: LocalMessageItem;
+
+  /**
+   * The item's entry in `instance.state.messageItems`. Where the item came from and what the chat
+   * found about agents are read from it.
+   */
+  messageItem: Readonly<ChatSDKMessageItem>;
+
+  /**
+   * Whether a screen reader should announce this item when it's drawn, from
+   * the item's view flags. Its connector passes it in.
+   */
+  needsAnnouncement?: boolean;
+
+  /**
+   * Whether the chat can't draw this item, from the item's view flags. Its
+   * connector passes it in.
+   */
+  cannotDraw?: boolean;
 
   /**
    * The original message that came from the assistant.
@@ -453,10 +473,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   componentDidMount() {
     const uiState = this.props.localMessageItem.ui_state;
-    if (uiState.needsAnnouncement) {
+    if (this.props.needsAnnouncement) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        viewActions.setMessageItemAnnounced(uiState.id)
       );
     }
     this.syncAutoReasoningState();
@@ -476,10 +496,10 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const uiState = this.props.localMessageItem.ui_state;
     // A pass that rendered nothing (a failed retry) has nothing to announce, so keep the
     // announcement for the pass that renders the error box.
-    if (uiState.needsAnnouncement && this.ref.current) {
+    if (this.props.needsAnnouncement && this.ref.current) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
-        actions.setMessageWasAnnounced(uiState.id)
+        viewActions.setMessageItemAnnounced(uiState.id)
       );
     }
     this.syncAutoReasoningState();
@@ -491,10 +511,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
    * Whether this item failed to draw, or the chat already knows it can't.
    */
   private isFailedItem() {
-    return (
-      this.state.didRenderErrorOccur ||
-      Boolean(this.props.localMessageItem.ui_state.cannotDraw)
-    );
+    return this.state.didRenderErrorOccur || Boolean(this.props.cannotDraw);
   }
 
   /**
@@ -506,13 +523,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
       return true;
     }
 
-    const { localMessageItem, message } = this.props;
+    const { localMessageItem, messageItem } = this.props;
 
     // If the message is a CTA, has a service desk error, and we're supposed to report service desk errors, then we
     // need to render the failed message.
     return (
       isConnectToHumanAgent(localMessageItem.item) &&
-      message.ui_state_internal?.agent_no_service_desk
+      messageItem.humanAgent?.noServiceDesk
     );
   }
 
@@ -1293,7 +1310,7 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const { isIntermediateStreaming } = localMessageItem.ui_state;
     const messageItem = localMessageItem.item;
     const responseType = messageItem.response_type;
-    const fromHistory = message.ui_state_internal?.from_history;
+    const fromHistory = this.props.messageItem.origin === 'history';
     const readWidgetSaid = isFirstMessageItem;
 
     if (
@@ -1520,13 +1537,20 @@ function canRenderIntermediateStreaming(type: MessageResponseTypes) {
  * Connects the (Pure)class `MessageComponent` to the store/context for the values
  * it must not receive as churning threaded props: a narrow language-pack bag
  * (`shallowEqual`, so the PureComponent only re-renders when one of its strings
- * changes), the intl formatter, and the two theme primitives. `serviceManager`,
+ * changes), the intl formatter, the two theme primitives, and, from the
+ * item's view flags, whether it waits to be announced and whether the chat
+ * can't draw it. `serviceManager`,
  * `locale`, message data and callbacks stay threaded from `MessagesComponent`.
  * The ref is forwarded so `MessagesComponent` still receives the class instance.
  */
 type MessageConnectorProps = Omit<
   MessageProps,
-  'languagePack' | 'intl' | 'useAITheme' | 'carbonTheme'
+  | 'languagePack'
+  | 'intl'
+  | 'useAITheme'
+  | 'carbonTheme'
+  | 'needsAnnouncement'
+  | 'cannotDraw'
 >;
 
 const MessageComponentConnector = React.forwardRef<
@@ -1542,10 +1566,13 @@ const MessageComponentConnector = React.forwardRef<
     (state: AppState) => state.view.derivedConfig.themeWithDefaults.aiEnabled
   );
   const { carbonTheme } = useCarbonTheme();
+  const flags = useMessageItemFlags(props.localMessageItem.ui_state.id);
   return (
     <MessageComponent
       {...(props as unknown as MessageProps)}
       ref={ref}
+      needsAnnouncement={flags?.needsAnnouncement}
+      cannotDraw={Boolean(flags?.cannotDraw)}
       languagePack={languagePack}
       intl={intl}
       useAITheme={aiEnabled}

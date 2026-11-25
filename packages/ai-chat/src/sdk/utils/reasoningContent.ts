@@ -43,10 +43,7 @@ function synthesizeReasoningLocalMessageItem(
 ): LocalMessageItem {
   return {
     item,
-    ui_state: {
-      id: stableId,
-      needsAnnouncement: false,
-    },
+    ui_state: { id: stableId },
     fullMessageID,
   };
 }
