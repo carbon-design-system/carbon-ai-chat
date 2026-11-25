@@ -50,4 +50,4 @@ Config is typed the same way. The shell stores its whole `PublicConfig` in `conf
 4. Add a selector; components must not read the shape directly.
 5. Add an action creator if dispatch is needed.
 6. Wire side effects in `subscriptions.ts`, outside the reducer.
-7. Test the reducer directly, without React, in [tests/store/spec/](../../../tests/store/spec/) (Jest, `*_spec.ts`).
+7. Test the reducer directly, without React, in `__tests__/` beside it.

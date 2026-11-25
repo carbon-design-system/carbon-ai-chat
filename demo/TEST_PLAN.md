@@ -4,7 +4,7 @@
 
 We should be looking for what here can can automate, and as we do, we can remove it from this list.
 
-Automated upload checks: `input-actions-upload.spec.ts` covers file selection, pending state, upload limits, and completed-file removal through both hosts. It checks that Remove stays visible and enabled while an upload is pending. `file-upload-styles.spec.ts` checks chip styles, moves, and cleanup under strict CSP.
+Automated upload checks: `packages/ai-chat/src/chat/__tests__/inputActionsUpload.test.tsx` and `config/upload.contract.test.ts` beside it cover file selection, pending state, upload limits, and completed-file removal. They check that Remove stays usable while an upload is pending. `tests/file-upload-styles.spec.ts` checks chip styles under strict CSP, and components' `file-upload-item.browser.test.ts` checks sheet ownership through moves and updates.
 
 ## Testing Tracks
 
@@ -16,19 +16,19 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 
 - Theme switching, layout config, direction switching (LTR/RTL)
 - Header, launcher, homescreen configuration
-- Launcher: keyboard open/dismiss, unread labels, live avatar config, reduced motion, and missing animation events, on the React host (float, LTR) and the web-component host (float, RTL) (`tests/native-launcher.spec.ts`).
-- Header menus: arrow keys, Escape focus return, and AI-label keyboard access, on the React host (float, LTR) and the web-component host (sidebar, RTL) (`tests/overflow-menu-arrow-navigation.spec.ts`).
-- Native panel frames: direct slot chains, custom event order, option reset, focus/reactivation, retained DOM/React state, and response, citation, and mobile-history openings on both hosts (`tests/native-panel-composition.spec.ts`).
-- Native autocomplete fixture: delayed list readiness, keyboard selection, retained React context and state, root replacement, borrowed elements, two chats, direct slots, editor focus, and narrow/wide height caps (`tests/native-autocomplete.spec.ts`). The production input uses the same native autocomplete owner.
-- Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`tests/homescreen.spec.ts`).
+- Launcher: keyboard open/dismiss, unread labels, live avatar config, reduced motion, and missing animation events, on the React host (float, LTR) and the web-component host (float, RTL) (`packages/ai-chat/src/chat/__tests__/view/nativeLauncher.browser.test.tsx`).
+- Header menus: arrow keys, Escape focus return, and AI-label keyboard access, on the React host (float, LTR) and the web-component host (sidebar, RTL) (`packages/ai-chat/src/chat/components/header/__tests__/headerMenuFocus.browser.test.ts`).
+- Native panel frames: direct slot chains, custom event order, option reset, focus/reactivation, retained DOM/React state, and response, citation, and mobile-history openings on both hosts (`packages/ai-chat/src/chat/__tests__/panels/panelComposition.browser.test.tsx`).
+- Native autocomplete fixture: delayed list readiness, keyboard selection, retained React context and state, root replacement, borrowed elements, two chats, direct slots, editor focus, and narrow/wide height caps (`packages/ai-chat/src/chat/__tests__/input/nativeAutocomplete.browser.test.tsx`). The production input uses the same native autocomplete owner.
+- Home starters and return actions: mouse and keyboard paths, input focus, narrow RTL layout, and both host paths (`packages/ai-chat/src/chat/__tests__/panels/homeScreenNavigation.browser.test.ts`).
 - Chat instance controls (focus, scroll, input visibility, restart)
-- Native shell lifecycle: phone viewport resize, same-parent moves with retained message/input and live regions, mobile programmatic-focus suppression, user focus, and close/reopen on both hosts (`tests/native-shell-lifecycle.spec.ts`).
+- Native shell lifecycle: phone viewport resize, same-parent moves with retained message/input and live regions, mobile programmatic-focus suppression, user focus, and close/reopen on both hosts (`packages/ai-chat/src/chat/__tests__/view/mobileShell.browser.test.tsx`).
 - Remount behavior: under **Chat Configuration → Lifecycle**, pick **Reuse the chat**, send a message, connect to an agent, then select **Remount the chat**. The new chat element keeps the transcript and the agent chat. With **New chat (default)**, a remount starts over; check that by hand. The reuse case runs on both hosts in `tests/remount-reuse.spec.ts`.
 - Slots, layout frame/content width settings
 - Writeable elements, layout frame/content width settings
 - Input "Expanded layout" toggle: editor fills its own full-width row; message actions + send control drop to a second row (actions to the start, send to the end); with the "Additional actions menu" enabled the `input.actions` render inline as icon buttons instead of in the "+" popover, and collapse into a "more" (⋯) overflow menu when the row is too narrow to fit them all (narrow the window / use a small layout to verify; confirm the hidden actions are reachable and fire from the menu). Verify non-expanded is unchanged and that toggling live reflows correctly (incl. RTL).
-- Native input actions: compact keyboard menus, disabled controls, links, fixed actions and responsive overflow; late prompt slots, consumer identity, focus, and 32px occupied layout on both hosts (`tests/native-input-actions.spec.ts`).
-- Built-in native input: check direct slots, Enter and Shift+Enter, public editor upgrades with selection, retained custom nodes, disabled textarea/rich focus, cleared and restored default placeholders, resumed editing, and concurrent length/upload live regions through both hosts (`tests/native-input.spec.ts`).
+- Native input actions: compact keyboard menus, disabled controls, links, fixed actions and responsive overflow; late prompt slots, consumer identity, focus, and 32px occupied layout on both hosts (`packages/ai-chat/src/chat/__tests__/input/nativeInputActions.browser.test.tsx`).
+- Built-in native input: check direct slots, Enter and Shift+Enter, public editor upgrades with selection, retained custom nodes, disabled textarea/rich focus, cleared and restored default placeholders, resumed editing, and concurrent length/upload live regions through both hosts (`packages/ai-chat/src/chat/__tests__/input/nativeInput.browser.test.ts`).
 - Writeable element `promptLineActionsEnd`: its slotted content (the green swatch in the demo) appears only when the input "Expanded layout" toggle is on; it is absent in the default compact layout.
 - Input "@mentions" / "/commands" toggles: enable one (or both) and reload — confirm the toggle stays "Enable" (query-string round-trip re-injects the callbacks). With "@mentions" on, type `@` anywhere in the message and pick a suggestion — confirm a chip renders. With "/commands" on, type `/` at the start of a line and pick a suggestion — confirm a chip renders; typing `/` mid-message should NOT open the picker. Delete a chip before sending and confirm it doesn't show up in the echoed response. Send a message with a mention/command chip and confirm the mock backend echoes the mention/command names in a text message before the normal canned response for the typed text, and the browser console shows no errors.
 
@@ -58,7 +58,7 @@ Automated upload checks: `input-actions-upload.spec.ts` covers file selection, p
 
 #### Built-in panel bodies
 
-Repeat in React and web-component modes, including RTL and a dark theme. Automated cases live in `tests/native-panel-bodies.spec.ts`.
+Repeat in React and web-component modes, including RTL and a dark theme. Automated cases live in `packages/ai-chat/src/chat/__tests__/panels/panelBodies.browser.test.tsx`.
 
 - [ ] **Disclaimer:** Use long HTML. Accept stays disabled until the text reaches the bottom. Use the keyboard to accept.
 - [ ] **Iframe:** Open an iframe response. Change its title without reloading it. Change its source and confirm fresh content.
@@ -183,10 +183,10 @@ Run these in both modes:
 - [ ] Send **user_defined (stream)** and **conversational search (stream)**.
 - [ ] Send **text (stream early resolve)** with "Show stop button immediately" on.
 - [ ] Stop a stream partway: the message settles and the stop button goes away.
-- [ ] Run `stop-streaming-cancellable.spec.ts` in both send modes. When `cancellable` changes from `true` to `false`, Stop stays visible but disabled. An omitted value leaves it disabled; `true` enables it again. Disabled Stop ignores clicks, Enter, and Space. A completed stream hides it.
+- [ ] `packages/ai-chat/src/chat/__tests__/messaging/stopStreamingCancellable.browser.test.ts` and `stopStreamingCancellable.test.ts` beside it cover both send modes. When `cancellable` changes from `true` to `false`, Stop stays visible but disabled. An omitted value leaves it disabled; `true` enables it again. Disabled Stop ignores clicks, Enter, and Space. A completed stream hides it.
 - [ ] **card (stream)** and **carousel (stream)**: these entries only appear when `?useUpsertMessage` is set, alphabetically beside their non-streaming versions. The card's body and footer appear before the stream ends; carousel cards arrive one at a time.
 - [ ] After **carousel (stream)** ends, Next reaches all three cards and the count advances from "1 / 3" to "3 / 3".
-- [ ] The request stays pinned through carousel initialization and stream completion, including with conversation history. Check each frame for jumps.
+- [ ] The request stays pinned through carousel initialization and stream completion, including with conversation history. Check each frame for jumps. Automated in `packages/ai-chat/src/chat/__tests__/view/carouselAutoScroll.browser.test.ts`, with auto-scroll through resizes, streams, and completion in `autoScrollResize.browser.test.ts` beside it.
 - [ ] Both side borders stay visible on every carousel card.
 - [ ] As each carousel card arrives, the first card stays visible and the new card does not flash below it before joining the carousel.
 - [ ] With VoiceOver, both modes announce the same things.
@@ -273,7 +273,7 @@ Send messages to agents and test responses:
 - [ ] **"leave"** - Agent leaving chat
 - [ ] **"markdown"** - Markdown content
 - [ ] **"upload"** - File upload capability
-  - `tests/input-actions-upload.spec.ts`: select a text file through compact and expanded actions on both hosts; check pending state, limits, completion, and removal under strict CSP.
+  - `packages/ai-chat/src/chat/__tests__/inputActionsUpload.test.tsx`: select a file through compact and expanded actions; check pending state, limits, completion, and removal.
 - [ ] **"message throw"** - Message sending errors
 - [ ] **"video"** - Video response from agent
 - [ ] **"custom"** - Custom user-defined response

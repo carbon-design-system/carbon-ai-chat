@@ -60,7 +60,7 @@ Put state transformations in reducers. Put pure utilities that conversation code
 
 ## Testing services
 
-Follow [tests.md](tests.md#service-example) when testing a service.
+Test a service beside it, in its folder's `__tests__/`, with a stub `ServiceManager`. Read [where a test goes](tests.md#where-a-test-goes) when the behavior spans services or a host can see it.
 
 ## Related guidance
 

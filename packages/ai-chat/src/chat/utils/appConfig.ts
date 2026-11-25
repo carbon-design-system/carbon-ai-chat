@@ -248,4 +248,4 @@ function getLayoutState(publicConfig: PublicConfig): LayoutConfig {
   );
 }
 
-export { createDerivedConfig, DEFAULT_MESSAGE_FOCUS_TOGGLE_SHORTCUT };
+export { createDerivedConfig };

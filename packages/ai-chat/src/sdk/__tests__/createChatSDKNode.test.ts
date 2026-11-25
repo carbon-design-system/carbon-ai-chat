@@ -1,0 +1,71 @@
+/*
+ *  Copyright IBM Corp. 2026
+ *
+ *  This source code is licensed under the Apache-2.0 license found in the
+ *  LICENSE file in the root directory of this source tree.
+ *
+ *  @license
+ */
+
+import { createChatSDK } from '..';
+import { MessageState } from '../../types/config/MessagingConfig';
+import type { ChatSDKInstance } from '../../types/instance/ChatSDKInstance';
+import {
+  MessageResponseTypes,
+  type MessageRequest,
+  type MessageResponse,
+} from '../../types/messaging/Messages';
+
+function reply(request: MessageRequest, text: string): MessageResponse {
+  return {
+    id: `reply-${request.id}`,
+    request_id: request.id,
+    output: { generic: [{ response_type: MessageResponseTypes.TEXT, text }] },
+  };
+}
+
+it('sends and receives through a chat createChatSDK started', async () => {
+  expect(typeof window).toBe('undefined');
+  expect(typeof document).toBe('undefined');
+  expect(typeof sessionStorage).toBe('undefined');
+  expect(typeof localStorage).toBe('undefined');
+  const sent: string[] = [];
+  const customSendMessage = vi.fn(
+    async (
+      request: MessageRequest,
+      _options: unknown,
+      instance: ChatSDKInstance
+    ) => {
+      const text = (request.input as { text?: string }).text ?? '';
+      sent.push(text);
+      const response = reply(request, `echo: ${text}`);
+      await instance.messaging.upsertMessage(
+        response.id,
+        MessageState.COMPLETE,
+        () => response
+      );
+    }
+  );
+  const chat = await createChatSDK({ messaging: { customSendMessage } });
+  try {
+    // Boot sent the welcome request and stored its reply.
+    expect(sent).toEqual(['']);
+    expect(chat.state.get().messages).toHaveLength(2);
+
+    await chat.messaging.send('hello');
+    expect(sent).toEqual(['', 'hello']);
+    const texts = chat.state
+      .get()
+      .messages.flatMap((message) =>
+        'output' in message
+          ? message.output.generic.map((item) =>
+              'text' in item ? item.text : ''
+            )
+          : [(message.input as { text?: string }).text]
+      );
+    expect(texts).toEqual(['', 'echo: ', 'hello', 'echo: hello']);
+    expect(chat.state.get().status).toBe('ready');
+  } finally {
+    chat.destroy();
+  }
+});

@@ -10,12 +10,6 @@
 import { expect } from '@open-wc/testing';
 import { HeaderCollapsibleManager } from '../src/header-collapsible-manager.js';
 
-/**
- * This repository uses the @web/test-runner library for testing
- * Documentation on writing tests, plugins, and commands
- * here: https://modern-web.dev/docs/test-runner/overview/
- */
-
 const createMockElement = (height: number): HTMLElement => {
   const el = document.createElement('div');
   Object.defineProperty(el, 'offsetHeight', {

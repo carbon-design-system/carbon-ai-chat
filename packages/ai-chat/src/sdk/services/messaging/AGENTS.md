@@ -19,9 +19,8 @@ flowchart LR
 
 Read these proofs when changing their boundary:
 
-- [Runtime imports, type capabilities and allowed writers](../../../../tests/services/spec/messagingBoundary_spec.ts), with [the guard implementation when extending a check](../../../../tests/services/helpers/messagingBoundary.ts).
-- [Public routes without a view adapter](../../../../tests/instance/spec/messaging/headlessPublicRoutes_spec.ts).
-- [Shared metadata writes](../../../../tests/services/spec/messageMetadataCommands_spec.ts).
+- [Runtime imports, type capabilities and allowed writers](../../../../tests/architecture/messagingBoundary.test.ts), with [the guard implementation when extending a check](../../../../tests/architecture/helpers/messagingBoundary.ts).
+- [Public routes without a view adapter](../../../chat/__tests__/messaging/headlessPublicRoutes.test.ts).
 
 Add a failing test before you allow a new boundary call. Tie each exception to exact calls and their owners.
 

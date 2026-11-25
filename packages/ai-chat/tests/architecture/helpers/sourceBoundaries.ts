@@ -10,6 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { isTestPath } from './isTestPath';
 
 /** How an import reaches its target. A `type` edge is erased from emitted code. */
 export type EdgeKind = 'runtime' | 'type';
@@ -40,6 +41,18 @@ export interface FolderRule {
    * a framework or registering a custom element.
    */
   frameworkFree?: boolean;
+  /**
+   * More modules that this folder's tests may not reach, on top of the
+   * frameworks every framework-free file is held to.
+   */
+  testFrameworks?: RegExp[];
+}
+
+/** Which files are contract tests or contract helpers, and what they may import. */
+export interface ContractRule {
+  isContractFile: (file: string) => boolean;
+  /** A package-relative file, or the bare specifier of an external module. */
+  mayImport: (target: string, external: boolean) => boolean;
 }
 
 export interface BoundaryException {
@@ -87,8 +100,9 @@ function literalText(node: ts.Expression | undefined) {
 
 /**
  * The module a node imports: an import or export declaration, an `import()`
- * type or call, or a `require` call. Null marks a dynamic import whose
- * argument isn't a literal.
+ * type or call, a `require` call, or a Vitest module helper such as
+ * `vi.importActual` or `vi.mock`. Null marks a dynamic import or module
+ * helper whose argument isn't a literal.
  */
 function importedModule(node: ts.Node): string | null | undefined {
   if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -103,9 +117,48 @@ function importedModule(node: ts.Node): string | null | undefined {
   if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
     return literalText(node.arguments[0]) ?? null;
   }
+  if (isViModuleCall(node)) {
+    // `vi.mock(import('x'))` is Vitest's typed form; the inner `import()`
+    // already gives the edge.
+    if (isImportCall(node.arguments[0])) {
+      return undefined;
+    }
+    return literalText(node.arguments[0]) ?? null;
+  }
   const isRequire =
     ts.isIdentifier(node.expression) && node.expression.text === 'require';
-  return isRequire ? literalText(node.arguments[0]) : undefined;
+  return isRequire ? (literalText(node.arguments[0]) ?? null) : undefined;
+}
+
+function isImportCall(node: ts.Node | undefined) {
+  return (
+    !!node &&
+    ts.isCallExpression(node) &&
+    node.expression.kind === ts.SyntaxKind.ImportKeyword
+  );
+}
+
+/**
+ * Vitest's helpers that load, or stand in for, a module by its specifier,
+ * called on `vi` or its `vitest` alias.
+ */
+const VI_MODULE_HELPERS = new Set([
+  'importActual',
+  'importMock',
+  'mock',
+  'doMock',
+  'unmock',
+  'doUnmock',
+]);
+
+function isViModuleCall(node: ts.CallExpression) {
+  const callee = node.expression;
+  return (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    (callee.expression.text === 'vi' || callee.expression.text === 'vitest') &&
+    VI_MODULE_HELPERS.has(callee.name.text)
+  );
 }
 
 export function isFramework(specifier: string) {
@@ -379,7 +432,7 @@ export function frameworkViolations(
     roots
       .filter((root) => graph.registers(root))
       .forEach((root) => report(root, 'customElements'));
-    walkFrameworkFree(graph, rules, roots, taints, report);
+    walkFrameworkFree(graph, rules, rule, roots, taints, report);
   }
   return violations;
 }
@@ -407,6 +460,7 @@ function componentTaint(graph: SourceGraph) {
 function walkFrameworkFree(
   graph: SourceGraph,
   rules: FolderRule[],
+  rule: FolderRule,
   roots: string[],
   taints: (entry: string) => boolean,
   report: (from: string, to: string) => void
@@ -420,7 +474,12 @@ function walkFrameworkFree(
     }
     seen.add(file);
     for (const edge of graph.edgesOf(file)) {
-      if (frameworkEdge(graph, edge, taints)) {
+      // A test's type imports are erased when it runs, and a test may name a
+      // public type to show the SDK matches or excludes it (D5).
+      if (edge.kind === 'type' && isTestPath(file)) {
+        continue;
+      }
+      if (frameworkEdge(graph, edge, taints) || testFramework(rule, edge)) {
         report(edge.from, edge.to);
       } else if (
         !edge.external &&
@@ -435,6 +494,15 @@ function walkFrameworkFree(
   }
 }
 
+/** Whether a test file in this rule's folder imports one of its test-only frameworks. */
+function testFramework(rule: FolderRule, edge: SourceEdge) {
+  return (
+    edge.external &&
+    isTestPath(edge.from) &&
+    !!rule.testFrameworks?.some((pattern) => pattern.test(edge.to))
+  );
+}
+
 function frameworkEdge(
   graph: SourceGraph,
   edge: SourceEdge,
@@ -444,6 +512,27 @@ function frameworkEdge(
     return isFramework(edge.to);
   }
   return isComponents(edge.to) ? taints(edge.to) : graph.registers(edge.to);
+}
+
+/**
+ * Checks each contract test and contract helper against the contract rule.
+ * Returns one violation per offending edge, as `from -> to`. Edges into the
+ * components package are left to the framework and folder checks.
+ */
+export function contractViolations(
+  graph: SourceGraph,
+  rule: ContractRule,
+  files: string[]
+) {
+  const violations = new Set<string>();
+  for (const file of files.filter(rule.isContractFile)) {
+    for (const edge of graph.edgesOf(file)) {
+      if (!isComponents(edge.to) && !rule.mayImport(edge.to, edge.external)) {
+        violations.add(`${edge.from} -> ${edge.to}`);
+      }
+    }
+  }
+  return violations;
 }
 
 function isComponents(file: string) {

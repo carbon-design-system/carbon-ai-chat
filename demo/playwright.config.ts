@@ -13,6 +13,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 import type { DemoModeOptions } from './tests/fixtures';
 
+// send-response's "resolves the mode" cases test the demo's own URL parsing,
+// not the chat, so a second browser or send mode adds nothing. They run in the
+// `chromium` project only.
+const demoModeOnly = /resolves the mode for /;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const port = Number(process.env.PORT) || 3001;
@@ -52,6 +57,7 @@ export default defineConfig<DemoModeOptions>({
     {
       name: 'firefox',
       testIgnore: /inline-markdown-selection\.spec\.ts$/,
+      grepInvert: demoModeOnly,
       use: { ...devices['Desktop Firefox'] },
     },
     // Reruns the suite with `?useUpsertMessage`, so the demo sends through
@@ -61,6 +67,7 @@ export default defineConfig<DemoModeOptions>({
     {
       name: 'chromium-upsert-message',
       use: { ...devices['Desktop Chrome'], useUpsertMessage: true },
+      grepInvert: demoModeOnly,
       testIgnore: [
         /react-host-compatibility\.spec\.ts$/,
         /inline-markdown-selection\.spec\.ts$/,

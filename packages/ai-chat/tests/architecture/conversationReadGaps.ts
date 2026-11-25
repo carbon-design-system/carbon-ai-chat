@@ -10,7 +10,7 @@
 /**
  * Every read of conversation data by the prebuilt interface that doesn't go
  * through `instance.state` yet, with the issue whose work moves it (#2693 O3).
- * `conversationReadGaps_spec.ts` fails on a read that isn't listed, and on an
+ * `conversationReadGaps.test.ts` fails on a read that isn't listed, and on an
  * entry that no longer matches a read, so the list only shrinks.
  *
  * A read is a conversation-partition field read from the store state, written
@@ -196,30 +196,6 @@ const conversationReadGaps: ConversationReadGap[] = [
     owner: '#2707',
   },
   {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'requestComposerFocus()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'selectInputIsDisabled()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'selectInputIsReadonly()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/hooks/useInputCallbacks.tsx',
-    read: 'selectInputUploads()',
-    count: 1,
-    owner: '#2824',
-  },
-  {
     file: 'src/chat/services/attachChatView.ts',
     read: 'attachViewState()',
     count: 1,
@@ -276,7 +252,7 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/services/inputCallbacks.ts',
     read: 'selectInputState()',
-    count: 2,
+    count: 1,
     owner: '#2824',
   },
   {
@@ -412,19 +388,13 @@ const conversationReadGaps: ConversationReadGap[] = [
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'isHydrated',
-    count: 5,
+    count: 4,
     owner: '#2824',
   },
   {
     file: 'src/chat/utils/shellLifecycle.ts',
     read: 'persistedToBrowserStorage',
     count: 1,
-    owner: '#2824',
-  },
-  {
-    file: 'src/chat/utils/shellLifecycle.ts',
-    read: 'persistedToBrowserStorage.hasSentNonWelcomeMessage',
-    count: 3,
     owner: '#2824',
   },
   {

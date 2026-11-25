@@ -58,6 +58,7 @@ function ImageWithFallback({
 import { HasAriaAnnouncer, withAriaAnnouncer } from '../hocs/withAriaAnnouncer';
 import { HasServiceManager } from '../hocs/withServiceManager';
 import viewActions from '../state/actions';
+import { chatStore } from '../services/attachChatView';
 import { HasClassName } from '../../types/utilities/HasClassName';
 import HasIntl from '../../types/utilities/HasIntl';
 import { useMessageItemFlags } from '../hooks/useMessageItemFlags';
@@ -473,7 +474,13 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
 
   componentDidMount() {
     const uiState = this.props.localMessageItem.ui_state;
-    if (this.props.needsAnnouncement) {
+    // A first pass whose renderer threw commits nothing, so keep the
+    // announcement for the pass that renders the error box.
+    if (
+      this.props.needsAnnouncement &&
+      this.ref.current &&
+      this.stillNeedsAnnouncement()
+    ) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
         viewActions.setMessageItemAnnounced(uiState.id)
@@ -496,7 +503,11 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     const uiState = this.props.localMessageItem.ui_state;
     // A pass that rendered nothing (a failed retry) has nothing to announce, so keep the
     // announcement for the pass that renders the error box.
-    if (this.props.needsAnnouncement && this.ref.current) {
+    if (
+      this.props.needsAnnouncement &&
+      this.ref.current &&
+      this.stillNeedsAnnouncement()
+    ) {
       this.props.ariaAnnouncer(this.ref.current);
       this.props.serviceManager.store.dispatch(
         viewActions.setMessageItemAnnounced(uiState.id)
@@ -505,6 +516,25 @@ class MessageComponent extends PureComponent<MessageProps, MessageState> {
     this.syncAutoReasoningState();
     this.syncUserControlReasoningState();
     this.fireReasoningUserDefinedResponseEvents();
+  }
+
+  /**
+   * Whether the store still marks this item as waiting to be announced. The
+   * `needsAnnouncement` prop can be stale: in development, React StrictMode
+   * runs `componentDidMount` a second time before the dispatch that marks the
+   * item announced re-renders it, which would announce the item twice.
+   */
+  private stillNeedsAnnouncement() {
+    const { serviceManager, localMessageItem } = this.props;
+    const state = chatStore(serviceManager).getState();
+    const itemID = serviceManager.publicStateService.messageItemIDOf(
+      localMessageItem.ui_state.id,
+      state
+    );
+    return (
+      itemID !== undefined &&
+      Boolean(state.view.messageItemFlags[itemID]?.needsAnnouncement)
+    );
   }
 
   /**

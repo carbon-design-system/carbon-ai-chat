@@ -111,11 +111,4 @@ function findLastWithMap<T>(
   return undefined;
 }
 
-/**
- * Returns the last value of the given array.
- */
-function arrayLastValue<T>(array: T[]): T {
-  return array && array.length ? array[array.length - 1] : null;
-}
-
-export { asArray, asyncForEach, findLast, findLastWithMap, arrayLastValue };
+export { asArray, asyncForEach, findLast, findLastWithMap };

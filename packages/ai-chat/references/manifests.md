@@ -4,7 +4,7 @@ Edit the source table and public types when changing flattened host config. The 
 
 The public host interfaces can extend a config field's type. The plugin reads those overrides from source too. The field table still controls its HTML attribute. Keep each host linked to its public interface in the analyzer config.
 
-`npm run build --workspace=@carbon/ai-chat` bundles the package, then runs its `custom-elements` script. The analyzer generates `custom-elements.json`; never edit or commit it. `npm run test:manifest --workspace=@carbon/ai-chat` runs the pure analyzer fixtures. The package test script runs them before Jest.
+`npm run build --workspace=@carbon/ai-chat` bundles the package, then runs its `custom-elements` script. The analyzer generates `custom-elements.json`; never edit or commit it. `npm run test:manifest --workspace=@carbon/ai-chat` runs the pure analyzer fixtures. The package test script runs them before Vitest.
 
 The Rollup watcher does not rerun the analyzer. After table, type, or host metadata edits, run `npm run custom-elements --workspace=@carbon/ai-chat` from the root to refresh the CEM.
 

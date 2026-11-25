@@ -18,7 +18,8 @@
         "src/sdk/index.ts",
         "src/web-components/**/index.ts",
         "tasks/rollup.aichat.js",
-        "tests/**/*.{ts,tsx}"
+        "tests/**/*.{ts,tsx}",
+        "src/**/__tests__/**/*.{ts,tsx}"
       ],
       "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"]
     },
@@ -29,7 +30,8 @@
         "src/globals/**/*.ts",
         "src/testing/**/*.ts",
         "src/components/**/__stories__/*.{js,jsx,ts,tsx}",
-        "src/components/**/__tests__/*.test.ts"
+        "src/components/**/__tests__/*.test.ts",
+        "src/__tests__/browser/{setup,wtr-commands-stub}.ts"
       ],
       "project": ["src/**/*.{ts,tsx}"],
       "ignoreIssues": {

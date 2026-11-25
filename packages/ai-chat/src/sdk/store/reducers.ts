@@ -1275,13 +1275,6 @@ const reductions: typeof ownershipReducers = {
   ...ownershipReducers,
 };
 
-const reducers: { [key: string]: ReducerType } = Object.fromEntries(
-  Object.entries(reductions).map(([type, reduce]) => [
-    type,
-    (state: ConversationState, action: any) => reduce(state, action).state,
-  ])
-);
-
 /** Selects the same reducer at the same action-type reads as the state-only root. */
 function reduceWithMessageOwnership(
   state: ConversationState,
@@ -1292,4 +1285,4 @@ function reduceWithMessageOwnership(
     : { state };
 }
 
-export { reducers, ReducerType, reduceWithMessageOwnership };
+export { ReducerType, reduceWithMessageOwnership };

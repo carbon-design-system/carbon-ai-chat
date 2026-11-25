@@ -40,8 +40,41 @@ class HydrationBodyLifecycle {
       return;
     }
     this.connected = true;
+    this.startDelay();
+  }
+
+  update(options: HydrationBodyOptions): void {
+    const loadStarted = this.options.isHydrated && !options.isHydrated;
+    this.options = options;
+    if (options.isHydrated) {
+      this.announced = false;
+    }
+    // The body stays mounted while the chat is closed and between loads, so
+    // each new load waits out its own delay before it shows or speaks.
+    if (loadStarted && this.connected) {
+      this.startDelay();
+      return;
+    }
+    this.maybeAnnounce();
+  }
+
+  disconnect(): void {
+    this.connected = false;
+    this.generation += 1;
+    clearTimeout(this.delay);
+    this.delay = undefined;
+    this.announcements.forEach(clearTimeout);
+    this.announcements.clear();
+  }
+
+  /** Hides the content and starts the 400 ms wait before it shows. */
+  private startDelay(): void {
     this.generation += 1;
     this.announced = false;
+    clearTimeout(this.delay);
+    this.delay = undefined;
+    this.announcements.forEach(clearTimeout);
+    this.announcements.clear();
     if (this.ready) {
       this.ready = false;
       this.listeners.forEach((listener) => listener());
@@ -59,23 +92,6 @@ class HydrationBodyLifecycle {
       this.listeners.forEach((listener) => listener());
       this.maybeAnnounce();
     }, 400);
-  }
-
-  update(options: HydrationBodyOptions): void {
-    this.options = options;
-    if (options.isHydrated) {
-      this.announced = false;
-    }
-    this.maybeAnnounce();
-  }
-
-  disconnect(): void {
-    this.connected = false;
-    this.generation += 1;
-    clearTimeout(this.delay);
-    this.delay = undefined;
-    this.announcements.forEach(clearTimeout);
-    this.announcements.clear();
   }
 
   private maybeAnnounce(): void {

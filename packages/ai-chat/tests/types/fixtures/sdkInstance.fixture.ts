@@ -8,7 +8,7 @@
  */
 
 /**
- * Compiled under `strict: true` by sdkTypes_spec.ts and never run. Every line must compile, and every
+ * Compiled under `strict: true` by sdkTypes.test.ts and never run. Every line must compile, and every
  * `@ts-expect-error` must fail to, so each case is a proof for #2350.
  */
 
@@ -106,7 +106,7 @@ sdk.off({
 });
 export const sdkChained: ChatSDKInstance = sdk.on(sdkHandlers).off(sdkHandlers);
 
-// sdkTypes_spec.ts checks these probes: a handler typed for the prebuilt chat (an EventBusHandler with
+// sdkTypes.test.ts checks these probes: a handler typed for the prebuilt chat (an EventBusHandler with
 // its ChatInstance default, or an arrow annotated with ChatInstance) is not an SDK handler under
 // strictFunctionTypes. Assignability is checked there, not here, because the package tsconfig
 // compiles this fixture with that flag off.

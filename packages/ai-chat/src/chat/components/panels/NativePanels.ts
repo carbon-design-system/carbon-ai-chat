@@ -69,6 +69,7 @@ const PANEL_TEST_ID: Partial<Record<PanelName, PageObjectId>> = {
   hydration: PageObjectId.HYDRATING_PANEL,
   custom: PageObjectId.CUSTOM_PANEL,
   disclaimer: PageObjectId.DISCLAIMER_PANEL,
+  iframe: PageObjectId.IFRAME_PANEL,
 };
 
 type PanelLanguage = Pick<

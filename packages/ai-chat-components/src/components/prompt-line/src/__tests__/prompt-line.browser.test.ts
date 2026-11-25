@@ -1,0 +1,799 @@
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2026
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { expect, fixture, html, oneEvent } from '@open-wc/testing';
+import { Extension } from '@tiptap/core';
+
+import '../prompt-line.js';
+import { PROMPT_LINE_MAX_BLOCK_SIZE } from '../prompt-line-constants.js';
+import type PromptLineElement from '../prompt-line.js';
+import { carbonMention } from '../tiptap/carbon-mention.js';
+import type { SuggestionItem } from '../tiptap/types.js';
+import { waitForRich } from './wait-for-rich.js';
+
+async function makePromptLine(
+  attrs: Partial<{
+    disabled: boolean;
+    placeholder: string;
+    ariaLabel: string;
+    rich: boolean;
+    testId: string;
+  }> = {}
+): Promise<PromptLineElement> {
+  const el = await fixture<PromptLineElement>(html`
+    <cds-aichat-prompt-line
+      ?disabled=${attrs.disabled ?? false}
+      ?rich=${attrs.rich ?? false}
+      placeholder=${attrs.placeholder ?? ''}
+      aria-label=${attrs.ariaLabel ?? 'test prompt'}
+      test-id=${attrs.testId ?? ''}></cds-aichat-prompt-line>
+  `);
+  await el.updateComplete;
+  await Promise.resolve();
+  return el;
+}
+
+function getTextarea(el: PromptLineElement): HTMLTextAreaElement {
+  return el.querySelector('[slot="editor"] textarea') as HTMLTextAreaElement;
+}
+
+/** Walk into nested shadow roots to find the actual focused element. */
+function getDeepActiveElement(): Element | null {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+  return active;
+}
+
+/** Type text by setting the value and firing the native `input` event. */
+function typeInto(el: PromptLineElement, value: string): void {
+  const ta = getTextarea(el);
+  ta.value = value;
+  ta.dispatchEvent(new InputEvent('input', { bubbles: true }));
+}
+
+/**
+ * Why the upgrade never finished. Every way it can stall ends at the same
+ * poll timeout, so without this a failure says only that the editor is
+ * absent: a bailed-out load, an upgrade parked on a `compositionend` that
+ * never arrives, and a mount that threw after `_mode` flipped to `rich` all
+ * look identical. Reads private state on purpose - it runs only once the
+ * test has already failed.
+ */
+async function describeUpgrade(el: PromptLineElement): Promise<string> {
+  const internals = el as unknown as {
+    _mode?: string;
+    _upgrading?: boolean;
+    _pendingUpgrade?: boolean;
+    _isComposing?: boolean;
+    _editorHost?: unknown;
+    _controller?: { getEditor?: () => unknown } | null;
+  };
+  // A parked upgrade leaves ensureEditor() pending forever, so cap the wait
+  // rather than trading a readable failure for a test timeout.
+  const ensure = await Promise.race([
+    el.ensureEditor().then(
+      () => 'resolved',
+      (error: unknown) => `rejected(${String(error)})`
+    ),
+    new Promise<string>((resolve) => {
+      setTimeout(() => resolve('pending'), 250);
+    }),
+  ]);
+  return [
+    `mode=${internals._mode}`,
+    `upgrading=${internals._upgrading}`,
+    `pendingUpgrade=${internals._pendingUpgrade}`,
+    `composing=${internals._isComposing}`,
+    `hasHost=${Boolean(internals._editorHost)}`,
+    `controllerEditor=${Boolean(internals._controller?.getEditor?.())}`,
+    `connected=${el.isConnected}`,
+    `ensureEditor=${ensure}`,
+  ].join(' ');
+}
+
+describe('<cds-aichat-prompt-line> (textarea mode)', function () {
+  it('renders a textarea and getEditor() is null', async () => {
+    const el = await makePromptLine();
+    expect(getTextarea(el)).to.not.equal(null);
+    expect(el.getEditor()).to.equal(null);
+  });
+
+  it('caps the textarea height and scrolls past the cap', async () => {
+    const el = await makePromptLine();
+    const ta = getTextarea(el);
+    const style = getComputedStyle(ta);
+    expect(style.maxHeight).to.equal(PROMPT_LINE_MAX_BLOCK_SIZE);
+    expect(style.overflowY).to.equal('auto');
+  });
+
+  it('projects the editor host into light DOM with slot=editor', async () => {
+    const el = await makePromptLine();
+    const host = el.querySelector('[slot="editor"]') as HTMLElement;
+    expect(host).to.not.equal(null);
+    expect(host.dataset.aichatEditorHost).to.equal('');
+    expect(host.querySelector('textarea')).to.not.equal(null);
+  });
+
+  it('applies test-id to the textarea (Playwright .fill target)', async () => {
+    const el = await makePromptLine({ testId: 'input_field' });
+    expect(getTextarea(el).getAttribute('data-testid')).to.equal('input_field');
+  });
+
+  it('setContent / clearContent / insertContent drive the value', async () => {
+    const el = await makePromptLine();
+    el.setContent('alpha');
+    expect(getTextarea(el).value).to.equal('alpha');
+    el.setContent((prev) => {
+      void prev;
+      return {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: 'beta' }] },
+        ],
+      };
+    });
+    expect(getTextarea(el).value).to.equal('beta');
+    el.clearContent();
+    expect(getTextarea(el).value).to.equal('');
+    getTextarea(el).setSelectionRange(0, 0);
+    el.setContent('ac');
+    getTextarea(el).setSelectionRange(1, 1);
+    el.insertContent('b');
+    expect(getTextarea(el).value).to.equal('abc');
+  });
+
+  it('emits cds-aichat-prompt-change with rawValue on input', async () => {
+    const el = await makePromptLine();
+    let received: { rawValue: string } | null = null;
+    el.addEventListener('cds-aichat-prompt-change', (event) => {
+      received = (event as CustomEvent).detail;
+    });
+    typeInto(el, 'typed');
+    expect(received).to.not.equal(null);
+    expect(received!.rawValue).to.equal('typed');
+  });
+
+  it('Enter sends when non-empty; Shift-Enter does not', async () => {
+    const el = await makePromptLine();
+    typeInto(el, 'hello');
+    setTimeout(() =>
+      getTextarea(el).dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      )
+    );
+    const event = await oneEvent(el, 'cds-aichat-prompt-send-intent');
+    expect(event).to.not.equal(null);
+
+    let sentOnShift = false;
+    el.addEventListener('cds-aichat-prompt-send-intent', () => {
+      sentOnShift = true;
+    });
+    getTextarea(el).dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        shiftKey: true,
+        bubbles: true,
+      })
+    );
+    expect(sentOnShift).to.equal(false);
+  });
+
+  it('does not send on Enter while an IME composition is active', async () => {
+    const el = await makePromptLine();
+    typeInto(el, 'にほん');
+    let sent = false;
+    el.addEventListener('cds-aichat-prompt-send-intent', () => {
+      sent = true;
+    });
+    // The Enter that commits an IME candidate carries isComposing=true.
+    getTextarea(el).dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        isComposing: true,
+        bubbles: true,
+      })
+    );
+    expect(sent).to.equal(false);
+  });
+
+  it('disabled toggles the textarea disabled state', async () => {
+    const el = await makePromptLine();
+    expect(getTextarea(el).disabled).to.equal(false);
+    el.disabled = true;
+    await el.updateComplete;
+    expect(getTextarea(el).disabled).to.equal(true);
+  });
+
+  it('disabled releases focus from the textarea', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    expect(el.hasFocus()).to.equal(true);
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+  });
+
+  it('re-enabling returns focus the disable took away', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(true);
+    expect(getDeepActiveElement() === getTextarea(el)).to.equal(true);
+  });
+
+  it('re-enabling keeps the focus origin the disable took away', async () => {
+    const el = await makePromptLine();
+    const focused = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    // A pointer-driven focus, so the origin differs from the keyboard default.
+    getTextarea(el).dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true })
+    );
+    getTextarea(el).focus();
+    expect((await focused).detail.keyboard).to.equal(false);
+    el.disabled = true;
+    await el.updateComplete;
+
+    const refocused = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    el.disabled = false;
+    await el.updateComplete;
+    expect((await refocused).detail.keyboard).to.equal(false);
+  });
+
+  it('re-enabling leaves focus alone after a click elsewhere while disabled', async () => {
+    const el = await makePromptLine();
+    const text = document.createElement('p');
+    text.textContent = 'transcript text';
+    document.body.appendChild(text);
+    try {
+      getTextarea(el).focus();
+      el.disabled = true;
+      await el.updateComplete;
+      // Clicking unfocusable content leaves focus on the body.
+      text.dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, composed: true })
+      );
+
+      el.disabled = false;
+      await el.updateComplete;
+      expect(el.hasFocus()).to.equal(false);
+    } finally {
+      text.remove();
+    }
+  });
+
+  it('re-enabling still returns focus after a click on the disabled prompt line', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+    // On the host around the textarea: a disabled control may not receive
+    // pointer events.
+    el.querySelector('[data-aichat-editor-host]')!.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, composed: true })
+    );
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(true);
+  });
+
+  it('re-enabling leaves focus alone after blur() while disabled', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+    el.blur();
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+  });
+
+  it('re-enabling leaves focus alone when the surface was not focused', async () => {
+    const el = await makePromptLine();
+    el.disabled = true;
+    await el.updateComplete;
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+  });
+
+  it('re-enabling leaves focus that moved elsewhere while disabled', async () => {
+    const el = await makePromptLine();
+    const other = document.createElement('button');
+    other.textContent = 'elsewhere';
+    document.body.appendChild(other);
+    try {
+      getTextarea(el).focus();
+      el.disabled = true;
+      await el.updateComplete;
+      other.focus();
+
+      el.disabled = false;
+      await el.updateComplete;
+      expect(el.hasFocus()).to.equal(false);
+      expect(document.activeElement === other).to.equal(true);
+    } finally {
+      other.remove();
+    }
+  });
+});
+
+describe('<cds-aichat-prompt-line> (rich upgrade)', function () {
+  it('upgrades to a Tiptap editor when rich is set', async () => {
+    const el = await makePromptLine();
+    expect(el.getEditor()).to.equal(null);
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+    const editor = el.getEditor();
+    expect(editor).to.not.equal(null);
+    const host = el.querySelector('[slot="editor"]') as HTMLElement;
+    expect(host.querySelector('.ProseMirror')).to.not.equal(null);
+    expect(host.querySelector('textarea')).to.equal(null);
+  });
+
+  it('caps the rich content height at the same value as the textarea', async () => {
+    const el = await makePromptLine();
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+    const pm = el.querySelector('[slot="editor"] .ProseMirror') as HTMLElement;
+    const style = getComputedStyle(pm);
+    expect(style.maxHeight).to.equal(PROMPT_LINE_MAX_BLOCK_SIZE);
+    expect(style.overflowY).to.equal('auto');
+  });
+
+  it('preserves the typed value across the upgrade', async () => {
+    const el = await makePromptLine();
+    typeInto(el, 'carry over');
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+    expect(el.getEditor()!.getText()).to.equal('carry over');
+  });
+
+  it('maps the caret to the right doc position on a multi-line upgrade', async () => {
+    const el = await makePromptLine();
+    typeInto(el, 'line1\nline2');
+    // Caret after "li" on the second line (plain-text offset 8).
+    getTextarea(el).setSelectionRange(8, 8);
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+    // Paragraph-per-line conversion adds a position for the preceding newline.
+    const { from, to } = el.getEditor()!.state.selection;
+    expect(from).to.equal(10);
+    expect(to).to.equal(10);
+  });
+
+  it('defers the upgrade until IME composition ends', async () => {
+    const el = await makePromptLine();
+    const host = el.querySelector('[slot="editor"]') as HTMLElement;
+
+    // Begin an IME composition, then request the rich upgrade.
+    host.dispatchEvent(
+      new CompositionEvent('compositionstart', { bubbles: true })
+    );
+    el.rich = true;
+    await el.updateComplete;
+
+    // Even after the runtime chunk has had time to load, the upgrade stays
+    // deferred — swapping the textarea out mid-composition would drop the
+    // half-composed candidate.
+    for (let i = 0; i < 10; i += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(el.getEditor()).to.equal(null);
+    expect(getTextarea(el)).to.not.equal(null);
+
+    // Ending composition runs the deferred upgrade.
+    host.dispatchEvent(
+      new CompositionEvent('compositionend', { bubbles: true })
+    );
+    await waitForRich(el, describeUpgrade);
+    expect(el.getEditor()).to.not.equal(null);
+  });
+
+  it('mounts rich directly when rich is set from the start', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    expect(el.getEditor()).to.not.equal(null);
+  });
+
+  it('is sticky — clearing rich keeps the editor', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    el.rich = false;
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(el.getEditor()).to.not.equal(null);
+  });
+
+  // Regression: clearContent() is the post-send wipe. It must be a host-origin
+  // (programmatic) edit so the carbon-mention/command removal plugin stays
+  // silent — otherwise sending strips the just-captured mention/command fields
+  // from the host's structured_data sidecar before the message is built. See
+  // issue #1619.
+  it('does NOT fire a mention onRemove when clearContent() wipes the doc', async () => {
+    const removed: SuggestionItem[] = [];
+    const el = await makePromptLine();
+    el.extensions = [
+      carbonMention({
+        trigger: '@',
+        items: [{ id: 'u1', label: 'Alice' }],
+        onRemove: (item) => removed.push(item),
+      }),
+    ];
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+
+    // Insert a mention chip programmatically (does not fire onSelect/onRemove).
+    el.getEditor()!.commands.insertContent({
+      type: 'mention',
+      attrs: { id: 'u1', label: 'Alice', value: 'u1', data: null },
+    });
+    await Promise.resolve();
+
+    el.clearContent();
+    await Promise.resolve();
+
+    expect(removed).to.have.lengthOf(0);
+    expect(el.getEditor()!.getText()).to.equal('');
+  });
+
+  it('keeps an undoable stack after clearContent() alone', async () => {
+    const el = await makePromptLine();
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+
+    const editor = el.getEditor()!;
+    editor.view.dispatch(editor.state.tr.insertText('draft to clear'));
+    expect(editor.getText()).to.equal('draft to clear');
+
+    el.clearContent();
+    expect(editor.getText()).to.equal('');
+
+    expect(el.undo()).to.equal(true);
+    expect(editor.getText()).to.equal('draft to clear');
+  });
+
+  it('resetHistory() fires no events, value sync, typing indicator, or mention onRemove/onSelect', async () => {
+    const removed: SuggestionItem[] = [];
+    const inserted: SuggestionItem[] = [];
+    const changeEvents: Event[] = [];
+    const typingEvents: Event[] = [];
+    const el = await makePromptLine();
+    el.extensions = [
+      carbonMention({
+        trigger: '@',
+        items: [{ id: 'u1', label: 'Alice' }],
+        onRemove: (item) => removed.push(item),
+        onSelect: (item) => inserted.push(item),
+      }),
+    ];
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+
+    el.addEventListener('cds-aichat-prompt-change', (e) =>
+      changeEvents.push(e)
+    );
+    el.addEventListener('cds-aichat-prompt-typing', (e) =>
+      typingEvents.push(e)
+    );
+
+    el.getEditor()!.commands.insertContent({
+      type: 'mention',
+      attrs: { id: 'u1', label: 'Alice', value: 'u1', data: null },
+    });
+    await Promise.resolve();
+
+    changeEvents.length = 0;
+    typingEvents.length = 0;
+    removed.length = 0;
+    inserted.length = 0;
+
+    el.resetHistory();
+    await Promise.resolve();
+
+    expect(changeEvents).to.have.lengthOf(0);
+    expect(typingEvents).to.have.lengthOf(0);
+    expect(removed).to.have.lengthOf(0);
+    expect(inserted).to.have.lengthOf(0);
+  });
+
+  it('preserves keyboard-focus state across the upgrade', async () => {
+    const el = await makePromptLine();
+
+    // Establish keyboard focus on the textarea (no preceding pointer event).
+    const preFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    getTextarea(el).focus();
+    expect((await preFocus).detail.keyboard).to.equal(true);
+
+    // The upgrade calls rich.focus() internally. Capture that re-focus event
+    // and assert the keyboard flag is preserved — not silently dropped.
+    const postFocus = oneEvent(
+      el,
+      'cds-aichat-prompt-focus'
+    ) as Promise<CustomEvent>;
+    el.rich = true;
+    await waitForRich(el, describeUpgrade);
+    expect((await postFocus).detail.keyboard).to.equal(true);
+  });
+
+  it('re-enabling returns focus the disable took away', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    const editor = el.getEditor()!;
+    editor.view.focus();
+    expect(el.hasFocus()).to.equal(true);
+
+    el.disabled = true;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(false);
+
+    el.disabled = false;
+    await el.updateComplete;
+    expect(el.hasFocus()).to.equal(true);
+    expect(getDeepActiveElement() === editor.view.dom).to.equal(true);
+  });
+
+  it('returns focus to the rich editor when it upgrades while disabled', async () => {
+    const el = await makePromptLine();
+    getTextarea(el).focus();
+    el.disabled = true;
+    await el.updateComplete;
+
+    const editor = await el.ensureEditor();
+    el.disabled = false;
+    await el.updateComplete;
+    expect(getDeepActiveElement() === editor.view.dom).to.equal(true);
+  });
+
+  it('keeps focus through a disable and re-enable in the same frame', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    el.getEditor()!.view.focus();
+
+    el.disabled = true;
+    await el.updateComplete;
+    el.disabled = false;
+    await el.updateComplete;
+    // Let any blur queued for the next frame run.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(el.hasFocus()).to.equal(true);
+  });
+});
+
+describe('<cds-aichat-prompt-line> ensureEditor()', function () {
+  it('loads Tiptap on demand and resolves the live editor', async () => {
+    const el = await makePromptLine();
+    expect(el.getEditor()).to.equal(null);
+    const editor = await el.ensureEditor();
+    expect(editor).to.not.equal(null);
+    expect(editor).to.equal(el.getEditor());
+    const host = el.querySelector('[slot="editor"]') as HTMLElement;
+    expect(host.querySelector('.ProseMirror')).to.not.equal(null);
+    expect(host.querySelector('textarea')).to.equal(null);
+  });
+
+  it('preserves already-typed text through the on-demand upgrade', async () => {
+    const el = await makePromptLine();
+    typeInto(el, 'carry over');
+    const editor = await el.ensureEditor();
+    expect(editor.getText()).to.equal('carry over');
+  });
+
+  it('returns the same editor when already rich', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    const editor = await el.ensureEditor();
+    expect(editor).to.equal(el.getEditor());
+  });
+
+  it('shares one instance across concurrent callers', async () => {
+    const el = await makePromptLine();
+    const [a, b] = await Promise.all([el.ensureEditor(), el.ensureEditor()]);
+    expect(a).to.equal(b);
+  });
+});
+
+describe('<cds-aichat-prompt-line> staged extensions', function () {
+  it('does not force rich — setting extensions keeps the textarea', async () => {
+    const el = await makePromptLine();
+    el.extensions = [Extension.create({ name: 'stagedNoop' })];
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(el.getEditor()).to.equal(null);
+    expect(getTextarea(el)).to.not.equal(null);
+  });
+
+  it('installs the staged extensions when the editor mounts on demand', async () => {
+    const el = await makePromptLine();
+    el.extensions = [Extension.create({ name: 'stagedMarker' })];
+    await el.updateComplete;
+    await Promise.resolve();
+    // Still a textarea — staging alone never loads Tiptap.
+    expect(el.getEditor()).to.equal(null);
+
+    const editor = await el.ensureEditor();
+    expect(editor).to.not.equal(null);
+    const names = editor.extensionManager.extensions.map((ext) => ext.name);
+    expect(names).to.include('stagedMarker');
+  });
+});
+
+describe('<cds-aichat-prompt-line> accessible name', function () {
+  it('places aria-label on the focusable textarea in textarea mode', async () => {
+    const el = await makePromptLine({ ariaLabel: 'Ask a question' });
+    expect(getTextarea(el).getAttribute('aria-label')).to.equal(
+      'Ask a question'
+    );
+  });
+
+  it('places aria-label and role on the ProseMirror contenteditable in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      ariaLabel: 'Ask a question',
+    });
+    await waitForRich(el, describeUpgrade);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-label')).to.equal('Ask a question');
+    expect(pm.getAttribute('role')).to.equal('textbox');
+  });
+});
+
+describe('<cds-aichat-prompt-line> accessible placeholder', function () {
+  it('places native placeholder and NO aria-placeholder on the textarea in textarea mode', async () => {
+    const el = await makePromptLine({ placeholder: 'Ask a question' });
+    expect(getTextarea(el).placeholder).to.equal('Ask a question');
+    expect(getTextarea(el).hasAttribute('aria-placeholder')).to.equal(false);
+  });
+
+  it('places aria-placeholder on the ProseMirror contenteditable in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el, describeUpgrade);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+  });
+
+  it('updates aria-placeholder dynamically in rich mode', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el, describeUpgrade);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+
+    el.placeholder = 'Search';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Search');
+  });
+
+  it('removes aria-placeholder in rich mode if placeholder is set to empty string', async () => {
+    const el = await makePromptLine({
+      rich: true,
+      placeholder: 'Ask a question',
+    });
+    await waitForRich(el, describeUpgrade);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm.getAttribute('aria-placeholder')).to.equal('Ask a question');
+
+    el.placeholder = '';
+    await el.updateComplete;
+    await Promise.resolve();
+    expect(pm.hasAttribute('aria-placeholder')).to.equal(false);
+  });
+});
+
+describe('<cds-aichat-prompt-line> Escape key focus retention', function () {
+  it('keeps focus in the textarea on Escape', async () => {
+    const el = await makePromptLine();
+    const ta = getTextarea(el);
+    ta.focus();
+    ta.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+    expect(getDeepActiveElement()).to.equal(ta);
+  });
+
+  it('keeps focus in the ProseMirror contenteditable on Escape', async () => {
+    const el = await makePromptLine({ rich: true });
+    await waitForRich(el, describeUpgrade);
+    const pm = el.querySelector(
+      '[slot="editor"] [contenteditable]'
+    ) as HTMLElement;
+    expect(pm).to.not.equal(null);
+    pm.focus();
+    pm.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+    expect(getDeepActiveElement()).to.equal(pm);
+  });
+
+  it('does not preventDefault on Escape so a host <dialog> can close', async () => {
+    const el = await makePromptLine();
+    const ta = getTextarea(el);
+    ta.focus();
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    ta.dispatchEvent(event);
+    expect(event.defaultPrevented).to.equal(false);
+  });
+});
+
+// Regression: long unbroken text does not widen textarea past its declared width.
+describe('<cds-aichat-prompt-line> long unbroken text wraps', function () {
+  const LONG_URL = `https://example.com/x/${'a'.repeat(200)}`;
+
+  async function makeAtWidth(widthPx: number): Promise<PromptLineElement> {
+    const el = await fixture<PromptLineElement>(
+      html`<cds-aichat-prompt-line
+        style="width:${widthPx}px;display:block;"></cds-aichat-prompt-line>`
+    );
+    await el.updateComplete;
+    await Promise.resolve();
+    return el;
+  }
+
+  it('textarea width ≤ declared width in a narrow (378px) layout', async () => {
+    const el = await makeAtWidth(378);
+    typeInto(el, LONG_URL);
+    await el.updateComplete;
+    await Promise.resolve();
+
+    expect(getTextarea(el).offsetWidth).to.be.at.most(378);
+  });
+
+  it('textarea width ≤ declared width in a wide (864px) layout', async () => {
+    const el = await makeAtWidth(864);
+    typeInto(el, LONG_URL);
+    await el.updateComplete;
+    await Promise.resolve();
+
+    expect(getTextarea(el).offsetWidth).to.be.at.most(864);
+  });
+});

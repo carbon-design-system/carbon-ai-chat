@@ -117,7 +117,7 @@ async function runRollup() {
     {
       watch: {
         include: [path.join(paths.src, '/**/*'), extraWatch],
-        exclude: [],
+        exclude: ['**/__tests__/**', '**/tests/**'],
         chokidar: {
           // Delay rebuilds until files settle so the watcher doesn't try to compile half-written artifacts
           awaitWriteFinish: {

@@ -22,11 +22,15 @@ import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import {
   compareManifests,
+  CONTRACT,
+  contractInventory,
   emptyManifest,
   filesIn,
   hash,
   MANIFEST,
+  parseManifest,
   rowsFromReport,
+  rowsFromColocatedReport,
   serialize,
 } from './contract-manifest-lib.mjs';
 
@@ -102,9 +106,8 @@ export function inputFingerprint(root) {
     'package.json',
     'package-lock.json',
     'packages/ai-chat/package.json',
-    'packages/ai-chat/jest.config.cjs',
+    'packages/ai-chat/vitest.config.ts',
     'packages/ai-chat/tsconfig.json',
-    'packages/ai-chat/.babelrc',
     'packages/ai-chat-components/package.json',
     'tools/contract-manifest.mjs',
     'tools/contract-manifest-lib.mjs',
@@ -123,19 +126,21 @@ export function inputFingerprint(root) {
   );
 }
 
-function cachedReport(reportPath, fingerprint, runtime) {
+function cachedReport(reportPath, fingerprint, runtime, scope) {
   const metadataPath = `${reportPath}.inputs.json`;
   if (!existsSync(reportPath) || !existsSync(metadataPath)) {
     return null;
   }
   try {
     const metadata = JSON.parse(readFileSync(metadataPath, 'utf8'));
+    const bytes = readFileSync(reportPath);
     if (
       metadata.inputs === fingerprint &&
       metadata.runtime === runtime &&
-      metadata.report === hash(readFileSync(reportPath, 'utf8'))
+      metadata.scope === scope &&
+      metadata.report === hash(bytes)
     ) {
-      return JSON.parse(readFileSync(reportPath, 'utf8'));
+      return JSON.parse(bytes.toString('utf8'));
     }
   } catch {
     return null;
@@ -143,7 +148,31 @@ function cachedReport(reportPath, fingerprint, runtime) {
   return null;
 }
 
-function runDiscovery(root, reportPath) {
+// Vitest's JSON report follows Jest's shape, but counts describe blocks as
+// suites and has no interruption or runtime-error fields. Count files instead,
+// as Jest did, so the manifest's completeness checks keep their meaning.
+export function normalizeVitestReport(report) {
+  const files = report.testResults ?? [];
+  const passed = files.filter((file) => file.status === 'passed').length;
+  const broken = files.filter(
+    (file) => file.status !== 'passed' && !file.assertionResults?.length
+  ).length;
+  return {
+    ...report,
+    numTotalTestSuites: files.length,
+    numPassedTestSuites: passed,
+    numFailedTestSuites: files.length - passed,
+    numPendingTestSuites: 0,
+    numRuntimeErrorTestSuites: broken,
+    wasInterrupted: false,
+  };
+}
+
+function runDiscovery(root, reportPath, specs) {
+  if (!specs.length) {
+    throw new Error('No contract suites found');
+  }
+  const raw = `${reportPath}.vitest.json`;
   const run = spawnSync(
     'npm',
     [
@@ -151,43 +180,56 @@ function runDiscovery(root, reportPath) {
       'test',
       '--workspace=@carbon/ai-chat',
       '--',
-      'tests/contract',
-      '--json',
-      '--testLocationInResults',
-      '--coverage=false',
-      `--outputFile=${reportPath}`,
+      ...specs.map((file) => join(root, file)),
+      '--reporter=default',
+      '--reporter=json',
+      '--includeTaskLocation',
+      '--coverage.enabled=false',
+      `--outputFile=${raw}`,
     ],
     { cwd: root, stdio: 'inherit' }
   );
   if (run.error || run.status !== 0) {
     throw new Error('Contract discovery failed');
   }
+  const report = normalizeVitestReport(JSON.parse(readFileSync(raw, 'utf8')));
+  writeFileSync(reportPath, `${JSON.stringify(report)}\n`);
 }
 
-export function discover(root, reportPath) {
+export function discover(root, reportPath, scope = 'all') {
+  if (!['all', 'colocated'].includes(scope)) {
+    throw new Error('Unknown contract discovery scope');
+  }
+  const specs = contractInventory(root).specs.filter(
+    (file) => scope === 'all' || !file.startsWith(`${CONTRACT}/`)
+  );
   const fingerprint = inputFingerprint(root);
   const runtime = hash(JSON.stringify(executionIdentity()));
-  const cached = cachedReport(reportPath, fingerprint, runtime);
+  const cached = cachedReport(reportPath, fingerprint, runtime, scope);
   if (cached) {
     return cached;
   }
-  runDiscovery(root, reportPath);
+  runDiscovery(root, reportPath, specs);
   if (inputFingerprint(root) !== fingerprint) {
     throw new Error('Contract inputs changed during discovery');
   }
-  const text = readFileSync(reportPath, 'utf8');
+  const bytes = readFileSync(reportPath);
   writeFileSync(
     `${reportPath}.inputs.json`,
-    `${JSON.stringify({ inputs: fingerprint, runtime, report: hash(text) })}\n`
+    `${JSON.stringify({ inputs: fingerprint, runtime, scope, report: hash(bytes) })}\n`
   );
-  return JSON.parse(text);
+  return JSON.parse(bytes.toString('utf8'));
 }
 
 function optionsFor(args) {
   const { values, positionals } = parseArgs({
     args,
     allowPositionals: true,
-    options: { report: { type: 'string' }, root: { type: 'string' } },
+    options: {
+      report: { type: 'string' },
+      root: { type: 'string' },
+      'carry-colocated-base': { type: 'string' },
+    },
   });
   const [mode] = positionals;
   if (
@@ -195,13 +237,23 @@ function optionsFor(args) {
     !['write', 'check', 'policy'].includes(mode)
   ) {
     throw new Error(
-      'usage: contract-manifest.mjs write|check|policy [--report path]'
+      'usage: contract-manifest.mjs write|check|policy [--report path] [--carry-colocated-base exact-sha]'
+    );
+  }
+  const carryBase = values['carry-colocated-base'];
+  if (
+    carryBase !== undefined &&
+    (mode === 'policy' || !values.report || !/^[a-f0-9]{40}$/.test(carryBase))
+  ) {
+    throw new Error(
+      'Colocated carry requires write|check, --report and an exact base SHA'
     );
   }
   return {
     mode,
     root: resolve(values.root ?? process.cwd()),
     reportPath: values.report,
+    carryBase,
   };
 }
 
@@ -223,8 +275,7 @@ function environmentPolicy(root) {
   );
 }
 
-function updateManifest(root, mode, report) {
-  const generated = serialize(rowsFromReport(root, report));
+function saveManifest(root, mode, generated) {
   const target = join(root, MANIFEST);
   if (mode === 'write') {
     writeFileSync(target, generated);
@@ -236,15 +287,114 @@ function updateManifest(root, mode, report) {
       'Contract manifest is stale; run npm run contract:manifest'
     );
   }
+}
+
+function updateManifest(root, mode, report) {
+  saveManifest(root, mode, serialize(rowsFromReport(root, report)));
   console.log(
     `Contract manifest ${mode === 'write' ? 'written' : 'current'}: ${report.numTotalTests} runtime cases`
   );
 }
 
+export function carryColocatedManifest(root, base, report) {
+  if (!/^[a-f0-9]{40}$/.test(base ?? '')) {
+    throw new Error('Colocated carry requires an exact base commit SHA');
+  }
+  command(root, 'git', ['cat-file', '-e', `${base}^{commit}`]);
+  const frozen = command(root, 'git', ['show', `${base}:${MANIFEST}`]);
+  const files = [
+    ...new Set(
+      [...parseManifest(frozen).keys()].map((key) => key.split('\t')[1])
+    ),
+  ];
+  const sourcePins = {};
+  for (const file of files) {
+    if (!file.startsWith(`${CONTRACT}/`)) {
+      throw new Error('Colocated carry requires a legacy-only base manifest');
+    }
+    const blob = spawnSync('git', ['cat-file', 'blob', `${base}:${file}`], {
+      cwd: root,
+      maxBuffer: Infinity,
+    });
+    if (blob.error || blob.status !== 0) {
+      throw new Error(`Cannot read frozen legacy source: ${file}`);
+    }
+    const current = readFileSync(join(root, file));
+    if (!current.equals(blob.stdout)) {
+      throw new Error(
+        `Legacy source bytes differ from the frozen base: ${file}`
+      );
+    }
+    sourcePins[file] = hash(current);
+  }
+  const result = rowsFromColocatedReport(root, report, frozen);
+  return {
+    ...result,
+    generated: serialize(result.rows),
+    baseManifest: hash(Buffer.from(frozen)),
+    sourcePins,
+  };
+}
+
+function updateColocatedManifest(root, mode, report, base, reportPath, inputs) {
+  const bytes = readFileSync(reportPath);
+  const reportHash = hash(bytes);
+  const metadata = JSON.parse(
+    readFileSync(`${reportPath}.inputs.json`, 'utf8')
+  );
+  if (
+    metadata.scope !== 'colocated' ||
+    metadata.inputs !== inputs ||
+    metadata.runtime !== hash(JSON.stringify(executionIdentity())) ||
+    metadata.report !== reportHash ||
+    JSON.stringify(JSON.parse(bytes.toString('utf8'))) !==
+      JSON.stringify(report)
+  ) {
+    throw new Error('Colocated report provenance changed during validation');
+  }
+  const result = carryColocatedManifest(root, base, report);
+  if (
+    inputFingerprint(root) !== inputs ||
+    hash(readFileSync(reportPath)) !== reportHash
+  ) {
+    throw new Error(
+      'Contract inputs or report changed during colocated carry validation'
+    );
+  }
+  writeFileSync(
+    `${reportPath}.carry.json`,
+    `${JSON.stringify({
+      kind: 'legacy-source-carry-with-colocated-execution',
+      base,
+      baseManifest: result.baseManifest,
+      sourcePins: result.sourcePins,
+      inputs,
+      report: reportHash,
+      generatedManifest: hash(Buffer.from(result.generated)),
+      carriedLegacyRows: result.carriedRows,
+      carriedLegacyCases: result.carriedCases,
+      executedColocatedCases: result.executedCases,
+      executedColocatedSuites: result.executedSuites,
+    })}\n`
+  );
+  saveManifest(root, mode, result.generated);
+  console.log(
+    `Contract manifest ${mode === 'write' ? 'written' : 'current'}: ${result.carriedCases} carried legacy cases; ${result.executedCases} executed colocated cases`
+  );
+}
+
 export function main(args = process.argv.slice(2)) {
-  const { mode, root, reportPath } = optionsFor(args);
+  const { mode, root, reportPath, carryBase } = optionsFor(args);
   if (mode === 'policy') {
     environmentPolicy(root);
+    return;
+  }
+  if (carryBase !== undefined) {
+    command(root, 'git', ['cat-file', '-e', `${carryBase}^{commit}`]);
+    const target = resolve(reportPath);
+    const inputs = inputFingerprint(root);
+    const report = discover(root, target, 'colocated');
+    updateColocatedManifest(root, mode, report, carryBase, target, inputs);
     return;
   }
   const temporary = reportPath

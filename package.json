@@ -70,14 +70,14 @@
     "contract:manifest": "node tools/contract-manifest.mjs write",
     "contract:manifest:check": "node tools/contract-manifest.mjs check",
     "contract:manifest:policy": "node tools/contract-manifest.mjs policy",
-    "test:contract-manifest": "node --test tools/contract-manifest.test.mjs"
+    "test:contract-manifest": "node --test tools/contract-manifest.test.mjs",
+    "test:projects": "node tools/check-test-projects.mjs",
+    "test:projects:tool": "node --test tools/check-test-projects.test.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
     "@babel/core": "^8.0.0",
-    "@babel/preset-env": "^8.0.0",
     "@babel/preset-react": "^8.0.0",
-    "@babel/preset-typescript": "^8.0.0",
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
     "@eslint/eslintrc": "^3.3.1",
@@ -89,7 +89,6 @@
     "@types/react-dom": "^19.2.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "babel-jest": "^30.5.2",
     "chromatic": "^17.0.0",
     "commander": "^15.0.0",
     "concurrently": "^10.0.0",

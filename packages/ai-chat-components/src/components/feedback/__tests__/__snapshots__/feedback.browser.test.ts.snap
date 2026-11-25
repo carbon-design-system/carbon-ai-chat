@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`feedback > matches snapshot 1`] = `
+<cds-aichat-feedback
+  body="What do you think of this response?"
+  text-area-placeholder="Provide additional feedback..."
+  title="Provide additional feedback"
+>
+</cds-aichat-feedback>
+
+`;

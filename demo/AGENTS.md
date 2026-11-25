@@ -4,7 +4,7 @@ Guidance for authoring inside [demo/](.). Read this before changing the demo.
 
 ## What this is
 
-`@carbon/ai-chat-examples-demo` — the canonical demo and integration-test harness for `@carbon/ai-chat`. Where we exercise the **whole** config surface (toggles, mock service desk, Playwright suites). Single-feature examples belong in [examples/](../examples/), not here.
+`@carbon/ai-chat-examples-demo` — the canonical demo for `@carbon/ai-chat`, and the harness for tests that need the built app. It exercises the **whole** config surface: toggles, the mock service desk, and the host-compatibility pages. Single-feature examples belong in [examples/](../examples/), not here.
 
 ## Layout
 
@@ -22,7 +22,7 @@ Guidance for authoring inside [demo/](.). Read this before changing the demo.
 - **React vs web-components parity**: anything in `src/react/` should have a `src/web-components/` counterpart with the same filename stem so the framework can switch between them (`DemoApp.tsx` ↔ `demo-app.ts`).
 - **Slots / custom footer / user-defined responses**: follow the existing `*WriteableElementExample` and `UserDefinedResponseExample` patterns and mirror them across both directories.
 - **Service desk changes**: the mock service desk in `mockServiceDesk/` is the reference implementation of the service-desk interface. Keep it updated when the interface in `@carbon/ai-chat` changes — tests here often catch breaking changes first.
-- **Playwright tests**: put new specs under `tests/`. `node-polyfill.js` is required via `NODE_OPTIONS`; use `npm test`, not `playwright test` directly. Don't reach for `--experimental-loader` here — an off-thread loader and Playwright's own sync `module.registerHooks` transform can't coexist, and the pair fails while loading the CJS entry point. When behavior changes, update [TEST_PLAN.md](TEST_PLAN.md) alongside the automated test.
+- **Playwright tests**: a spec belongs here only when it needs the built demo. Check [where a test goes](../packages/ai-chat/references/tests.md#where-a-test-goes) first. Put new specs under `tests/`. `node-polyfill.js` is required via `NODE_OPTIONS`; use `npm test`, not `playwright test` directly. Don't reach for `--experimental-loader` here — an off-thread loader and Playwright's own sync `module.registerHooks` transform can't coexist, and the pair fails while loading the CJS entry point. When behavior changes, update [TEST_PLAN.md](TEST_PLAN.md) alongside the automated test.
 - **Carbon flavor**: match the directory using [code-patterns.md](../references/code-patterns.md#carbon-flavor-by-area).
 - **Dependencies**: as a `"private": true` app, depend freely on `@carbon/react`, `@carbon/web-components`, etc. — but don't import demo-only helpers from `@carbon/ai-chat` source.
 - **Copy on screen**: the demo is a harness, not a shipped surface, so it has no copy type of its own. Voice still binds ([tone.md](../references/tone.md)), and anything a person reads follows [ui-strings.md](../.bob/skills/caic-copy-writer/references/ui-strings.md) — type 6 — minus the public-API gate that applies inside the package.

@@ -8,7 +8,7 @@
  */
 
 /**
- * Compiled under `strict: true` by sdkTypes_spec.ts and never run. The message and item IDs on
+ * Compiled under `strict: true` by sdkTypes.test.ts and never run. The message and item IDs on
  * the four workspace events are optional in 1.x, so a payload written against the older types,
  * without them, still compiles.
  */

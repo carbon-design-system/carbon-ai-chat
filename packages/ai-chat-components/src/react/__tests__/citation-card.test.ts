@@ -1,5 +1,4 @@
 /**
- * @jest-environment-options {"customExportConditions": ["browser"]}
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -7,8 +6,6 @@
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["jest-environment-options"] }] */
 
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -31,8 +28,8 @@ afterEach(async () => {
 });
 
 test('forwards the card props, slots, and both callbacks', async () => {
-  const onCitationSelect = jest.fn();
-  const onCitationExpand = jest.fn();
+  const onCitationSelect = vi.fn();
+  const onCitationExpand = vi.fn();
   await act(async () =>
     root.render(
       React.createElement(

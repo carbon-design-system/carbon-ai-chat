@@ -251,10 +251,9 @@ export {
   chunkHasDisplayableContent,
   hasDisplayableContentForItem,
   deriveStreamingItemText,
-  FinalResponseChunk,
+  type FinalResponseChunk,
   messageHasDisplayableContent,
   resetStopStreamingButton,
   resolveChunkContext,
-  shouldShowStopStreaming,
   syncStopStreamingButton,
 };

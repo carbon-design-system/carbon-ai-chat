@@ -43,7 +43,6 @@ class AriaAnnouncer {
   private handle: AriaAnnouncerHandle | null = null;
   private unsubscribe: (() => void) | null = null;
   private pendingValues: (Node | string)[] = [];
-  private pendingAssertiveValues: string[] = [];
   private previousAnnounceMessage: AnnounceMessage | undefined;
   private generation = 0;
   private formatMessage: IntlShape['formatMessage'];
@@ -80,7 +79,6 @@ class AriaAnnouncer {
   disconnect(): void {
     this.generation += 1;
     this.pendingValues = [];
-    this.pendingAssertiveValues = [];
     this.unsubscribe?.();
     this.unsubscribe = null;
     this.handle?.disconnect();
@@ -104,9 +102,16 @@ class AriaAnnouncer {
   private queueValue(value: Node | string, assertive: boolean): void {
     const generation = this.generation;
     if (assertive) {
-      this.pendingAssertiveValues.push(value as string);
-      if (this.pendingAssertiveValues.length === 1) {
-        void Promise.resolve().then(() => this.flushAssertive(generation));
+      if (this.handle) {
+        this.handle.announce(value as string, 'assertive');
+      } else {
+        // Text sent before connect, in the same turn, still reaches the
+        // regions connect mounts.
+        void Promise.resolve().then(() => {
+          if (generation === this.generation) {
+            this.handle?.announce(value as string, 'assertive');
+          }
+        });
       }
       return;
     }
@@ -114,18 +119,6 @@ class AriaAnnouncer {
     if (this.pendingValues.length === 1) {
       // Legacy callers populate Lit descendants later in this synchronous turn.
       void Promise.resolve().then(() => this.flushPolite(generation));
-    }
-  }
-
-  private flushAssertive(generation: number): void {
-    if (generation !== this.generation) {
-      return;
-    }
-    const queue = this.pendingAssertiveValues;
-    this.pendingAssertiveValues = [];
-    const text = queue.filter(Boolean).join(' ');
-    if (text) {
-      this.handle?.announce(text, 'assertive');
     }
   }
 

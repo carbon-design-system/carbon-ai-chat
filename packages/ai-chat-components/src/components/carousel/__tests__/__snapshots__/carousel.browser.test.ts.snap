@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`carousel > should render with cds-aichat-carousel minimum attributes 1`] = `
+<cds-aichat-carousel>
+  <div class="carousel-wrapper carousel__view-stack">
+    <div
+      class="carousel__itemsWrapper"
+      style="block-size: 64px;"
+    >
+      <div
+        class="carousel__view carousel__view-active"
+        data-index="0"
+        style="position: absolute;"
+      >
+        slide 1
+      </div>
+      <div
+        aria-hidden="true"
+        class="carousel__view"
+        data-index="1"
+        inert=""
+        style="position: absolute;"
+      >
+        slide 2
+      </div>
+      <div
+        aria-hidden="true"
+        class="carousel__view"
+        data-index="2"
+        inert=""
+        style="position: absolute;"
+      >
+        slide 3
+      </div>
+    </div>
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      class="carousel__live-region"
+    >
+      Item 1 of 3
+    </div>
+  </div>
+</cds-aichat-carousel>
+
+`;

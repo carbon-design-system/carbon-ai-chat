@@ -1,5 +1,4 @@
 /**
- * @jest-environment-options {"customExportConditions": ["browser"]}
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -7,8 +6,6 @@
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["jest-environment-options"] }] */
 
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -31,7 +28,7 @@ afterEach(async () => {
 });
 
 test('forwards disabled action updates to the same element and preserves onMenuAction', async () => {
-  const onMenuAction = jest.fn();
+  const onMenuAction = vi.fn();
   let originalElement: HistoryPanelItemElement | undefined;
   let expectedEvents = 0;
   for (const disabled of [false, true, false]) {

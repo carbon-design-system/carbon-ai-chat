@@ -64,6 +64,9 @@ const GUIDANCE = {
 function typeSources(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = join(dir, entry.name);
+    if (entry.name === '__tests__') {
+      return [];
+    }
     if (entry.isDirectory()) {
       return typeSources(full);
     }
@@ -84,7 +87,7 @@ function typeSources(dir) {
  * (`prompt-line/index.js`) while TypeDoc names the declaring file.
  *
  * So it is read the same way
- * [alias_members_spec.ts](../../tests/typedoc/spec/alias_members_spec.ts)
+ * [alias_members.test.ts](../../tests/typedoc/alias_members.test.ts)
  * reads it: an `export type X = _X` (or `export const X = _X`) whose
  * right-hand side is imported from the upstream package.
  */

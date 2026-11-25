@@ -1,5 +1,4 @@
 /**
- * @jest-environment-options {"customExportConditions": ["browser"]}
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -7,8 +6,6 @@
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["jest-environment-options"] }] */
 
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -31,7 +28,7 @@ afterEach(async () => {
 });
 
 test('forwards the controlled props, slots, and the toggle callback', async () => {
-  const onCitationsToggle = jest.fn();
+  const onCitationsToggle = vi.fn();
   const render = (citationsOpen: boolean) =>
     root.render(
       React.createElement(
@@ -89,7 +86,7 @@ test('forwards the controlled props, slots, and the toggle callback', async () =
 });
 
 test('forwards the selected index and the selection callback', async () => {
-  const onCitationsSelect = jest.fn();
+  const onCitationsSelect = vi.fn();
   await act(async () =>
     root.render(
       React.createElement(ConversationalSearchShell, {

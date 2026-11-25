@@ -14,6 +14,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   renameSync,
   rmSync,
   symlinkSync,
@@ -52,7 +53,7 @@ function git(root, ...args) {
 }
 
 function fixture(context) {
-  const root = mkdtempSync(join(tmpdir(), 'measure-test-'));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'measure-test-')));
   context.after(() => rmSync(root, { recursive: true, force: true }));
   git(root, 'init', '--initial-branch=main');
   writeFileSync(join(root, 'base.txt'), 'base\n');
@@ -362,6 +363,19 @@ test('classification follows ordered anchored rules', () => {
     ['demo/tests/helper.ts', 'shared test infrastructure'],
     ['examples/shared/playwright/a.test.ts', 'test cases'],
     ['packages/ai-chat/tests/setup.ts', 'shared test infrastructure'],
+    ['packages/ai-chat/tests/setup/index.ts', 'shared test infrastructure'],
+    [
+      'packages/ai-chat/tests/setup/style-strings.ts',
+      'shared test infrastructure',
+    ],
+    [
+      'packages/ai-chat/src/sdk/__tests__/helpers/store.ts',
+      'shared test infrastructure',
+    ],
+    [
+      'packages/ai-chat/src/chat/__tests__/helpers/render.ts',
+      'shared test infrastructure',
+    ],
     ['packages/ai-chat/tests/test_helpers.ts', 'shared test infrastructure'],
     [
       'packages/ai-chat-components/src/testing/helper.ts',
@@ -536,6 +550,25 @@ test('missing runtime file data is unverified while a type-only module is named 
   );
 });
 
+test('inline type specifiers are type-only, and a runtime re-export stays unverified', () => {
+  const text = [
+    "export { a, type B } from './x';",
+    'export {',
+    '  type C,',
+    "} from './y';",
+    'import {',
+    '  type D,',
+    "} from './z';",
+  ].join('\n');
+  const rows = [1, 3, 6].map((line) => ({ file: RUNTIME_FILE, line }));
+  const result = coverageGaps(rows, {}, () => text);
+  assert.deepEqual(result.nonExecutable, [
+    `${RUNTIME_FILE}:3`,
+    `${RUNTIME_FILE}:6`,
+  ]);
+  assert.deepEqual(result.unverified, [`${RUNTIME_FILE}:1`]);
+});
+
 test('contract coverage rejects missing reports and source mismatch', (context) => {
   const root = fixture(context);
   const report = join(root, 'coverage-final.json');
@@ -555,14 +588,19 @@ test('contract coverage rejects missing reports and source mismatch', (context) 
 
 test('coverage fingerprint changes for source, tests, configuration, and built dependencies', (context) => {
   const root = fixture(context);
-  const paths = ['src', 'tests', 'jest.config.cjs', 'es'].map((path) =>
+  const paths = ['src', 'tests', 'vitest.config.ts', 'es'].map((path) =>
     join(root, path)
   );
-  ['src/a.ts', 'tests/a.ts', 'jest.config.cjs', 'es/a.js'].forEach((file) =>
+  ['src/a.ts', 'tests/a.ts', 'vitest.config.ts', 'es/a.js'].forEach((file) =>
     write(root, file, 'original')
   );
   let previous = fingerprint(paths);
-  for (const file of ['src/a.ts', 'tests/a.ts', 'jest.config.cjs', 'es/a.js']) {
+  for (const file of [
+    'src/a.ts',
+    'tests/a.ts',
+    'vitest.config.ts',
+    'es/a.js',
+  ]) {
     write(root, file, 'changed');
     const next = fingerprint(paths);
     assert.notEqual(next, previous, file);
@@ -588,6 +626,32 @@ test('contract row skips an unrelated diff without starting a producer', (contex
   write(root, 'guide.md', 'Only prose changes.');
   assert.match(
     contractReport(root),
+    /skipped: no changed ai-chat runtime source lines/
+  );
+});
+
+test('contract row excludes changed, untracked and deleted colocated tests and helpers', (context) => {
+  const root = fixture(context);
+  const testRoot = 'packages/ai-chat/src/sdk/__tests__';
+  const helper = `${testRoot}/helpers/internal.ts`;
+  const removed = `${testRoot}/removed.contract.test.ts`;
+  write(root, helper, 'export const fixture = 1;\n');
+  write(root, removed, "it('old contract', () => {});\n");
+  commit(root);
+  write(root, helper, 'export const fixture = 2;\n');
+  write(
+    root,
+    `${testRoot}/new.contract.test.ts`,
+    "it('new contract', () => {});\n"
+  );
+  rmSync(join(root, removed));
+  assert.match(
+    contractReport(root),
+    /skipped: no changed ai-chat runtime source lines/
+  );
+  git(root, 'add', '.');
+  assert.match(
+    contractReport(root, 'index'),
     /skipped: no changed ai-chat runtime source lines/
   );
 });
@@ -705,6 +769,20 @@ test('the contract row produces and reuses a matching report, then rejects chang
     'export const built = true;'
   );
   write(root, RUNTIME_FILE, 'export const covered = 1;\n');
+  const contractFiles = [
+    'packages/ai-chat/tests/contract/spec/example_spec.ts',
+    'packages/ai-chat/src/sdk/__tests__/added.contract.test.ts',
+  ];
+  for (const file of contractFiles) {
+    write(root, file, "it('contract', () => {});");
+  }
+  write(
+    root,
+    'packages/ai-chat/src/sdk/__tests__/ordinary.test.ts',
+    "it('ordinary', () => {});"
+  );
+  const inventoryFile = 'tools/contract-manifest-lib.mjs';
+  write(root, inventoryFile, 'inventory fixture');
   const source = JSON.stringify(istanbul(join(root, RUNTIME_FILE)));
   write(
     root,
@@ -712,10 +790,11 @@ test('the contract row produces and reuses a matching report, then rejects chang
     `
     const fs = require('node:fs');
     const path = require('node:path');
-    const directory = process.argv.find(arg => arg.startsWith('--coverageDirectory=')).split('=')[1];
+    const directory = process.argv.find(arg => arg.startsWith('--coverage.reportsDirectory=')).split('=')[1];
     fs.mkdirSync(directory, { recursive: true });
     fs.appendFileSync(path.resolve('../../producer-calls'), 'run\\n');
     fs.appendFileSync(path.resolve('../../producer-directories'), directory + '\\n');
+    fs.writeFileSync(path.resolve('../../producer-args.json'), JSON.stringify(process.argv.slice(2)));
     const child = require('node:child_process');
     if (process.env.COVERAGE_MOVE_INDEX) {
       const file = path.resolve('src/runtime/index.ts');
@@ -760,6 +839,16 @@ test('the contract row produces and reuses a matching report, then rejects chang
   assert.equal(first.status, 0, first.stderr);
   assert.match(first.stdout, /uncovered changed runtime lines: 1/);
   assert.match(first.stdout, /src\/runtime\/index.ts:2/);
+  const args = JSON.parse(
+    readFileSync(join(root, 'producer-args.json'), 'utf8')
+  );
+  assert.ok(args.includes('--coverage.enabled'));
+  for (const file of contractFiles) {
+    assert.ok(args.includes(join(root, file)), file);
+  }
+  assert.ok(!args.some((arg) => arg.endsWith('ordinary.test.ts')));
+  assert.ok(args.includes('--coverage.exclude=src/**/__tests__/**'));
+  assert.ok(!args.includes('--coverage.exclude=src/**/index.ts'));
   const report = first.stdout.match(/report: (.+)/)?.[1];
   assert.ok(report, first.stdout);
   context.after(() =>
@@ -769,6 +858,12 @@ test('the contract row produces and reuses a matching report, then rejects chang
   assert.equal(second.status, 0, second.stderr);
   assert.equal(second.stdout, first.stdout);
   assert.equal(readFileSync(join(root, 'producer-calls'), 'utf8'), 'run\n');
+  write(root, inventoryFile, 'changed inventory fixture');
+  assert.match(
+    run({ CONTRACT_COVERAGE_REPORT: report }).stdout,
+    /unverified: coverage source fingerprint/
+  );
+  write(root, inventoryFile, 'inventory fixture');
   write(
     root,
     RUNTIME_FILE,

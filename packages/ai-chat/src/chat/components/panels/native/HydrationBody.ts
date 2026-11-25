@@ -67,15 +67,17 @@ class HydrationBody extends NativeChatView {
     this.lifecycleOwner = undefined;
   }
 
+  // Updating the lifecycle before render folds a restarted load cycle into
+  // this render instead of scheduling another one from updated().
+  protected willUpdate() {
+    this.lifecycle?.update({
+      isHydrated: this.isHydrated,
+      announcement: this.loadingLabel,
+    });
+  }
+
   protected updated() {
-    const lifecycle = this.lifecycle;
-    if (lifecycle) {
-      lifecycle.update({
-        isHydrated: this.isHydrated,
-        announcement: this.loadingLabel,
-      });
-      lifecycle.connect();
-    }
+    this.lifecycle?.connect();
   }
 
   protected renderView() {

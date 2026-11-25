@@ -1,5 +1,4 @@
 /**
- * @jest-environment-options {"customExportConditions": ["browser"]}
  * @license
  *
  * Copyright IBM Corp. 2026
@@ -7,8 +6,6 @@
  * This source code is licensed under the Apache-2.0 license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-/* eslint jsdoc/check-tag-names: ["error", { "definedTags": ["jest-environment-options"] }] */
 
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -37,7 +34,7 @@ test.each([
 ])(
   '%s wrapper passes Boolean selection before, during, and after a pick',
   async (_tree, Wrapper, tag) => {
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     const render = async (isSelected: boolean) => {
       await act(async () => {
         root.render(

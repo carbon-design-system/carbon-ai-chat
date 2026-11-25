@@ -153,7 +153,7 @@ Chat custom css properties
 
 // Prompt-line writeable slots sit inside the input composer and double as
 // floating-menu containers for Carbon tooltips/popovers slotted into them, so they
-// need their own positioning context. Occupancy gating in PromptLineWriteableSlot
+// need their own positioning context. Occupancy gating in PromptLineSlot
 // keeps an empty slot out of the flex flow (so it adds no gap before the prompt line
 // or send button) while leaving this a real, sized box whenever it has content.
 [data-prompt-line-slot] {

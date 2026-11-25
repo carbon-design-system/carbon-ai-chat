@@ -1,4 +1,5 @@
-# Nightly integration checks: full demo suite, all example builds, and example test suites.
+# Nightly integration checks: full demo suite, all example builds, example test suites, and
+# both packages' browser tests in Firefox and WebKit (per-PR CI runs them in Chromium).
 # Runs on a schedule against the default branch. Manual dispatch allows any branch.
 # These checks are intentionally excluded from ordinary PR and merge queue CI to keep
 # per-PR feedback fast. Failures here can reach the dev demo before detection.
@@ -133,4 +134,43 @@ jobs:
           path: |
             examples/**/test-results
             examples/**/playwright-report
+          retention-days: 7
+
+  package-browsers:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ['@carbon/ai-chat', '@carbon/ai-chat-components']
+    env:
+      # 👇 Adds the Firefox and WebKit instances to each browser project.
+      CAIC_ALL_BROWSERS: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+      - name: Use Node.js version from .nvmrc
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+      - name: Install Playwright browsers
+        timeout-minutes: 10
+        run: npx playwright install --with-deps firefox webkit
+      - name: Download build output
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: build-output
+          path: packages
+      - name: Run browser tests in Firefox and WebKit (${{ matrix.package }})
+        run: npm run test --workspace=${{ matrix.package }} -- --project 'browser (firefox*)' --project 'browser (webkit*)'
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package-browser-results-${{ strategy.job-index }}
+          path: packages/*/.vitest-attachments
           retention-days: 7

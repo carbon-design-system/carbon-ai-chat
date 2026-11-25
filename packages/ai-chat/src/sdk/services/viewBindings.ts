@@ -127,4 +127,4 @@ class ViewConnection {
   }
 }
 
-export { InputViewPort, InstanceViewPort, ViewBindings, ViewConnection };
+export { ViewBindings, ViewConnection };

@@ -8,7 +8,7 @@
  */
 
 /**
- * Compiled under `strict: true` by sdkTypes_spec.ts and never run. Every line must compile, and every
+ * Compiled under `strict: true` by sdkTypes.test.ts and never run. Every line must compile, and every
  * `@ts-expect-error` must fail to. The spec also reads the `*Probe` aliases to check that
  * `PublicConfig` is not assignable to `ChatSDKConfig`.
  */

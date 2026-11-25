@@ -22,6 +22,7 @@ Load this when you need to build, watch, lint, format, test, or run an example/S
 | Dead-code check (knip) | `npm run lint:dead` |
 | Prettier check / write | `npm run format` / `npm run format:write` |
 | All package tests | `npm run test` |
+| Package browser tests, first time on a machine | `npx playwright install chromium` |
 | Example app tests only (run nightly in `nightly.yml`) | `npm run test:examples` |
 | Guidance validator regression tests (no build) | `npm run test:guidance` |
 | Measurement tool tests (no build) | `npm run test:measure` |
@@ -47,8 +48,8 @@ Workspace deps resolve through built artifacts, not TS sources. A test can run o
 
 | Run | Reads built output from | Builds for itself |
 | --- | --- | --- |
-| `@carbon/ai-chat` Jest | `packages/ai-chat-components/es/`. Its own code runs from `src/`. | Nothing |
-| `@carbon/ai-chat-components` WTR | Its own `es/`, in each test that imports `@carbon/ai-chat-components/es/…` | Nothing |
+| `@carbon/ai-chat` Vitest | `packages/ai-chat-components/es/`, in every project, `node` included: `src/sdk/` imports its utilities. `tests/build/` also reads `packages/ai-chat/dist/`. Its own code otherwise runs from `src/`. | Nothing |
+| `@carbon/ai-chat-components` Vitest | Its own `es/`, in each test that imports `@carbon/ai-chat-components/es/…` | Nothing |
 | Demo Playwright | `packages/ai-chat/dist/es/` and `packages/ai-chat-components/es/` | The demo only (`tsc --noEmit && vite build`), never the chat packages. It can skip even that → [demo/AGENTS.md](../demo/AGENTS.md#build-run-test). |
 | Example tests and e2e | The same two package outputs | At most the example |
 

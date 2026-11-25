@@ -106,7 +106,7 @@ import type { TriggerSuggestionConfig } from '../../types/config/InputConfig'; /
 
 - **`validation.notExported` does not cover cross-package symbols.** It returns early on any reference whose package differs from the project's own, so it catches only symbols declared in this package. [Signature links come from a plugin](#signature-links-come-from-a-plugin) gates the rest. (Third-party types like `@tiptap/core`'s stay external and are fine to import directly; see [external type links](cross-linking.md#external-third-party-types) for how to reference them in JSDoc.)
 - **`@category` values come from `categoryOrder`** in [../../typedoc.json](../../../typedoc.json). A category outside that list lands in the `*` catchall.
-- **A missing `@interface` is build-green but caught by a test.** [tests/typedoc/spec/alias_members_spec.ts](../../../tests/typedoc/spec/alias_members_spec.ts) parses this directory and fails on any `export type X = _X` alias missing the tag, with an allowlist for the targets that are genuinely not object-shaped. Add your exemption there, with a reason, or add the tag.
+- **A missing `@interface` is build-green but caught by a test.** [tests/typedoc/alias_members.test.ts](../../../tests/typedoc/alias_members.test.ts) parses this directory and fails on any `export type X = _X` alias missing the tag, with an allowlist for the targets that are genuinely not object-shaped. Add your exemption there, with a reason, or add the tag.
 
 ## Related guidance
 

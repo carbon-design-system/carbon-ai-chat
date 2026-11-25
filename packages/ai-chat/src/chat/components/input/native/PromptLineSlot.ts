@@ -69,5 +69,3 @@ declare global {
     'cds-aichat-prompt-line-slot': PromptLineSlot;
   }
 }
-
-export default PromptLineSlot;

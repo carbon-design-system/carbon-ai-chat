@@ -13,7 +13,6 @@
 
 export type { AppStateMessages } from './ChatMessagesState';
 export type { InputState, PendingUpload } from './InputState';
-export { PendingUploadStatus } from './InputState'; // enum (runtime value)
 export type { HumanAgentDisplayState } from './HumanAgentState';
 export type { PersistedState } from './PersistedState'; // public — @category Instance
 export { ChatWidthBreakpoint } from './ChatWidthBreakpoint'; // enum (runtime value)

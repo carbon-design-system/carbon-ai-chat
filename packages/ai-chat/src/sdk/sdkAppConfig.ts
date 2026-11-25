@@ -37,4 +37,4 @@ function createSDKAppConfig(config: ChatSDKConfig = {}): ConversationAppConfig {
   };
 }
 
-export { createSDKAppConfig, DEFAULT_SDK_CONFIG };
+export { createSDKAppConfig };

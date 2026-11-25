@@ -41,7 +41,7 @@ import type { MessageRequest } from '../../types/messaging/Messages';
 import type { AppState } from '../../types/state/AppState';
 import { useSelector } from '../hooks/useSelector';
 
-export const INPUT_NODE_SLOT_ATTR = 'data-aichat-input-node-slot';
+const INPUT_NODE_SLOT_ATTR = 'data-aichat-input-node-slot';
 const INPUT_NODE_TYPE_ATTR = 'data-aichat-input-node-type';
 
 interface MessageRichUserContentProps {

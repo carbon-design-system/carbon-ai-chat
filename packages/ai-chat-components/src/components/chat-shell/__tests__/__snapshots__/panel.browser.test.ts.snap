@@ -1,0 +1,42 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`cds-aichat-panel > Snapshots > should match snapshot when open 1`] = `
+<cds-aichat-panel
+  class="panel panel--open panel-container"
+  open=""
+  priority="0"
+>
+</cds-aichat-panel>
+
+`;
+
+exports[`cds-aichat-panel > Snapshots > should match snapshot with all properties 1`] = `
+<cds-aichat-panel
+  class="panel panel--full-width panel--open panel--with-chat-header panel--with-frame panel-container"
+  full-width=""
+  open=""
+  priority="5"
+  show-chat-header=""
+  show-frame=""
+>
+  <div slot="header">
+    Header
+  </div>
+  <div slot="body">
+    Body
+  </div>
+  <div slot="footer">
+    Footer
+  </div>
+</cds-aichat-panel>
+
+`;
+
+exports[`cds-aichat-panel > Snapshots > should match snapshot with default configuration 1`] = `
+<cds-aichat-panel
+  class="panel panel--closed panel-container"
+  priority="0"
+>
+</cds-aichat-panel>
+
+`;
