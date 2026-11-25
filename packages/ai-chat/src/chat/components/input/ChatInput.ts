@@ -61,13 +61,13 @@ import {
   buildInputExtensions,
 } from '../../services/inputExtensions';
 import { resolvePromptLineMode } from './promptLineMode';
-import { createInputImperativeHandle } from '../../utils/inputImperativeHandle';
+import { createInputImperativeHandle } from './inputImperativeHandle';
 import {
   changeInputValue,
   mirrorInputValue,
   sendInputValue,
-} from '../../utils/inputValueSync';
-import { hasInFlightUpload, hasSendableInput } from '../../utils/sendableInput';
+} from './inputValueSync';
+import { hasInFlightUpload, hasSendableInput } from './sendableInput';
 import { restoreInputDraft } from '../../utils/restoreInputDraft';
 import { validateFileSelection } from '../../../sdk/utils/fileUploadValidation';
 import { formatShortcutForDisplay } from '../../utils/keyboardUtils';

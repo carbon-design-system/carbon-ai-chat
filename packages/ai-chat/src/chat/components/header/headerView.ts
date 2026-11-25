@@ -19,13 +19,13 @@ import type { ToolbarAction } from '@carbon/ai-chat-components/es/react/toolbar.
 import {
   MinimizeButtonIconType,
   type HeaderConfig,
-} from '../../types/config/HeaderConfig';
+} from '../../../types/config/HeaderConfig';
 import {
   BusEventType,
   HeaderMenuClickType,
   type BusEventHeaderMenuClick,
-} from '../../types/events/eventBusTypes';
-import { PageObjectId } from '../../testing/PageObjectId';
+} from '../../../types/events/eventBusTypes';
+import { PageObjectId } from '../../../testing/PageObjectId';
 
 interface HeaderProps {
   onClose: () => void;
