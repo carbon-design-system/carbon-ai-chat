@@ -91,6 +91,9 @@ export interface ChatSDKMessageItem {
    * have IDs. The chat gives a message without one a new ID each time it loads, so give your messages
    * IDs if you keep item IDs across reloads. If you reorder items that have no `streaming_metadata.id`
    * between upserts, give them one, or their IDs follow their position.
+   *
+   * Treat an ID as opaque: read it from this state rather than building it. Only the `:s:` form is tied
+   * to the item itself. An `:i:` ID follows the item's position, so it can change when items move.
    */
   readonly id: string;
 
@@ -104,7 +107,8 @@ export interface ChatSDKMessageItem {
    * - `response`: an item of an assistant's or a human agent's response.
    * - `system`: a note, such as "Request cancelled" or a human agent joining or leaving. A response
    *   counts as a note when each of its items is a `system` or `inline_error` item, or a human agent
-   *   status message.
+   *   status message. That includes a response you add yourself, so one made only of those items is a
+   *   `system` entry too.
    */
   readonly kind: 'request' | 'response' | 'system';
 
