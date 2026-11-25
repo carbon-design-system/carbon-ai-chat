@@ -109,6 +109,27 @@ describe('public native cancellation metadata', () => {
     }
   });
 
+  it('lifts the restriction when the restricting response ends while another response still permits cancellation', async () => {
+    const mount = await contractChat({
+      openChatByDefault: true,
+      messaging: { skipWelcome: true },
+      strings: { input_stopResponse: STOP_NAME },
+    });
+    try {
+      await write(mount.instance, 'first', [false]);
+      await write(mount.instance, 'second', [true]);
+      await waitFor(() => expect(stop()).toBeDisabled());
+      await write(mount.instance, 'first', [false], MessageState.COMPLETE);
+      // `second` is still streaming, so the control stays up and only the
+      // ended response's restriction may lift.
+      await waitFor(() => expect(stop()).toBeEnabled());
+      expect(mount.instance.state.get().status).toBe('streaming');
+      await write(mount.instance, 'second', [true], MessageState.COMPLETE);
+    } finally {
+      await act(async () => mount.unmount());
+    }
+  });
+
   it('settles both unsolicited streams through the actual Stop control and permits a fresh generation', async () => {
     const mount = await contractChat({
       openChatByDefault: true,

@@ -387,14 +387,15 @@ describe('focus-utils', function () {
     });
 
     it('should respect exceptions for invisible elements', async () => {
-      const el = await fixture<HTMLDialogElement>(
-        html`<dialog hidden><button>Button</button></dialog>`
+      // `disabled` doesn't stop a div with tabindex from taking focus, but
+      // the visibility check counts it as hidden unless an exception matches.
+      const el = await fixture<HTMLDivElement>(
+        html`<div tabindex="0" disabled data-keep>Kept</div>`
       );
-      // Dialog is hidden but should be ignored due to default exceptions
-      const button = el.querySelector('button') as HTMLButtonElement;
-      const result = tryFocus(button);
-      // Button inside hidden dialog should still be considered invisible
-      expect(result).to.be.false;
+      expect(tryFocus(el), 'hidden without the exception').to.be.false;
+
+      expect(tryFocus(el, ['[data-keep]'])).to.be.true;
+      expect(document.activeElement).to.equal(el);
     });
 
     it('should handle multiple focusable elements', async () => {
@@ -547,8 +548,20 @@ describe('focus-utils', function () {
         nodes.push(node);
       }
 
-      expect(nodes.length).to.be.greaterThan(0);
-      expect(nodes[0]).to.equal(container);
+      // With no shadow roots, a TreeWalker over every node type gives the
+      // same document-order list.
+      const expected: Node[] = [];
+      const walker = document.createTreeWalker(container, NodeFilter.SHOW_ALL);
+      for (
+        let node: Node | null = walker.root;
+        node;
+        node = walker.nextNode()
+      ) {
+        expected.push(node);
+      }
+      expect(expected.some((node) => node.nodeType === Node.TEXT_NODE)).to.be
+        .true;
+      expect(nodes).to.have.ordered.members(expected);
     });
 
     it('should filter nodes based on filter function', async () => {
@@ -625,7 +638,11 @@ describe('focus-utils', function () {
         elementNodes.push(node);
       }
 
-      // All nodes should be element nodes
+      // The element nodes only, in order: the text nodes are left out.
+      expect(elementNodes).to.have.ordered.members([
+        container,
+        container.querySelector('span'),
+      ]);
       elementNodes.forEach((node) => {
         expect(node.nodeType).to.equal(Node.ELEMENT_NODE);
       });

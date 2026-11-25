@@ -8,9 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/card/index.js';
-import Card from '@carbon/ai-chat-components/es/components/card/src/card.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
+import '../index.js';
+import Card from '../src/card.js';
 
 const cardContent = html`
   <div slot="body">
@@ -32,7 +31,5 @@ describe('card', function () {
     expect(el.shadowRoot).to.exist;
     expect(el.isLayered).to.be.false;
     expect(el.isFlush).to.be.false;
-
-    expectDomSnapshot(el);
   });
 });

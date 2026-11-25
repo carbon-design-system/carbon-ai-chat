@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/table/index.js';
-import CDSAIChatTable from '@carbon/ai-chat-components/es/components/table/src/table.js';
+import '../index.js';
+import CDSAIChatTable from '../src/table.js';
 
 const headers = [{ text: 'A' }, { text: 'B' }];
 const rows = Array.from({ length: 24 }, (_, i) => ({

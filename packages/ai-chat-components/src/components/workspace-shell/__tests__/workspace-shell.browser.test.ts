@@ -7,16 +7,16 @@
  *  @license
  */
 
-import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/workspace-shell/index.js';
-import '@carbon/ai-chat-components/es/components/toolbar/index.js';
+import { html, fixture, expect, waitUntil } from '@open-wc/testing';
+import '../index.js';
+import '../../toolbar/index.js';
 import Launch16 from '@carbon/icons/es/launch/16.js';
 import Maximize16 from '@carbon/icons/es/maximize/16.js';
 import Close16 from '@carbon/icons/es/close/16.js';
-import CDSAIChatWorkspaceShell from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell.js';
-import CDSAIChatWorkspaceShellHeader from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-header.js';
-import CDSAIChatWorkspaceShellBody from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-body.js';
-import CDSAIChatWorkspaceShellFooter from '@carbon/ai-chat-components/es/components/workspace-shell/src/workspace-shell-footer.js';
+import CDSAIChatWorkspaceShell from '../src/workspace-shell.js';
+import CDSAIChatWorkspaceShellHeader from '../src/workspace-shell-header.js';
+import CDSAIChatWorkspaceShellBody from '../src/workspace-shell-body.js';
+import CDSAIChatWorkspaceShellFooter from '../src/workspace-shell-footer.js';
 
 const actions = [
   {
@@ -460,22 +460,30 @@ describe('CDSAIChatWorkspaceShell - auto-collapsible header', () => {
   });
 
   it('should clean up collapsible attribute when auto-collapsible is disabled', async () => {
-    const el = await fixture<CDSAIChatWorkspaceShell>(
-      html`<cds-aichat-workspace-shell auto-collapsible-header>
-        <cds-aichat-workspace-shell-header
-          title-text="Title"
-          subtitle-text="Subtitle">
-        </cds-aichat-workspace-shell-header>
-      </cds-aichat-workspace-shell>`
+    // A shell shorter than twice the header leaves the body less room than
+    // the header, so the manager makes the header collapsible.
+    const wrapper = await fixture<HTMLDivElement>(
+      html`<div style="block-size: 120px">
+        <cds-aichat-workspace-shell auto-collapsible-header>
+          <cds-aichat-workspace-shell-header
+            title-text="Title"
+            subtitle-text="Subtitle">
+          </cds-aichat-workspace-shell-header>
+        </cds-aichat-workspace-shell>
+      </div>`
     );
-
+    const el = wrapper.querySelector(
+      'cds-aichat-workspace-shell'
+    ) as CDSAIChatWorkspaceShell;
     const header = el.querySelector(
       'cds-aichat-workspace-shell-header'
     ) as CDSAIChatWorkspaceShellHeader;
 
-    // Wait for initial setup
-    await el.updateComplete;
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await waitUntil(
+      () => header.hasAttribute('collapsible'),
+      'the manager never made the header collapsible'
+    );
+    expect(header.hasAttribute('collapsible')).to.be.true;
 
     // Disable auto-collapsible
     el.autoCollapsibleHeader = false;

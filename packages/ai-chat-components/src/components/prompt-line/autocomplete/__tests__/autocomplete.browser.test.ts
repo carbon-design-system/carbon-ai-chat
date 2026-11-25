@@ -18,6 +18,7 @@ import type {
 } from '../src/autocomplete.js';
 import { defaultAutocompleteI18n } from '../src/autocomplete.js';
 import prefix from '../../../../globals/settings.js';
+import { resetMouse, sendMouse } from '../../../../__tests__/browser/input.js';
 
 describe('cds-aichat-autocomplete', () => {
   const mockItems: SuggestionItem[] = [
@@ -106,15 +107,6 @@ describe('cds-aichat-autocomplete', () => {
         'li[role="option"] .cds-aichat-autocomplete-item__send-icon'
       );
       expect(sendIcons?.length).to.equal(0);
-    });
-
-    it('has role=option on flat list items', async () => {
-      const el = await defaultFixture();
-
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
-      options?.forEach((li) => {
-        expect(li.getAttribute('role')).to.equal('option');
-      });
     });
 
     it('has tabindex=-1 on items so focus stays in the editor', async () => {
@@ -1021,23 +1013,39 @@ describe('cds-aichat-autocomplete', () => {
         sentText = (e as CustomEvent<{ text: string }>).detail.text;
       });
 
-      const options = el.shadowRoot?.querySelectorAll('li[role="option"]');
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+      const options =
+        el.shadowRoot!.querySelectorAll<HTMLElement>('li[role="option"]');
 
-      // Navigate with ArrowDown first so _userHasNavigated becomes true,
-      // then hover the first item to change the active row.
-      el.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          bubbles: true,
-          composed: true,
-        })
+      // Two ArrowDowns make the second row keyboard-active, so the hovered
+      // row and the previously active row differ.
+      for (let i = 0; i < 2; i++) {
+        el.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await el.updateComplete;
+      }
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        '2--option'
       );
-      await el.updateComplete;
 
-      // Hover the first item while the second is keyboard-active.
-      (options?.[0] as HTMLElement)?.dispatchEvent(
-        new MouseEvent('mouseenter', { bubbles: true })
-      );
+      // Hover the first row with the real pointer.
+      const rect = options[0].getBoundingClientRect();
+      try {
+        await sendMouse({
+          type: 'move',
+          position: [
+            Math.round(rect.x + rect.width / 2),
+            Math.round(rect.y + rect.height / 2),
+          ],
+        });
+      } finally {
+        await resetMouse();
+      }
       await el.updateComplete;
 
       // Enter should pick the hovered (now active) first item.
@@ -1268,9 +1276,30 @@ describe('cds-aichat-autocomplete', () => {
     });
 
     it('Enter on a disabled item does not fire send or select', async () => {
-      // Place the only-disabled item alone so _focusedIndex stays at 0 (no
-      // enabled item to skip to) and Enter has no valid target.
-      const el = await defaultFixture({ items: [disabledItem] });
+      // Navigation skips disabled rows, so the active row must turn disabled
+      // after it's reached. A new `items` array resets the active row, so the
+      // item is changed in place and the element re-rendered.
+      const item: SuggestionItem = { id: 'turns-disabled', label: 'Soon off' };
+      const el = await defaultFixture({ items: [item] });
+      const listbox = el.shadowRoot?.querySelector('[role="listbox"]');
+
+      el.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await el.updateComplete;
+      item.disabled = true;
+      el.requestUpdate();
+      await el.updateComplete;
+
+      const option = el.shadowRoot?.querySelector('li[role="option"]');
+      expect(option?.getAttribute('aria-disabled')).to.equal('true');
+      expect(listbox?.getAttribute('aria-activedescendant')).to.equal(
+        'turns-disabled--option'
+      );
 
       let sendFired = false;
       let selectFired = false;

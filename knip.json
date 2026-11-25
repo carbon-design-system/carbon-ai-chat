@@ -31,7 +31,7 @@
         "src/testing/**/*.ts",
         "src/components/**/__stories__/*.{js,jsx,ts,tsx}",
         "src/components/**/__tests__/*.test.ts",
-        "src/__tests__/browser/{setup,wtr-commands-stub}.ts"
+        "src/__tests__/browser/wtr-commands-stub.ts"
       ],
       "project": ["src/**/*.{ts,tsx}"],
       "ignoreIssues": {

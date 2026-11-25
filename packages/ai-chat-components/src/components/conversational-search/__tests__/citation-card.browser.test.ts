@@ -8,9 +8,9 @@
  */
 
 import { expect, fixture, html, nextFrame, waitUntil } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/conversational-search/index.js';
-import '@carbon/ai-chat-components/es/components/carousel/index.js';
-import CitationCard from '@carbon/ai-chat-components/es/components/conversational-search/src/citation-card.js';
+import '../index.js';
+import '../../carousel/index.js';
+import CitationCard from '../src/citation-card.js';
 
 const LONG_TEXT = 'Carbon is the design system for IBM products. '.repeat(12);
 

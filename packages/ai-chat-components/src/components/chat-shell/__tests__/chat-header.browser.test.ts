@@ -7,13 +7,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
-import CdsAiChatHeader from '@carbon/ai-chat-components/es/components/chat-shell/src/chat-header.js';
+import { html, fixture, expect, waitUntil } from '@open-wc/testing';
+import '../index.js';
+import CdsAiChatHeader from '../src/chat-header.js';
+import type CDSAIChatToolbar from '../../toolbar/src/toolbar.js';
 import {
   composedContains,
   getDeepActiveElement,
-} from '@carbon/ai-chat-components/es/globals/utils/focus-utils.js';
+} from '../../../globals/utils/focus-utils.js';
 
 // Mock icon objects for testing
 const Close = { name: 'close', size: 16 };
@@ -163,15 +164,29 @@ describe('cds-aichat-chat-header', function () {
       expect(toolbarContent).to.include('name');
     });
 
-    it('should use custom title slot when provided', async () => {
+    it('renders the header-title property in place of a slotted title', async () => {
       const el = await fixture<CdsAiChatHeader>(
         html`<cds-aichat-chat-header header-title="Default Title">
           <div slot="title" id="custom-title">Custom Title Content</div>
         </cds-aichat-chat-header>`
       );
-      const customTitle = el.querySelector('#custom-title');
-      expect(customTitle).to.exist;
-      expect(customTitle!.textContent).to.equal('Custom Title Content');
+      const toolbar =
+        el.shadowRoot!.querySelector<CDSAIChatToolbar>('cds-aichat-toolbar')!;
+      await toolbar.updateComplete;
+      const customTitle = el.querySelector('#custom-title')!;
+      const titleSlot =
+        toolbar.shadowRoot!.querySelector<HTMLSlotElement>(
+          'slot[name="title"]'
+        )!;
+
+      expect(customTitle.assignedSlot).to.equal(null);
+      expect(titleSlot.assignedElements({ flatten: true })).to.not.include(
+        customTitle
+      );
+      expect(
+        toolbar.shadowRoot!.querySelector('cds-aichat-truncated-text')!
+          .textContent
+      ).to.include('Default Title');
     });
   });
 
@@ -188,9 +203,14 @@ describe('cds-aichat-chat-header', function () {
       const el = await fixture<CdsAiChatHeader>(html`
         <cds-aichat-chat-header .actions=${actions}></cds-aichat-chat-header>
       `);
-      expect(el.actions).to.deep.equal(actions);
-      const toolbar = el.shadowRoot!.querySelector('cds-aichat-toolbar');
-      expect(toolbar).to.exist;
+      const toolbar =
+        el.shadowRoot!.querySelector<CDSAIChatToolbar>('cds-aichat-toolbar')!;
+      await toolbar.updateComplete;
+
+      expect(toolbar.actions).to.deep.equal(actions);
+      expect(
+        toolbar.shadowRoot!.querySelectorAll('cds-icon-button')
+      ).to.have.length(1);
     });
 
     it('should handle empty actions array', async () => {
@@ -303,29 +323,61 @@ describe('cds-aichat-chat-header', function () {
       }
     });
 
-    it('should use custom navigation slot when provided', async () => {
+    it('renders the navigation-type back button in place of a slotted navigation', async () => {
       const el = await fixture<CdsAiChatHeader>(
-        html`<cds-aichat-chat-header navigation-type="back">
+        html`<cds-aichat-chat-header
+          navigation-type="back"
+          .navigationBackIcon=${{ name: 'arrow--left', size: 16 }}>
           <div slot="navigation" id="custom-nav">Custom Navigation</div>
         </cds-aichat-chat-header>`
       );
-      const customNav = el.querySelector('#custom-nav');
-      expect(customNav).to.exist;
-      expect(customNav!.textContent).to.equal('Custom Navigation');
+      const toolbar =
+        el.shadowRoot!.querySelector<CDSAIChatToolbar>('cds-aichat-toolbar')!;
+      await toolbar.updateComplete;
+      const customNav = el.querySelector('#custom-nav')!;
+      const navigation = toolbar
+        .shadowRoot!.querySelector<HTMLSlotElement>('slot[name="navigation"]')!
+        .assignedElements({ flatten: true });
+
+      expect(customNav.assignedSlot).to.equal(null);
+      expect(navigation).to.not.include(customNav);
+      expect(navigation).to.have.length(1);
+      expect(navigation[0].querySelector('cds-icon-button')).to.exist;
     });
   });
 
   // ========== Slot Tests ==========
   describe('Slots', () => {
+    // Waits for the toolbar, then returns the header slot for a name and the
+    // toolbar slot it forwards to.
+    async function waitForRenderedSlots(el: CdsAiChatHeader, name: string) {
+      const toolbar =
+        el.shadowRoot!.querySelector<CDSAIChatToolbar>('cds-aichat-toolbar')!;
+      await toolbar.updateComplete;
+      return {
+        headerSlot: el.shadowRoot!.querySelector(`slot[name="${name}"]`),
+        toolbarSlot: toolbar.shadowRoot!.querySelector<HTMLSlotElement>(
+          `slot[name="${name}"]`
+        )!,
+      };
+    }
+
     it('should support decorator slot', async () => {
       const el = await fixture<CdsAiChatHeader>(
         html`<cds-aichat-chat-header>
           <div slot="decorator" id="decorator-content">Decorator</div>
         </cds-aichat-chat-header>`
       );
-      const decorator = el.querySelector('#decorator-content');
-      expect(decorator).to.exist;
-      expect(decorator!.textContent).to.equal('Decorator');
+      const decorator = el.querySelector('#decorator-content')!;
+      const { headerSlot, toolbarSlot } = await waitForRenderedSlots(
+        el,
+        'decorator'
+      );
+
+      expect(decorator.assignedSlot).to.equal(headerSlot);
+      expect(toolbarSlot.assignedElements({ flatten: true })).to.deep.equal([
+        decorator,
+      ]);
     });
 
     it('should support fixed-actions slot', async () => {
@@ -336,9 +388,16 @@ describe('cds-aichat-chat-header', function () {
           </div>
         </cds-aichat-chat-header>`
       );
-      const fixedActions = el.querySelector('#fixed-actions-content');
-      expect(fixedActions).to.exist;
-      expect(fixedActions!.textContent).to.include('Fixed Actions');
+      const fixedActions = el.querySelector('#fixed-actions-content')!;
+      const { headerSlot, toolbarSlot } = await waitForRenderedSlots(
+        el,
+        'fixed-actions'
+      );
+
+      expect(fixedActions.assignedSlot).to.equal(headerSlot);
+      expect(toolbarSlot.assignedElements({ flatten: true })).to.deep.equal([
+        fixedActions,
+      ]);
     });
 
     it('should pass all slots to toolbar', async () => {
@@ -484,22 +543,19 @@ describe('cds-aichat-chat-header', function () {
         <cds-aichat-chat-header .actions=${actions}></cds-aichat-chat-header>
       `);
       await el.updateComplete;
-      const toolbar = el.shadowRoot!.querySelector('cds-aichat-toolbar');
-      if (toolbar && typeof (toolbar as any).requestFocus === 'function') {
-        const result = el.requestFocus();
-        expect(result).to.be.true;
-      }
-    });
-
-    it('should delegate focus to toolbar', async () => {
-      const el = await fixture<CdsAiChatHeader>(
-        html`<cds-aichat-chat-header></cds-aichat-chat-header>`
+      const toolbar =
+        el.shadowRoot!.querySelector<CDSAIChatToolbar>('cds-aichat-toolbar')!;
+      await toolbar.updateComplete;
+      const action = toolbar.shadowRoot!.querySelector(
+        'cds-icon-button:not([disabled])'
+      ) as HTMLElement;
+      await waitUntil(
+        () => action.shadowRoot?.querySelector('button'),
+        'the first action renders its inner button'
       );
-      const toolbar = el.shadowRoot!.querySelector('cds-aichat-toolbar');
-      expect(toolbar).to.exist;
-      // Verify that requestFocus delegates to toolbar
-      const result = el.requestFocus();
-      expect(result).to.be.a('boolean');
+
+      expect(el.requestFocus()).to.be.true;
+      expect(composedContains(action, getDeepActiveElement())).to.be.true;
     });
 
     it('should use FOCUSABLE_SELECTORS fallback for Carbon components', async () => {

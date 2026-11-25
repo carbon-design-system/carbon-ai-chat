@@ -250,9 +250,12 @@ describe('<cds-aichat-prompt-line-shell>', () => {
     `);
     await el.updateComplete;
 
-    expect(el.querySelector('#my-editor')).to.not.equal(null);
-    expect(el.querySelector('#my-send')).to.not.equal(null);
-    expect(el.querySelector('#my-msg')).to.not.equal(null);
+    for (const name of ['editor', 'send-control', 'field-messaging']) {
+      const child = el.querySelector(`[slot="${name}"]`)!;
+      const slot = el.shadowRoot!.querySelector(`slot[name="${name}"]`);
+      expect(slot, name).to.exist;
+      expect(child.assignedSlot, name).to.equal(slot);
+    }
   });
 
   it('exposes a `prompt-container` CSS part on the input container', async () => {

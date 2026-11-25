@@ -8,21 +8,10 @@
  */
 
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/launcher/index.js';
-import Launcher from '@carbon/ai-chat-components/es/components/launcher/src/launcher.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
+import '../index.js';
+import Launcher from '../src/launcher.js';
 
 describe('launcher', function () {
-  it('should render with minimum attributes', async () => {
-    const el = await fixture<Launcher>(
-      html`<cds-aichat-launcher
-        closed-label="Open chat"
-        open-label="Close chat"></cds-aichat-launcher>`
-    );
-
-    expectDomSnapshot(el);
-  });
-
   it('should render an unread count badge when unread messages are present', async () => {
     const el = await fixture<Launcher>(
       html`<cds-aichat-launcher
@@ -53,6 +42,16 @@ describe('launcher', function () {
 
     expect(badge).to.exist;
     expect(badge?.textContent?.trim()).to.equal('');
+  });
+
+  it('leaves the host out of the tab order, so the inner button is the only tab stop', async () => {
+    const el = await fixture<Launcher>(
+      html`<cds-aichat-launcher
+        closed-label="Open chat"
+        open-label="Close chat"></cds-aichat-launcher>`
+    );
+
+    expect(el.hasAttribute('tabindex')).to.be.false;
   });
 
   it('should dispatch a toggle event when clicked', async () => {

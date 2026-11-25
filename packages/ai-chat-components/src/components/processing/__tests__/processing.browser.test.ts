@@ -9,8 +9,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/processing/index.js';
-import CDSAIChatProcessing from '@carbon/ai-chat-components/es/components/processing/src/processing.js';
+import '../index.js';
+import CDSAIChatProcessing from '../src/processing.js';
 describe('aichat processing', function () {
   it('should render cds-aichat-processing in DOM', async () => {
     const el = await fixture<CDSAIChatProcessing>(

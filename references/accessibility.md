@@ -1,6 +1,6 @@
 # accessibility.md — Carbon AI Chat accessibility
 
-Load this when shipping any UI change in any package. All UI must meet WCAG 2.1 AA.
+Load this when shipping or testing any UI change in any package. All UI must meet WCAG 2.1 AA.
 
 ## Screen readers — semantic HTML & ARIA
 
@@ -40,6 +40,29 @@ When a piece of UI changes state, decide who owns the announcement by which surf
 ### When to author a new live region directly
 
 Only when the centralized announcer doesn't fit the use case (e.g. a dedicated status pane that must remain visible and updated, like `audio-player` / `video-player` status text). In that case, follow the politeness + atomicity rules above.
+
+## Testing accessibility
+
+Assert what assistive technology reads: roles and accessible names, focus targets, and announcement text and politeness. How a components test reads them through shadow roots is in [components tests.md](../packages/ai-chat-components/references/tests.md).
+
+- **Focus.** Where a focus test goes, and which package owns it, is in [ai-chat's tests.md](../packages/ai-chat/references/tests.md#where-a-test-goes).
+- **Read focus through any shadow root.** A test in either package may read `activeElement` and `:focus` or `:focus-within` through any shadow root, a child's or a Carbon element's included, to find where focus landed. Every other query follows its package guide's public-surface rule.
+- **Announcements follow the owner split above.** A component's tests cover its regions and its own transitions: the regions render even when empty, each message lands in the right channel, and nothing lands in the other one. `@carbon/ai-chat`'s tests cover what the chat announces, and when. The string a component announces is the component's test; that ai-chat passes the chat's own string, and when, is ai-chat's.
+- **Pick the seam, then wait for it.** A test of what the chat asks to announce may assert on its announce call, which runs before the announcer's 250 ms debounce. A claim about what a user hears reads the live region, found by `aria-live`; the announce call shows only what the chat asked for. A test of the whole path reads the live region's text, so it waits past the debounce: use fake timers and advance past it. When fake timers are awkward for a check that nothing was announced, follow [Show that something didn't happen](writing-tests.md#show-that-something-didnt-happen).
+
+  ```ts
+  afterEach(() => vi.useRealTimers());
+
+  it('announces nothing when the list is unchanged', () => {
+    vi.useFakeTimers();
+    setItems(sameItems);
+    vi.advanceTimersByTime(251); // past the announcer's debounce
+    expect(politeRegion.textContent).toBe('');
+    expect(assertiveRegion.textContent).toBe('');
+  });
+  ```
+
+- **Axe scans aren't covered yet.** A clean scan isn't conformance either. Keep the role, name, keyboard and focus checks, and the screen reader pass in [Verifying changes](#verifying-changes) for any change to announcements or dynamic state.
 
 ## Verifying changes
 

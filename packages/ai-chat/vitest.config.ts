@@ -64,6 +64,9 @@ export default defineConfig({
     // its DOM-heavy workers don't crowd each other out.
     maxWorkers: '50%',
     hookTimeout: 10_000,
+    // Before each test, put back what every `vi.spyOn` replaced, so no spy
+    // outlives its case. `vi.fn()` and module mocks keep their state.
+    restoreMocks: true,
     // Jest printed each-table values in full. Vitest truncates them at 40
     // characters by default, in titles and assertion messages.
     chaiConfig: { truncateThreshold: 0 },

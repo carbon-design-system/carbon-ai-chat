@@ -584,14 +584,17 @@ HTTP: http://example.com
         // Remove from DOM (triggers disconnectedCallback)
         el.remove();
 
-        // Try to update Light DOM after disconnect - should not cause errors
+        // Change the light DOM while detached. A live observer would copy it
+        // into `markdown`.
         el.textContent = '# Should Not Update';
+        expect(el.textContent).to.equal('# Should Not Update');
 
-        // Wait a bit to ensure no async errors
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Observer records arrive on a microtask, and the element copies them
+        // on a further microtask; a macrotask runs after both.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await el.updateComplete;
 
-        // If we got here without errors, the observer was properly cleaned up
-        expect(true).to.equal(true);
+        expect(el.markdown).to.equal('# Light DOM Content');
       });
 
       it('handles rapid Light DOM changes', async () => {
@@ -4855,10 +4858,18 @@ describe('cds-aichat-markdown thematic break (hr) rendering', () => {
         `no fallback host should exist for prefix: ${JSON.stringify(prefix)}`
       ).to.equal(null);
 
-      if (hr) {
+      // Every prefix after the first ends in or passes `---`, so it parses to
+      // a thematic break.
+      const expectsHr = prefix.includes('---');
+      expect(
+        hr !== null,
+        `an <hr> should ${expectsHr ? '' : 'not '}render for prefix: ${JSON.stringify(prefix)}`
+      ).to.equal(expectsHr);
+
+      if (expectsHr) {
         // hr follows a (non-heading) list, so it gets the default inter-block
         // gap (spacing-05 = 1rem = 16px) — and that value must not flip.
-        const marginTop = getComputedStyle(hr).marginBlockStart;
+        const marginTop = getComputedStyle(hr!).marginBlockStart;
         expect(
           marginTop,
           `hr top margin should be the settled 16px, got ${marginTop}`

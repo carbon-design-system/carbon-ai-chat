@@ -58,4 +58,10 @@ npm test -- --ui
 
 These commands preserve the script's `NODE_OPTIONS` preload.
 
+What the suite runs:
+
+- **The production build.** The `test` script runs `playwright test` alone. Its `webServer` builds the demo with `npm run build`, then serves it with `npm run preview`. It never builds the chat packages.
+- **Chromium and Firefox.** The `chromium-upsert-message` project runs the suite again in Chromium, sending through `upsertMessage`. WebKit runs only `inline-markdown-selection.spec.ts`, after Chromium and Firefox run it in turn, because the three share the system clipboard. The projects are in [playwright.config.ts](playwright.config.ts).
+- **Strict CSP.** The demo ships no CSP, so a spec adds one: call `installTestCsp()` and `installCspGuard()` before `page.goto`, then `expectNoCspViolations()`, all from `tests/utils.ts`. This needs the production build, because Vite's dev client injects inline styles that break `style-src 'self'`.
+
 When `CI` is unset, Playwright reuses any server already on port 3001 and skips its own build and preview. The suite expects the production preview. If a server answers on port 3001, such as the `aiChat:start` dev server, do not run the suite against it. Ask the user to stop that server, build the packages after asking, then run the suite.

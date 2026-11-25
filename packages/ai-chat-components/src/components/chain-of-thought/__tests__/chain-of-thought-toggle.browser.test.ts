@@ -8,8 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chain-of-thought/index.js';
-import ChainOfThoughtToggle from '@carbon/ai-chat-components/es/components/chain-of-thought/src/chain-of-thought-toggle.js';
+import '../index.js';
+import ChainOfThoughtToggle from '../src/chain-of-thought-toggle.js';
 
 function toggleButton(el: ChainOfThoughtToggle): HTMLButtonElement {
   return el.shadowRoot!.querySelector('button')!;

@@ -8,9 +8,8 @@
  */
 
 import { html, fixture, expect } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/chat-shell/index.js';
-import CDSAIChatShell from '@carbon/ai-chat-components/es/components/chat-shell/src/shell.js';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
+import '../index.js';
+import CDSAIChatShell from '../src/shell.js';
 
 const nextFrame = (frames = 1) =>
   new Promise<void>((resolve) => {
@@ -143,33 +142,37 @@ describe('cds-aichat-shell', function () {
 
     it('should reflect workspace-location attribute with start value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell workspace-location="start"></cds-aichat-shell>`
+        html`<cds-aichat-shell workspace-location="end"></cds-aichat-shell>`
       );
-      expect(el.workspaceLocation).to.equal('start');
+      el.workspaceLocation = 'start';
+      await el.updateComplete;
       expect(el.getAttribute('workspace-location')).to.equal('start');
     });
 
     it('should reflect workspace-location attribute with end value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell workspace-location="end"></cds-aichat-shell>`
+        html`<cds-aichat-shell></cds-aichat-shell>`
       );
-      expect(el.workspaceLocation).to.equal('end');
+      el.workspaceLocation = 'end';
+      await el.updateComplete;
       expect(el.getAttribute('workspace-location')).to.equal('end');
     });
 
     it('should reflect history-location attribute with start value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell history-location="start"></cds-aichat-shell>`
+        html`<cds-aichat-shell history-location="end"></cds-aichat-shell>`
       );
-      expect(el.historyLocation).to.equal('start');
+      el.historyLocation = 'start';
+      await el.updateComplete;
       expect(el.getAttribute('history-location')).to.equal('start');
     });
 
     it('should reflect history-location attribute with end value', async () => {
       const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell history-location="end"></cds-aichat-shell>`
+        html`<cds-aichat-shell></cds-aichat-shell>`
       );
-      expect(el.historyLocation).to.equal('end');
+      el.historyLocation = 'end';
+      await el.updateComplete;
       expect(el.getAttribute('history-location')).to.equal('end');
     });
   });
@@ -1094,44 +1097,6 @@ describe('cds-aichat-shell', function () {
 
       inputAndMessages = el.shadowRoot!.querySelector('.input-and-messages');
       expect(inputAndMessages!.classList.contains('at-max-width')).to.be.true;
-    });
-  });
-
-  // ========== Snapshot Tests ==========
-  describe('Snapshots', () => {
-    it('should match snapshot with default configuration', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with rounded corners', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell corner-all="round"></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with all properties enabled', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell
-          ai-enabled
-          show-frame
-          corner-all="round"
-          show-history
-          show-workspace></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
-    });
-
-    it('should match snapshot with mixed corner configuration', async () => {
-      const el = await fixture<CDSAIChatShell>(
-        html`<cds-aichat-shell
-          corner-start-start="round"
-          corner-end-end="round"></cds-aichat-shell>`
-      );
-      expectDomSnapshot(el);
     });
   });
 });

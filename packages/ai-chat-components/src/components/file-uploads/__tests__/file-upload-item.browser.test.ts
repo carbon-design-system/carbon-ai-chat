@@ -8,13 +8,13 @@
  */
 
 import { aTimeout, expect, fixture, html, oneEvent } from '@open-wc/testing';
-import '@carbon/ai-chat-components/es/components/file-uploads/index.js';
-import type FileUploadItemElement from '@carbon/ai-chat-components/es/components/file-uploads/src/file-upload-item.js';
+import '../index.js';
+import type FileUploadItemElement from '../src/file-upload-item.js';
 import {
   FileStatusValue,
   type FileUpload,
-} from '@carbon/ai-chat-components/es/components/prompt-line/src/types.js';
-import type { FileAttachment } from '@carbon/ai-chat-components/es/components/file-uploads/src/types.js';
+} from '../../prompt-line/src/types.js';
+import type { FileAttachment } from '../src/types.js';
 
 function makeUpload(
   id: string,

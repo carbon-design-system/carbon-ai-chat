@@ -24,7 +24,8 @@ Load only what you need:
 - Changing hooks or view-owned logic in `utils/` or `services/` → [hook guide](src/chat/hooks/AGENTS.md).
 - Adding config fields or host properties or attributes, or editing CEM metadata → [manifest guide](references/manifests.md).
 - Adding, moving, or fixing a test, or deciding whether it belongs in the demo → [test guide](references/tests.md).
-- Changing host-visible behavior → [contract tests](references/tests.md#contract-tests-pin-host-behavior): add proof in the same commit; follow the stop rule and manifest workflow.
+- Changing host-visible behavior → [contract tests](references/tests.md#contract-tests-pin-host-behavior): add proof in the same commit; follow the stop rule.
+- Adding, changing, or removing a contract test, or reading the `measure` contract row → [manifest workflow](references/contract-manifest.md).
 - Shipping UI (WCAG 2.1 AA, live regions, announcer helpers, and when to use `assertive`) → [access guide](../../references/accessibility.md).
 - Adding code to `src/sdk/`, or deciding whether it's public → [SDK guide](src/sdk/AGENTS.md).
 - Touching the store → [store guide](src/sdk/store/AGENTS.md).

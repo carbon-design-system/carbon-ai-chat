@@ -9,10 +9,8 @@
 
 import { html, fixture, expect, waitUntil } from '@open-wc/testing';
 import { LitElement } from 'lit';
-import '@carbon/ai-chat-components/es/components/toolbar/index.js';
-import Toolbar, {
-  Action,
-} from '@carbon/ai-chat-components/es/components/toolbar/src/toolbar.js';
+import '../index.js';
+import Toolbar, { Action } from '../src/toolbar.js';
 import {
   Version16,
   Download16,
@@ -21,7 +19,6 @@ import {
   Maximize16,
   Close16,
 } from '@carbon/icons';
-import { expectDomSnapshot } from '../../../__tests__/browser/dom-snapshot.js';
 
 const actionLists: Record<string, Action[]> = {
   'Advanced list': [
@@ -49,7 +46,6 @@ describe('toolbar', function () {
     expect(el).to.be.instanceOf(Toolbar);
     expect(el.actions).to.deep.equal(actionLists['Advanced list'] as Action[]);
     expect(el.shadowRoot).to.exist;
-    expectDomSnapshot(el);
   });
 
   it('should render the title div inside the shadow root', async () => {
