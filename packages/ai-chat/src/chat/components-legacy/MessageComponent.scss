@@ -67,15 +67,12 @@ $message-bar-width: 3px;
   inset-block-end: calc(#{layout.$spacing-07} - 0.5rem);
 }
 
-.cds-aichat--message .cds-aichat--message-vertical-padding,
-.cds-aichat--message .cds-aichat--ui-customization-element--response {
+.cds-aichat--message .cds-aichat--message-vertical-padding {
   /*  WARNING: If we change this value it will effect the vertical alignment of existing custom message elements. */
   padding-block-start: layout.$spacing-05;
 }
 
 .cds-aichat--message--with-avatar-line .cds-aichat--message-vertical-padding,
-.cds-aichat--message--with-avatar-line
-  .cds-aichat--ui-customization-element--response,
 .cds-aichat--message--option-response-without-title-or-description
   .cds-aichat--message-vertical-padding {
   /* If this is the avatar line or an option response without title or description then remove the padding-block-start
@@ -83,15 +80,8 @@ $message-bar-width: 3px;
   padding-block-start: 0;
 }
 
-.cds-aichat--message--option-response-without-title-or-description
-  .cds-aichat--ui-customization-element--response {
-  padding-block-start: 0;
-}
-
 .cds-aichat--message.cds-aichat--message--custom
-  .cds-aichat--message-vertical-padding,
-.cds-aichat--message.cds-aichat--message--custom
-  .cds-aichat--ui-customization-element--response {
+  .cds-aichat--message-vertical-padding {
   padding-block: 0;
 }
 
@@ -199,10 +189,6 @@ $message-bar-width: 3px;
   content: '';
 }
 
-.cds-aichat--messages--welcome.cds-aichat--messages--welcome--typing {
-  min-block-size: 100%;
-}
-
 .cds-aichat--assistant-message {
   position: relative;
   display: flex;
@@ -267,11 +253,6 @@ $message-bar-width: 3px;
   }
 }
 
-/* moved earlier: .cds-aichat--message-status */
-.cds-aichat--message-status .cds-aichat--loading-spinner circle {
-  stroke-width: 6;
-}
-
 @media screen and (prefers-reduced-motion: reduce) {
   .cds-aichat--sent-container .cds-aichat--message-status-file-success svg {
     animation: none;
@@ -296,7 +277,6 @@ $message-bar-width: 3px;
 }
 
 .cds-aichat--received--loading,
-.cds-aichat--search-result,
 .cds-aichat--sent--bubble {
   position: relative;
   opacity: 1;
@@ -343,8 +323,7 @@ svg.cds-aichat--sent-file-icon {
   border-radius: 0 layout.$spacing-03 layout.$spacing-03 layout.$spacing-03;
 }
 
-.cds-aichat--received--options,
-.cds-aichat--received--suggestion {
+.cds-aichat--received--options {
   position: relative;
   overflow-wrap: break-word;
   word-break: break-word;

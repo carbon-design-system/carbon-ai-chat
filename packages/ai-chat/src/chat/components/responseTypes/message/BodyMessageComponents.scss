@@ -21,8 +21,6 @@
   padding-block-end: layout.$spacing-04;
 }
 
-.cds-aichat--body-message-components .cds-aichat--media-player__skeleton,
-.cds-aichat--body-message-components .cds-aichat--media-player,
 .cds-aichat--body-message-components .cds-aichat--image {
   border: none;
 }
@@ -45,11 +43,7 @@
   padding: 0;
 
   /* Nested response types with cards should not have rounded corners since they fill the width of the container */
-  .cds-aichat--body-message-components__message-wrapper .cds-aichat--image,
-  .cds-aichat--body-message-components__message-wrapper
-    .cds-aichat--media-player,
-  .cds-aichat--body-message-components__message-wrapper
-    .cds-aichat--media-player__skeleton {
+  .cds-aichat--body-message-components__message-wrapper .cds-aichat--image {
     border-radius: 0;
   }
 }

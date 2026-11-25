@@ -20,12 +20,6 @@
   }
 }
 
-// Wrapper for text content
-.cds-aichat--text-block__wrapper {
-  flex: 1 1;
-  align-self: center;
-}
-
 // Title styling
 .cds-aichat--text-block__title {
   @include type.type-style('body-02');
@@ -56,26 +50,6 @@
   &-margin {
     margin-block-start: layout.$spacing-05;
   }
-}
-
-// Spacing utilities
-.cds-aichat--text-block__description--with-title {
-  margin-block-start: layout.$spacing-01;
-}
-
-.cds-aichat--text-block__url--with-content {
-  margin-block-start: layout.$spacing-05;
-}
-
-// Markdown mode uses body-01 for both title and description
-.cds-aichat--text-block--markdown .cds-aichat--text-block__title,
-.cds-aichat--text-block--markdown .cds-aichat--text-block__description {
-  @include type.type-style('body-01');
-}
-
-// Spacing for markdown mode (from Metablock)
-.cds-aichat--text-block--markdown .cds-aichat--text-block__description {
-  margin-block-start: layout.$spacing-03;
 }
 
 // Line clamping for title (2 lines)

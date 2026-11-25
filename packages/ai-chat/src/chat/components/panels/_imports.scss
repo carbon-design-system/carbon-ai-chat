@@ -17,8 +17,7 @@
 
 /* These selectors apply a border radius to panel content using CSS custom properties. */
 .cds-aichat--i-frame-panel,
-.cds-aichat--view-source-panel,
-.cds-aichat--custom-panel {
+.cds-aichat--view-source-panel {
   box-sizing: border-box;
   block-size: 100%;
   border-end-end-radius: var(--cds-aichat-border-radius-end-end, 0);

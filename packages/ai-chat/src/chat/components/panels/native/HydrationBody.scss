@@ -6,7 +6,6 @@
  */
 
 @use '@carbon/layout';
-@use '@carbon/styles/scss/theme';
 
 cds-aichat-hydration-body {
   display: contents;
@@ -24,14 +23,4 @@ cds-aichat-hydration-body {
   align-items: center;
   justify-content: center;
   block-size: 100%;
-}
-
-.cds-aichat--hydrating .cds-aichat--loading-spinner {
-  block-size: 48px;
-  inline-size: 48px;
-  margin-block-start: -64px;
-}
-
-.cds-aichat--hydrating .cds-aichat--loading-spinner path {
-  stroke: theme.$interactive;
 }

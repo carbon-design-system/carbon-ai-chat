@@ -14,10 +14,6 @@
 $button-item: '.cds-aichat--button-item';
 $footer: '.cds-aichat--footer-button-components';
 $footer-column: '#{$footer}--column';
-$overlay-panel: '.cds-aichat--overlay-panel';
-$widget: '.cds-aichat--widget';
-$widget-with-banner: '#{$widget}--with-branding-banner';
-$widget-without-rounding: '#{$widget}:not(#{$widget}--rounded, #{$widget}--with-branding-banner)';
 
 // The 1px line between footer buttons and above ghost buttons.
 $separator: rem(1px) solid theme.$chat-bubble-border;
@@ -120,8 +116,6 @@ $icon-alignments: (
 }
 
 // Corner rounding styles
-// Note: Tiles shouldn't take the border radius when `.cds-aichat--widget--rounded` is set on the widget. as they are always rounded.
-// Important Note: FooterButtonComponents is a common child for `panel` and `aichat-card`. we have to be specific with the selectors, and must scope them accordingly.
 
 // Footer button styles scoped to aichat-card
 cds-aichat-card {
@@ -129,27 +123,8 @@ cds-aichat-card {
     @include footer-button-radius(layout.$spacing-03);
   }
 }
-
-// Usage inside rounded widget panel, use CSS custom properties for rounded corners
-#{$overlay-panel} #{$footer} {
-  @include footer-button-radius(var(--cds-aichat-border-radius-end-end, 0));
-}
 // Corner rounding styles end
-#{$widget-with-banner} #{$overlay-panel} #{$footer},
-#{$widget-without-rounding} #{$overlay-panel} #{$footer} {
-  #{$button-item}:first-child::part(button) {
-    border-end-start-radius: 0;
-  }
 
-  #{$button-item}:last-child::part(button) {
-    border-end-end-radius: 0;
-  }
-}
-
-#{$widget-with-banner}
-  #{$overlay-panel}
-  #{$footer-column}
-  #{$button-item}#{$button-item}:last-child::part(button),
 #{$footer}#{$footer-column}
   #{$button-item}#{$button-item}:not(:last-child::part(button)) {
   border-end-end-radius: 0;

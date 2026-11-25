@@ -9,7 +9,12 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/type';
-@use '@carbon/styles/scss/components/button';
+// Loads Carbon's utilities before the other modules that use them. Sass emits a module's CSS where it's
+// first loaded, and rules of equal specificity cascade by order, so this keeps Carbon's utility rules ahead of
+// the chat's own.
+@use '@carbon/styles/scss/utilities';
+@use '@carbon/styles/scss/components/button/tokens' as button;
+@use '@carbon/styles/scss/components/button/vars' as button-vars;
 @use '../../../globals/scss/chat-launcher-layout';
 @use '@carbon/ai-chat-components/scss/utilities' as chat-config;
 
@@ -111,8 +116,8 @@ cds-button.cds-aichat--launcher__button {
     }
 
     &:focus {
-      border-width: button.$button-border-width;
-      box-shadow: inset 0 0 0 button.$button-border-width
+      border-width: button-vars.$button-border-width;
+      box-shadow: inset 0 0 0 button-vars.$button-border-width
         $launcher-color-focus-border;
     }
   }
@@ -345,10 +350,6 @@ cds-button.cds-aichat--launcher-extended__close-button {
 }
 
 [dir='rtl'] .cds-aichat-launcher {
-  .cds-aichat--launcher-extended__wrapper {
-    inset-inline: 0 unset;
-  }
-
   .cds-aichat--launcher-extended__text-holder {
     padding: layout.$spacing-04 layout.$spacing-04 layout.$spacing-04 0;
   }

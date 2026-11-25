@@ -9,7 +9,6 @@
 @use '@carbon/styles/scss/theme';
 @use '@carbon/styles/scss/motion';
 @use '@carbon/styles/scss/type';
-@use '@carbon/styles/scss/utilities';
 @use '@carbon/styles/scss/components/button/tokens';
 @use '../../globals/scss/chat-theme';
 
@@ -129,10 +128,4 @@
   inset-inline-start: 50%;
   margin-block-start: calc(-1 * layout.$spacing-07);
   transform: translateX(-50%);
-}
-
-.cds-aichat__scroll-to-bottom-button {
-  &--hidden {
-    display: none;
-  }
 }
